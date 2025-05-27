@@ -6,15 +6,82 @@
  * initialization of language-specific parsers, and AST traversal.
  */
 
-#include "scopemux/tree_sitter_integration.h"
+#include "../../include/scopemux/tree_sitter_integration.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+// Include Tree-sitter API
+#include "../../include/tree_sitter/api.h"
+
+// Forward declarations for Tree-sitter language functions
+extern TSLanguage *tree_sitter_c(void);
+extern TSLanguage *tree_sitter_cpp(void);
+extern TSLanguage *tree_sitter_python(void);
 
 /* Tree-sitter parser initialization */
 TreeSitterParser* ts_parser_init(LanguageType language) {
-    // TODO: Implement Tree-sitter parser initialization for the specified language
-    // This will need to link with the actual Tree-sitter library
-    return NULL; // Placeholder
+    TreeSitterParser* parser = (TreeSitterParser*)malloc(sizeof(TreeSitterParser));
+    if (!parser) {
+        return NULL; // Memory allocation failed
+    }
+    
+    // Initialize fields
+    parser->ts_parser = ts_parser_new();
+    parser->ts_language = NULL;
+    parser->language = language;
+    parser->language_name = NULL;
+    parser->last_error = NULL;
+    parser->error_code = 0;
+    
+    if (!parser->ts_parser) {
+        free(parser);
+        return NULL; // Failed to create Tree-sitter parser
+    }
+    
+    // Set the language based on the provided language type
+    switch (language) {
+        case LANG_C:
+            parser->ts_language = (void*)tree_sitter_c();
+            parser->language_name = strdup("C");
+            break;
+        case LANG_CPP:
+            parser->ts_language = (void*)tree_sitter_cpp();
+            parser->language_name = strdup("C++");
+            break;
+        case LANG_PYTHON:
+            parser->ts_language = (void*)tree_sitter_python();
+            parser->language_name = strdup("Python");
+            break;
+        default:
+            // Unsupported language
+            parser->last_error = strdup("Unsupported language");
+            parser->error_code = 1;
+            ts_parser_delete((TSParser*)parser->ts_parser);
+            free(parser);
+            return NULL;
+    }
+    
+    if (!parser->ts_language) {
+        parser->last_error = strdup("Failed to load language grammar");
+        parser->error_code = 2;
+        ts_parser_delete((TSParser*)parser->ts_parser);
+        free(parser);
+        return NULL;
+    }
+    
+    // Set the language for the parser
+    if (!ts_parser_set_language((TSParser*)parser->ts_parser, 
+                               (TSLanguage*)parser->ts_language)) {
+        parser->last_error = strdup("Failed to set language for parser");
+        parser->error_code = 3;
+        ts_parser_delete((TSParser*)parser->ts_parser);
+        free(parser->language_name);
+        free(parser);
+        return NULL;
+    }
+    
+    return parser;
 }
 
 /* Tree-sitter parser cleanup */

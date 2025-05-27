@@ -56,6 +56,11 @@ void init_scopemux_module(void* m) {
 }
 
 /**
+ * @brief Forward declaration of module methods
+ */
+extern PyMethodDef module_methods[];
+
+/**
  * @brief Python module definition
  */
 static PyModuleDef scopemux_module = {
@@ -64,7 +69,7 @@ static PyModuleDef scopemux_module = {
     module_docstring,  /* module documentation */
     -1,                /* size of per-interpreter state of the module,
                           or -1 if the module keeps state in global variables. */
-    NULL,              /* module methods */
+    module_methods,    /* module methods */
     NULL,              /* m_slots */
     NULL,              /* m_traverse */
     NULL,              /* m_clear */

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "./parser.h"
+#include "./tree_sitter_stubs.h"
 
 /**
  * @brief Tree-sitter parser wrapper

@@ -357,6 +357,32 @@ static PyTypeObject IRNodeType = {
 };
 
 /**
+ * @brief Detect language from filename
+ */
+static PyObject* detect_language(PyObject* self, PyObject* args, PyObject* kwds) {
+    const char* filename;
+    const char* content = NULL;
+    Py_ssize_t content_length = 0;
+    static char* kwlist[] = {"filename", "content", NULL};
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|s#", kwlist, &filename, &content, &content_length)) {
+        return NULL;
+    }
+    
+    LanguageType language = parser_detect_language(filename, content, content_length);
+    return PyLong_FromLong((long)language);
+}
+
+/**
+ * @brief Module methods
+ */
+static PyMethodDef module_methods[] = {
+    {"detect_language", (PyCFunction)detect_language, METH_VARARGS | METH_KEYWORDS, 
+     "Detect language from filename and optional content"},
+    {NULL, NULL, 0, NULL}  /* Sentinel */
+};
+
+/**
  * @brief Initialize the parser bindings
  * 
  * @param m Python module
@@ -379,6 +405,9 @@ void init_parser_bindings(void* m) {
     
     Py_INCREF(&IRNodeType);
     PyModule_AddObject(module, "IRNode", (PyObject*)&IRNodeType);
+    
+    // Add module methods
+    PyModule_AddFunctions(module, module_methods);
     
     // Add language type constants
     PyModule_AddIntConstant(module, "LANG_UNKNOWN", LANG_UNKNOWN);
