@@ -1,0 +1,16 @@
+# Dockerfile-celery
+
+FROM tssb-base:latest
+
+COPY reqs/common.txt reqs/devl.txt reqs/test.txt ./
+RUN pip install -r devl.txt -r test.txt
+
+RUN groupadd -r celery-user -g 1000 && \
+    useradd --no-log-init -r -u 1000 -g celery-user celery-user
+
+WORKDIR /home/celery-user/app
+COPY . /home/celery-user/app
+RUN chown -R celery-user:celery-user /home/celery-user
+
+USER celery-user
+EXPOSE 8012
