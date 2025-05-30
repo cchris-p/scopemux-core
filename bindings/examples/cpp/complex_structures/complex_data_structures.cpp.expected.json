@@ -1,0 +1,1048 @@
+{
+  "language": "C++",
+  "ast": {
+    "type": "translation_unit",
+    "classes": [
+      {
+        "name": "Point",
+        "type": "class_definition",
+        "methods": [
+          {
+            "name": "Point",
+            "type": "constructor",
+            "parameters": [
+              {"name": "x", "type": "int", "default_value": "0"},
+              {"name": "y", "type": "int", "default_value": "0"}
+            ],
+            "line": 27
+          },
+          {
+            "name": "x",
+            "type": "method",
+            "return_type": "int",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 29
+          },
+          {
+            "name": "y",
+            "type": "method",
+            "return_type": "int",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 30
+          },
+          {
+            "name": "operator<",
+            "type": "operator_overload",
+            "return_type": "bool",
+            "parameters": [
+              {"name": "other", "type": "const Point&"}
+            ],
+            "qualifiers": ["const"],
+            "line": 33
+          }
+        ],
+        "members": [
+          {"name": "x_", "type": "int", "access": "private", "line": 42},
+          {"name": "y_", "type": "int", "access": "private", "line": 43}
+        ],
+        "friend_functions": [
+          {
+            "name": "operator<<",
+            "return_type": "std::ostream&",
+            "parameters": [
+              {"name": "os", "type": "std::ostream&"},
+              {"name": "p", "type": "const Point&"}
+            ],
+            "line": 38
+          }
+        ],
+        "range": {
+          "start_line": 25,
+          "start_column": 0,
+          "end_line": 44,
+          "end_column": 1
+        },
+        "docstring": "A simple custom data structure"
+      },
+      {
+        "name": "Shape",
+        "type": "class_definition",
+        "methods": [
+          {
+            "name": "~Shape",
+            "type": "destructor",
+            "qualifiers": ["virtual"],
+            "default": true,
+            "line": 51
+          },
+          {
+            "name": "area",
+            "type": "method",
+            "return_type": "double",
+            "parameters": [],
+            "qualifiers": ["virtual", "const", "pure"],
+            "line": 52
+          },
+          {
+            "name": "print",
+            "type": "method",
+            "return_type": "void",
+            "parameters": [],
+            "qualifiers": ["virtual", "const", "pure"],
+            "line": 53
+          }
+        ],
+        "range": {
+          "start_line": 49,
+          "start_column": 0,
+          "end_line": 54,
+          "end_column": 1
+        },
+        "docstring": "A more complex data structure with composition"
+      },
+      {
+        "name": "Circle",
+        "type": "class_definition",
+        "base_classes": [
+          {"name": "Shape", "access": "public"}
+        ],
+        "methods": [
+          {
+            "name": "Circle",
+            "type": "constructor",
+            "parameters": [
+              {"name": "center", "type": "const Point&"},
+              {"name": "radius", "type": "double"}
+            ],
+            "line": 58
+          },
+          {
+            "name": "area",
+            "type": "method",
+            "return_type": "double",
+            "parameters": [],
+            "qualifiers": ["const", "override"],
+            "line": 61
+          },
+          {
+            "name": "print",
+            "type": "method",
+            "return_type": "void",
+            "parameters": [],
+            "qualifiers": ["const", "override"],
+            "line": 65
+          }
+        ],
+        "members": [
+          {"name": "center_", "type": "Point", "access": "private", "line": 70},
+          {"name": "radius_", "type": "double", "access": "private", "line": 71}
+        ],
+        "range": {
+          "start_line": 56,
+          "start_column": 0,
+          "end_line": 72,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "Rectangle",
+        "type": "class_definition",
+        "base_classes": [
+          {"name": "Shape", "access": "public"}
+        ],
+        "methods": [
+          {
+            "name": "Rectangle",
+            "type": "constructor",
+            "parameters": [
+              {"name": "topLeft", "type": "const Point&"},
+              {"name": "bottomRight", "type": "const Point&"}
+            ],
+            "line": 76
+          },
+          {
+            "name": "area",
+            "type": "method",
+            "return_type": "double",
+            "parameters": [],
+            "qualifiers": ["const", "override"],
+            "line": 79
+          },
+          {
+            "name": "print",
+            "type": "method",
+            "return_type": "void",
+            "parameters": [],
+            "qualifiers": ["const", "override"],
+            "line": 85
+          }
+        ],
+        "members": [
+          {"name": "topLeft_", "type": "Point", "access": "private", "line": 90},
+          {"name": "bottomRight_", "type": "Point", "access": "private", "line": 91}
+        ],
+        "range": {
+          "start_line": 74,
+          "start_column": 0,
+          "end_line": 92,
+          "end_column": 1
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "operator<<",
+        "type": "function_definition",
+        "return_type": "std::ostream&",
+        "parameters": [
+          {"name": "os", "type": "std::ostream&"},
+          {"name": "p", "type": "const Point&"}
+        ],
+        "body_range": {
+          "start_line": 38,
+          "start_column": 4,
+          "end_line": 41,
+          "end_column": 5
+        },
+        "friend_of": "Point"
+      },
+      {
+        "name": "main",
+        "type": "function_definition",
+        "return_type": "int",
+        "parameters": [],
+        "body_range": {
+          "start_line": 97,
+          "start_column": 0,
+          "end_line": 185,
+          "end_column": 1
+        },
+        "docstring": "Program entry point\nReturn Exit status code"
+      }
+    ],
+    "includes": [
+      {
+        "path": "iostream",
+        "system": true,
+        "line": 12
+      },
+      {
+        "path": "vector",
+        "system": true,
+        "line": 13
+      },
+      {
+        "path": "map",
+        "system": true,
+        "line": 14
+      },
+      {
+        "path": "unordered_map",
+        "system": true,
+        "line": 15
+      },
+      {
+        "path": "set",
+        "system": true,
+        "line": 16
+      },
+      {
+        "path": "list",
+        "system": true,
+        "line": 17
+      },
+      {
+        "path": "deque",
+        "system": true,
+        "line": 18
+      },
+      {
+        "path": "stack",
+        "system": true,
+        "line": 19
+      },
+      {
+        "path": "queue",
+        "system": true,
+        "line": 20
+      },
+      {
+        "path": "string",
+        "system": true,
+        "line": 21
+      },
+      {
+        "path": "algorithm",
+        "system": true,
+        "line": 22
+      },
+      {
+        "path": "memory",
+        "system": true,
+        "line": 23
+      }
+    ],
+    "comments": [
+      {
+        "type": "block_comment",
+        "text": "This example shows:\n- STL containers (vector, map, set, list, etc.)\n- Container adaptors (stack, queue, priority_queue)\n- Custom data structures with composition\n- Nested containers\n- Working with iterators",
+        "range": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 10,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "block_comment",
+        "text": "A simple custom data structure",
+        "range": {
+          "start_line": 25,
+          "start_column": 0,
+          "end_line": 27,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "line_comment",
+        "text": "For comparison in sets and maps",
+        "line": 32
+      },
+      {
+        "type": "block_comment",
+        "text": "A more complex data structure with composition",
+        "range": {
+          "start_line": 47,
+          "start_column": 0,
+          "end_line": 49,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "block_comment",
+        "text": "Program entry point\nReturn Exit status code",
+        "range": {
+          "start_line": 94,
+          "start_column": 0,
+          "end_line": 97,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "line_comment",
+        "text": "1. Basic vector usage",
+        "line": 98
+      },
+      {
+        "type": "line_comment",
+        "text": "2. Map example",
+        "line": 106
+      },
+      {
+        "type": "line_comment",
+        "text": "3. Set of custom objects",
+        "line": 117
+      },
+      {
+        "type": "line_comment",
+        "text": "Duplicate, will be ignored",
+        "line": 121
+      },
+      {
+        "type": "line_comment",
+        "text": "4. Nested containers",
+        "line": 128
+      },
+      {
+        "type": "line_comment",
+        "text": "5. Container adaptors",
+        "line": 141
+      },
+      {
+        "type": "line_comment",
+        "text": "6. Priority queue",
+        "line": 152
+      },
+      {
+        "type": "line_comment",
+        "text": "7. Working with algorithms",
+        "line": 163
+      },
+      {
+        "type": "line_comment",
+        "text": "8. Complex object hierarchy with smart pointers",
+        "line": 179
+      }
+    ],
+    "variable_declarations": [
+      {
+        "name": "numbers",
+        "type": "std::vector<int>",
+        "line": 99,
+        "initialized": true
+      },
+      {
+        "name": "ages",
+        "type": "std::map<std::string, int>",
+        "line": 107,
+        "initialized": true
+      },
+      {
+        "name": "points",
+        "type": "std::set<Point>",
+        "line": 118,
+        "initialized": true
+      },
+      {
+        "name": "studentScores",
+        "type": "std::map<std::string, std::vector<int>>",
+        "line": 129,
+        "initialized": true
+      },
+      {
+        "name": "intStack",
+        "type": "std::stack<int>",
+        "line": 142,
+        "initialized": true
+      },
+      {
+        "name": "pq",
+        "type": "std::priority_queue<int>",
+        "line": 153,
+        "initialized": true
+      },
+      {
+        "name": "data",
+        "type": "std::vector<int>",
+        "line": 164,
+        "initialized": true
+      },
+      {
+        "name": "shapes",
+        "type": "std::vector<std::unique_ptr<Shape>>",
+        "line": 180,
+        "initialized": true
+      }
+    ],
+    "loops": [
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 101,
+          "start_column": 4,
+          "end_line": 103,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 111,
+          "start_column": 4,
+          "end_line": 113,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 123,
+          "start_column": 4,
+          "end_line": 125,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 133,
+          "start_column": 4,
+          "end_line": 139,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 134,
+          "start_column": 8,
+          "end_line": 136,
+          "end_column": 9
+        }
+      },
+      {
+        "type": "while_statement",
+        "range": {
+          "start_line": 145,
+          "start_column": 4,
+          "end_line": 148,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "while_statement",
+        "range": {
+          "start_line": 156,
+          "start_column": 4,
+          "end_line": 159,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 166,
+          "start_column": 4,
+          "end_line": 168,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 173,
+          "start_column": 4,
+          "end_line": 175,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 183,
+          "start_column": 4,
+          "end_line": 186,
+          "end_column": 5
+        }
+      }
+    ],
+    "function_calls": [
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"1. Basic vector usage:\"",
+          "std::endl"
+        ],
+        "line": 99
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  \"",
+          "num",
+          "std::endl"
+        ],
+        "line": 102
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\n2. Map example:\"",
+          "std::endl"
+        ],
+        "line": 106
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  \"",
+          "name",
+          "\" is \"",
+          "age",
+          "\" years old\"",
+          "std::endl"
+        ],
+        "line": 112
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\n3. Set of custom objects:\"",
+          "std::endl"
+        ],
+        "line": 117
+      },
+      {
+        "name": "points.insert",
+        "arguments": [
+          "Point(1, 2)"
+        ],
+        "line": 119
+      },
+      {
+        "name": "points.insert",
+        "arguments": [
+          "Point(3, 4)"
+        ],
+        "line": 120
+      },
+      {
+        "name": "points.insert",
+        "arguments": [
+          "Point(1, 2)"
+        ],
+        "line": 121
+      },
+      {
+        "name": "points.insert",
+        "arguments": [
+          "Point(5, 6)"
+        ],
+        "line": 122
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  \"",
+          "point",
+          "std::endl"
+        ],
+        "line": 124
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\n4. Nested containers:\"",
+          "std::endl"
+        ],
+        "line": 128
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  \"",
+          "student",
+          "\"'s scores: \""
+        ],
+        "line": 134
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "score",
+          "\" \""
+        ],
+        "line": 136
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "std::endl"
+        ],
+        "line": 138
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\n5. Stack example:\"",
+          "std::endl"
+        ],
+        "line": 141
+      },
+      {
+        "name": "intStack.push",
+        "arguments": [
+          "10"
+        ],
+        "line": 143
+      },
+      {
+        "name": "intStack.push",
+        "arguments": [
+          "20"
+        ],
+        "line": 144
+      },
+      {
+        "name": "intStack.push",
+        "arguments": [
+          "30"
+        ],
+        "line": 145
+      },
+      {
+        "name": "intStack.empty",
+        "arguments": [],
+        "line": 147
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  Popped: \"",
+          "intStack.top()",
+          "std::endl"
+        ],
+        "line": 148
+      },
+      {
+        "name": "intStack.top",
+        "arguments": [],
+        "line": 148
+      },
+      {
+        "name": "intStack.pop",
+        "arguments": [],
+        "line": 149
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\n6. Priority queue example:\"",
+          "std::endl"
+        ],
+        "line": 152
+      },
+      {
+        "name": "pq.push",
+        "arguments": [
+          "10"
+        ],
+        "line": 154
+      },
+      {
+        "name": "pq.push",
+        "arguments": [
+          "30"
+        ],
+        "line": 155
+      },
+      {
+        "name": "pq.push",
+        "arguments": [
+          "20"
+        ],
+        "line": 156
+      },
+      {
+        "name": "pq.push",
+        "arguments": [
+          "5"
+        ],
+        "line": 157
+      },
+      {
+        "name": "pq.empty",
+        "arguments": [],
+        "line": 159
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  Popped: \"",
+          "pq.top()",
+          "std::endl"
+        ],
+        "line": 160
+      },
+      {
+        "name": "pq.top",
+        "arguments": [],
+        "line": 160
+      },
+      {
+        "name": "pq.pop",
+        "arguments": [],
+        "line": 161
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\n7. Algorithm example:\"",
+          "std::endl"
+        ],
+        "line": 164
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  Original data: \""
+        ],
+        "line": 167
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "num",
+          "\" \""
+        ],
+        "line": 169
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "std::endl"
+        ],
+        "line": 171
+      },
+      {
+        "name": "std::sort",
+        "arguments": [
+          "data.begin()",
+          "data.end()"
+        ],
+        "line": 173
+      },
+      {
+        "name": "data.begin",
+        "arguments": [],
+        "line": 173
+      },
+      {
+        "name": "data.end",
+        "arguments": [],
+        "line": 173
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  Sorted data: \""
+        ],
+        "line": 175
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "num",
+          "\" \""
+        ],
+        "line": 177
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "std::endl"
+        ],
+        "line": 179
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\n8. Complex object hierarchy:\"",
+          "std::endl"
+        ],
+        "line": 181
+      },
+      {
+        "name": "shapes.push_back",
+        "arguments": [
+          "std::make_unique<Circle>(Point(0, 0), 5.0)"
+        ],
+        "line": 184
+      },
+      {
+        "name": "std::make_unique<Circle>",
+        "arguments": [
+          "Point(0, 0)",
+          "5.0"
+        ],
+        "line": 184
+      },
+      {
+        "name": "shapes.push_back",
+        "arguments": [
+          "std::make_unique<Rectangle>(Point(0, 0), Point(4, 3))"
+        ],
+        "line": 185
+      },
+      {
+        "name": "std::make_unique<Rectangle>",
+        "arguments": [
+          "Point(0, 0)",
+          "Point(4, 3)"
+        ],
+        "line": 185
+      },
+      {
+        "name": "shapes.push_back",
+        "arguments": [
+          "std::make_unique<Circle>(Point(5, 5), 2.5)"
+        ],
+        "line": 186
+      },
+      {
+        "name": "std::make_unique<Circle>",
+        "arguments": [
+          "Point(5, 5)",
+          "2.5"
+        ],
+        "line": 186
+      },
+      {
+        "name": "shape->print",
+        "arguments": [],
+        "line": 189
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  Area: \"",
+          "shape->area()",
+          "std::endl"
+        ],
+        "line": 190
+      },
+      {
+        "name": "shape->area",
+        "arguments": [],
+        "line": 190
+      }
+    ],
+    "namespace_references": [
+      {
+        "name": "std",
+        "line": 38,
+        "context": "std::ostream"
+      },
+      {
+        "name": "std",
+        "line": 65,
+        "context": "std::cout"
+      },
+      {
+        "name": "std",
+        "line": 85,
+        "context": "std::cout"
+      },
+      {
+        "name": "std",
+        "line": 99,
+        "context": "std::cout"
+      },
+      {
+        "name": "std",
+        "line": 99,
+        "context": "std::vector<int>"
+      },
+      {
+        "name": "std",
+        "line": 107,
+        "context": "std::map<std::string, int>"
+      },
+      {
+        "name": "std",
+        "line": 118,
+        "context": "std::set<Point>"
+      },
+      {
+        "name": "std",
+        "line": 129,
+        "context": "std::map<std::string, std::vector<int>>"
+      },
+      {
+        "name": "std",
+        "line": 142,
+        "context": "std::stack<int>"
+      },
+      {
+        "name": "std",
+        "line": 153,
+        "context": "std::priority_queue<int>"
+      },
+      {
+        "name": "std",
+        "line": 173,
+        "context": "std::sort"
+      },
+      {
+        "name": "std",
+        "line": 180,
+        "context": "std::vector<std::unique_ptr<Shape>>"
+      },
+      {
+        "name": "std",
+        "line": 184,
+        "context": "std::make_unique<Circle>"
+      }
+    ],
+    "templates": [
+      {
+        "type": "template_instantiation",
+        "template_name": "std::vector",
+        "arguments": ["int"],
+        "line": 99
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::map",
+        "arguments": ["std::string", "int"],
+        "line": 107
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::set",
+        "arguments": ["Point"],
+        "line": 118
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::map",
+        "arguments": ["std::string", "std::vector<int>"],
+        "line": 129
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::vector",
+        "arguments": ["int"],
+        "line": 130
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::stack",
+        "arguments": ["int"],
+        "line": 142
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::priority_queue",
+        "arguments": ["int"],
+        "line": 153
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::vector",
+        "arguments": ["int"],
+        "line": 164
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::vector",
+        "arguments": ["std::unique_ptr<Shape>"],
+        "line": 180
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::unique_ptr",
+        "arguments": ["Circle"],
+        "line": 184
+      },
+      {
+        "type": "template_instantiation",
+        "template_name": "std::unique_ptr",
+        "arguments": ["Rectangle"],
+        "line": 185
+      }
+    ],
+    "smart_pointers": [
+      {
+        "type": "std::unique_ptr",
+        "pointed_type": "Shape",
+        "container": "std::vector",
+        "line": 180
+      },
+      {
+        "type": "std::unique_ptr",
+        "pointed_type": "Circle",
+        "creation": "std::make_unique",
+        "line": 184
+      },
+      {
+        "type": "std::unique_ptr",
+        "pointed_type": "Rectangle",
+        "creation": "std::make_unique",
+        "line": 185
+      }
+    ]
+  }
+}

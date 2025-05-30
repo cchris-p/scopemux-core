@@ -1,0 +1,634 @@
+{
+  "language": "C",
+  "ast": {
+    "type": "translation_unit",
+    "functions": [
+      {
+        "name": "add",
+        "type": "function_definition",
+        "return_type": "int",
+        "parameters": [
+          {"name": "a", "type": "int"},
+          {"name": "b", "type": "int"}
+        ],
+        "body_range": {
+          "start_line": 21,
+          "start_column": 0,
+          "end_line": 23,
+          "end_column": 1
+        },
+        "docstring": "Simple function to add two integers\nParam a First integer\nParam b Second integer\nReturn Sum of a and b"
+      },
+      {
+        "name": "subtract",
+        "type": "function_definition",
+        "return_type": "int",
+        "parameters": [
+          {"name": "a", "type": "int"},
+          {"name": "b", "type": "int"}
+        ],
+        "body_range": {
+          "start_line": 31,
+          "start_column": 0,
+          "end_line": 33,
+          "end_column": 1
+        },
+        "docstring": "Simple function to subtract two integers\nParam a First integer\nParam b Second integer\nReturn Difference between a and b"
+      },
+      {
+        "name": "perform_operation",
+        "type": "function_definition",
+        "return_type": "int",
+        "parameters": [
+          {"name": "a", "type": "int"},
+          {"name": "b", "type": "int"},
+          {"name": "operation", "type": "int (*)(int, int)"}
+        ],
+        "body_range": {
+          "start_line": 42,
+          "start_column": 0,
+          "end_line": 44,
+          "end_column": 1
+        },
+        "docstring": "Function that takes a function pointer as an argument\nParam a First integer\nParam b Second integer\nParam operation Function pointer to the operation to perform\nReturn Result of the operation"
+      },
+      {
+        "name": "main",
+        "type": "function_definition",
+        "return_type": "int",
+        "parameters": [],
+        "body_range": {
+          "start_line": 49,
+          "start_column": 0,
+          "end_line": 147,
+          "end_column": 1
+        },
+        "docstring": "Program entry point\nReturn Exit status code"
+      }
+    ],
+    "includes": [
+      {
+        "path": "stdio.h",
+        "system": true,
+        "line": 13
+      },
+      {
+        "path": "stdlib.h",
+        "system": true,
+        "line": 14
+      },
+      {
+        "path": "string.h",
+        "system": true,
+        "line": 15
+      }
+    ],
+    "comments": [
+      {
+        "type": "block_comment",
+        "text": "This example shows:\n- Array declarations and initialization\n- Pointer declarations and usage\n- Pointer arithmetic\n- Arrays of pointers\n- Pointers to arrays\n- Function pointers\n- Dynamic memory allocation",
+        "range": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 11,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "block_comment",
+        "text": "Simple function to add two integers\nParam a First integer\nParam b Second integer\nReturn Sum of a and b",
+        "range": {
+          "start_line": 17,
+          "start_column": 0,
+          "end_line": 22,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "block_comment",
+        "text": "Simple function to subtract two integers\nParam a First integer\nParam b Second integer\nReturn Difference between a and b",
+        "range": {
+          "start_line": 25,
+          "start_column": 0,
+          "end_line": 30,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "block_comment",
+        "text": "Function that takes a function pointer as an argument\nParam a First integer\nParam b Second integer\nParam operation Function pointer to the operation to perform\nReturn Result of the operation",
+        "range": {
+          "start_line": 35,
+          "start_column": 0,
+          "end_line": 41,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "block_comment",
+        "text": "Program entry point\nReturn Exit status code",
+        "range": {
+          "start_line": 46,
+          "start_column": 0,
+          "end_line": 49,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "line_comment",
+        "text": "1. Basic array declaration and initialization",
+        "line": 50
+      },
+      {
+        "type": "line_comment",
+        "text": "2. Basic pointer declaration and usage",
+        "line": 56
+      },
+      {
+        "type": "line_comment",
+        "text": "Point to the first element",
+        "line": 56
+      },
+      {
+        "type": "line_comment",
+        "text": "3. Pointer arithmetic",
+        "line": 61
+      },
+      {
+        "type": "line_comment",
+        "text": "4. Pointers and arrays are closely related",
+        "line": 67
+      },
+      {
+        "type": "line_comment",
+        "text": "5. Array of pointers",
+        "line": 72
+      },
+      {
+        "type": "line_comment",
+        "text": "6. Pointer to an array",
+        "line": 79
+      },
+      {
+        "type": "line_comment",
+        "text": "Pointer to an array of 5 integers",
+        "line": 79
+      },
+      {
+        "type": "line_comment",
+        "text": "7. 2D arrays and pointers",
+        "line": 86
+      },
+      {
+        "type": "line_comment",
+        "text": "8. Dynamic memory allocation with pointers",
+        "line": 100
+      },
+      {
+        "type": "line_comment",
+        "text": "Don't forget to free!",
+        "line": 108
+      },
+      {
+        "type": "line_comment",
+        "text": "9. Function pointers",
+        "line": 113
+      },
+      {
+        "type": "line_comment",
+        "text": "10. Passing function pointers to functions",
+        "line": 123
+      },
+      {
+        "type": "line_comment",
+        "text": "11. Char arrays and pointers (strings)",
+        "line": 128
+      },
+      {
+        "type": "line_comment",
+        "text": "Note: string literals should be const char* in modern C",
+        "line": 129
+      },
+      {
+        "type": "line_comment",
+        "text": "12. Array of strings",
+        "line": 135
+      }
+    ],
+    "variable_declarations": [
+      {
+        "name": "numbers",
+        "type": "int[5]",
+        "line": 50,
+        "initialized": true
+      },
+      {
+        "name": "i",
+        "type": "int",
+        "line": 52,
+        "initialized": true
+      },
+      {
+        "name": "p_num",
+        "type": "int*",
+        "line": 56,
+        "initialized": true
+      },
+      {
+        "name": "a",
+        "type": "int",
+        "line": 72,
+        "initialized": true
+      },
+      {
+        "name": "b",
+        "type": "int",
+        "line": 72,
+        "initialized": true
+      },
+      {
+        "name": "c",
+        "type": "int",
+        "line": 72,
+        "initialized": true
+      },
+      {
+        "name": "ptr_array",
+        "type": "int*[3]",
+        "line": 73,
+        "initialized": true
+      },
+      {
+        "name": "arr_ptr",
+        "type": "int(*)[5]",
+        "line": 79,
+        "initialized": true
+      },
+      {
+        "name": "matrix",
+        "type": "int[3][4]",
+        "line": 86,
+        "initialized": true
+      },
+      {
+        "name": "dynamic_array",
+        "type": "int*",
+        "line": 100,
+        "initialized": true
+      },
+      {
+        "name": "operation",
+        "type": "int(*)(int, int)",
+        "line": 113,
+        "initialized": false
+      },
+      {
+        "name": "str1",
+        "type": "char[]",
+        "line": 128,
+        "initialized": true
+      },
+      {
+        "name": "str2",
+        "type": "char*",
+        "line": 129,
+        "initialized": true
+      },
+      {
+        "name": "fruits",
+        "type": "char*[]",
+        "line": 135,
+        "initialized": true
+      }
+    ],
+    "function_calls": [
+      {
+        "name": "printf",
+        "arguments": [
+          "\"1. Basic array:\\n\""
+        ],
+        "line": 51
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   numbers[%d] = %d\\n\"",
+          "i",
+          "numbers[i]"
+        ],
+        "line": 53
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n2. Basic pointer usage:\\n\""
+        ],
+        "line": 57
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   *p_num = %d (value at address %p)\\n\"",
+          "*p_num",
+          "(void*)p_num"
+        ],
+        "line": 58
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n3. Pointer arithmetic:\\n\""
+        ],
+        "line": 62
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   *(p_num + %d) = %d\\n\"",
+          "i",
+          "*(p_num + i)"
+        ],
+        "line": 64
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n4. Array name as pointer:\\n\""
+        ],
+        "line": 68
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   numbers[2] = %d\\n\"",
+          "numbers[2]"
+        ],
+        "line": 69
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   *(numbers + 2) = %d\\n\"",
+          "*(numbers + 2)"
+        ],
+        "line": 70
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n5. Array of pointers:\\n\""
+        ],
+        "line": 75
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   *ptr_array[%d] = %d\\n\"",
+          "i",
+          "*ptr_array[i]"
+        ],
+        "line": 77
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n6. Pointer to an array:\\n\""
+        ],
+        "line": 81
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   (*arr_ptr)[%d] = %d\\n\"",
+          "i",
+          "(*arr_ptr)[i]"
+        ],
+        "line": 83
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n7. 2D array access:\\n\""
+        ],
+        "line": 93
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   matrix[%d][%d] = %d\\n\"",
+          "i",
+          "j",
+          "matrix[i][j]"
+        ],
+        "line": 96
+      },
+      {
+        "name": "malloc",
+        "arguments": [
+          "5 * sizeof(int)"
+        ],
+        "line": 100
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n8. Dynamic array:\\n\""
+        ],
+        "line": 103
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   dynamic_array[%d] = %d\\n\"",
+          "i",
+          "dynamic_array[i]"
+        ],
+        "line": 106
+      },
+      {
+        "name": "free",
+        "arguments": [
+          "dynamic_array"
+        ],
+        "line": 109
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n9. Function pointers:\\n\""
+        ],
+        "line": 115
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   add(5, 3) = %d\\n\"",
+          "operation(5, 3)"
+        ],
+        "line": 118
+      },
+      {
+        "name": "operation",
+        "arguments": [
+          "5",
+          "3"
+        ],
+        "line": 118
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   subtract(5, 3) = %d\\n\"",
+          "operation(5, 3)"
+        ],
+        "line": 121
+      },
+      {
+        "name": "operation",
+        "arguments": [
+          "5",
+          "3"
+        ],
+        "line": 121
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n10. Function pointer as argument:\\n\""
+        ],
+        "line": 124
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   perform_operation(10, 5, add) = %d\\n\"",
+          "perform_operation(10, 5, add)"
+        ],
+        "line": 125
+      },
+      {
+        "name": "perform_operation",
+        "arguments": [
+          "10",
+          "5",
+          "add"
+        ],
+        "line": 125
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   perform_operation(10, 5, subtract) = %d\\n\"",
+          "perform_operation(10, 5, subtract)"
+        ],
+        "line": 126
+      },
+      {
+        "name": "perform_operation",
+        "arguments": [
+          "10",
+          "5",
+          "subtract"
+        ],
+        "line": 126
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n11. Strings (char arrays and pointers):\\n\""
+        ],
+        "line": 131
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   str1 = %s\\n\"",
+          "str1"
+        ],
+        "line": 132
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   str2 = %s\\n\"",
+          "str2"
+        ],
+        "line": 133
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"\\n12. Array of strings:\\n\""
+        ],
+        "line": 137
+      },
+      {
+        "name": "printf",
+        "arguments": [
+          "\"   fruits[%d] = %s\\n\"",
+          "i",
+          "fruits[i]"
+        ],
+        "line": 139
+      }
+    ],
+    "pointer_usage": [
+      {
+        "type": "declaration",
+        "name": "p_num",
+        "line": 56,
+        "pointed_type": "int"
+      },
+      {
+        "type": "dereference",
+        "expression": "*p_num",
+        "line": 58
+      },
+      {
+        "type": "dereference",
+        "expression": "*(p_num + i)",
+        "line": 64
+      },
+      {
+        "type": "array_of_pointers",
+        "name": "ptr_array",
+        "line": 73,
+        "pointed_type": "int"
+      },
+      {
+        "type": "dereference",
+        "expression": "*ptr_array[i]",
+        "line": 77
+      },
+      {
+        "type": "pointer_to_array",
+        "name": "arr_ptr",
+        "line": 79,
+        "pointed_type": "int[5]"
+      },
+      {
+        "type": "dereference",
+        "expression": "(*arr_ptr)[i]",
+        "line": 83
+      },
+      {
+        "type": "dynamic_allocation",
+        "name": "dynamic_array",
+        "line": 100,
+        "size": "5 * sizeof(int)"
+      },
+      {
+        "type": "function_pointer",
+        "name": "operation",
+        "line": 113,
+        "signature": "int(*)(int, int)"
+      },
+      {
+        "type": "function_pointer_parameter",
+        "name": "operation",
+        "line": 41,
+        "signature": "int(*)(int, int)"
+      }
+    ]
+  }
+}

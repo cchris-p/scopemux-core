@@ -1,0 +1,67 @@
+{
+  "language": "C++",
+  "ast": {
+    "type": "translation_unit",
+    "functions": [
+      {
+        "name": "main",
+        "type": "function_definition",
+        "return_type": "int",
+        "parameters": [],
+        "body_range": {
+          "start_line": 16,
+          "start_column": 0,
+          "end_line": 20,
+          "end_column": 1
+        },
+        "docstring": "Program entry point\nReturn Exit status code"
+      }
+    ],
+    "includes": [
+      {
+        "path": "iostream",
+        "system": true,
+        "line": 11
+      }
+    ],
+    "comments": [
+      {
+        "type": "block_comment",
+        "text": "This example demonstrates basic C++ syntax including:\n- Comments\n- Include directives\n- Function definitions\n- Output streaming\n- Namespaces",
+        "range": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 9,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "block_comment",
+        "text": "Program entry point\nReturn Exit status code",
+        "range": {
+          "start_line": 13,
+          "start_column": 0,
+          "end_line": 16,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "line_comment",
+        "text": "Using the iostream library to print to standard output",
+        "line": 17
+      }
+    ],
+    "namespace_references": [
+      {
+        "name": "std",
+        "line": 18,
+        "context": "std::cout"
+      },
+      {
+        "name": "std",
+        "line": 18,
+        "context": "std::endl"
+      }
+    ]
+  }
+}

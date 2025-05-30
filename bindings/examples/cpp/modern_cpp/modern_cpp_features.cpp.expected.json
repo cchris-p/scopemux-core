@@ -1,0 +1,647 @@
+{
+  "language": "C++",
+  "ast": {
+    "type": "translation_unit",
+    "functions": [
+      {
+        "name": "demonstrate_auto",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 26,
+          "start_column": 0,
+          "end_line": 51,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate auto type deduction"
+      },
+      {
+        "name": "demonstrate_range_based_for",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 56,
+          "start_column": 0,
+          "end_line": 94,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate range-based for loops"
+      },
+      {
+        "name": "demonstrate_lambdas",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 99,
+          "start_column": 0,
+          "end_line": 153,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate lambda expressions"
+      },
+      {
+        "name": "demonstrate_smart_pointers",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 158,
+          "start_column": 0,
+          "end_line": 242,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate smart pointers"
+      },
+      {
+        "name": "process_lvalue",
+        "type": "function_definition",
+        "parameters": [
+          {"name": "obj", "type": "MovableObject&"}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 343,
+          "start_column": 0,
+          "end_line": 346,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "process_rvalue",
+        "type": "function_definition",
+        "parameters": [
+          {"name": "obj", "type": "MovableObject&&"}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 350,
+          "start_column": 0,
+          "end_line": 353,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "forward_object",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "obj", "type": "T&&"}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 358,
+          "start_column": 0,
+          "end_line": 361,
+          "end_column": 1
+        },
+        "docstring": "Perfect forwarding with universal reference"
+      },
+      {
+        "name": "demonstrate_move_semantics",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 363,
+          "start_column": 0,
+          "end_line": 400,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "demonstrate_optional_variant_any",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 405,
+          "start_column": 0,
+          "end_line": 544,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate std::optional, std::variant, and std::any"
+      },
+      {
+        "name": "demonstrate_structured_bindings",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 549,
+          "start_column": 0,
+          "end_line": 590,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate structured bindings (C++17)"
+      },
+      {
+        "name": "check_type",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "value", "type": "const T&"}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 595,
+          "start_column": 0,
+          "end_line": 614,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate if constexpr and fold expressions (C++17)"
+      },
+      {
+        "name": "sum",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "Args...", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "args", "type": "Args..."}
+        ],
+        "return_type": "auto",
+        "body_range": {
+          "start_line": 618,
+          "start_column": 0,
+          "end_line": 620,
+          "end_column": 1
+        },
+        "docstring": "Fold expressions with various operators"
+      },
+      {
+        "name": "print_all",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "Args...", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "args", "type": "Args..."}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 623,
+          "start_column": 0,
+          "end_line": 625,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "is_any_equal",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "Args...", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "first", "type": "T"},
+          {"name": "args", "type": "Args..."}
+        ],
+        "return_type": "bool",
+        "body_range": {
+          "start_line": 628,
+          "start_column": 0,
+          "end_line": 630,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "are_all_equal",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "Args...", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "first", "type": "T"},
+          {"name": "args", "type": "Args..."}
+        ],
+        "return_type": "bool",
+        "body_range": {
+          "start_line": 633,
+          "start_column": 0,
+          "end_line": 635,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "demonstrate_if_constexpr_and_fold",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 637,
+          "start_column": 0,
+          "end_line": 665,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "main",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "int",
+        "body_range": {
+          "start_line": 667,
+          "start_column": 0,
+          "end_line": 678,
+          "end_column": 1
+        }
+      }
+    ],
+    "classes": [
+      {
+        "name": "MovableObject",
+        "type": "class_definition",
+        "member_variables": [
+          {"name": "data", "type": "int*", "access": "private"},
+          {"name": "size", "type": "size_t", "access": "private"}
+        ],
+        "member_functions": [
+          {
+            "name": "MovableObject",
+            "type": "constructor",
+            "parameters": [
+              {"name": "size", "type": "size_t"}
+            ],
+            "body_range": {
+              "start_line": 253,
+              "end_line": 259
+            },
+            "access": "public"
+          },
+          {
+            "name": "~MovableObject",
+            "type": "destructor",
+            "parameters": [],
+            "body_range": {
+              "start_line": 262,
+              "end_line": 265
+            },
+            "access": "public"
+          },
+          {
+            "name": "MovableObject",
+            "type": "copy_constructor",
+            "parameters": [
+              {"name": "other", "type": "const MovableObject&"}
+            ],
+            "body_range": {
+              "start_line": 268,
+              "end_line": 274
+            },
+            "access": "public"
+          },
+          {
+            "name": "MovableObject",
+            "type": "move_constructor",
+            "parameters": [
+              {"name": "other", "type": "MovableObject&&"}
+            ],
+            "body_range": {
+              "start_line": 277,
+              "end_line": 281
+            },
+            "access": "public"
+          },
+          {
+            "name": "operator=",
+            "type": "copy_assignment",
+            "parameters": [
+              {"name": "other", "type": "const MovableObject&"}
+            ],
+            "return_type": "MovableObject&",
+            "body_range": {
+              "start_line": 284,
+              "end_line": 295
+            },
+            "access": "public"
+          },
+          {
+            "name": "operator=",
+            "type": "move_assignment",
+            "parameters": [
+              {"name": "other", "type": "MovableObject&&"}
+            ],
+            "return_type": "MovableObject&",
+            "body_range": {
+              "start_line": 298,
+              "end_line": 308
+            },
+            "access": "public"
+          },
+          {
+            "name": "get_size",
+            "type": "method",
+            "parameters": [],
+            "return_type": "size_t",
+            "body_range": {
+              "start_line": 311,
+              "end_line": 311
+            },
+            "access": "public",
+            "is_const": true
+          },
+          {
+            "name": "print",
+            "type": "method",
+            "parameters": [],
+            "return_type": "void",
+            "body_range": {
+              "start_line": 313,
+              "end_line": 325
+            },
+            "access": "public",
+            "is_const": true
+          }
+        ],
+        "range": {
+          "start_line": 247,
+          "start_column": 0,
+          "end_line": 326,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate move semantics and perfect forwarding"
+      },
+      {
+        "name": "Point",
+        "type": "struct_definition",
+        "member_variables": [
+          {"name": "x", "type": "int", "access": "public"},
+          {"name": "y", "type": "int", "access": "public"},
+          {"name": "z", "type": "int", "access": "public"}
+        ],
+        "range": {
+          "start_line": 571,
+          "start_column": 4,
+          "end_line": 575,
+          "end_column": 5
+        }
+      }
+    ],
+    "includes": [
+      {"name": "iostream", "system": true, "line": 11},
+      {"name": "vector", "system": true, "line": 12},
+      {"name": "string", "system": true, "line": 13},
+      {"name": "algorithm", "system": true, "line": 14},
+      {"name": "memory", "system": true, "line": 15},
+      {"name": "functional", "system": true, "line": 16},
+      {"name": "map", "system": true, "line": 17},
+      {"name": "tuple", "system": true, "line": 18},
+      {"name": "optional", "system": true, "line": 19},
+      {"name": "variant", "system": true, "line": 20},
+      {"name": "any", "system": true, "line": 21},
+      {"name": "type_traits", "system": true, "line": 22},
+      {"name": "numeric", "system": true, "line": 23}
+    ],
+    "docstrings": [
+      {
+        "type": "file_docstring",
+        "text": "Demonstration of Modern C++ Features\n\nThis example covers:\n- auto type deduction\n- Range-based for loops\n- Lambda expressions\n- Smart pointers\n- Move semantics\n- std::optional, std::variant, std::any\n- Structured bindings\n- if constexpr\n- fold expressions",
+        "range": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 10,
+          "end_column": 3
+        }
+      }
+    ],
+    "lambda_expressions": [
+      {
+        "line": 42,
+        "captures": [],
+        "parameters": ["auto a", "auto b"],
+        "body": "{ return a + b; }"
+      },
+      {
+        "line": 47,
+        "captures": [],
+        "parameters": ["auto a", "auto b"],
+        "body": "-> decltype(a * b) { return a * b; }"
+      },
+      {
+        "line": 102,
+        "captures": [],
+        "parameters": [],
+        "body": "{ std::cout << \"Hello, World!\" << std::endl; }"
+      },
+      {
+        "line": 107,
+        "captures": [],
+        "parameters": ["int a", "int b"],
+        "body": "{ return a + b; }"
+      },
+      {
+        "line": 112,
+        "captures": ["x"],
+        "parameters": ["int a"],
+        "body": "{ return a + x; }"
+      },
+      {
+        "line": 116,
+        "captures": ["&x"],
+        "parameters": [],
+        "body": "{ x *= 2; }"
+      },
+      {
+        "line": 121,
+        "captures": ["="],
+        "parameters": [],
+        "body": "{ return x + y; }"
+      },
+      {
+        "line": 125,
+        "captures": ["&"],
+        "parameters": [],
+        "body": "{ x += 5; y += 10; }"
+      },
+      {
+        "line": 130,
+        "captures": ["count = 0"],
+        "parameters": [],
+        "body": "mutable { return ++count; }"
+      },
+      {
+        "line": 137,
+        "captures": [],
+        "parameters": ["int a", "int b"],
+        "body": "{ return a > b; }"
+      },
+      {
+        "line": 145,
+        "captures": [],
+        "parameters": ["auto a", "auto b"],
+        "body": "{ return a + b; }"
+      },
+      {
+        "line": 179,
+        "captures": [],
+        "parameters": ["int* p"],
+        "body": "{\n            std::cout << \"Custom deleter called for value: \" << *p << std::endl;\n            delete p;\n        }"
+      },
+      {
+        "line": 429,
+        "captures": [],
+        "parameters": ["const std::vector<int>& v", "int val"],
+        "body": "-> std::optional<size_t> {\n        for (size_t i = 0; i < v.size(); ++i) {\n            if (v[i] == val) return i;\n        }\n        return std::nullopt;\n    }"
+      },
+      {
+        "line": 497,
+        "captures": [],
+        "parameters": ["auto&& arg"],
+        "body": "{\n        using T = std::decay_t<decltype(arg)>;\n        if constexpr (std::is_same_v<T, int>)\n            std::cout << \"int: \" << arg << std::endl;\n        else if constexpr (std::is_same_v<T, double>)\n            std::cout << \"double: \" << arg << std::endl;\n        else if constexpr (std::is_same_v<T, std::string>)\n            std::cout << \"string: \" << arg << std::endl;\n    }"
+      }
+    ],
+    "modern_cpp_features": [
+      {
+        "feature": "auto",
+        "examples": [
+          {"line": 29, "code": "auto i = 42;"},
+          {"line": 30, "code": "auto d = 3.14;"},
+          {"line": 31, "code": "auto s = \"Hello\";"},
+          {"line": 32, "code": "auto v = std::vector<int>{1, 2, 3};"},
+          {"line": 38, "code": "const auto& ref = i;"}
+        ]
+      },
+      {
+        "feature": "range_based_for",
+        "examples": [
+          {"line": 63, "code": "for (const auto& num : nums) {"},
+          {"line": 70, "code": "for (auto elem : arr) {"},
+          {"line": 77, "code": "for (auto c : {'a', 'b', 'c', 'd', 'e'}) {"},
+          {"line": 84, "code": "for (auto ch : text) {"},
+          {"line": 92, "code": "for (const auto& [name, age] : ages) {"}
+        ]
+      },
+      {
+        "feature": "lambda_expressions",
+        "examples": [
+          {"line": 102, "code": "auto greet = []() { std::cout << \"Hello, World!\" << std::endl; };"},
+          {"line": 107, "code": "auto add = [](int a, int b) { return a + b; };"},
+          {"line": 112, "code": "auto add_x = [x](int a) { return a + x; };"},
+          {"line": 130, "code": "auto counter = [count = 0]() mutable { return ++count; };"},
+          {"line": 145, "code": "auto generic_add = [](auto a, auto b) { return a + b; };"}
+        ]
+      },
+      {
+        "feature": "smart_pointers",
+        "examples": [
+          {"line": 163, "code": "std::unique_ptr<int> ptr1 = std::make_unique<int>(42);"},
+          {"line": 171, "code": "std::unique_ptr<int> ptr2 = std::move(ptr1);"},
+          {"line": 180, "code": "std::unique_ptr<int, decltype(custom_deleter)> ptr3(new int(100), custom_deleter);"},
+          {"line": 190, "code": "std::shared_ptr<int> ptr1 = std::make_shared<int>(42);"},
+          {"line": 220, "code": "std::weak_ptr<int> weak = shared;"}
+        ]
+      },
+      {
+        "feature": "move_semantics",
+        "examples": [
+          {"line": 277, "code": "MovableObject(MovableObject&& other) noexcept : data(other.data), size(other.size) {"},
+          {"line": 298, "code": "MovableObject& operator=(MovableObject&& other) noexcept {"},
+          {"line": 380, "code": "MovableObject obj3 = std::move(obj1);"},
+          {"line": 358, "code": "void forward_object(T&& obj) {"},
+          {"line": 360, "code": "process_rvalue(std::forward<T>(obj));"}
+        ]
+      },
+      {
+        "feature": "std_optional",
+        "examples": [
+          {"line": 411, "code": "std::optional<int> op1;"},
+          {"line": 412, "code": "std::optional<int> op2 = 42;"},
+          {"line": 428, "code": "auto find_in_vector = [](const std::vector<int>& v, int val) -> std::optional<size_t> {"}
+        ]
+      },
+      {
+        "feature": "std_variant",
+        "examples": [
+          {"line": 450, "code": "std::variant<int, double, std::string> var1 = 10;"},
+          {"line": 497, "code": "auto visitor = [](auto&& arg) {"},
+          {"line": 509, "code": "std::visit(visitor, var1);"}
+        ]
+      },
+      {
+        "feature": "std_any",
+        "examples": [
+          {"line": 516, "code": "std::any a1 = 42;"},
+          {"line": 525, "code": "std::cout << \"a1 value: \" << std::any_cast<int>(a1) << std::endl;"},
+          {"line": 529, "code": "if (int* i = std::any_cast<int>(&a1)) {"}
+        ]
+      },
+      {
+        "feature": "structured_bindings",
+        "examples": [
+          {"line": 553, "code": "auto [a, b, c] = arr;"},
+          {"line": 557, "code": "auto [id, value, name] = tuple_data;"},
+          {"line": 561, "code": "auto [first, second] = pair_data;"},
+          {"line": 577, "code": "auto [x, y, z] = point;"},
+          {"line": 588, "code": "for (const auto& [name, age] : ages) {"}
+        ]
+      },
+      {
+        "feature": "if_constexpr",
+        "examples": [
+          {"line": 596, "code": "if constexpr (std::is_integral_v<T>) {"},
+          {"line": 598, "code": "if constexpr (std::is_signed_v<T>) {"},
+          {"line": 603, "code": "if constexpr (std::is_floating_point_v<T>) {"}
+        ]
+      },
+      {
+        "feature": "fold_expressions",
+        "examples": [
+          {"line": 619, "code": "return (args + ...);"},
+          {"line": 624, "code": "(std::cout << ... << args) << std::endl;"},
+          {"line": 629, "code": "return (... || (first == args));"},
+          {"line": 634, "code": "return (... && (first == args));"}
+        ]
+      }
+    ],
+    "function_calls": [
+      {
+        "name": "demonstrate_auto",
+        "arguments": [],
+        "line": 670
+      },
+      {
+        "name": "demonstrate_range_based_for",
+        "arguments": [],
+        "line": 671
+      },
+      {
+        "name": "demonstrate_lambdas",
+        "arguments": [],
+        "line": 672
+      },
+      {
+        "name": "demonstrate_smart_pointers",
+        "arguments": [],
+        "line": 673
+      },
+      {
+        "name": "demonstrate_move_semantics",
+        "arguments": [],
+        "line": 674
+      },
+      {
+        "name": "demonstrate_optional_variant_any",
+        "arguments": [],
+        "line": 675
+      },
+      {
+        "name": "demonstrate_structured_bindings",
+        "arguments": [],
+        "line": 676
+      },
+      {
+        "name": "demonstrate_if_constexpr_and_fold",
+        "arguments": [],
+        "line": 677
+      }
+    ]
+  }
+}

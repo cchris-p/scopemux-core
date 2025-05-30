@@ -1,0 +1,988 @@
+{
+  "language": "C++",
+  "ast": {
+    "type": "translation_unit",
+    "functions": [
+      {
+        "name": "max_value",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "return_type": "T",
+        "parameters": [
+          {"name": "a", "type": "T"},
+          {"name": "b", "type": "T"}
+        ],
+        "body_range": {
+          "start_line": 19,
+          "start_column": 0,
+          "end_line": 21,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "add",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "U", "kind": "typename"}
+        ],
+        "return_type": "decltype(a + b)",
+        "parameters": [
+          {"name": "a", "type": "T"},
+          {"name": "b", "type": "U"}
+        ],
+        "body_range": {
+          "start_line": 25,
+          "start_column": 0,
+          "end_line": 27,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "sum",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "return_type": "T",
+        "parameters": [
+          {"name": "value", "type": "T"}
+        ],
+        "body_range": {
+          "start_line": 70,
+          "start_column": 0,
+          "end_line": 72,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "sum",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "Args", "kind": "typename...", "variadic": true}
+        ],
+        "return_type": "T",
+        "parameters": [
+          {"name": "first", "type": "T"},
+          {"name": "args", "type": "Args...", "variadic": true}
+        ],
+        "body_range": {
+          "start_line": 75,
+          "start_column": 0,
+          "end_line": 77,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "is_even",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "return_type": "typename std::enable_if<std::is_integral<T>::value, bool>::type",
+        "parameters": [
+          {"name": "value", "type": "T"}
+        ],
+        "body_range": {
+          "start_line": 81,
+          "start_column": 0,
+          "end_line": 83,
+          "end_column": 1
+        },
+        "sfinae": true
+      },
+      {
+        "name": "is_even",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "return_type": "typename std::enable_if<std::is_floating_point<T>::value, bool>::type",
+        "parameters": [
+          {"name": "value", "type": "T"}
+        ],
+        "body_range": {
+          "start_line": 87,
+          "start_column": 0,
+          "end_line": 89,
+          "end_column": 1
+        },
+        "sfinae": true
+      },
+      {
+        "name": "main",
+        "type": "function_definition",
+        "return_type": "int",
+        "parameters": [],
+        "body_range": {
+          "start_line": 138,
+          "start_column": 0,
+          "end_line": 187,
+          "end_column": 1
+        },
+        "docstring": "Program entry point\nReturn Exit status code"
+      }
+    ],
+    "classes": [
+      {
+        "name": "Container",
+        "type": "class_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "methods": [
+          {
+            "name": "Container",
+            "type": "constructor",
+            "parameters": [
+              {"name": "value", "type": "T"}
+            ],
+            "line": 34
+          },
+          {
+            "name": "get",
+            "type": "method",
+            "return_type": "T",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 36
+          },
+          {
+            "name": "set",
+            "type": "method",
+            "return_type": "void",
+            "parameters": [
+              {"name": "value", "type": "T"}
+            ],
+            "line": 38
+          },
+          {
+            "name": "convert",
+            "type": "method_template",
+            "template_parameters": [
+              {"name": "U", "kind": "typename"}
+            ],
+            "return_type": "U",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 42
+          }
+        ],
+        "members": [
+          {"name": "element", "type": "T", "access": "private", "line": 31}
+        ],
+        "range": {
+          "start_line": 30,
+          "start_column": 0,
+          "end_line": 46,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "Container<std::string>",
+        "type": "class_template_specialization",
+        "methods": [
+          {
+            "name": "Container",
+            "type": "constructor",
+            "parameters": [
+              {"name": "value", "type": "const std::string&"}
+            ],
+            "line": 54
+          },
+          {
+            "name": "get",
+            "type": "method",
+            "return_type": "std::string",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 56
+          },
+          {
+            "name": "set",
+            "type": "method",
+            "return_type": "void",
+            "parameters": [
+              {"name": "value", "type": "const std::string&"}
+            ],
+            "line": 58
+          },
+          {
+            "name": "length",
+            "type": "method",
+            "return_type": "int",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 61
+          },
+          {
+            "name": "empty",
+            "type": "method",
+            "return_type": "bool",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 63
+          }
+        ],
+        "members": [
+          {"name": "element", "type": "std::string", "access": "private", "line": 51}
+        ],
+        "range": {
+          "start_line": 49,
+          "start_column": 0,
+          "end_line": 65,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "FixedArray",
+        "type": "class_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "Size", "kind": "int", "non_type": true}
+        ],
+        "methods": [
+          {
+            "name": "FixedArray",
+            "type": "constructor",
+            "parameters": [],
+            "line": 96
+          },
+          {
+            "name": "operator[]",
+            "type": "operator_overload",
+            "return_type": "T&",
+            "parameters": [
+              {"name": "index", "type": "int"}
+            ],
+            "line": 102
+          },
+          {
+            "name": "operator[]",
+            "type": "operator_overload",
+            "return_type": "const T&",
+            "parameters": [
+              {"name": "index", "type": "int"}
+            ],
+            "qualifiers": ["const"],
+            "line": 106
+          },
+          {
+            "name": "size",
+            "type": "method",
+            "return_type": "int",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 110
+          }
+        ],
+        "members": [
+          {"name": "data", "type": "T[Size]", "access": "private", "line": 94}
+        ],
+        "range": {
+          "start_line": 92,
+          "start_column": 0,
+          "end_line": 114,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "GenericContainer",
+        "type": "class_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "Container", "kind": "template <typename...> class", "template_template": true}
+        ],
+        "methods": [
+          {
+            "name": "add",
+            "type": "method",
+            "return_type": "void",
+            "parameters": [
+              {"name": "item", "type": "const T&"}
+            ],
+            "line": 121
+          },
+          {
+            "name": "size",
+            "type": "method",
+            "return_type": "typename Container<T>::size_type",
+            "parameters": [],
+            "qualifiers": ["const"],
+            "line": 125
+          },
+          {
+            "name": "operator[]",
+            "type": "operator_overload",
+            "return_type": "T&",
+            "parameters": [
+              {"name": "index", "type": "size_t"}
+            ],
+            "line": 129
+          }
+        ],
+        "members": [
+          {"name": "data", "type": "Container<T>", "access": "private", "line": 118}
+        ],
+        "range": {
+          "start_line": 117,
+          "start_column": 0,
+          "end_line": 133,
+          "end_column": 1
+        }
+      }
+    ],
+    "includes": [
+      {
+        "path": "iostream",
+        "system": true,
+        "line": 12
+      },
+      {
+        "path": "vector",
+        "system": true,
+        "line": 13
+      },
+      {
+        "path": "string",
+        "system": true,
+        "line": 14
+      },
+      {
+        "path": "type_traits",
+        "system": true,
+        "line": 15
+      },
+      {
+        "path": "memory",
+        "system": true,
+        "line": 16
+      }
+    ],
+    "comments": [
+      {
+        "type": "block_comment",
+        "text": "This example shows:\n- Function templates\n- Class templates\n- Template specialization\n- Variadic templates\n- SFINAE (Substitution Failure Is Not An Error)\n- Concepts (C++20)",
+        "range": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 10,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "line_comment",
+        "text": "Simple function template",
+        "line": 18
+      },
+      {
+        "type": "line_comment",
+        "text": "Function template with multiple type parameters",
+        "line": 24
+      },
+      {
+        "type": "line_comment",
+        "text": "Class template",
+        "line": 29
+      },
+      {
+        "type": "line_comment",
+        "text": "Member function template",
+        "line": 40
+      },
+      {
+        "type": "line_comment",
+        "text": "Template specialization for std::string",
+        "line": 48
+      },
+      {
+        "type": "line_comment",
+        "text": "Additional methods specific to string specialization",
+        "line": 60
+      },
+      {
+        "type": "line_comment",
+        "text": "Variadic templates",
+        "line": 67
+      },
+      {
+        "type": "line_comment",
+        "text": "SFINAE example: enable_if",
+        "line": 79
+      },
+      {
+        "type": "line_comment",
+        "text": "Template with non-type parameter",
+        "line": 91
+      },
+      {
+        "type": "line_comment",
+        "text": "Class template with template template parameter",
+        "line": 116
+      },
+      {
+        "type": "block_comment",
+        "text": "Program entry point\nReturn Exit status code",
+        "range": {
+          "start_line": 135,
+          "start_column": 0,
+          "end_line": 138,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "line_comment",
+        "text": "Using function templates",
+        "line": 139
+      },
+      {
+        "type": "line_comment",
+        "text": "Using add template with different types",
+        "line": 145
+      },
+      {
+        "type": "line_comment",
+        "text": "Using class templates",
+        "line": 150
+      },
+      {
+        "type": "line_comment",
+        "text": "Using template specialization",
+        "line": 157
+      },
+      {
+        "type": "line_comment",
+        "text": "Using variadic templates",
+        "line": 163
+      },
+      {
+        "type": "line_comment",
+        "text": "Using SFINAE",
+        "line": 168
+      },
+      {
+        "type": "line_comment",
+        "text": "Using templates with non-type parameters",
+        "line": 173
+      },
+      {
+        "type": "line_comment",
+        "text": "Using template template parameters",
+        "line": 182
+      }
+    ],
+    "function_calls": [
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"Function templates:\"",
+          "std::endl"
+        ],
+        "line": 140
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  max_value(5, 10): \"",
+          "max_value(5, 10)",
+          "std::endl"
+        ],
+        "line": 141
+      },
+      {
+        "name": "max_value",
+        "arguments": [
+          "5",
+          "10"
+        ],
+        "line": 141
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  max_value(3.14, 2.71): \"",
+          "max_value(3.14, 2.71)",
+          "std::endl"
+        ],
+        "line": 142
+      },
+      {
+        "name": "max_value",
+        "arguments": [
+          "3.14",
+          "2.71"
+        ],
+        "line": 142
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  max_value(\\\"abc\\\", \\\"xyz\\\"): \"",
+          "max_value(std::string(\"abc\"), std::string(\"xyz\"))",
+          "std::endl"
+        ],
+        "line": 143
+      },
+      {
+        "name": "max_value",
+        "arguments": [
+          "std::string(\"abc\")",
+          "std::string(\"xyz\")"
+        ],
+        "line": 143
+      },
+      {
+        "name": "std::string",
+        "arguments": [
+          "\"abc\""
+        ],
+        "line": 143
+      },
+      {
+        "name": "std::string",
+        "arguments": [
+          "\"xyz\""
+        ],
+        "line": 143
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\nFunction templates with multiple types:\"",
+          "std::endl"
+        ],
+        "line": 146
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  add(5, 10): \"",
+          "add(5, 10)",
+          "std::endl"
+        ],
+        "line": 147
+      },
+      {
+        "name": "add",
+        "arguments": [
+          "5",
+          "10"
+        ],
+        "line": 147
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  add(5, 3.14): \"",
+          "add(5, 3.14)",
+          "std::endl"
+        ],
+        "line": 148
+      },
+      {
+        "name": "add",
+        "arguments": [
+          "5",
+          "3.14"
+        ],
+        "line": 148
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\nClass templates:\"",
+          "std::endl"
+        ],
+        "line": 151
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  intContainer.get(): \"",
+          "intContainer.get()",
+          "std::endl"
+        ],
+        "line": 153
+      },
+      {
+        "name": "intContainer.get",
+        "arguments": [],
+        "line": 153
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  doubleContainer.get(): \"",
+          "doubleContainer.get()",
+          "std::endl"
+        ],
+        "line": 156
+      },
+      {
+        "name": "doubleContainer.get",
+        "arguments": [],
+        "line": 156
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  doubleContainer.convert<int>(): \"",
+          "doubleContainer.convert<int>()",
+          "std::endl"
+        ],
+        "line": 157
+      },
+      {
+        "name": "doubleContainer.convert<int>",
+        "arguments": [],
+        "line": 157
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\nTemplate specialization:\"",
+          "std::endl"
+        ],
+        "line": 160
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  stringContainer.get(): \"",
+          "stringContainer.get()",
+          "std::endl"
+        ],
+        "line": 162
+      },
+      {
+        "name": "stringContainer.get",
+        "arguments": [],
+        "line": 162
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  stringContainer.length(): \"",
+          "stringContainer.length()",
+          "std::endl"
+        ],
+        "line": 163
+      },
+      {
+        "name": "stringContainer.length",
+        "arguments": [],
+        "line": 163
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\nVariadic templates:\"",
+          "std::endl"
+        ],
+        "line": 166
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  sum(1, 2, 3, 4, 5): \"",
+          "sum(1, 2, 3, 4, 5)",
+          "std::endl"
+        ],
+        "line": 167
+      },
+      {
+        "name": "sum",
+        "arguments": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "line": 167
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  sum(1.1, 2.2, 3.3): \"",
+          "sum(1.1, 2.2, 3.3)",
+          "std::endl"
+        ],
+        "line": 168
+      },
+      {
+        "name": "sum",
+        "arguments": [
+          "1.1",
+          "2.2",
+          "3.3"
+        ],
+        "line": 168
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\nSFINAE (enable_if):\"",
+          "std::endl"
+        ],
+        "line": 171
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  is_even(42): \"",
+          "(is_even(42) ? \"true\" : \"false\")",
+          "std::endl"
+        ],
+        "line": 172
+      },
+      {
+        "name": "is_even",
+        "arguments": [
+          "42"
+        ],
+        "line": 172
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  is_even(3.14): \"",
+          "(is_even(3.14) ? \"true\" : \"false\")",
+          "std::endl"
+        ],
+        "line": 173
+      },
+      {
+        "name": "is_even",
+        "arguments": [
+          "3.14"
+        ],
+        "line": 173
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\nTemplates with non-type parameters:\"",
+          "std::endl"
+        ],
+        "line": 176
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  intArray[\"",
+          "i",
+          "\"]: \"",
+          "intArray[i]",
+          "std::endl"
+        ],
+        "line": 182
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"\\nTemplate template parameters:\"",
+          "std::endl"
+        ],
+        "line": 185
+      },
+      {
+        "name": "vecContainer.add",
+        "arguments": [
+          "10"
+        ],
+        "line": 187
+      },
+      {
+        "name": "vecContainer.add",
+        "arguments": [
+          "20"
+        ],
+        "line": 188
+      },
+      {
+        "name": "vecContainer.add",
+        "arguments": [
+          "30"
+        ],
+        "line": 189
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  vecContainer size: \"",
+          "vecContainer.size()",
+          "std::endl"
+        ],
+        "line": 191
+      },
+      {
+        "name": "vecContainer.size",
+        "arguments": [],
+        "line": 191
+      },
+      {
+        "name": "std::cout",
+        "arguments": [
+          "\"  vecContainer[\"",
+          "i",
+          "\"]: \"",
+          "vecContainer[i]",
+          "std::endl"
+        ],
+        "line": 193
+      }
+    ],
+    "variable_declarations": [
+      {
+        "name": "background",
+        "type": "enum Color",
+        "line": 114,
+        "initialized": true
+      },
+      {
+        "name": "intContainer",
+        "type": "Container<int>",
+        "line": 152,
+        "initialized": true
+      },
+      {
+        "name": "doubleContainer",
+        "type": "Container<double>",
+        "line": 155,
+        "initialized": true
+      },
+      {
+        "name": "stringContainer",
+        "type": "Container<std::string>",
+        "line": 161,
+        "initialized": true
+      },
+      {
+        "name": "intArray",
+        "type": "FixedArray<int, 5>",
+        "line": 177,
+        "initialized": true
+      },
+      {
+        "name": "vecContainer",
+        "type": "GenericContainer<int, std::vector>",
+        "line": 186,
+        "initialized": true
+      }
+    ],
+    "namespace_references": [
+      {
+        "name": "std",
+        "line": 48,
+        "context": "std::string"
+      },
+      {
+        "name": "std",
+        "line": 79,
+        "context": "std::enable_if"
+      },
+      {
+        "name": "std",
+        "line": 79,
+        "context": "std::is_integral"
+      },
+      {
+        "name": "std",
+        "line": 85,
+        "context": "std::enable_if"
+      },
+      {
+        "name": "std",
+        "line": 85,
+        "context": "std::is_floating_point"
+      },
+      {
+        "name": "std",
+        "line": 140,
+        "context": "std::cout"
+      },
+      {
+        "name": "std",
+        "line": 143,
+        "context": "std::string"
+      },
+      {
+        "name": "std",
+        "line": 186,
+        "context": "std::vector"
+      }
+    ],
+    "templates": [
+      {
+        "type": "function_template",
+        "name": "max_value",
+        "parameters": [
+          {"name": "T", "kind": "type"}
+        ],
+        "line": 18
+      },
+      {
+        "type": "function_template",
+        "name": "add",
+        "parameters": [
+          {"name": "T", "kind": "type"},
+          {"name": "U", "kind": "type"}
+        ],
+        "line": 24
+      },
+      {
+        "type": "class_template",
+        "name": "Container",
+        "parameters": [
+          {"name": "T", "kind": "type"}
+        ],
+        "line": 29
+      },
+      {
+        "type": "template_specialization",
+        "name": "Container",
+        "specialized_type": "std::string",
+        "line": 48
+      },
+      {
+        "type": "function_template",
+        "name": "sum",
+        "parameters": [
+          {"name": "T", "kind": "type"}
+        ],
+        "line": 68
+      },
+      {
+        "type": "variadic_template",
+        "name": "sum",
+        "parameters": [
+          {"name": "T", "kind": "type"},
+          {"name": "Args", "kind": "variadic"}
+        ],
+        "line": 73
+      },
+      {
+        "type": "class_template",
+        "name": "FixedArray",
+        "parameters": [
+          {"name": "T", "kind": "type"},
+          {"name": "Size", "kind": "non-type", "type": "int"}
+        ],
+        "line": 91
+      },
+      {
+        "type": "class_template",
+        "name": "GenericContainer",
+        "parameters": [
+          {"name": "T", "kind": "type"},
+          {"name": "Container", "kind": "template-template"}
+        ],
+        "line": 116
+      }
+    ]
+  }
+}

@@ -1,0 +1,424 @@
+{
+  "language": "C",
+  "ast": {
+    "type": "translation_unit",
+    "functions": [
+      {
+        "name": "demonstrate_malloc",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 17,
+          "start_column": 0,
+          "end_line": 45,
+          "end_column": 1
+        },
+        "docstring": "Basic dynamic memory allocation with malloc"
+      },
+      {
+        "name": "demonstrate_calloc",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 50,
+          "start_column": 0,
+          "end_line": 82,
+          "end_column": 1
+        },
+        "docstring": "Using calloc for zero-initialized memory"
+      },
+      {
+        "name": "demonstrate_realloc",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 87,
+          "start_column": 0,
+          "end_line": 146,
+          "end_column": 1
+        },
+        "docstring": "Using realloc to resize allocated memory"
+      },
+      {
+        "name": "demonstrate_pointer_arithmetic",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 151,
+          "start_column": 0,
+          "end_line": 193,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate pointer arithmetic and memory access"
+      },
+      {
+        "name": "demonstrate_memory_functions",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 198,
+          "start_column": 0,
+          "end_line": 249,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate memory manipulation functions"
+      },
+      {
+        "name": "demonstrate_memory_leaks",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 254,
+          "start_column": 0,
+          "end_line": 291,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate a common pitfall: memory leaks"
+      },
+      {
+        "name": "pool_alloc",
+        "type": "function_definition",
+        "parameters": [
+          {"name": "size", "type": "size_t"}
+        ],
+        "return_type": "void*",
+        "body_range": {
+          "start_line": 299,
+          "start_column": 0,
+          "end_line": 311,
+          "end_column": 1
+        },
+        "docstring": "Simple memory pool allocator"
+      },
+      {
+        "name": "pool_reset",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 313,
+          "start_column": 0,
+          "end_line": 315,
+          "end_column": 1
+        },
+        "docstring": "Reset the memory pool"
+      },
+      {
+        "name": "demonstrate_memory_pool",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 317,
+          "start_column": 0,
+          "end_line": 358,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate a simple custom memory pool"
+      },
+      {
+        "name": "demonstrate_multidimensional_arrays",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 363,
+          "start_column": 0,
+          "end_line": 431,
+          "end_column": 1
+        },
+        "docstring": "Demonstrate handling of multi-dimensional arrays with dynamic allocation"
+      },
+      {
+        "name": "main",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "int",
+        "body_range": {
+          "start_line": 433,
+          "start_column": 0,
+          "end_line": 445,
+          "end_column": 1
+        }
+      }
+    ],
+    "includes": [
+      {"name": "stdio.h", "system": true, "line": 11},
+      {"name": "stdlib.h", "system": true, "line": 12},
+      {"name": "string.h", "system": true, "line": 13},
+      {"name": "assert.h", "system": true, "line": 14}
+    ],
+    "docstrings": [
+      {
+        "type": "file_docstring",
+        "text": "Demonstration of C Memory Management\n\nThis example covers:\n- Dynamic memory allocation (malloc, calloc, realloc, free)\n- Memory manipulation functions (memcpy, memmove, memset)\n- Pointer arithmetic\n- Memory safety considerations\n- Custom memory allocation patterns",
+        "range": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 9,
+          "end_column": 3
+        }
+      }
+    ],
+    "global_variables": [
+      {
+        "name": "memory_pool",
+        "type": "char[1024]",
+        "is_static": true,
+        "line": 297
+      },
+      {
+        "name": "pool_offset",
+        "type": "size_t",
+        "is_static": true,
+        "initial_value": "0",
+        "line": 298
+      }
+    ],
+    "macros": [
+      {
+        "name": "POOL_SIZE",
+        "value": "1024",
+        "line": 296
+      }
+    ],
+    "memory_functions": [
+      {
+        "name": "malloc",
+        "usage": [
+          {"line": 21, "size_expression": "5 * sizeof(int)"},
+          {"line": 90, "size_expression": "3 * sizeof(int)"},
+          {"line": 154, "size_expression": "5 * sizeof(int)"},
+          {"line": 201, "size_expression": "20"},
+          {"line": 202, "size_expression": "20"},
+          {"line": 255, "size_expression": "sizeof(int) * 10"},
+          {"line": 272, "size_expression": "sizeof(int) * 5"},
+          {"line": 367, "size_expression": "rows * cols * sizeof(int)"},
+          {"line": 379, "size_expression": "rows * sizeof(int*)"},
+          {"line": 392, "size_expression": "cols * sizeof(int)"}
+        ]
+      },
+      {
+        "name": "calloc",
+        "usage": [
+          {"line": 55, "count_expression": "5", "size_expression": "sizeof(int)"}
+        ]
+      },
+      {
+        "name": "realloc",
+        "usage": [
+          {"line": 107, "old_pointer": "numbers", "size_expression": "5 * sizeof(int)"},
+          {"line": 126, "old_pointer": "numbers", "size_expression": "2 * sizeof(int)"}
+        ]
+      },
+      {
+        "name": "free",
+        "usage": [
+          {"line": 42, "pointer": "numbers"},
+          {"line": 79, "pointer": "numbers"},
+          {"line": 143, "pointer": "numbers"},
+          {"line": 190, "pointer": "arr"},
+          {"line": 245, "pointer": "buffer1"},
+          {"line": 246, "pointer": "buffer2"},
+          {"line": 287, "pointer": "more_data"},
+          {"line": 288, "pointer": "data"},
+          {"line": 394, "pointer": "matrix2[j]"},
+          {"line": 397, "pointer": "matrix2"},
+          {"line": 398, "pointer": "matrix1"},
+          {"line": 421, "pointer": "matrix2[i]"},
+          {"line": 423, "pointer": "matrix2"},
+          {"line": 426, "pointer": "matrix1"}
+        ]
+      },
+      {
+        "name": "memset",
+        "usage": [
+          {"line": 208, "pointer": "buffer1", "value": "'A'", "size": "19"}
+        ]
+      },
+      {
+        "name": "memcpy",
+        "usage": [
+          {"line": 213, "destination": "buffer2", "source": "source", "size": "strlen(source) + 1"}
+        ]
+      },
+      {
+        "name": "memmove",
+        "usage": [
+          {"line": 219, "destination": "overlap + 1", "source": "overlap + 3", "size": "6"}
+        ]
+      },
+      {
+        "name": "memcmp",
+        "usage": [
+          {"line": 226, "pointer1": "str1", "pointer2": "str2", "size": "5"},
+          {"line": 227, "pointer1": "str1", "pointer2": "str3", "size": "5"}
+        ]
+      },
+      {
+        "name": "pool_alloc",
+        "usage": [
+          {"line": 324, "size_expression": "5 * sizeof(int)"},
+          {"line": 338, "size_expression": "20"}
+        ]
+      },
+      {
+        "name": "pool_reset",
+        "usage": [
+          {"line": 321},
+          {"line": 354}
+        ]
+      }
+    ],
+    "pointer_operations": [
+      {
+        "operation": "pointer_arithmetic",
+        "examples": [
+          {"line": 166, "expression": "arr[2]", "access_type": "array_indexing"},
+          {"line": 169, "expression": "*(arr + 2)", "access_type": "pointer_arithmetic"},
+          {"line": 172, "expression": "*ptr", "access_type": "pointer_dereference"},
+          {"line": 176, "expression": "ptr++", "access_type": "pointer_increment"},
+          {"line": 180, "expression": "ptr = arr + 3", "access_type": "pointer_offset"},
+          {"line": 185, "expression": "ptr2 - ptr", "access_type": "pointer_difference"}
+        ]
+      },
+      {
+        "operation": "null_checking",
+        "examples": [
+          {"line": 23, "expression": "if (numbers == NULL)"},
+          {"line": 57, "expression": "if (numbers == NULL)"},
+          {"line": 92, "expression": "if (numbers == NULL)"},
+          {"line": 108, "expression": "if (new_numbers == NULL)"},
+          {"line": 127, "expression": "if (new_numbers == NULL)"},
+          {"line": 156, "expression": "if (arr == NULL)"},
+          {"line": 204, "expression": "if (buffer1 == NULL || buffer2 == NULL)"},
+          {"line": 258, "expression": "if (data == NULL)"},
+          {"line": 275, "expression": "if (more_data == NULL)"},
+          {"line": 300, "expression": "if (pool_offset + size > POOL_SIZE)"},
+          {"line": 326, "expression": "if (numbers == NULL)"},
+          {"line": 340, "expression": "if (text == NULL)"},
+          {"line": 369, "expression": "if (matrix1 == NULL)"},
+          {"line": 381, "expression": "if (matrix2 == NULL)"},
+          {"line": 394, "expression": "if (matrix2[i] == NULL)"}
+        ]
+      },
+      {
+        "operation": "pointer_casting",
+        "examples": [
+          {"line": 21, "expression": "(int*)malloc(5 * sizeof(int))"},
+          {"line": 55, "expression": "(int*)calloc(5, sizeof(int))"},
+          {"line": 90, "expression": "(int*)malloc(3 * sizeof(int))"},
+          {"line": 107, "expression": "(int*)realloc(numbers, 5 * sizeof(int))"},
+          {"line": 126, "expression": "(int*)realloc(numbers, 2 * sizeof(int))"},
+          {"line": 154, "expression": "(int*)malloc(5 * sizeof(int))"},
+          {"line": 201, "expression": "(char*)malloc(20)"},
+          {"line": 202, "expression": "(char*)malloc(20)"},
+          {"line": 255, "expression": "(int*)malloc(sizeof(int) * 10)"},
+          {"line": 272, "expression": "(int*)malloc(sizeof(int) * 5)"},
+          {"line": 324, "expression": "(int*)pool_alloc(5 * sizeof(int))"},
+          {"line": 338, "expression": "(char*)pool_alloc(20)"},
+          {"line": 367, "expression": "(int*)malloc(rows * cols * sizeof(int))"},
+          {"line": 379, "expression": "(int**)malloc(rows * sizeof(int*))"},
+          {"line": 392, "expression": "(int*)malloc(cols * sizeof(int))"}
+        ]
+      },
+      {
+        "operation": "multidimensional_arrays",
+        "examples": [
+          {"line": 375, "expression": "matrix1[i * cols + j]", "access_type": "linear_indexing"},
+          {"line": 376, "expression": "matrix1[i * cols + j]", "access_type": "linear_indexing"},
+          {"line": 405, "expression": "matrix2[i][j]", "access_type": "2d_indexing"},
+          {"line": 406, "expression": "matrix2[i][j]", "access_type": "2d_indexing"}
+        ]
+      }
+    ],
+    "memory_safety_patterns": [
+      {
+        "pattern": "null_check_after_allocation",
+        "examples": [
+          {"line": 23, "code": "if (numbers == NULL) { ... return; }"},
+          {"line": 57, "code": "if (numbers == NULL) { ... return; }"},
+          {"line": 92, "code": "if (numbers == NULL) { ... return; }"}
+        ]
+      },
+      {
+        "pattern": "null_pointer_after_free",
+        "examples": [
+          {"line": 43, "code": "numbers = NULL;"},
+          {"line": 80, "code": "numbers = NULL;"},
+          {"line": 144, "code": "numbers = NULL;"},
+          {"line": 191, "code": "ptr = NULL;"},
+          {"line": 247, "code": "buffer1 = NULL;"},
+          {"line": 248, "code": "buffer2 = NULL;"},
+          {"line": 289, "code": "more_data = NULL;"},
+          {"line": 290, "code": "data = NULL;"},
+          {"line": 428, "code": "matrix1 = NULL;"},
+          {"line": 429, "code": "matrix2 = NULL;"}
+        ]
+      },
+      {
+        "pattern": "handle_realloc_failure",
+        "examples": [
+          {"line": 108, "code": "if (new_numbers == NULL) { ... free(numbers); return; }"},
+          {"line": 127, "code": "if (new_numbers == NULL) { ... free(numbers); return; }"}
+        ]
+      },
+      {
+        "pattern": "clean_up_on_error",
+        "examples": [
+          {"line": 204, "code": "if (buffer1 == NULL || buffer2 == NULL) { free(buffer1); free(buffer2); return; }"},
+          {"line": 275, "code": "if (more_data == NULL) { ... free(data); return; }"},
+          {"line": 393, "code": "if (matrix2[i] == NULL) { for (int j = 0; j < i; j++) { free(matrix2[j]); } free(matrix2); free(matrix1); ... return; }"}
+        ]
+      }
+    ],
+    "function_calls": [
+      {
+        "name": "demonstrate_malloc",
+        "arguments": [],
+        "line": 436
+      },
+      {
+        "name": "demonstrate_calloc",
+        "arguments": [],
+        "line": 437
+      },
+      {
+        "name": "demonstrate_realloc",
+        "arguments": [],
+        "line": 438
+      },
+      {
+        "name": "demonstrate_pointer_arithmetic",
+        "arguments": [],
+        "line": 439
+      },
+      {
+        "name": "demonstrate_memory_functions",
+        "arguments": [],
+        "line": 440
+      },
+      {
+        "name": "demonstrate_memory_leaks",
+        "arguments": [],
+        "line": 441
+      },
+      {
+        "name": "demonstrate_memory_pool",
+        "arguments": [],
+        "line": 442
+      },
+      {
+        "name": "demonstrate_multidimensional_arrays",
+        "arguments": [],
+        "line": 443
+      }
+    ]
+  }
+}

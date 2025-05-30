@@ -1,0 +1,650 @@
+{
+  "language": "C++",
+  "ast": {
+    "type": "translation_unit",
+    "functions": [
+      {
+        "name": "swap_values",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "a", "type": "T&"},
+          {"name": "b", "type": "T&"}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 17,
+          "start_column": 0,
+          "end_line": 21,
+          "end_column": 1
+        },
+        "docstring": "Basic function template - swaps two values of any type"
+      },
+      {
+        "name": "add",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "U", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "a", "type": "T"},
+          {"name": "b", "type": "U"}
+        ],
+        "return_type": "decltype(a + b)",
+        "body_range": {
+          "start_line": 27,
+          "start_column": 0,
+          "end_line": 29,
+          "end_column": 1
+        },
+        "docstring": "Function template with multiple template parameters"
+      },
+      {
+        "name": "max_value",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "a", "type": "T"},
+          {"name": "b", "type": "T"}
+        ],
+        "return_type": "T",
+        "body_range": {
+          "start_line": 35,
+          "start_column": 0,
+          "end_line": 37,
+          "end_column": 1
+        },
+        "docstring": "Function template specialization for a specific type"
+      },
+      {
+        "name": "max_value<const char*>",
+        "type": "function_template_specialization",
+        "template_parameters": [
+          {"name": "const char*", "kind": "type"}
+        ],
+        "parameters": [
+          {"name": "a", "type": "const char*"},
+          {"name": "b", "type": "const char*"}
+        ],
+        "return_type": "const char*",
+        "body_range": {
+          "start_line": 41,
+          "start_column": 0,
+          "end_line": 43,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "demonstrate_function_templates",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 192,
+          "start_column": 0,
+          "end_line": 208,
+          "end_column": 1
+        },
+        "docstring": "Demonstrating function templates"
+      },
+      {
+        "name": "demonstrate_class_templates",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 211,
+          "start_column": 0,
+          "end_line": 242,
+          "end_column": 1
+        },
+        "docstring": "Demonstrating class templates"
+      },
+      {
+        "name": "demonstrate_variadic_templates",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 245,
+          "start_column": 0,
+          "end_line": 251,
+          "end_column": 1
+        },
+        "docstring": "Demonstrating variadic templates"
+      },
+      {
+        "name": "demonstrate_template_metaprogramming",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 254,
+          "start_column": 0,
+          "end_line": 262,
+          "end_column": 1
+        },
+        "docstring": "Demonstrating template metaprogramming"
+      },
+      {
+        "name": "main",
+        "type": "function_definition",
+        "parameters": [],
+        "return_type": "int",
+        "body_range": {
+          "start_line": 264,
+          "start_column": 0,
+          "end_line": 272,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "print_all",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "Args...", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "args", "type": "Args..."}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 143,
+          "start_column": 0,
+          "end_line": 145,
+          "end_column": 1
+        },
+        "docstring": "Variadic templates - allows any number of arguments"
+      },
+      {
+        "name": "print_args",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "value", "type": "T"}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 148,
+          "start_column": 0,
+          "end_line": 150,
+          "end_column": 1
+        },
+        "docstring": "Classic recursive implementation (pre-C++17)"
+      },
+      {
+        "name": "print_args",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "Args...", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "first", "type": "T"},
+          {"name": "args", "type": "Args..."}
+        ],
+        "return_type": "void",
+        "body_range": {
+          "start_line": 153,
+          "start_column": 0,
+          "end_line": 156,
+          "end_column": 1
+        }
+      },
+      {
+        "name": "is_even",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "value", "type": "T"}
+        ],
+        "return_type": "typename std::enable_if<std::is_integral<T>::value, bool>::type",
+        "body_range": {
+          "start_line": 173,
+          "start_column": 0,
+          "end_line": 175,
+          "end_column": 1
+        },
+        "docstring": "SFINAE - enable_if to conditionally compile template functions based on type traits"
+      },
+      {
+        "name": "is_even",
+        "type": "function_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"}
+        ],
+        "parameters": [
+          {"name": "value", "type": "T"}
+        ],
+        "return_type": "typename std::enable_if<std::is_floating_point<T>::value, bool>::type",
+        "body_range": {
+          "start_line": 179,
+          "start_column": 0,
+          "end_line": 181,
+          "end_column": 1
+        }
+      }
+    ],
+    "classes": [
+      {
+        "name": "Stack",
+        "type": "class_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "MaxSize", "kind": "non_type", "default": "100"}
+        ],
+        "member_variables": [
+          {"name": "elements", "type": "T[MaxSize]", "access": "private"},
+          {"name": "size", "type": "size_t", "access": "private"}
+        ],
+        "member_functions": [
+          {
+            "name": "Stack",
+            "type": "constructor",
+            "parameters": [],
+            "body_range": {
+              "start_line": 51,
+              "end_line": 51
+            }
+          },
+          {
+            "name": "push",
+            "type": "method",
+            "parameters": [
+              {"name": "element", "type": "const T&"}
+            ],
+            "return_type": "void",
+            "body_range": {
+              "start_line": 53,
+              "end_line": 59
+            },
+            "access": "public"
+          },
+          {
+            "name": "pop",
+            "type": "method",
+            "parameters": [],
+            "return_type": "T",
+            "body_range": {
+              "start_line": 61,
+              "end_line": 67
+            },
+            "access": "public"
+          },
+          {
+            "name": "empty",
+            "type": "method",
+            "parameters": [],
+            "return_type": "bool",
+            "body_range": {
+              "start_line": 69,
+              "end_line": 71
+            },
+            "access": "public",
+            "is_const": true
+          },
+          {
+            "name": "get_size",
+            "type": "method",
+            "parameters": [],
+            "return_type": "size_t",
+            "body_range": {
+              "start_line": 73,
+              "end_line": 75
+            },
+            "access": "public",
+            "is_const": true
+          },
+          {
+            "name": "capacity",
+            "type": "method",
+            "parameters": [],
+            "return_type": "size_t",
+            "body_range": {
+              "start_line": 77,
+              "end_line": 79
+            },
+            "access": "public",
+            "is_const": true
+          }
+        ],
+        "range": {
+          "start_line": 47,
+          "start_column": 0,
+          "end_line": 80,
+          "end_column": 1
+        },
+        "docstring": "Basic class template - a generic stack"
+      },
+      {
+        "name": "Stack<bool, MaxSize>",
+        "type": "class_template_specialization",
+        "template_parameters": [
+          {"name": "MaxSize", "kind": "non_type"}
+        ],
+        "member_variables": [
+          {"name": "elements", "type": "std::vector<bool>", "access": "private"},
+          {"name": "max_size", "type": "size_t", "access": "private"}
+        ],
+        "member_functions": [
+          {
+            "name": "Stack",
+            "type": "constructor",
+            "parameters": [],
+            "body_range": {
+              "start_line": 90,
+              "end_line": 90
+            }
+          },
+          {
+            "name": "push",
+            "type": "method",
+            "parameters": [
+              {"name": "element", "type": "bool"}
+            ],
+            "return_type": "void",
+            "body_range": {
+              "start_line": 92,
+              "end_line": 98
+            },
+            "access": "public"
+          },
+          {
+            "name": "pop",
+            "type": "method",
+            "parameters": [],
+            "return_type": "bool",
+            "body_range": {
+              "start_line": 100,
+              "end_line": 108
+            },
+            "access": "public"
+          },
+          {
+            "name": "empty",
+            "type": "method",
+            "parameters": [],
+            "return_type": "bool",
+            "body_range": {
+              "start_line": 110,
+              "end_line": 112
+            },
+            "access": "public",
+            "is_const": true
+          },
+          {
+            "name": "get_size",
+            "type": "method",
+            "parameters": [],
+            "return_type": "size_t",
+            "body_range": {
+              "start_line": 114,
+              "end_line": 116
+            },
+            "access": "public",
+            "is_const": true
+          },
+          {
+            "name": "capacity",
+            "type": "method",
+            "parameters": [],
+            "return_type": "size_t",
+            "body_range": {
+              "start_line": 118,
+              "end_line": 120
+            },
+            "access": "public",
+            "is_const": true
+          }
+        ],
+        "range": {
+          "start_line": 86,
+          "start_column": 0,
+          "end_line": 121,
+          "end_column": 1
+        },
+        "docstring": "Class template specialization"
+      },
+      {
+        "name": "Array",
+        "type": "class_template",
+        "template_parameters": [
+          {"name": "T", "kind": "typename"},
+          {"name": "N", "kind": "non_type"}
+        ],
+        "member_variables": [
+          {"name": "data", "type": "T[N]", "access": "private"}
+        ],
+        "member_functions": [
+          {
+            "name": "Array",
+            "type": "constructor",
+            "parameters": [],
+            "body_range": {
+              "start_line": 129,
+              "end_line": 133
+            }
+          },
+          {
+            "name": "operator[]",
+            "type": "method",
+            "parameters": [
+              {"name": "index", "type": "int"}
+            ],
+            "return_type": "T&",
+            "body_range": {
+              "start_line": 135,
+              "end_line": 140
+            },
+            "access": "public"
+          },
+          {
+            "name": "operator[]",
+            "type": "method",
+            "parameters": [
+              {"name": "index", "type": "int"}
+            ],
+            "return_type": "const T&",
+            "body_range": {
+              "start_line": 142,
+              "end_line": 147
+            },
+            "access": "public",
+            "is_const": true
+          },
+          {
+            "name": "size",
+            "type": "method",
+            "parameters": [],
+            "return_type": "int",
+            "body_range": {
+              "start_line": 149,
+              "end_line": 151
+            },
+            "access": "public",
+            "is_const": true
+          }
+        ],
+        "range": {
+          "start_line": 127,
+          "start_column": 0,
+          "end_line": 152,
+          "end_column": 1
+        },
+        "docstring": "Template with non-type parameters"
+      },
+      {
+        "name": "Factorial",
+        "type": "struct_template",
+        "template_parameters": [
+          {"name": "N", "kind": "unsigned int"}
+        ],
+        "static_constants": [
+          {"name": "value", "type": "unsigned int", "value": "N * Factorial<N-1>::value"}
+        ],
+        "range": {
+          "start_line": 160,
+          "start_column": 0,
+          "end_line": 162,
+          "end_column": 1
+        },
+        "docstring": "Template metaprogramming - factorial at compile time"
+      },
+      {
+        "name": "Factorial<0>",
+        "type": "struct_template_specialization",
+        "template_parameters": [
+          {"name": "0", "kind": "unsigned int"}
+        ],
+        "static_constants": [
+          {"name": "value", "type": "unsigned int", "value": "1"}
+        ],
+        "range": {
+          "start_line": 165,
+          "start_column": 0,
+          "end_line": 167,
+          "end_column": 1
+        }
+      }
+    ],
+    "includes": [
+      {"name": "iostream", "system": true, "line": 11},
+      {"name": "vector", "system": true, "line": 12},
+      {"name": "string", "system": true, "line": 13},
+      {"name": "type_traits", "system": true, "line": 14}
+    ],
+    "docstrings": [
+      {
+        "type": "file_docstring",
+        "text": "Demonstration of C++ Templates\n\nThis example covers:\n- Function templates\n- Class templates\n- Template specialization\n- Variadic templates\n- SFINAE (Substitution Failure Is Not An Error)\n- Template metaprogramming basics",
+        "range": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 10,
+          "end_column": 3
+        }
+      }
+    ],
+    "template_instantiations": [
+      {
+        "template": "Stack",
+        "instance": "Stack<int, 5>",
+        "line": 212
+      },
+      {
+        "template": "Stack",
+        "instance": "Stack<bool, 10>",
+        "line": 225
+      },
+      {
+        "template": "Array",
+        "instance": "Array<double, 3>",
+        "line": 233
+      },
+      {
+        "template": "Factorial",
+        "instance": "Factorial<5>",
+        "line": 257
+      }
+    ],
+    "function_calls": [
+      {
+        "name": "demonstrate_function_templates",
+        "arguments": [],
+        "line": 267
+      },
+      {
+        "name": "demonstrate_class_templates",
+        "arguments": [],
+        "line": 268
+      },
+      {
+        "name": "demonstrate_variadic_templates",
+        "arguments": [],
+        "line": 269
+      },
+      {
+        "name": "demonstrate_template_metaprogramming",
+        "arguments": [],
+        "line": 270
+      },
+      {
+        "name": "swap_values",
+        "template_arguments": ["int"],
+        "arguments": ["a", "b"],
+        "line": 197
+      },
+      {
+        "name": "add",
+        "template_arguments": ["int", "double"],
+        "arguments": ["5", "3.5"],
+        "line": 200
+      },
+      {
+        "name": "add",
+        "template_arguments": ["std::string", "const char*"],
+        "arguments": ["std::string(\"Hello, \")", "\"World!\""],
+        "line": 201
+      },
+      {
+        "name": "max_value",
+        "template_arguments": ["int"],
+        "arguments": ["10", "20"],
+        "line": 205
+      },
+      {
+        "name": "max_value",
+        "template_arguments": ["const char*"],
+        "arguments": ["\"apple\"", "\"banana\""],
+        "line": 206
+      },
+      {
+        "name": "print_all",
+        "template_arguments": ["const char*", "const char*", "const char*", "const char*"],
+        "arguments": ["\"Hello\"", "\" Variadic\"", "\" Templates\"", "\"!\""],
+        "line": 248
+      },
+      {
+        "name": "print_args",
+        "template_arguments": ["int", "double", "const char*", "char"],
+        "arguments": ["1", "2.5", "\"three\"", "'X'"],
+        "line": 250
+      },
+      {
+        "name": "is_even",
+        "template_arguments": ["int"],
+        "arguments": ["10"],
+        "line": 258
+      },
+      {
+        "name": "is_even",
+        "template_arguments": ["double"],
+        "arguments": ["3.14"],
+        "line": 259
+      }
+    ],
+    "sfinae_examples": [
+      {
+        "function": "is_even",
+        "enable_if_condition": "std::is_integral<T>::value",
+        "enabled_for": ["int", "long", "char"],
+        "line": 172
+      },
+      {
+        "function": "is_even",
+        "enable_if_condition": "std::is_floating_point<T>::value",
+        "enabled_for": ["float", "double"],
+        "line": 178
+      }
+    ]
+  }
+}

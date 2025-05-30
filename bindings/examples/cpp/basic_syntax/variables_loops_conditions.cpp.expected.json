@@ -1,0 +1,260 @@
+{
+  "language": "C++",
+  "ast": {
+    "type": "translation_unit",
+    "functions": [
+      {
+        "name": "main",
+        "type": "function_definition",
+        "return_type": "int",
+        "parameters": [],
+        "body_range": {
+          "start_line": 18,
+          "start_column": 0,
+          "end_line": 92,
+          "end_column": 1
+        },
+        "docstring": "Program entry point\nReturn Exit status code"
+      }
+    ],
+    "includes": [
+      {
+        "path": "iostream",
+        "system": true,
+        "line": 11
+      },
+      {
+        "path": "vector",
+        "system": true,
+        "line": 12
+      },
+      {
+        "path": "string",
+        "system": true,
+        "line": 13
+      }
+    ],
+    "comments": [
+      {
+        "type": "block_comment",
+        "text": "This example shows:\n- Various variable declarations and types including auto\n- for, range-based for, while, and do-while loops\n- if, else if, else conditions\n- switch statements",
+        "range": {
+          "start_line": 1,
+          "start_column": 0,
+          "end_line": 9,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "block_comment",
+        "text": "Program entry point\nReturn Exit status code",
+        "range": {
+          "start_line": 15,
+          "start_column": 0,
+          "end_line": 18,
+          "end_column": 3
+        }
+      },
+      {
+        "type": "line_comment",
+        "text": "Variable declarations",
+        "line": 19
+      },
+      {
+        "type": "line_comment",
+        "text": "Type inference",
+        "line": 25
+      },
+      {
+        "type": "line_comment",
+        "text": "Standard array",
+        "line": 27
+      },
+      {
+        "type": "line_comment",
+        "text": "STL container",
+        "line": 30
+      },
+      {
+        "type": "line_comment",
+        "text": "Standard for loop",
+        "line": 33
+      },
+      {
+        "type": "line_comment",
+        "text": "Range-based for loop (C++11)",
+        "line": 39
+      },
+      {
+        "type": "line_comment",
+        "text": "While loop",
+        "line": 45
+      },
+      {
+        "type": "line_comment",
+        "text": "Do-while loop",
+        "line": 53
+      },
+      {
+        "type": "line_comment",
+        "text": "If-else statements",
+        "line": 62
+      },
+      {
+        "type": "line_comment",
+        "text": "If-else if-else",
+        "line": 71
+      },
+      {
+        "type": "line_comment",
+        "text": "Switch statement",
+        "line": 82
+      }
+    ],
+    "variable_declarations": [
+      {
+        "name": "i",
+        "type": "int",
+        "line": 19,
+        "initialized": true
+      },
+      {
+        "name": "f",
+        "type": "float",
+        "line": 20,
+        "initialized": true
+      },
+      {
+        "name": "d",
+        "type": "double",
+        "line": 21,
+        "initialized": true
+      },
+      {
+        "name": "c",
+        "type": "char",
+        "line": 22,
+        "initialized": true
+      },
+      {
+        "name": "b",
+        "type": "bool",
+        "line": 23,
+        "initialized": true
+      },
+      {
+        "name": "s",
+        "type": "std::string",
+        "line": 24,
+        "initialized": true
+      },
+      {
+        "name": "a",
+        "type": "auto",
+        "line": 25,
+        "initialized": true
+      },
+      {
+        "name": "array",
+        "type": "int[5]",
+        "line": 28,
+        "initialized": true
+      },
+      {
+        "name": "vec",
+        "type": "std::vector<int>",
+        "line": 31,
+        "initialized": true
+      }
+    ],
+    "loops": [
+      {
+        "type": "for_statement",
+        "range": {
+          "start_line": 35,
+          "start_column": 4,
+          "end_line": 37,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "range_for_statement",
+        "range": {
+          "start_line": 41,
+          "start_column": 4,
+          "end_line": 43,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "while_statement",
+        "range": {
+          "start_line": 48,
+          "start_column": 4,
+          "end_line": 51,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "do_statement",
+        "range": {
+          "start_line": 56,
+          "start_column": 4,
+          "end_line": 59,
+          "end_column": 20
+        }
+      }
+    ],
+    "conditionals": [
+      {
+        "type": "if_statement",
+        "range": {
+          "start_line": 64,
+          "start_column": 4,
+          "end_line": 68,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "if_statement",
+        "range": {
+          "start_line": 73,
+          "start_column": 4,
+          "end_line": 79,
+          "end_column": 5
+        }
+      },
+      {
+        "type": "switch_statement",
+        "range": {
+          "start_line": 84,
+          "start_column": 4,
+          "end_line": 95,
+          "end_column": 5
+        }
+      }
+    ],
+    "namespace_references": [
+      {
+        "name": "std",
+        "line": 24,
+        "context": "std::string"
+      },
+      {
+        "name": "std",
+        "line": 31,
+        "context": "std::vector<int>"
+      },
+      {
+        "name": "std",
+        "line": 34,
+        "context": "std::cout"
+      },
+      {
+        "name": "std",
+        "line": 34,
+        "context": "std::endl"
+      }
+    ]
+  }
+}
