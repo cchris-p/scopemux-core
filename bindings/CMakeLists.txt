@@ -29,11 +29,23 @@ add_compile_definitions(
 add_compile_options($<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>)
 
 # Find Python packages needed for the project
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
-# Configure Python includes directly (use exact path instead of variable expansion)
-set(PYTHON_INCLUDE_PATH "${Python_INCLUDE_DIRS}")
+# Get the Python include directories explicitly
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_path('include'))"
+    OUTPUT_VARIABLE PYTHON_INCLUDE_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message(STATUS "Python include path from sysconfig: ${PYTHON_INCLUDE_PATH}")
+
+# Configure Python includes directly
+# First use sysconfig path, fallback to CMake's Python_INCLUDE_DIRS if that fails
+if(NOT PYTHON_INCLUDE_PATH)
+    set(PYTHON_INCLUDE_PATH "${Python_INCLUDE_DIRS}")
+    message(STATUS "Using CMake's Python_INCLUDE_DIRS as fallback")
+endif()
 
 # Add custom compiler options to enforce include path and Python macro definitions
 add_compile_options(
@@ -97,6 +109,7 @@ target_link_libraries(scopemux_core PRIVATE parser_core context_engine)
 target_include_directories(scopemux_core PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
+    ${PYTHON_INCLUDE_PATH}
     ${Python_INCLUDE_DIRS}
     ${pybind11_INCLUDE_DIRS}
 )

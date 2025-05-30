@@ -17,9 +17,7 @@
  * struct definitions and Python object handling across all binding files.
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 /* Make sure PY_SSIZE_T_CLEAN is defined before including Python.h */
 #define PY_SSIZE_T_CLEAN
@@ -93,8 +91,6 @@ typedef struct {
     int owned;
 } InfoBlockObject;
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* SCOPEMUX_PYTHON_UTILS_H */

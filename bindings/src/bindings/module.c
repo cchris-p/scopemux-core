@@ -8,6 +8,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
+/* This include is REQUIRED - it provides Python.h with PyObject and Python API
+ * Clangd incorrectly flags this as unused, but removing it causes compile errors
+ * DO NOT REMOVE even if linter suggests it's unused
+ */
 #include "../../include/scopemux/python_utils.h"
 #include "../../include/scopemux/python_bindings.h"
 
@@ -37,7 +42,7 @@ void init_scopemux_module(void* m) {
     PyObject* module = (PyObject*)m;
     
     // Set module docstring
-    PyModule_AddDocObject(module, "__doc__", PyUnicode_FromString(module_docstring));
+    PyModule_AddObject(module, "__doc__", PyUnicode_FromString(module_docstring));
     
     // Initialize the parser bindings
     init_parser_bindings(m);

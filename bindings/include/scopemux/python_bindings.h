@@ -10,9 +10,7 @@
 #ifndef SCOPEMUX_PYTHON_BINDINGS_H
 #define SCOPEMUX_PYTHON_BINDINGS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 /**
  * @brief Initialize the Python module
@@ -45,8 +43,6 @@ void init_context_engine_bindings(void* m);
  */
 void init_tree_sitter_bindings(void* m);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* SCOPEMUX_PYTHON_BINDINGS_H */

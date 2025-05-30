@@ -12,9 +12,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 /**
  * @brief Tree-sitter type definitions
@@ -105,8 +103,6 @@ const TSLanguage* tree_sitter_cpp(void);
  */
 const TSLanguage* tree_sitter_python(void);
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* SCOPEMUX_TREE_SITTER_STUBS_H */
