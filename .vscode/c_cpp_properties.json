@@ -1,0 +1,32 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/usr/include/python3.10",
+        "/usr/include",
+        "/usr/local/include"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}",
+          "/usr/include/python3.10",
+          "/usr/include",
+          "/usr/local/include"
+        ],
+        "limitSymbolsToIncludedHeaders": true,
+        "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
+      },
+      "defines": [],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "gnu11",
+      "cppStandard": "gnu++17",
+      "intelliSenseMode": "linux-clang-x64",
+      "compilerArgs": [
+        "-I/usr/include/python3.10"
+      ]
+    }
+  ],
+  "version": 4
+}

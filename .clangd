@@ -1,0 +1,10 @@
+CompileFlags:
+  Add: [-I/usr/include/python3.10]
+
+# Disable specific diagnostics
+Diagnostics:
+  Suppress: ['unused-includes']
+  
+# You can also selectively ignore specific warnings in specific files if needed
+# UnusedIncludes:
+#   Exclude: ['**/module.c']
