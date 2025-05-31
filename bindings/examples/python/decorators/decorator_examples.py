@@ -16,16 +16,17 @@ import functools
 import time
 from typing import Callable, Any, TypeVar, cast
 
+
 # Basic function decorator
 def simple_decorator(func: Callable) -> Callable:
     """A simple decorator that prints before and after function execution"""
-    
+
     def wrapper(*args, **kwargs):
         print(f"Before calling {func.__name__}")
         result = func(*args, **kwargs)
         print(f"After calling {func.__name__}")
         return result
-    
+
     return wrapper
 
 
@@ -39,15 +40,16 @@ def greet(name: str) -> str:
 # Decorator with arguments
 def repeat(times: int) -> Callable:
     """A decorator that repeats the function call a specified number of times"""
-    
+
     def decorator(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
             results = []
             for _ in range(times):
                 results.append(func(*args, **kwargs))
             return results
+
         return wrapper
-    
+
     return decorator
 
 
@@ -61,7 +63,7 @@ def say_hi(name: str) -> str:
 # Using functools.wraps to preserve metadata
 def timing_decorator(func: Callable) -> Callable:
     """A decorator that times function execution"""
-    
+
     @functools.wraps(func)  # Preserves the original function's metadata
     def wrapper(*args, **kwargs):
         start_time = time.time()
@@ -69,7 +71,7 @@ def timing_decorator(func: Callable) -> Callable:
         end_time = time.time()
         print(f"{func.__name__} took {end_time - start_time:.4f} seconds to run")
         return result
-    
+
     return wrapper
 
 
@@ -93,10 +95,10 @@ def combined_decorators() -> None:
 # Class decorator
 def add_greeting(cls):
     """A class decorator that adds a greeting method"""
-    
+
     def say_hello(self):
         return f"Hello from {self.__class__.__name__}!"
-    
+
     cls.say_hello = say_hello
     return cls
 
@@ -105,11 +107,11 @@ def add_greeting(cls):
 @add_greeting
 class Person:
     """A simple person class"""
-    
+
     def __init__(self, name: str, age: int):
         self.name = name
         self.age = age
-    
+
     def __str__(self) -> str:
         return f"{self.name}, {self.age} years old"
 
@@ -117,29 +119,29 @@ class Person:
 # Method decorator
 def validate_age(method: Callable) -> Callable:
     """A decorator to validate age parameter"""
-    
+
     @functools.wraps(method)
     def wrapper(self, age, *args, **kwargs):
         if age < 0 or age > 120:
             raise ValueError("Age must be between 0 and 120")
         return method(self, age, *args, **kwargs)
-    
+
     return wrapper
 
 
 # Class with a decorated method
 class Student:
     """A student class with a decorated method"""
-    
+
     def __init__(self, name: str, age: int):
         self.name = name
         self.set_age(age)
-    
+
     @validate_age
     def set_age(self, age: int) -> None:
         """Set student age with validation"""
         self.age = age
-    
+
     def __str__(self) -> str:
         return f"Student: {self.name}, {self.age} years old"
 
@@ -147,12 +149,12 @@ class Student:
 # Creating a decorator using a class
 class CountCalls:
     """A decorator implemented as a class that counts function calls"""
-    
+
     def __init__(self, func: Callable):
         functools.update_wrapper(self, func)
         self.func = func
         self.count = 0
-    
+
     def __call__(self, *args, **kwargs):
         self.count += 1
         print(f"{self.func.__name__} has been called {self.count} times")
@@ -167,11 +169,12 @@ def increment(x: int) -> int:
 
 
 # Generic decorator with TypeVar
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 def debug(func: Callable[..., T]) -> Callable[..., T]:
     """Print function arguments and return value"""
-    
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         args_repr = [repr(a) for a in args]
@@ -181,7 +184,7 @@ def debug(func: Callable[..., T]) -> Callable[..., T]:
         result = func(*args, **kwargs)
         print(f"{func.__name__} returned {result!r}")
         return result
-    
+
     return cast(Callable[..., T], wrapper)
 
 
@@ -197,22 +200,22 @@ def main():
     print("=== Basic Decorator ===")
     message = greet("Alice")
     print(f"Result: {message}")
-    
+
     print("\n=== Decorator with Arguments ===")
     results = say_hi("Bob")
     print(f"Results: {results}")
-    
+
     print("\n=== Timing Decorator ===")
     slow_function()
-    
+
     print("\n=== Stacked Decorators ===")
     combined_decorators()
-    
+
     print("\n=== Class Decorator ===")
     person = Person("Charlie", 30)
     print(person)
     print(person.say_hello())
-    
+
     print("\n=== Method Decorator ===")
     student = Student("David", 20)
     print(student)
@@ -220,12 +223,12 @@ def main():
         invalid_student = Student("Eve", 150)  # Should raise an error
     except ValueError as e:
         print(f"Validation error: {e}")
-    
+
     print("\n=== Class-Based Decorator ===")
     print(increment(5))
     print(increment(10))
     print(increment(15))
-    
+
     print("\n=== Debug Decorator ===")
     result = divide(10, 2)
     print(f"Final result: {result}")

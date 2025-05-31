@@ -9,11 +9,13 @@ This example demonstrates basic Python syntax including:
 - Conditional execution
 """
 
+
 def main():
     """
     Program entry point
     """
     print("Hello, World!")
+
 
 if __name__ == "__main__":
     # This block executes when the script is run directly

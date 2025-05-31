@@ -17,7 +17,7 @@
  * @return Exit status code
  */
 int main() {
-    // Using the iostream library to print to standard output
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+  // Using the iostream library to print to standard output
+  std::cout << "Hello, World!" << std::endl;
+  return 0;
 }
