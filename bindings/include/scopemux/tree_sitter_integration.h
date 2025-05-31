@@ -14,7 +14,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <
+#include <string.h>
+
+// Directly include the Tree-sitter API header using a relative path that works in all cases
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 
 /**
  * @brief Tree-sitter parser wrapper
@@ -23,10 +26,10 @@
  * language-specific functionality.
  */
 typedef struct TreeSitterParser {
-  void *ts_parser;       // Tree-sitter parser instance
-  void *ts_language;     // Tree-sitter language definition
-  LanguageType language; // ScopeMux language type
-  char *language_name;   // Name of the language
+  TSParser *ts_parser;             // Tree-sitter parser instance
+  const TSLanguage *ts_language;   // Tree-sitter language definition
+  LanguageType language;           // ScopeMux language type
+  char *language_name;             // Name of the language
 
   // Error handling
   char *last_error; // Last error message
@@ -51,7 +54,7 @@ TreeSitterParser *ts_parser_init(LanguageType language);
 void ts_parser_free(TreeSitterParser *parser);
 
 /**
- * @brief Parse a string using Tree-sitter
+ * @brief Parse a string using Tree-sitter (ScopeMux wrapper around Tree-sitter's ts_parser_parse_string)
  *
  * @param parser Tree-sitter parser
  * @param content Source code content
@@ -60,7 +63,7 @@ void ts_parser_free(TreeSitterParser *parser);
  *
  * @note The returned tree must be freed with ts_tree_free()
  */
-void *ts_parser_parse_string(TreeSitterParser *parser, const char *content, size_t content_length);
+void *scopemux_ts_parser_parse_string(TreeSitterParser *parser, const char *content, size_t content_length);
 
 /**
  * @brief Free a Tree-sitter syntax tree

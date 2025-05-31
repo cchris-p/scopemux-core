@@ -12,9 +12,12 @@ pkg_check_modules(Criterion REQUIRED criterion)
 
 # Include directories
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../include # For scopemux headers (parser.h, ir.h, etc.)
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities  # For test_utils.h
-    ${Criterion_INCLUDE_DIRS}              # For criterion.h, provided by pkg_check_modules
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include/scopemux
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../vendor/tree-sitter/lib/include
+    ${Criterion_INCLUDE_DIRS}
     ${TS_CORE_INCLUDE_DIR}                 # For tree_sitter/api.h, from root CMake
     # Add other necessary include directories for your core C libraries if they are not covered
 )
@@ -38,13 +41,11 @@ set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/error_handling.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/logging.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/memory_management.c
-    # Include Tree-sitter core and grammar sources, as they are dependencies
-    # These variables (TS_CORE_SOURCES, TS_GRAMMAR_SOURCES) are inherited from the root CMakeLists.txt
-    ${TS_CORE_SOURCES}
-    ${TS_GRAMMAR_SOURCES}
+    # Tree-sitter core and grammar sources are now linked as libraries
 )
 
 set(C_PARSER_TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/c_parser_tests.c
     src/c_parser_tests.c
     ${TEST_UTIL_SOURCES} # Compile utilities directly with the test executable
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
@@ -56,6 +57,8 @@ add_executable(scopemux_c_parser_tests ${C_PARSER_TEST_SOURCES})
 # Link against Criterion (found via pkg-config) and other necessary system libraries
 target_link_libraries(scopemux_c_parser_tests PRIVATE
     ${Criterion_LIBRARIES} # Provided by pkg_check_modules
+    tree-sitter-core       # Tree-sitter core library
+    tree-sitter-grammars   # Tree-sitter language grammar libraries
     m                      # Math library, often needed
     dl                     # Dynamic linking library, sometimes needed by test frameworks or tree-sitter
 )

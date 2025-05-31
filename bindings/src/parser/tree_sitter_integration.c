@@ -7,17 +7,18 @@
  */
 
 #include "../../include/scopemux/tree_sitter_integration.h"
+#include "../../include/scopemux/parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Include Tree-sitter API
-#include "../../include/tree_sitter/api.h"
+// Include Tree-sitter API directly to ensure it's found
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 
 // Forward declarations for Tree-sitter language functions
-extern TSLanguage *tree_sitter_c(void);
-extern TSLanguage *tree_sitter_cpp(void);
-extern TSLanguage *tree_sitter_python(void);
+extern const TSLanguage *tree_sitter_c(void);
+extern const TSLanguage *tree_sitter_cpp(void);
+extern const TSLanguage *tree_sitter_python(void);
 
 /* Tree-sitter parser initialization */
 TreeSitterParser *ts_parser_init(LanguageType language) {
@@ -27,7 +28,8 @@ TreeSitterParser *ts_parser_init(LanguageType language) {
   }
 
   // Initialize fields
-  parser->ts_parser = ts_parser_new();
+  TSParser *ts_parser = ts_parser_new();
+  parser->ts_parser = ts_parser;
   parser->ts_language = NULL;
   parser->language = language;
   parser->language_name = NULL;
@@ -42,22 +44,22 @@ TreeSitterParser *ts_parser_init(LanguageType language) {
   // Set the language based on the provided language type
   switch (language) {
   case LANG_C:
-    parser->ts_language = (void *)tree_sitter_c();
+    parser->ts_language = tree_sitter_c();
     parser->language_name = strdup("C");
     break;
   case LANG_CPP:
-    parser->ts_language = (void *)tree_sitter_cpp();
+    parser->ts_language = tree_sitter_cpp();
     parser->language_name = strdup("C++");
     break;
   case LANG_PYTHON:
-    parser->ts_language = (void *)tree_sitter_python();
+    parser->ts_language = tree_sitter_python();
     parser->language_name = strdup("Python");
     break;
   default:
     // Unsupported language
     parser->last_error = strdup("Unsupported language");
     parser->error_code = 1;
-    ts_parser_delete((TSParser *)parser->ts_parser);
+    ts_parser_delete(parser->ts_parser);
     free(parser);
     return NULL;
   }
@@ -65,16 +67,16 @@ TreeSitterParser *ts_parser_init(LanguageType language) {
   if (!parser->ts_language) {
     parser->last_error = strdup("Failed to load language grammar");
     parser->error_code = 2;
-    ts_parser_delete((TSParser *)parser->ts_parser);
+    ts_parser_delete(parser->ts_parser);
     free(parser);
     return NULL;
   }
 
   // Set the language for the parser
-  if (!ts_parser_set_language((TSParser *)parser->ts_parser, (TSLanguage *)parser->ts_language)) {
+  if (!ts_parser_set_language(parser->ts_parser, parser->ts_language)) {
     parser->last_error = strdup("Failed to set language for parser");
     parser->error_code = 3;
-    ts_parser_delete((TSParser *)parser->ts_parser);
+    ts_parser_delete(parser->ts_parser);
     free(parser->language_name);
     free(parser);
     return NULL;
@@ -85,15 +87,37 @@ TreeSitterParser *ts_parser_init(LanguageType language) {
 
 /* Tree-sitter parser cleanup */
 void ts_parser_free(TreeSitterParser *parser) {
-  // TODO: Implement Tree-sitter parser cleanup
-  // Free all resources associated with the parser
+  if (parser) {
+    if (parser->ts_parser) {
+      ts_parser_delete(parser->ts_parser);
+      parser->ts_parser = NULL;
+    }
+    
+    if (parser->language_name) {
+      free(parser->language_name);
+      parser->language_name = NULL;
+    }
+    
+    if (parser->last_error) {
+      free(parser->last_error);
+      parser->last_error = NULL;
+    }
+    
+    free(parser);
+  }
 }
 
 /* String parsing with Tree-sitter */
-void *ts_parser_parse_string(TreeSitterParser *parser, const char *content, size_t content_length) {
-  // TODO: Implement Tree-sitter parsing of a string
-  // Use the Tree-sitter API to parse the content
-  return NULL; // Placeholder
+void *scopemux_ts_parser_parse_string(TreeSitterParser *parser, const char *content, size_t content_length) {
+  // TODO: Implement Tree-sitter parsing of a string using the Tree-sitter API
+  // We should use the actual ts_parser_parse_string from the Tree-sitter API here
+  if (!parser || !parser->ts_parser || !content) {
+    return NULL;
+  }
+  
+  // Call the Tree-sitter API function to parse the string
+  TSTree *tree = ts_parser_parse_string(parser->ts_parser, NULL, content, content_length);
+  return tree; // Return the tree for now, we'll need to wrap it later
 }
 
 /* Tree-sitter syntax tree cleanup */

@@ -12,8 +12,15 @@ endif()
 
 # Include directories - make sure all targets can find the headers
 include_directories(
+    # Tree-sitter headers must come first to ensure they're found correctly
+    ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tree-sitter/lib/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tree-sitter-c/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tree-sitter-cpp/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tree-sitter-python/src
+    # Project headers
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
+    # Python headers
     ${Python_INCLUDE_DIRS}
     ${pybind11_INCLUDE_DIRS}
 )

@@ -40,7 +40,10 @@ message(STATUS "Using Python include dirs: ${PYTHON_INCLUDE_DIRS}")
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings/include
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings/include/scopemux
-    ${TS_CORE_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tree-sitter/lib/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tree-sitter-c/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tree-sitter-cpp/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tree-sitter-python/src
     ${PYTHON_INCLUDE_DIRS}
 )
 
@@ -70,12 +73,18 @@ set(TS_PYTHON_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tree-sitter-python/src)
 # Tree-sitter core sources
 set(TS_CORE_SOURCES
     ${TS_CORE_DIR}/alloc.c
+    ${TS_CORE_DIR}/get_changed_ranges.c
     ${TS_CORE_DIR}/language.c
     ${TS_CORE_DIR}/lexer.c
+    ${TS_CORE_DIR}/lib.c
     ${TS_CORE_DIR}/node.c
     ${TS_CORE_DIR}/parser.c
+    ${TS_CORE_DIR}/query.c
+    ${TS_CORE_DIR}/stack.c
+    ${TS_CORE_DIR}/subtree.c
     ${TS_CORE_DIR}/tree.c
     ${TS_CORE_DIR}/tree_cursor.c
+    ${TS_CORE_DIR}/wasm_store.c
 )
 
 # Tree-sitter grammar sources
@@ -85,6 +94,25 @@ set(TS_GRAMMAR_SOURCES
     ${TS_CPP_SRC_DIR}/scanner.c
     ${TS_PYTHON_SRC_DIR}/parser.c
     ${TS_PYTHON_SRC_DIR}/scanner.c
+)
+
+# Create a library for the Tree-sitter core
+add_library(tree-sitter-core STATIC ${TS_CORE_SOURCES})
+target_include_directories(tree-sitter-core PUBLIC ${TS_CORE_INCLUDE_DIR})
+
+# Create a library for the Tree-sitter grammar parsers
+add_library(tree-sitter-grammars STATIC ${TS_GRAMMAR_SOURCES})
+target_include_directories(tree-sitter-grammars PUBLIC
+    ${TS_CORE_INCLUDE_DIR}
+    ${TS_C_SRC_DIR}
+    ${TS_CPP_SRC_DIR}
+    ${TS_PYTHON_SRC_DIR}
+)
+target_link_libraries(tree-sitter-grammars PRIVATE tree-sitter-core)
+
+# Add extern declarations for each language parser
+target_compile_definitions(tree-sitter-grammars PUBLIC
+    TREE_SITTER_PARSERS_AVAILABLE=1
 )
 
 # Define source files
@@ -100,8 +128,7 @@ set(SCOPEMUX_SOURCES
     bindings/src/common/error_handling.c
     bindings/src/common/logging.c
     bindings/src/common/memory_management.c
-    ${TS_CORE_SOURCES}
-    ${TS_GRAMMAR_SOURCES}
+    # Tree-sitter sources are now in separate libraries
 )
 
 # Python bindings module
@@ -113,6 +140,12 @@ target_include_directories(scopemux_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings/include/scopemux
     ${TS_CORE_INCLUDE_DIR}
     ${PYTHON_INCLUDE_DIRS}
+)
+
+# Link Tree-sitter libraries to the Python module
+target_link_libraries(scopemux_core PRIVATE
+    tree-sitter-core
+    tree-sitter-grammars
 )
 
 # Add the test suite subdirectory

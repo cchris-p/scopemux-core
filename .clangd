@@ -5,6 +5,9 @@ Diagnostics:
   Suppress:
     - unused-parameter
     - unused-includes
+    - pragma-once-outside-header
+    - pragma-pack
+    - pragma-visibility
 
 InlayHints:
   Enabled: true
