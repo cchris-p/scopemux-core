@@ -36,114 +36,106 @@ Give LLMs the *right amount* of compressed project context for any given task wi
 
 ***
 
-# FastAPI MCP Server (Very High Level)
+# ScopeMux C Bindings Project
 
-I am keeping this at a very high level because I have not yet scoped out the details of the scopemux-core bindings.
+This directory contains C implementations for performance-critical components of the ScopeMux project, with Python bindings using pybind11.
 
-Goal: Build an FastAPI MCP server that:
+## Project Overview
 
-* Connects with modern IDEs (like Windsurf, Cursor)
-* Compresses/uncompresses project context intelligently
-* Exposes only the **most relevant** parts of a project to LLMs
-* Supports multiple **tiers** of context granularity and fallback strategies
+ScopeMux C Bindings provides high-performance implementations of:
 
-Some API might look like:
+1. **Parser + IR Generator** - Parses source code using Tree-sitter and generates a compact, binary Intermediate Representation (IR) for each function/class with metadata.
 
-* `read_docstrings`
-* `read_function_names`
-* `select_function_names`
+2. **Tiered Context Engine** - Manages a pool of InfoBlocks (functions, classes, doc chunks), estimates token costs, ranks blocks by relevance, and applies compression to fit within token budgets.
 
-## 🗂️ Tiered Context Model
-
-| Tier | Content | Compression | Use Case |
-| --- | --- | --- | --- |
-| **T0** | File snippets (e.g., 20-line window) | Minimal | Real-time completions |
-| **T1** | Full active file, collapsed docstrings/comments | Light | Code summarization |
-| **T2** | Dependencies + current file | AST/deduplication | Refactoring |
-| **T3** | Cross-project context, e.g., all entrypoints | Aggressive | Bug triage, architecture review |
-| **T4** | Whole project, condensed | Embedding or chunk indexing | Retrieval-augmented prompting |
-
-We can build encoders for each tier, and the MCP server can expose an endpoint like:
+## Directory Structure (needs to be updated)
 
 ```
-GET /context?tier=T2&file=src/foo.py&cursor=1234
-
+c-bindings/
+├── CMakeLists.txt              # Main build configuration
+├── include/
+│   └── scopemux/               # Public API headers
+│       ├── parser.h            # Parser and IR interfaces
+│       ├── context_engine.h    # Context engine interfaces
+│       ├── tree_sitter_integration.h # Tree-sitter integration
+│       └── python_bindings.h   # Pybind11 interfaces
+├── src/
+│   ├── parser/                 # Parser implementation
+│   │   ├── parser.c
+│   │   ├── ir_generator.c
+│   │   └── tree_sitter_integration.c
+│   ├── context_engine/         # Context engine implementation
+│   │   ├── compressor.c
+│   │   ├── expander.c
+│   │   └── token_budgeter.c
+│   ├── common/                 # Shared utilities
+│   │   ├── error_handling.c
+│   │   ├── memory_management.c
+│   │   └── logging.c
+│   └── bindings/               # Python bindings
+│       ├── module.c
+│       ├── parser_bindings.c
+│       ├── context_engine_bindings.c
+│       └── tree_sitter_bindings.c
+├── tests/                      # Unit tests
+└── examples/                   # Example usage
 ```
 
-## ⚙️ Architecture Outline
+## Build Instructions
 
-### 1. **MCP Server (Core)**
+```bash
+# Create a build directory
+mkdir build && cd build
 
-* Written in Python, Node.js, or Rust
-* Accepts file + cursor context
-* Applies tier-specific compressors
-* Returns a transformed prompt (for OpenAI, Claude, etc.)
+# Configure
+cmake ..
 
-### 2. **Tier Encoders**
+# Build
+make
 
-Each tier will have its own strategy:
+# Install
+make install
+```
 
-* Token budget enforcement (truncate, collapse, etc.)
-* AST and symbol-based filtering
-* Graph-based dependency resolution
-* Embedding-based relevance filtering
+## Usage
 
-### 3. **IDE Integration Adapter**
+### Python Usage
 
-For Windsurf and Cursor:
+```python
+import scopemux_core
 
-* Use their plugin APIs or Language Server Protocol (LSP)
-* Hook into events like "onSave", "onCursorMove", etc.
-* Stream context updates to the MCP server
+# Initialize the parser
+parser = scopemux_core.ParserContext()
 
-***
+# Parse a file
+parser.parse_file("example.py")
 
-## 🧪 Development Plan
+# Get functions
+functions = parser.get_nodes_by_type(scopemux_core.NODE_FUNCTION)
 
-1. **Define Tiering Strategy**
-   * Establish what content each tier includes and how it's derived
-2. **Implement Compression Techniques**
-   * Lightweight: Token truncation, comment stripping
-   * Medium: AST pruning, identifier preservation
-   * Heavy: Embedding-based selection + semantic deduplication
-3. **Build MCP API**
-   * `/context` for context expansion
-   * `/suggest` for full LLM pipeline if desired
-4. **IDE Plugin (Start with Cursor)**
-   * React or Typescript plugin to communicate with MCP
-   * Trigger updates and forward editor state
+# Initialize the context engine
+engine = scopemux_core.ContextEngine()
 
-***
+# Add parser results to the context engine
+engine.add_parser_context(parser)
 
-## 🧰 Libraries & Tools
+# Rank blocks by cursor position
+engine.rank_blocks("example.py", 10, 5)
 
-* **Tree-sitter** for AST parsing and incremental syntax trees
-* **tiktoken** (or Claude tokenizer) for token counting
-* **Langchain/LLM Engine** for retrieval + prompt formatting
-* [\*\*Socket.io](http://socket.io/) or WebSockets\*\* for real-time IDE-server comms
-* **SQLite** or in-memory graph for file/module relationships
+# Compress to fit token budget
+engine.compress()
+
+# Get compressed context
+context = engine.get_context()
+print(context)
+```
 
 ***
 
-## 🔁 Example Workflow
+When adding new features:
 
-1. User selects a function in `foo.py`
-
-2. Cursor IDE sends:
-
-   ```json
-   {
-     "file": "src/foo.py",
-     "cursor": 215,
-     "tier": "T2"
-   }
-
-   ```
-
-3. MCP server:
-   * Parses `foo.py`
-   * Identifies imports/dependencies
-   * Summarizes docstrings/comments
-   * Returns context of ~4k tokens
-
-4. Cursor displays context-aware completions or diagnostics
+1. Add corresponding header files in `include/scopemux/`
+2. Implement in appropriate subdirectory under `src/`
+3. Add Python bindings in `src/bindings/`
+4. Update `CMakeLists.txt` to include new source files
+5. Add tests in `tests/`

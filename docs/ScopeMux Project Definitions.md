@@ -12,8 +12,6 @@ Project Indexing Stages
 
 Info Blocks are the fundamental, composable units of contextual information used to construct relevant prompts or context for an LLM agent. An Info Block represents any logically extractable, encapsulated chunk of code or documentation—essentially, anything that can be selected as a meaningful region within a file or project. Info Blocks can overlap and nest, forming a tree or DAG structure (e.g., a method inside a class, inside a file). This hierarchy is used for assembling higher-level context bundles (Tiered Contexts).
 
-Info Blocks are code snippets that are utilized as building blocks to consolidate relevant information related to the task presented to the LLM agent. This is the fundamental unit that will be used to build Tiered Conexts to be submitted in the chat. Examples of what info block can be include, but are not limited to, functions, classes, modules, files, conditionals, directories, etc. It is best to imagine that any useful information that can be defined as a selected section of a file (wrapped by what context it serves) can be defined as a type of info block. Some examples of what I'm referring to include docstrings, inline documentation, readme's like this one, build scripts, literally anything interpretable and encapsulate-able. An important note is that there is much overlap with Info blocks in general. For example, all the code within the info block of an if conditional exists within an info block of the function and also exists within the info block of a class. There is a tree-like mapping between these parent-child relationship, which is a critical utility to how Tiered Contexts are formed.
-
 **Examples of Info Blocks:**
 
 * Function definition (with name, signature, and docstring)
