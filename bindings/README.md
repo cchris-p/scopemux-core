@@ -2,6 +2,53 @@
 
 This directory contains C implementations for performance-critical components of the ScopeMux project, with Python bindings using pybind11.
 
+## TODO - Building the Minimal Directory Indexing
+
+* \[\_] Implement Parse file into CST (Concrete Syntax Tree)
+* \[\_] Implement Convert CST to AST (Abstract Syntax Tree)
+* \[\_] Implement Generate IR(s) from AST
+
+## TODO - Building the UML Semantic Models
+
+* \[\_] Implement Build Control Flow Graph (CFG)
+* \[\_] Implement Build Call Graph
+* \[\_] Implement Build Activity Diagram / Data Flow Graph
+
+## TODO - Add Support For InfoBlocks
+
+* \[\_] Implement Extract Symbol Table (defs, uses, scope)
+* \[\_] Implement Extract Docstrings and Comments
+
+## TODO - For Later
+
+* \[\_] Implement Generate Tiered Contexts
+* \[\_] Implement Embed InfoBlocks for semantic search
+* \[\_] Implement Apply Change Tracking (diff-aware IR)
+* \[\_] Implement Perform Relevance Ranking or Scoring
+* \[\_] Implement Visualize (e.g., UML, dependency diagrams)
+* \[\_] Implement Store in Context Database / Vector Index
+* \[\_] Implement Serve via API or MCP interface
+
+### Phase 1: Parser + IR Generator
+
+* Implement Tree-sitter integration
+* Build AST traversal and IR generation
+* Support C++ and Python code parsing
+
+### Phase 2: Context Engine
+
+* Implement token budget management
+* Create block ranking algorithms
+* Develop compression strategies
+
+### Future Components
+
+* Graph Analysis Engine (CFG, Call Graph)
+* Vector Search / Semantic Search
+* Metadata + Change Tracking
+* FlatBuffer Serialization
+* API Daemon Core
+
 ## Project Overview
 
 ScopeMux C Bindings provides high-performance implementations of:
@@ -10,7 +57,7 @@ ScopeMux C Bindings provides high-performance implementations of:
 
 2. **Tiered Context Engine** - Manages a pool of InfoBlocks (functions, classes, doc chunks), estimates token costs, ranks blocks by relevance, and applies compression to fit within token budgets.
 
-## Directory Structure
+## Directory Structure (needs to be updated)
 
 ```
 c-bindings/
@@ -43,16 +90,7 @@ c-bindings/
 └── examples/                   # Example usage
 ```
 
-## Building
-
-### Prerequisites
-
-- CMake 3.10+
-- C compiler with C11 support
-- Python 3.6+ with development headers
-- pybind11
-
-### Build Instructions
+## Build Instructions
 
 ```bash
 # Create a build directory
@@ -100,55 +138,3 @@ engine.compress()
 context = engine.get_context()
 print(context)
 ```
-
-## Development Roadmap
-
-### Phase 1: Parser + IR Generator
-- Implement Tree-sitter integration
-- Build AST traversal and IR generation
-- Support C++ and Python code parsing
-
-### Phase 2: Context Engine
-- Implement token budget management
-- Create block ranking algorithms
-- Develop compression strategies
-
-### Future Components
-- Graph Analysis Engine (CFG, Call Graph)
-- Vector Search / Semantic Search
-- Metadata + Change Tracking
-- FlatBuffer Serialization
-- API Daemon Core
-
-## Implementation Notes
-
-### Tree-sitter Integration
-
-The `tree_sitter_integration.c` will need to link against the Tree-sitter library and language-specific parsers. Current structure provides abstract interfaces, but concrete implementations will require:
-
-1. Download and build Tree-sitter
-2. Download language-specific grammars
-3. Link against these libraries
-
-### Context Engine Compression
-
-The compressor implements multiple compression levels:
-- `COMPRESSION_NONE`: No compression, full text
-- `COMPRESSION_LIGHT`: Basic compression, remove unnecessary whitespace
-- `COMPRESSION_MEDIUM`: Medium compression, shorten variable names
-- `COMPRESSION_HEAVY`: Heavy compression, remove comments and simplify
-- `COMPRESSION_SIGNATURE_ONLY`: Only keep function/class signatures
-
-### Memory Management
-
-All memory allocation/deallocation is handled by the C library. Python objects do not own the memory for IR nodes or contexts they reference, unless specified.
-
-## Contributing
-
-When adding new features:
-
-1. Add corresponding header files in `include/scopemux/`
-2. Implement in appropriate subdirectory under `src/`
-3. Add Python bindings in `src/bindings/`
-4. Update `CMakeLists.txt` to include new source files
-5. Add tests in `tests/`
