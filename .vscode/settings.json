@@ -1,18 +1,41 @@
 {
-    "cmake.ignoreCMakeListsMissing": true,
-    "editor.formatOnSave": true,
-    "[c]": {
-      "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
-    },
-    "[cpp]": {
-      "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
-    },
-    "files.associations": {
-      "*.h": "c",
-      "*.hpp": "cpp"
-    },
-    "clangd.arguments": [
-      "--header-insertion=never",
-      "--diagnostic-filter=-pragma*visibility*"
-    ]
+  "cmake.ignoreCMakeListsMissing": true,
+  "editor.formatOnSave": true,
+  "[c]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "files.associations": {
+    "*.h": "c",
+    "*.hpp": "cpp"
+  },
+  "clangd.arguments": [
+    "--header-insertion=never",
+    "--diagnostic-filter=-pragma*visibility*"
+  ],
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    ".gitmodules": true,
+    "direct_test.c": true,
+    "find_python_headers.sh": true,
+    "hello_scopemux.so": true,
+    "scopemux_core.cpython-310-x86_64-linux-gnu.so": true,
+    "setup_scopemux.py": true,
+    "setup_test.py": true,
+    "test_binding.c": true,
+    "test_scopemux.cpython-310-x86_64-linux-gnu.so": true,
+    "server": true,
+    "build": true,
+    "bindings/examples": true,
+    ".clang-format": true,
+    ".clangd": true,
+    ".python-version": true,
+    "bindings/src/bindings": true
+  }
 }
