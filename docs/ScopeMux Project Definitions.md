@@ -1,4 +1,4 @@
-# ScopeMux - Project Definitions
+# ScopeMux Project Definitions
 
 Project Indexing Stages
 
@@ -62,12 +62,6 @@ In this example as well as in every situation, selected Tiered Contexts are fund
 **Examples Tiered Context definitions:**
 
 ```
-All Auth Utility Functions
-
-Auth Backend Endpoints and Views
-
-All Auth UI Components
-
 All Database Models and their Relationships
 
 Critical Bug Fix Commits (last 30 days)
@@ -77,6 +71,8 @@ README + Top-level Build Instructions
 All Test Cases for Payment Processing
 
 Config Defaults + Environment Variable Definitions
+
+Docker-related Files
 ```
 
 Tiered Contexts are constructed as traversals or compositions of Info Blocks—either breadth/depth-first, or by semantic grouping. They may be hierarchical (e.g., all methods in a class), but can also be cross-cutting (e.g., all login-related code in multiple files). The context depth, breadth, or specificity can be controlled (e.g., limit to 2 levels deep, or include only top-level functions).

@@ -36,6 +36,7 @@
     ".clang-format": true,
     ".clangd": true,
     ".python-version": true,
-    "bindings/src/bindings": true
+    "bindings/src/bindings": true,
+    "vendor": true
   }
 }
