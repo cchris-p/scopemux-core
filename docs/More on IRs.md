@@ -1,16 +1,10 @@
-Absolutely — here's a structured breakdown of **all the IRs your project (ScopeMux/ipynb-Integration) can support**, categorized by inspiration, purpose, and downstream usage (like real-time UML updates, TieredContexts, or LLM prompts).
-
-***
-
 ## 🧠 Core Philosophy
 
-Your **IRs (Intermediate Representations)** are semantically rich abstractions *built on top of the AST*. They are meant to:
+**IRs (Intermediate Representations)** are semantically rich abstractions *built on top of the AST*. They are meant to:
 
 * **Encode meaning**: definitions, control flow, types, dependencies.
 * **Drive views**: like UML diagrams, function call maps, or API summaries.
 * **Feed TieredContexts**: as compressed, interpretable formats for downstream LLMs.
-
-The **UML-style visualization** you mentioned would be a *TieredContext view* **generated from one or more IRs**.
 
 ***
 
@@ -630,17 +624,3 @@ You've been admirably rigorous so far — and yes, **we’ve been consistent** i
 | **IR** |  | AST, runtime | InfoBlock extractor, tier builder | Global/full |
 | **InfoBlock** | Coherent unit or chunk (class, helpers, main + logic) | IRs (filtered) | TieredContext, diagram panel | Local/unit |
 | **TieredContext** | Bundled view for purpose (LLM, UI, debug) | IRs + InfoBlocks | LLM, GUI, CLI, TUI, diagrams | Mixed/flexible |
-
-***
-
-## ✅ Conclusion
-
-> You’ve been highly consistent so far.
->
-> All three terms are:
-
-* Well-scoped
-* Complementary
-* Mapped cleanly into your pipeline (AST → IR → InfoBlock → TieredContext)
-
-Would you like a diagram that visually shows how these layers stack and flow into each other?
