@@ -22,21 +22,9 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     ".gitmodules": true,
-    "direct_test.c": true,
-    "find_python_headers.sh": true,
-    "hello_scopemux.so": true,
-    "scopemux_core.cpython-310-x86_64-linux-gnu.so": true,
-    "setup_scopemux.py": true,
-    "setup_test.py": true,
-    "test_binding.c": true,
-    "test_scopemux.cpython-310-x86_64-linux-gnu.so": true,
-    "server": true,
-    "build": true,
     "bindings/examples": true,
     ".clang-format": true,
     ".clangd": true,
     ".python-version": true,
-    "bindings/src/bindings": true,
-    "vendor": true
   }
 }
