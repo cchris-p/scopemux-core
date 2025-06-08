@@ -1,4 +1,6 @@
-## TODO - Building the Minimal Directory Indexing
+# TODO - General
+
+## Building the Minimal Directory Indexing
 
 * \[\_] Implement Parse file into CST (Concrete Syntax Tree)
 * \[\_] Implement Convert CST to AST (Abstract Syntax Tree)
@@ -7,18 +9,18 @@
 * \[\_] Implement Build AST traversal and IR generation
 * \[\_] Implement Support C++ and Python code parsing
 
-## TODO - Building the UML Semantic Models
+## Building the UML Semantic Models
 
 * \[\_] Implement Build Control Flow Graph (CFG)
 * \[\_] Implement Build Call Graph
 * \[\_] Implement Build Activity Diagram / Data Flow Graph
 
-## TODO - Add Support For InfoBlocks
+## Add Support For InfoBlocks
 
 * \[\_] Implement Extract Symbol Table (defs, uses, scope)
 * \[\_] Implement Extract Docstrings and Comments
 
-## TODO - Add Support For Tiered Contexts
+## Add Support For Tiered Contexts
 
 * \[\_] Implement Generate Tiered Contexts
 * \[\_] Implement Embed InfoBlocks for semantic search
@@ -28,17 +30,17 @@
 * \[\_] Implement Store in Context Database / Vector Index
 * \[\_] Implement Serve via API or MCP interface
 
-## TODO - FastAPI Server
+## FastAPI Server
 
 * \[\_] Implement FastAPI Server
 
-### TODO - Tiered Context Engine
+### Tiered Context Engine
 
 * \[\_] Implement token budget management
 * \[\_] Implement Create block ranking algorithms
 * \[\_] Implement Develop compression strategies
 
-## TODO - Misc
+## Misc
 
 * \[\_] Implement Graph Analysis Engine (CFG, Call Graph)
 * \[\_] Implement Vector Search / Semantic Search
@@ -46,7 +48,7 @@
 * \[\_] Implement FlatBuffer Serialization
 * \[\_] Implement API Daemon Core
 
-## Tasks Derived from Design Documents
+# Tasks Derived from Design Documents
 
 ### Core Indexing Process (from 'How Should Each Directory Be Indexed.md')
 
@@ -99,3 +101,7 @@
 
 * \[\_] Implement an agent to map natural language requests to relevant InfoBlocks.
 * \[\_] Implement a system for storing and reusing InfoBlock templates (with variable omission).
+
+# Ideas
+
+*
