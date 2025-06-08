@@ -23,10 +23,8 @@
     "**/Thumbs.db": true,
     ".gitmodules": true,
     "bindings/examples": true,
-    ".clang-format": true,
-    ".clangd": true,
     ".python-version": true,
     "vendor": true,
-    "build": true
+    "build": true,
   }
 }

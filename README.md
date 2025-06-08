@@ -139,3 +139,38 @@ When adding new features:
 3. Add Python bindings in `src/bindings/`
 4. Update `CMakeLists.txt` to include new source files
 5. Add tests in `tests/`
+
+## Development Notes
+
+### Tree-sitter API Header Symlink
+
+The C core build process expects the Tree-sitter API header `tree_sitter/api.h` to be available within its include path, typically via `core/include/tree_sitter/api.h`. This file is usually a symbolic link to the actual header provided by the Tree-sitter library, which is vendored in this project at `vendor/tree-sitter/lib/include/tree_sitter/api.h`.
+
+This symbolic link is **not** automatically created by the CMake build process. If it is missing or broken, you will need to create it.
+
+**To create the symbolic link (recommended method, using a relative path for portability):**
+
+1. Ensure the target directory for the link exists. From the project root (`/home/matrillo/apps/scopemux`):
+   ```sh
+   mkdir -p core/include/tree_sitter
+   ```
+2. Create the symbolic link. From the project root:
+   ```sh
+   ln -s ../../../vendor/tree-sitter/lib/include/tree_sitter/api.h core/include/tree_sitter/api.h
+   ```
+   This creates a link at `core/include/tree_sitter/api.h` that points relatively to the vendored header. The relative path `../../../` navigates from `core/include/tree_sitter/` up to the project root, then into `vendor/`.
+
+**Alternatively, using an absolute path (less portable):**
+From the project root:
+
+```sh
+ln -s "$(pwd)/vendor/tree-sitter/lib/include/tree_sitter/api.h" "$(pwd)/core/include/tree_sitter/api.h"
+```
+
+Or more directly, if you know the absolute path to the project:
+
+```sh
+ln -s /home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include/tree_sitter/api.h /home/matrillo/apps/scopemux/core/include/tree_sitter/api.h
+```
+
+The `ls -l` output showed that the existing symlink on your system uses an absolute path. For better project portability, a relative symlink is preferred if you need to recreate it.
