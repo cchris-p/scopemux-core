@@ -10,3 +10,6 @@
 [submodule "vendor/tree-sitter"]
 	path = vendor/tree-sitter
 	url = https://github.com/tree-sitter/tree-sitter.git
+[submodule "core/test-cases"]
+	path = core/test-cases
+	url = https://github.com/cchris-p/scopemux-test-cases

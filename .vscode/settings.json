@@ -24,7 +24,6 @@
     ".gitmodules": true,
     "bindings/examples": true,
     ".python-version": true,
-    "vendor": true,
     "build": true,
   }
 }
