@@ -1,3 +1,5 @@
+# ScopeMux IRs: Conceptual Foundations, Relationships, and Advanced Topics
+
 ## 🧠 Core Philosophy
 
 **IRs (Intermediate Representations)** are semantically rich abstractions *built on top of the AST*. They are meant to:
@@ -8,177 +10,51 @@
 
 ***
 
-## 🧱 Categories of IRs You Can Support
+## 🧱 Conceptual Categories of IRs
 
-### 1. **Symbol IR**
-
-> ✅ Already in progress.
-
-* **Purpose**: Capture all definitions — classes, functions, variables, types.
-* **Structure**: Table or graph of symbols, scopes, and relationships.
-* **Feeds**:
-  * UML Class Diagrams
-  * Public API Map
-  * Docstring/Signature View
+Thinking about IRs in categories can help organize their purposes. While specific IRs are detailed in the "Supported IRs" document, general categories often include structural, relational/graph-based, and semantic IRs. This document explores the broader concepts and roles of IRs within ScopeMux.
 
 ***
 
-### 2. **Call Graph IR**
+## 🧩 Sample Flow: Illustrating IR Inter-relationships
 
-> 🔁 Function-level connections.
-
-* **Purpose**: Show which functions call which others (static or dynamic).
-* **Structure**: Directed graph: `caller → callee`.
-* **Feeds**:
-  * UML Sequence Diagrams (function-level)
-  * Hot Path/Trace Viewer
-  * Async or coroutine flow viewers
-
-***
-
-### 3. **Activity IR**
-
-> 🧩 Inspired by UML Activity Diagrams.
-
-* **Purpose**: Show control flow: decisions, loops, branches.
-* **Structure**: CFG-style nodes for logic blocks.
-* **Feeds**:
-  * UML Activity Diagrams
-  * Execution trace mapping
-  * Logic step viewers
-
-***
-
-### 4. **Type IR**
-
-> 🧬 Inspired by TypeScript / MyPy / Clang.
-
-* **Purpose**: Track inferred/static types for all symbols.
-* **Structure**: Symbol → Type annotations + inference.
-* **Feeds**:
-  * Type overview diagrams
-  * Autocomplete + Hover hints
-  * LLM-guided type correction/debug
-
-***
-
-### 5. **Import / Dependency IR**
-
-> 📦 Modular visibility and coupling map.
-
-* **Purpose**: Track file/module/package imports and exports.
-* **Structure**: Directed graph or table.
-* **Feeds**:
-  * UML Component Diagrams
-  * Dependency Trees / Cycle Detectors
-  * Package-level API summary
-
-***
-
-### 6. **Exception Flow IR**
-
-> 🚨 Inspired by Fault Trees / UML Exception Scenarios.
-
-* **Purpose**: Map which blocks or functions can raise exceptions, and how they're handled.
-* **Structure**: Exception origin → handler path.
-* **Feeds**:
-  * Error propagation diagrams
-  * Resilience/Uptime modeling
-
-***
-
-### 7. **Memory/Object Lifetime IR**
-
-> 🧠 Inspired by heap/stack graphs.
-
-* **Purpose**: Track creation, references, and lifetimes of objects (esp. in OOP or systems code).
-* **Feeds**:
-  * UML Object Diagrams
-  * Scope-aware memory snapshots
-  * Python/C++ destructor lifecycle tracing
-
-***
-
-### 8. **Doc IR**
-
-> 📘 Inspired by Doxygen / Sphinx.
-
-* **Purpose**: Extract and map docstrings, annotations, and documentation relationships.
-* **Feeds**:
-  * API Docs
-  * Class/function summaries
-  * LLM docstring fill-in views
-
-***
-
-### 9. **Execution Trace IR (Optional Hook)**
-
-> ⏱️ Runtime layer to annotate IRs.
-
-* **Purpose**: Combine static IRs with runtime data (profiling, logs, etc.).
-* **Feeds**:
-  * Trace-based UML Sequence Diagrams
-  * Coverage-aware Tiered Contexts
-  * Dynamic Type Inference updates
-
-***
-
-### 10. **Test Coverage IR**
-
-> 🧪 Source-to-test mapping.
-
-* **Purpose**: Track testable units and coverage.
-* **Feeds**:
-  * Test vs. Code Matrix
-  * Critical Path Testing Tiers
-  * Missing test suggestions
-
-***
-
-## 🧩 Sample Flow: UML Diagram from IRs
-
-For example, a **UML Class Diagram** might be generated using:
+IRs often work together. For example, a **UML Class Diagram** might be generated using:
 
 * `Symbol IR` (for class/function defs)
 * `Type IR` (for attribute/method types)
 * `Import IR` (for external references)
 * → transformed into a **TieredContext UML View**, which updates in real time.
 
-***
-
-## 🗺️ Future or Advanced IRs
-
-* **Semantic IR**: Natural-language summary of purpose/behavior per symbol (LLM-assisted).
-* **Concurrency IR**: Maps threads, async calls, locks.
-* **Contract IR**: Captures input/output constraints, pre/post-conditions.
-* **Regulatory IR**: Extracts GDPR, safety, or compliance-related logic.
+This illustrates how different IRs contribute to a single, higher-level understanding or artifact.
 
 ***
 
-## 💡 Summary Table
+## 🗺️ Future or Advanced IR Considerations
 
-| IR Name | Feeds Into | UML-Related? | Core Use |
+The ScopeMux IR framework is extensible. While the "Supported IRs" document lists currently implemented representations, this space can be used to discuss potential future IRs or more advanced concepts that could further enhance code understanding and manipulation capabilities. Examples previously considered here (like Semantic, Concurrency, Contract, and Regulatory IRs) have been integrated into the supported list as they matured.
+
+***
+
+## 💡 Summary Table of IR Concepts
+
+This table provides a conceptual overview of various IR types and their general roles. For specific details on supported IRs, refer to the "Supported IRs" document.
+
+| IR Concept Category | Feeds Into Examples | UML-Related? | Core Use Focus |
 | --- | --- | --- | --- |
-| Symbol IR | Class Diagram, API map | ✅ | Def/use tracking |
-| Call Graph IR | Sequence Diagram | ✅ | Func/Method topology |
-| Activity IR | Activity Diagram | ✅ | Logic flow (CFG) |
-| Type IR | Attribute/method types | ✅ | Type introspection |
-| Import/Dep IR | Component Diagram | ✅ | Package/module flow |
-| Exception Flow IR | Fault/Exception Diagrams | ✅ | Resilience mapping |
-| Memory IR | Object Diagram | ✅ | Lifetime/model diagrams |
-| Doc IR | Class/API summaries | Partial | LLM doc views |
-| Execution Trace IR | Sequence, Performance Diagrams | ✅ | Real-time behavior |
-| Test Coverage IR | Test ↔ Code Tier Map | Indirect | QA and safety views |
+| Symbol/Definition Tracking | Class Diagrams, API maps | ✅ | Definition/use tracking |
+| Call/Execution Flow | Sequence Diagrams | ✅ | Function/Method topology |
+| Control/Activity Flow | Activity Diagrams | ✅ | Logic flow (CFG) |
+| Type Systems | Attribute/method types in diagrams | ✅ | Type introspection |
+| Module/Dependency Mapping | Component Diagrams | ✅ | Package/module relationships |
+| Error/Exception Handling | Fault/Exception Diagrams | ✅ | Resilience mapping |
+| Object/Memory Lifecycle | Object Diagrams | ✅ | Lifetime/model diagrams |
+| Documentation Extraction | Class/API summaries | Partial | LLM doc views, code summaries |
+| Runtime Behavior Tracing | Dynamic Sequence, Performance Diagrams | ✅ | Real-time behavior analysis |
+| Test/Code Linkage | Test ↔ Code Tier Maps | Indirect | QA and safety views |
 
 ***
 
-If you'd like, I can help define the **data schema for each IR** or write the transformer from AST → IR (in C or Python).
-
-Excellent question — and crucial for architecting ScopeMux properly.
-
-***
-
-## 🔄 TL;DR:
+## 🔄 TL;DR: IRs vs. Tiered Contexts
 
 * **IRs** are *raw semantic models* extracted from the AST.
 * **Tiered Contexts** are *compressed, curated views* built **on top of one or more IRs**, tailored for specific use cases like:
@@ -193,11 +69,13 @@ Excellent question — and crucial for architecting ScopeMux properly.
 
 ***
 
-## 🧱 Why Are These IRs and Not Tiered Contexts?
+## 🧱 Why IRs are Foundational (and distinct from Tiered Contexts)
 
 ### ✅ 1. **IRs capture full structure and semantics**
 
-IRs are meant to be **complete and lossless** representations of a specific semantic property of code (symbols, control flow, imports, etc). Think of each IR like a normalized SQL table or a graph database:
+IRs are meant to be **complete and lossless** representations of a specific semantic property of code (symbols, control flow, imports, etc.). Think of each IR like a normalized SQL table or a graph database: they aim for comprehensive capture of their domain.
+
+Tiered Contexts, on the other hand, are selective views or aggregations *derived* from these rich IRs, optimized for specific tasks or token budgets. They don't aim for completeness in the same way; they aim for relevance and conciseness for a particular purpose.
 
 * `SymbolIR`: every defined entity, its type, scope, and location.
 * `CallGraphIR`: every call edge in the code.
