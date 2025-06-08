@@ -8,14 +8,14 @@ RUN_C_PARSER_CRITERION_TESTS=true
 # --- Configuration ---
 # Project root directory (assuming this script is in the root)
 PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-BINDINGS_DIR="${PROJECT_ROOT_DIR}/bindings"
-TESTS_DIR="${BINDINGS_DIR}/tests"
+CORE_DIR="${PROJECT_ROOT_DIR}/core"
+TESTS_DIR="${CORE_DIR}/tests"
 
 # Main CMake build directory for the entire project
 CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
 
 # Relative path from the CMAKE_PROJECT_BUILD_DIR to where the C test executable is located
-C_TEST_EXECUTABLE_RELPATH="bindings/tests/scopemux_c_parser_tests"
+C_TEST_EXECUTABLE_RELPATH="core/tests/scopemux_c_parser_tests"
 set +x # Disable debug output
 
 # Sample code and expected output paths
