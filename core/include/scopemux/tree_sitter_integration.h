@@ -26,10 +26,10 @@
  * language-specific functionality.
  */
 typedef struct TreeSitterParser {
-  TSParser *ts_parser;             // Tree-sitter parser instance
-  const TSLanguage *ts_language;   // Tree-sitter language definition
-  LanguageType language;           // ScopeMux language type
-  char *language_name;             // Name of the language
+  TSParser *ts_parser;           // Tree-sitter parser instance
+  const TSLanguage *ts_language; // Tree-sitter language definition
+  LanguageType language;         // ScopeMux language type
+  char *language_name;           // Name of the language
 
   // Error handling
   char *last_error; // Last error message
@@ -54,7 +54,8 @@ TreeSitterParser *ts_parser_init(LanguageType language);
 void ts_parser_free(TreeSitterParser *parser);
 
 /**
- * @brief Parse a string using Tree-sitter (ScopeMux wrapper around Tree-sitter's ts_parser_parse_string)
+ * @brief Parse a string using Tree-sitter (ScopeMux wrapper around Tree-sitter's
+ * ts_parser_parse_string)
  *
  * @param parser Tree-sitter parser
  * @param content Source code content
@@ -63,7 +64,8 @@ void ts_parser_free(TreeSitterParser *parser);
  *
  * @note The returned tree must be freed with ts_tree_free()
  */
-void *scopemux_ts_parser_parse_string(TreeSitterParser *parser, const char *content, size_t content_length);
+void *scopemux_ts_parser_parse_string(TreeSitterParser *parser, const char *content,
+                                      size_t content_length);
 
 /**
  * @brief Free a Tree-sitter syntax tree
