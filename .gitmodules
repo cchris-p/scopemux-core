@@ -13,3 +13,6 @@
 [submodule "core/test-cases"]
 	path = core/test-cases
 	url = https://github.com/cchris-p/scopemux-test-cases
+[submodule "core/tests/examples"]
+	path = core/tests/examples
+	url = https://github.com/cchris-p/scopemux-test-cases
