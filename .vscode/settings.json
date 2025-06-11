@@ -2,10 +2,10 @@
   "cmake.ignoreCMakeListsMissing": true,
   "editor.formatOnSave": true,
   "[c]": {
-    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    "editor.defaultFormatter": "xaver.clang-format"
   },
   "[cpp]": {
-    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    "editor.defaultFormatter": "xaver.clang-format"
   },
   "files.associations": {
     "*.h": "c",
@@ -22,7 +22,6 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     ".gitmodules": true,
-    "bindings/examples": true,
     ".python-version": true,
     "build": true,
   }
