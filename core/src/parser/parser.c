@@ -55,42 +55,16 @@ void parser_free(ParserContext *ctx) {
     return;
   }
 
-  // Free source code and filename
-  if (ctx->source_code) {
-    free(ctx->source_code);
-    ctx->source_code = NULL;
+  // Clear all data associated with the last parse run
+  parser_clear(ctx);
+
+  // Free the Tree-sitter parser instance, which is persistent across clears
+  if (ctx->ts_parser) {
+    ts_parser_delete(ctx->ts_parser);
+    ctx->ts_parser = NULL;
   }
 
-  if (ctx->filename) {
-    free(ctx->filename);
-    ctx->filename = NULL;
-  }
-
-  // Free error message
-  if (ctx->last_error) {
-    free(ctx->last_error);
-    ctx->last_error = NULL;
-  }
-
-  // Free AST nodes
-  if (ctx->ast_root) {
-    ast_node_free(ctx->ast_root);
-    ctx->ast_root = NULL;
-  }
-
-  // Free CST nodes
-  if (ctx->cst_root) {
-    cst_node_free(ctx->cst_root);
-    ctx->cst_root = NULL;
-  }
-
-  // Free the flat array of nodes (but not the nodes themselves as they're freed via ast_root)
-  if (ctx->all_ast_nodes) {
-    free(ctx->all_ast_nodes);
-    ctx->all_ast_nodes = NULL;
-  }
-
-  // Free the parser context itself
+  // Free the parser context struct itself
   free(ctx);
 }
 
@@ -368,117 +342,74 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
 /* String parsing */
 bool parser_parse_string(ParserContext *ctx, const char *const content, size_t content_length,
                          const char *filename, LanguageType language) {
-  // parser_parse_string: parse a source string, build AST, and clean up resources
   if (!ctx || !content || content_length == 0) {
+    parser_set_error(ctx, -1, "Invalid arguments to parser_parse_string");
     return false;
   }
 
-  // Reset previous parse state
-  if (ctx->source_code) {
-    free(ctx->source_code);
-  }
-  if (ctx->filename) {
-    free(ctx->filename);
-  }
-  if (ctx->last_error) {
-    free(ctx->last_error);
-    ctx->last_error = NULL;
-  }
+  // Clear any previous parse results before starting a new run
+  parser_clear(ctx);
 
-  // Store new source code and filename
-  ctx->source_code = (char *)malloc(content_length + 1);
+  // Store source code and metadata in the context
+  ctx->source_code = strdup(content);
   if (!ctx->source_code) {
-    ctx->last_error = strdup("Memory allocation failed for source code");
+    parser_set_error(ctx, -1, "Failed to allocate memory for source code");
     return false;
   }
-  memcpy(ctx->source_code, content, content_length);
-  ctx->source_code[content_length] = '\0';
   ctx->source_code_length = content_length;
 
   if (filename) {
     ctx->filename = strdup(filename);
-  } else {
-    ctx->filename = strdup("<unknown>");
-  }
-
-  // Detect language if not provided
-  if (language == LANG_UNKNOWN) {
-    language = parser_detect_language(filename, content, content_length);
+    if (!ctx->filename) {
+      parser_set_error(ctx, -1, "Failed to allocate memory for filename");
+      return false; // source_code will be freed by parser_clear/free
+    }
   }
   ctx->language = language;
 
-  if (ctx->language == LANG_UNKNOWN) {
-    ctx->last_error = strdup("Unable to determine language");
+  // Initialize the Tree-sitter parser for the given language if not already done
+  if (!ts_init_parser(ctx, language)) {
+    // ts_init_parser is responsible for setting a detailed error message
     return false;
   }
 
-  // Initialize AST root node representing the module/file
-  SourceRange file_range = {{0, 0, 0}, {0, 0, 0}}; // Will be populated properly later
+  // Parse the source code to get a raw Tree-sitter tree
+  TSTree *tree = ts_parser_parse_string(ctx->ts_parser, NULL, content, content_length);
+  if (!tree) {
+    parser_set_error(ctx, -1, "Tree-sitter failed to parse the source code");
+    return false;
+  }
+
+  // Get the root node of the syntax tree
+  TSNode root_node = ts_tree_root_node(tree);
+  if (ts_node_is_null(root_node)) {
+    parser_set_error(ctx, -1, "Tree-sitter returned a null root node");
+    ts_tree_delete(tree);
+    return false;
+  }
+
+  bool success = false;
+  // Based on the selected mode, generate either an AST or a CST
   if (ctx->mode == PARSE_AST) {
-    ctx->ast_root = ts_tree_to_ir(ts_root_node, ctx);
-    if (!ctx->ast_root) {
-      parser_set_error(ctx, 1, "Failed to convert Tree-sitter tree to AST IR");
-      ts_tree_delete(tree);
-      return false;
+    ctx->ast_root = ts_tree_to_ast(root_node, ctx);
+    if (ctx->ast_root) {
+      success = true;
     }
-  } else { // PARSE_CST
-    // Assumes a function `ts_tree_to_cst` is implemented in tree_sitter_integration.c
-    ctx->cst_root = ts_tree_to_cst(ts_root_node, ctx);
-    if (!ctx->cst_root) {
-      parser_set_error(ctx, 1, "Failed to convert Tree-sitter tree to CST");
-      ts_tree_delete(tree);
-      return false;
+    // ts_tree_to_ast will set the error on failure
+  } else if (ctx->mode == PARSE_CST) {
+    ctx->cst_root = ts_tree_to_cst(root_node, ctx);
+    if (ctx->cst_root) {
+      success = true;
     }
+    // ts_tree_to_cst will set the error on failure
+  } else {
+    parser_set_error(ctx, -1, "Unknown or unsupported parse mode selected");
   }
 
-  // Prepare flat AST node list with module root
-  ctx->ast_nodes_capacity = 4;
-  ctx->all_ast_nodes = (ASTNode **)malloc(ctx->ast_nodes_capacity * sizeof(ASTNode *));
-  if (!ctx->all_ast_nodes) {
-    ctx->last_error = strdup("Memory allocation failed for node list");
-    ast_node_free(ctx->ast_root);
-    return false;
-  }
-  ctx->num_ast_nodes = 0;
-  ctx->all_ast_nodes[ctx->num_ast_nodes++] = ctx->ast_root;
+  // Clean up the raw Tree-sitter tree, as it's no longer needed
+  ts_tree_delete(tree);
 
-  // Initialize Tree-sitter parser for language
-  ctx->ts_parser = ts_parser_init(ctx->language);
-  if (!ctx->ts_parser) {
-    ctx->last_error = strdup("Unable to initialize parser");
-    // free any allocated resources
-    ast_node_free(ctx->ast_root);
-    free(ctx->all_ast_nodes);
-    return false;
-  }
-
-  // Parse source into a CST (Concrete Syntax Tree)
-  ctx->tree = scopemux_ts_parser_parse_string(ctx->ts_parser, content, content_length);
-  if (!ctx->tree) {
-    ctx->last_error = strdup("Unable to set tree");
-    // cleanup
-    ts_parser_free(ctx->ts_parser);
-    ast_node_free(ctx->ast_root);
-    free(ctx->all_ast_nodes);
-    return false;
-  }
-  ctx->root_ts_node = ts_tree_root_node(ctx->tree);
-
-  // Convert CST/AST to intermediate AST nodes
-  if (!ts_tree_to_ast(ctx->ts_parser, ctx->tree, ctx)) {
-    ctx->last_error = strdup(ts_parser_get_last_error(ctx->ts_parser));
-    // On AST conversion failure, clean up parser and tree
-    ts_tree_free(ctx->tree);
-    ts_parser_free(ctx->ts_parser);
-    ast_node_free(ctx->ast_root);
-    free(ctx->all_ast_nodes);
-    return false;
-  }
-
-  // Clean up Tree-sitter resources
-  ts_tree_free(ctx->tree);
-  ts_parser_free(ctx->ts_parser);
-  return true;
+  return success;
 }
 
 /* Error handling */
