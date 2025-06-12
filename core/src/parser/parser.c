@@ -3,7 +3,7 @@
  * @brief Implementation of the parser module for ScopeMux
  *
  * This file implements the main parser functionality, responsible for
- * parsing source code and managing the resulting IR nodes.
+ * parsing source code and managing the resulting AST nodes.
  */
 
 #include "../../include/scopemux/parser.h"
@@ -26,10 +26,10 @@ ParserContext *parser_init(void) {
   ctx->source_code_length = 0;
   ctx->language = LANG_UNKNOWN;
 
-  ctx->root_node = NULL;
-  ctx->all_nodes = NULL;
-  ctx->num_nodes = 0;
-  ctx->nodes_capacity = 0;
+  ctx->ast_root = NULL;
+  ctx->all_ast_nodes = NULL;
+  ctx->num_ast_nodes = 0;
+  ctx->ast_nodes_capacity = 0;
 
   ctx->last_error = NULL;
   ctx->error_code = 0;
@@ -60,20 +60,33 @@ void parser_free(ParserContext *ctx) {
     ctx->last_error = NULL;
   }
 
-  // Free IR nodes
-  if (ctx->root_node) {
-    ir_node_free(ctx->root_node);
-    ctx->root_node = NULL;
+  // Free AST nodes
+  if (ctx->ast_root) {
+    ast_node_free(ctx->ast_root);
+    ctx->ast_root = NULL;
   }
 
-  // Free the flat array of nodes (but not the nodes themselves as they're freed via root_node)
-  if (ctx->all_nodes) {
-    free(ctx->all_nodes);
-    ctx->all_nodes = NULL;
+  // Free the flat array of nodes (but not the nodes themselves as they're freed via ast_root)
+  if (ctx->all_ast_nodes) {
+    free(ctx->all_ast_nodes);
+    ctx->all_ast_nodes = NULL;
   }
 
   // Free the parser context itself
   free(ctx);
+}
+
+/* Parser reset */
+void parser_clear(ParserContext *ctx) {
+  if (!ctx) {
+    return;
+  }
+
+  // This function will clear the results of the last parse,
+  // but keep the context and its settings alive.
+  // Implementation is pending.
+
+  // For now, it's a no-op.
 }
 
 /* Language detection */
@@ -195,9 +208,9 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
 }
 
 /* String parsing */
-bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
+bool parser_parse_string(ParserContext *ctx, const char *const content, size_t content_length,
                          const char *filename, LanguageType language) {
-  // parser_parse_string: parse a source string, build IR, and clean up resources
+  // parser_parse_string: parse a source string, build AST, and clean up resources
   if (!ctx || !content || content_length == 0) {
     return false;
   }
@@ -241,32 +254,32 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     return false;
   }
 
-  // Initialize IR root node representing the module/file
+  // Initialize AST root node representing the module/file
   SourceRange file_range = {{0, 0, 0}, {0, 0, 0}}; // Will be populated properly later
-  ctx->root_node = ir_node_create(NODE_MODULE, ctx->filename, ctx->filename, file_range);
-  if (!ctx->root_node) {
-    ctx->last_error = strdup("Failed to create root IR node");
+  ctx->ast_root = ast_node_create(NODE_MODULE, ctx->filename, ctx->filename, file_range);
+  if (!ctx->ast_root) {
+    ctx->last_error = strdup("Failed to create root AST node");
     return false;
   }
 
-  // Prepare flat IR node list with module root
-  ctx->nodes_capacity = 4;
-  ctx->all_nodes = (IRNode **)malloc(ctx->nodes_capacity * sizeof(IRNode *));
-  if (!ctx->all_nodes) {
+  // Prepare flat AST node list with module root
+  ctx->ast_nodes_capacity = 4;
+  ctx->all_ast_nodes = (ASTNode **)malloc(ctx->ast_nodes_capacity * sizeof(ASTNode *));
+  if (!ctx->all_ast_nodes) {
     ctx->last_error = strdup("Memory allocation failed for node list");
-    ir_node_free(ctx->root_node);
+    ast_node_free(ctx->ast_root);
     return false;
   }
-  ctx->num_nodes = 0;
-  ctx->all_nodes[ctx->num_nodes++] = ctx->root_node;
+  ctx->num_ast_nodes = 0;
+  ctx->all_ast_nodes[ctx->num_ast_nodes++] = ctx->ast_root;
 
   // Initialize Tree-sitter parser for language
   ctx->ts_parser = ts_parser_init(ctx->language);
   if (!ctx->ts_parser) {
     ctx->last_error = strdup("Unable to initialize parser");
     // free any allocated resources
-    ir_node_free(ctx->root_node);
-    free(ctx->all_nodes);
+    ast_node_free(ctx->ast_root);
+    free(ctx->all_ast_nodes);
     return false;
   }
 
@@ -276,20 +289,20 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     ctx->last_error = strdup("Unable to set tree");
     // cleanup
     ts_parser_free(ctx->ts_parser);
-    ir_node_free(ctx->root_node);
-    free(ctx->all_nodes);
+    ast_node_free(ctx->ast_root);
+    free(ctx->all_ast_nodes);
     return false;
   }
   ctx->root_ts_node = ts_tree_root_node(ctx->tree);
 
-  // Convert CST/AST to intermediate IR nodes
-  if (!ts_tree_to_ir(ctx->ts_parser, ctx->tree, ctx)) {
+  // Convert CST/AST to intermediate AST nodes
+  if (!ts_tree_to_ast(ctx->ts_parser, ctx->tree, ctx)) {
     ctx->last_error = strdup(ts_parser_get_last_error(ctx->ts_parser));
-    // On IR conversion failure, clean up parser and tree
+    // On AST conversion failure, clean up parser and tree
     ts_tree_free(ctx->tree);
     ts_parser_free(ctx->ts_parser);
-    ir_node_free(ctx->root_node);
-    free(ctx->all_nodes);
+    ast_node_free(ctx->ast_root);
+    free(ctx->all_ast_nodes);
     return false;
   }
 
@@ -309,36 +322,34 @@ const char *parser_get_last_error(const ParserContext *ctx) {
 }
 
 /* Node retrieval by qualified name */
-const IRNode *parser_get_node(const ParserContext *ctx, const char *qualified_name) {
-  if (!ctx || !qualified_name || !ctx->all_nodes || ctx->num_nodes == 0) {
+const ASTNode *parser_get_ast_node(const ParserContext *ctx, const char *qualified_name) {
+  if (!ctx || !qualified_name) {
     return NULL;
   }
 
   // Linear search through all nodes
-  for (size_t i = 0; i < ctx->num_nodes; i++) {
-    if (ctx->all_nodes[i] && ctx->all_nodes[i]->qualified_name &&
-        strcmp(ctx->all_nodes[i]->qualified_name, qualified_name) == 0) {
-      return ctx->all_nodes[i];
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    if (ctx->all_ast_nodes[i] &&
+        strcmp(ctx->all_ast_nodes[i]->qualified_name, qualified_name) == 0) {
+      return ctx->all_ast_nodes[i];
     }
   }
 
-  return NULL; // Node not found
+  return NULL; // Not found
 }
 
 /* Node retrieval by type */
-size_t parser_get_nodes_by_type(const ParserContext *ctx, NodeType type, const IRNode **out_nodes,
-                                size_t max_nodes) {
-  if (!ctx || !ctx->all_nodes || ctx->num_nodes == 0) {
+size_t parser_get_ast_nodes_by_type(const ParserContext *ctx, ASTNodeType type,
+                                    const ASTNode **out_nodes, size_t max_nodes) {
+  if (!ctx || !out_nodes || max_nodes == 0) {
     return 0;
   }
 
   size_t count = 0;
-
-  // Linear search through all nodes
-  for (size_t i = 0; i < ctx->num_nodes && (out_nodes == NULL || count < max_nodes); i++) {
-    if (ctx->all_nodes[i] && ctx->all_nodes[i]->type == type) {
-      if (out_nodes) {
-        out_nodes[count] = ctx->all_nodes[i];
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    if (ctx->all_ast_nodes[i] && ctx->all_ast_nodes[i]->type == type) {
+      if (count < max_nodes) {
+        out_nodes[count] = ctx->all_ast_nodes[i];
       }
       count++;
     }
@@ -347,14 +358,14 @@ size_t parser_get_nodes_by_type(const ParserContext *ctx, NodeType type, const I
   return count;
 }
 
-/* IR node creation */
-IRNode *ir_node_create(NodeType type, const char *name, const char *qualified_name,
-                       SourceRange range) {
+/* AST node creation */
+ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name,
+                         SourceRange range) {
   if (!name || !qualified_name) {
     return NULL;
   }
 
-  IRNode *node = (IRNode *)calloc(1, sizeof(IRNode));
+  ASTNode *node = (ASTNode *)calloc(1, sizeof(ASTNode));
   if (!node) {
     return NULL; // Memory allocation failed
   }
@@ -380,15 +391,15 @@ IRNode *ir_node_create(NodeType type, const char *name, const char *qualified_na
 
   // Check if memory allocation for strings succeeded
   if (!node->name || !node->qualified_name) {
-    ir_node_free(node);
+    ast_node_free(node);
     return NULL;
   }
 
   return node;
 }
 
-/* IR node cleanup */
-void ir_node_free(IRNode *node) {
+/* AST node cleanup */
+void ast_node_free(ASTNode *node) {
   if (!node) {
     return;
   }
@@ -416,7 +427,7 @@ void ir_node_free(IRNode *node) {
       if (node->children[i]) {
         // Set parent to NULL to avoid circular references
         node->children[i]->parent = NULL;
-        ir_node_free(node->children[i]);
+        ast_node_free(node->children[i]);
       }
     }
     free(node->children);
@@ -438,8 +449,8 @@ void ir_node_free(IRNode *node) {
   free(node);
 }
 
-/* IR node relationship management */
-bool ir_node_add_child(IRNode *parent, IRNode *child) {
+/* AST node relationship management */
+bool ast_node_add_child(ASTNode *parent, ASTNode *child) {
   if (!parent || !child) {
     return false;
   }
@@ -454,14 +465,15 @@ bool ir_node_add_child(IRNode *parent, IRNode *child) {
   if (!parent->children) {
     // Initial allocation
     parent->children_capacity = 4; // Start with space for 4 children
-    parent->children = (IRNode **)malloc(parent->children_capacity * sizeof(IRNode *));
+    parent->children = (ASTNode **)malloc(parent->children_capacity * sizeof(ASTNode *));
     if (!parent->children) {
       return false; // Memory allocation failed
     }
   } else if (parent->num_children >= parent->children_capacity) {
     // Need to resize
     size_t new_capacity = parent->children_capacity * 2;
-    IRNode **new_children = (IRNode **)realloc(parent->children, new_capacity * sizeof(IRNode *));
+    ASTNode **new_children =
+        (ASTNode **)realloc(parent->children, new_capacity * sizeof(ASTNode *));
     if (!new_children) {
       return false; // Memory allocation failed
     }
@@ -476,7 +488,7 @@ bool ir_node_add_child(IRNode *parent, IRNode *child) {
   return true;
 }
 
-bool ir_node_add_reference(IRNode *from, IRNode *to) {
+bool ast_node_add_reference(ASTNode *from, ASTNode *to) {
   if (!from || !to) {
     return false;
   }
@@ -485,14 +497,15 @@ bool ir_node_add_reference(IRNode *from, IRNode *to) {
   if (!from->references) {
     // Initial allocation
     from->references_capacity = 4; // Start with space for 4 references
-    from->references = (IRNode **)malloc(from->references_capacity * sizeof(IRNode *));
+    from->references = (ASTNode **)malloc(from->references_capacity * sizeof(ASTNode *));
     if (!from->references) {
       return false; // Memory allocation failed
     }
   } else if (from->num_references >= from->references_capacity) {
     // Need to resize
     size_t new_capacity = from->references_capacity * 2;
-    IRNode **new_references = (IRNode **)realloc(from->references, new_capacity * sizeof(IRNode *));
+    ASTNode **new_references =
+        (ASTNode **)realloc(from->references, new_capacity * sizeof(ASTNode *));
     if (!new_references) {
       return false; // Memory allocation failed
     }

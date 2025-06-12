@@ -1,0 +1,67 @@
+### 🔍 **Tree-sitter Parsing in ScopeMux**
+
+#### **Role of Tree-sitter**
+
+* Tree-sitter is used for **incremental, multi-language parsing**.
+* It produces **Concrete Syntax Trees (CSTs)** directly from source code.
+* ScopeMux derives **Abstract Syntax Tree (AST)-like IRs** from these CSTs using a custom **IR generator** written in C.
+
+***
+
+### 🌲 **CST (Concrete Syntax Tree)**
+
+* Output of Tree-sitter.
+* Includes **every token** and **punctuation**, retaining complete syntactic structure.
+* Useful for:
+
+  * Precise source ranges
+  * Token alignment
+  * Reconstructing code formatting
+  * Low-level code transformations
+
+***
+
+### 🌳 **AST-Like IR (Intermediate Representation)**
+
+* Created from CST via `ir_generator.c`.
+* Strips redundant syntax, retaining **semantic hierarchy**.
+* Nodes represent constructs like:
+
+  * Functions
+  * Classes
+  * Control structures
+  * Variable declarations
+* Used to generate **InfoBlocks** and build **Symbol IR**, **Call-Graph IR**, and others.
+
+***
+
+### 🧩 **Integration Components**
+
+* `tree_sitter_integration.c`: Wraps Tree-sitter C API for unified parser interface.
+* `parser.c`: Coordinates Tree-sitter parsing.
+* `ir_generator.c`: Walks the CST and emits custom IR nodes (`IRNode` structs).
+* `parser.h`: Defines:
+
+  ```c
+  typedef struct IRNode {
+      NodeType type;
+      char *name;
+      char *qualified_name;
+      SourceRange range;
+      struct IRNode *parent;
+      struct IRNode **children;
+      struct IRNode **references;
+      size_t num_references;
+      void *additional_data;
+  };
+  ```
+
+***
+
+### 🧠 **Why Tree-sitter?**
+
+* Incremental parsing = fast updates
+* Language-agnostic = supports many languages out-of-the-box
+* C API = ideal for embedding in performance-critical C core of ScopeMux
+
+***

@@ -44,9 +44,20 @@ typedef enum {
   NODE_COMMENT,
   NODE_DOCSTRING,
   // Add more node types as needed
-} NodeType;
+} ASTNodeType;
 
 typedef enum { PARSE_AST, PARSE_CST } ParseMode;
+
+/**
+ * @brief Represents a generic node in the Concrete Syntax Tree (CST).
+ */
+typedef struct CSTNode {
+  const char *type; ///< The syntax type of the node (e.g., "function_definition", "identifier").
+  char *content;    ///< The source code content of the node.
+  SourceRange range;
+  struct CSTNode **children; ///< Array of child nodes.
+  unsigned int children_count;
+} CSTNode;
 
 /**
  * @brief Representation of a source location
@@ -66,14 +77,17 @@ typedef struct {
 } SourceRange;
 
 /**
- * @brief IR node representing a parsed entity
+ * @brief AST node representing a parsed semantic entity.
+ *
+ * All string fields (name, signature, etc.) are owned by this struct
+ * and will be freed when the AST is destroyed via parser_free().
  *
  * This is the core data structure for representing parsed code entities.
  * It contains metadata about the entity, its location, and references to
  * related entities.
  */
-typedef struct IRNode {
-  NodeType type;        // Type of the node
+typedef struct ASTNode {
+  ASTNodeType type;     // Type of the node
   char *name;           // Name of the entity
   char *qualified_name; // Fully qualified name (e.g., namespace::class::method)
   SourceRange range;    // Source code range
@@ -82,19 +96,19 @@ typedef struct IRNode {
   char *raw_content;    // Raw source code content
 
   // Parent-child relationships
-  struct IRNode *parent;    // Parent node (e.g., class for a method)
-  struct IRNode **children; // Child nodes (e.g., methods for a class)
-  size_t num_children;      // Number of children
-  size_t children_capacity; // Capacity of children array
+  struct ASTNode *parent;    // Parent node (e.g., class for a method)
+  struct ASTNode **children; // Child nodes (e.g., methods for a class)
+  size_t num_children;       // Number of children
+  size_t children_capacity;  // Capacity of children array
 
   // References and dependencies
-  struct IRNode **references; // Nodes referenced by this node
-  size_t num_references;      // Number of references
-  size_t references_capacity; // Capacity of references array
+  struct ASTNode **references; // Nodes referenced by this node
+  size_t num_references;       // Number of references
+  size_t references_capacity;  // Capacity of references array
 
   // For future expansion
   void *additional_data; // Language-specific or analysis data
-} IRNode;
+} ASTNode;
 
 /**
  * @brief Context for the parser
@@ -110,10 +124,20 @@ typedef struct {
   size_t source_code_length; // Length of source code
   LanguageType language;     // Detected language
 
-  IRNode *root_node;     // Root node of the IR
-  IRNode **all_nodes;    // Flat array of all nodes for easy access
-  size_t num_nodes;      // Number of nodes
-  size_t nodes_capacity; // Capacity of nodes array
+  /**
+   * @brief Root node of the Abstract Syntax Tree.
+   * Populated when mode is PARSE_AST.
+   */
+  ASTNode *ast_root;         // Root node of the AST
+  ASTNode **all_ast_nodes;   // Flat array of all AST nodes for easy access
+  size_t num_ast_nodes;      // Number of nodes in the AST
+  size_t ast_nodes_capacity; // Capacity of the AST nodes array
+
+  /**
+   * @brief Root of the Concrete Syntax Tree.
+   * Populated when mode is PARSE_CST. May be NULL otherwise.
+   */
+  CSTNode *cst_root;
 
   // Error handling
   char *last_error; // Last error message
@@ -133,6 +157,14 @@ ParserContext *parser_init(void);
  * @param ctx Parser context to free
  */
 void parser_free(ParserContext *ctx);
+
+/**
+ * @brief Clears the results of the last parse (AST, source code, errors)
+ * from the context, preparing it for a new parsing operation.
+ *
+ * @param ctx The parser context to clear.
+ */
+void parser_clear(ParserContext *ctx);
 
 /**
  * @brief Detect the language of a file based on its extension and content
@@ -165,7 +197,7 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
  * @param language Optional language hint (LANG_UNKNOWN to auto-detect)
  * @return bool True on success, false on failure
  */
-bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
+bool parser_parse_string(ParserContext *ctx, const char *const content, size_t content_length,
                          const char *filename, LanguageType language);
 
 /**
@@ -177,16 +209,16 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 const char *parser_get_last_error(const ParserContext *ctx);
 
 /**
- * @brief Get the IR node for a specific entity
+ * @brief Get the AST node for a specific entity
  *
  * @param ctx Parser context
  * @param qualified_name Fully qualified name of the entity
- * @return const IRNode* Found node or NULL if not found
+ * @return const ASTNode* Found node or NULL if not found
  */
-const IRNode *parser_get_node(const ParserContext *ctx, const char *qualified_name);
+const ASTNode *parser_get_ast_node(const ParserContext *ctx, const char *qualified_name);
 
 /**
- * @brief Get all nodes of a specific type
+ * @brief Get all AST nodes of a specific type
  *
  * @param ctx Parser context
  * @param type Node type to filter by
@@ -194,44 +226,44 @@ const IRNode *parser_get_node(const ParserContext *ctx, const char *qualified_na
  * @param max_nodes Maximum number of nodes to return
  * @return size_t Number of nodes found
  */
-size_t parser_get_nodes_by_type(const ParserContext *ctx, NodeType type, const IRNode **out_nodes,
-                                size_t max_nodes);
+size_t parser_get_ast_nodes_by_type(const ParserContext *ctx, ASTNodeType type,
+                                    const ASTNode **out_nodes, size_t max_nodes);
 
 /**
- * @brief Create a new IR node
+ * @brief Create a new AST node
  *
  * @param type Node type
  * @param name Node name
  * @param qualified_name Fully qualified name
  * @param range Source range
- * @return IRNode* Created node or NULL on failure
+ * @return ASTNode* Created node or NULL on failure
  */
-IRNode *ir_node_create(NodeType type, const char *name, const char *qualified_name,
-                       SourceRange range);
+ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name,
+                         SourceRange range);
 
 /**
- * @brief Free an IR node and all its resources
+ * @brief Free an AST node and all its resources
  *
  * @param node Node to free
  */
-void ir_node_free(IRNode *node);
+void ast_node_free(ASTNode *node);
 
 /**
- * @brief Add a child node to a parent node
+ * @brief Add a child node to a parent AST node
  *
  * @param parent Parent node
  * @param child Child node
  * @return bool True on success, false on failure
  */
-bool ir_node_add_child(IRNode *parent, IRNode *child);
+bool ast_node_add_child(ASTNode *parent, ASTNode *child);
 
 /**
- * @brief Add a reference from one node to another
+ * @brief Add a reference from one AST node to another
  *
  * @param from Source node
  * @param to Target node
  * @return bool True on success, false on failure
  */
-bool ir_node_add_reference(IRNode *from, IRNode *to);
+bool ast_node_add_reference(ASTNode *from, ASTNode *to);
 
 #endif /* SCOPEMUX_PARSER_H */

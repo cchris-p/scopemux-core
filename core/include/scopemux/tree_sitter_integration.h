@@ -83,14 +83,14 @@ void ts_tree_free(void *tree);
 const char *ts_parser_get_last_error(const TreeSitterParser *parser);
 
 /**
- * @brief Convert a Tree-sitter syntax tree to ScopeMux IR
+ * @brief Convert a Tree-sitter syntax tree to ScopeMux AST
  *
  * @param parser Tree-sitter parser
  * @param tree Tree-sitter syntax tree
  * @param parser_ctx ScopeMux parser context to populate
  * @return bool True on success, false on failure
  */
-bool ts_tree_to_ir(TreeSitterParser *parser, void *tree, ParserContext *parser_ctx);
+bool ts_tree_to_ast(TreeSitterParser *parser, void *tree, ParserContext *parser_ctx);
 
 /**
  * @brief Extract comments and docstrings from a Tree-sitter syntax tree
