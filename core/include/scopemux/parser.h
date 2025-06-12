@@ -25,7 +25,6 @@ typedef enum {
   LANG_PYTHON,
   LANG_JAVASCRIPT,
   LANG_TYPESCRIPT,
-  LANG_RUST,
   // Add more languages as needed
 } LanguageType;
 
@@ -46,6 +45,8 @@ typedef enum {
   NODE_DOCSTRING,
   // Add more node types as needed
 } NodeType;
+
+typedef enum { PARSE_AST, PARSE_CST } ParseMode;
 
 /**
  * @brief Representation of a source location
@@ -103,6 +104,7 @@ typedef struct IRNode {
  */
 typedef struct {
   void *ts_parser;           // Tree-sitter parser (void* to avoid dependency)
+  ParseMode mode;            // Type of parse mode (e.g., AST or CST)
   char *filename;            // Current file being parsed
   char *source_code;         // Source code content
   size_t source_code_length; // Length of source code

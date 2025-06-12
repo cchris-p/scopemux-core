@@ -197,11 +197,12 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
 /* String parsing */
 bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
                          const char *filename, LanguageType language) {
+  // parser_parse_string: parse a source string, build IR, and clean up resources
   if (!ctx || !content || content_length == 0) {
     return false;
   }
 
-  // Clean up any previous parsing state
+  // Reset previous parse state
   if (ctx->source_code) {
     free(ctx->source_code);
   }
@@ -213,7 +214,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     ctx->last_error = NULL;
   }
 
-  // Store the content and filename
+  // Store new source code and filename
   ctx->source_code = (char *)malloc(content_length + 1);
   if (!ctx->source_code) {
     ctx->last_error = strdup("Memory allocation failed for source code");
@@ -229,7 +230,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     ctx->filename = strdup("<unknown>");
   }
 
-  // Determine language if not specified
+  // Detect language if not provided
   if (language == LANG_UNKNOWN) {
     language = parser_detect_language(filename, content, content_length);
   }
@@ -240,11 +241,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     return false;
   }
 
-  // Initialize the Tree-sitter parser based on the language
-  // This would typically call the tree_sitter_integration module
-  // For now, we'll just set a placeholder for the parsing result
-
-  // Create a root IR node for the file
+  // Initialize IR root node representing the module/file
   SourceRange file_range = {{0, 0, 0}, {0, 0, 0}}; // Will be populated properly later
   ctx->root_node = ir_node_create(NODE_MODULE, ctx->filename, ctx->filename, file_range);
   if (!ctx->root_node) {
@@ -252,12 +249,53 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     return false;
   }
 
-  // In a real implementation, we would now:
-  // 1. Call the appropriate Tree-sitter parser based on language
-  // 2. Traverse the resulting AST to build our IR nodes
-  // 3. Populate the ctx->all_nodes array for easy access
+  // Prepare flat IR node list with module root
+  ctx->nodes_capacity = 4;
+  ctx->all_nodes = (IRNode **)malloc(ctx->nodes_capacity * sizeof(IRNode *));
+  if (!ctx->all_nodes) {
+    ctx->last_error = strdup("Memory allocation failed for node list");
+    ir_node_free(ctx->root_node);
+    return false;
+  }
+  ctx->num_nodes = 0;
+  ctx->all_nodes[ctx->num_nodes++] = ctx->root_node;
 
-  // For this implementation, we'll just return success
+  // Initialize Tree-sitter parser for language
+  ctx->ts_parser = ts_parser_init(ctx->language);
+  if (!ctx->ts_parser) {
+    ctx->last_error = strdup("Unable to initialize parser");
+    // free any allocated resources
+    ir_node_free(ctx->root_node);
+    free(ctx->all_nodes);
+    return false;
+  }
+
+  // Parse source into a CST (Concrete Syntax Tree)
+  ctx->tree = scopemux_ts_parser_parse_string(ctx->ts_parser, content, content_length);
+  if (!ctx->tree) {
+    ctx->last_error = strdup("Unable to set tree");
+    // cleanup
+    ts_parser_free(ctx->ts_parser);
+    ir_node_free(ctx->root_node);
+    free(ctx->all_nodes);
+    return false;
+  }
+  ctx->root_ts_node = ts_tree_root_node(ctx->tree);
+
+  // Convert CST/AST to intermediate IR nodes
+  if (!ts_tree_to_ir(ctx->ts_parser, ctx->tree, ctx)) {
+    ctx->last_error = strdup(ts_parser_get_last_error(ctx->ts_parser));
+    // On IR conversion failure, clean up parser and tree
+    ts_tree_free(ctx->tree);
+    ts_parser_free(ctx->ts_parser);
+    ir_node_free(ctx->root_node);
+    free(ctx->all_nodes);
+    return false;
+  }
+
+  // Clean up Tree-sitter resources
+  ts_tree_free(ctx->tree);
+  ts_parser_free(ctx->ts_parser);
   return true;
 }
 
