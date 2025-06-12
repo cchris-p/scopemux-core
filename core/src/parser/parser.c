@@ -31,13 +31,25 @@ ParserContext *parser_init(void) {
   ctx->num_ast_nodes = 0;
   ctx->ast_nodes_capacity = 0;
 
+  ctx->mode = PARSE_AST; // Default mode
+  ctx->cst_root = NULL;
+
   ctx->last_error = NULL;
   ctx->error_code = 0;
 
   return ctx;
 }
 
-/* Parser cleanup */
+/**
+ * @brief Frees all resources associated with a parser context, including the
+ * context struct itself.
+ *
+ * This function performs a complete cleanup. After calling this, the `ctx`
+ * pointer is invalid and should not be used again. This is intended for when
+ * the parser is completely finished and will no longer be used.
+ *
+ * @param ctx The parser context to free.
+ */
 void parser_free(ParserContext *ctx) {
   if (!ctx) {
     return;
@@ -66,6 +78,12 @@ void parser_free(ParserContext *ctx) {
     ctx->ast_root = NULL;
   }
 
+  // Free CST nodes
+  if (ctx->cst_root) {
+    cst_node_free(ctx->cst_root);
+    ctx->cst_root = NULL;
+  }
+
   // Free the flat array of nodes (but not the nodes themselves as they're freed via ast_root)
   if (ctx->all_ast_nodes) {
     free(ctx->all_ast_nodes);
@@ -76,17 +94,157 @@ void parser_free(ParserContext *ctx) {
   free(ctx);
 }
 
-/* Parser reset */
+/**
+ * @brief Clears the results of the last parse operation from the context,
+ * allowing it to be reused for a new file or string.
+ *
+ * This function frees the AST/CST root, source code, filename, and error
+ * messages from the previous run. Unlike `parser_free`, it **does not** free
+ * the `ParserContext` struct itself, avoiding the overhead of re-allocation
+ * when parsing multiple files sequentially.
+ *
+ * @param ctx The parser context to clear.
+ */
 void parser_clear(ParserContext *ctx) {
   if (!ctx) {
     return;
   }
 
-  // This function will clear the results of the last parse,
-  // but keep the context and its settings alive.
-  // Implementation is pending.
+  // Free resources from the last parse run
+  if (ctx->source_code) {
+    free(ctx->source_code);
+    ctx->source_code = NULL;
+  }
+  if (ctx->filename) {
+    free(ctx->filename);
+    ctx->filename = NULL;
+  }
+  if (ctx->last_error) {
+    free(ctx->last_error);
+    ctx->last_error = NULL;
+  }
+  if (ctx->ast_root) {
+    ast_node_free(ctx->ast_root);
+    ctx->ast_root = NULL;
+  }
+  if (ctx->cst_root) {
+    cst_node_free(ctx->cst_root);
+    ctx->cst_root = NULL;
+  }
+  if (ctx->all_ast_nodes) {
+    free(ctx->all_ast_nodes);
+    ctx->all_ast_nodes = NULL;
+  }
 
-  // For now, it's a no-op.
+  // Reset context fields but keep the main context allocated
+  ctx->source_code_length = 0;
+  ctx->language = LANG_UNKNOWN;
+  ctx->num_ast_nodes = 0;
+  ctx->ast_nodes_capacity = 0;
+  ctx->error_code = 0;
+}
+
+/* Parser configuration */
+
+/**
+ * @brief Sets the parsing mode (AST or CST).
+ *
+ * @param ctx The parser context.
+ * @param mode The desired parse mode.
+ */
+void parser_set_mode(ParserContext *ctx, ParseMode mode) {
+  if (ctx) {
+    ctx->mode = mode;
+  }
+}
+
+/* Getters */
+
+/**
+ * @brief Retrieves the root of the Concrete Syntax Tree (CST).
+ *
+ * @param ctx The parser context.
+ * @return A const pointer to the CST root, or NULL if not available.
+ */
+const CSTNode *parser_get_cst_root(const ParserContext *ctx) {
+  if (!ctx) {
+    return NULL;
+  }
+  return ctx->cst_root;
+}
+
+/* CST node management */
+
+/**
+ * @brief Allocates and initializes a new CST node.
+ *
+ * @param type The node's type string (from Tree-sitter).
+ * @param content The source text of the node (ownership is transferred).
+ * @param range The source range of the node.
+ * @return A pointer to the new CSTNode, or NULL on failure.
+ */
+CSTNode *cst_node_create(const char *type, char *content, SourceRange range) {
+  CSTNode *node = (CSTNode *)calloc(1, sizeof(CSTNode));
+  if (!node) {
+    return NULL;
+  }
+
+  node->type = type;
+  node->content = content;
+  node->range = range;
+  node->children = NULL;
+  node->children_count = 0;
+
+  return node;
+}
+
+/**
+ * @brief Recursively frees a CST node and all of its descendants.
+ *
+ * @param node The root of the CST subtree to free.
+ */
+void cst_node_free(CSTNode *node) {
+  if (!node) {
+    return;
+  }
+
+  for (unsigned int i = 0; i < node->children_count; i++) {
+    cst_node_free(node->children[i]);
+  }
+
+  if (node->children) {
+    free(node->children);
+  }
+  if (node->content) {
+    free(node->content);
+  }
+
+  free(node);
+}
+
+/**
+ * @brief Appends a child node to a parent's list of children.
+ *
+ * @param parent The parent CSTNode.
+ * @param child The child CSTNode to add.
+ * @return True on success, false on failure (e.g., memory allocation error).
+ */
+bool cst_node_add_child(CSTNode *parent, CSTNode *child) {
+  if (!parent || !child) {
+    return false;
+  }
+
+  CSTNode **new_children = (CSTNode **)realloc(
+      parent->children, (parent->children_count + 1) * sizeof(CSTNode *));
+  if (!new_children) {
+    return false;
+  }
+
+  parent->children = new_children;
+  parent->children[parent->children_count] = child;
+  parent->children_count++;
+
+  return true;
 }
 
 /* Language detection */
@@ -256,10 +414,21 @@ bool parser_parse_string(ParserContext *ctx, const char *const content, size_t c
 
   // Initialize AST root node representing the module/file
   SourceRange file_range = {{0, 0, 0}, {0, 0, 0}}; // Will be populated properly later
-  ctx->ast_root = ast_node_create(NODE_MODULE, ctx->filename, ctx->filename, file_range);
-  if (!ctx->ast_root) {
-    ctx->last_error = strdup("Failed to create root AST node");
-    return false;
+  if (ctx->mode == PARSE_AST) {
+    ctx->ast_root = ts_tree_to_ir(ts_root_node, ctx);
+    if (!ctx->ast_root) {
+      parser_set_error(ctx, 1, "Failed to convert Tree-sitter tree to AST IR");
+      ts_tree_delete(tree);
+      return false;
+    }
+  } else { // PARSE_CST
+    // Assumes a function `ts_tree_to_cst` is implemented in tree_sitter_integration.c
+    ctx->cst_root = ts_tree_to_cst(ts_root_node, ctx);
+    if (!ctx->cst_root) {
+      parser_set_error(ctx, 1, "Failed to convert Tree-sitter tree to CST");
+      ts_tree_delete(tree);
+      return false;
+    }
   }
 
   // Prepare flat AST node list with module root

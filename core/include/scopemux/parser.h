@@ -152,6 +152,16 @@ typedef struct {
 ParserContext *parser_init(void);
 
 /**
+ * @brief Sets the parsing mode for the context.
+ *
+ * The default mode is PARSE_AST.
+ *
+ * @param ctx The parser context.
+ * @param mode The desired parse mode (PARSE_AST or PARSE_CST).
+ */
+void parser_set_mode(ParserContext *ctx, ParseMode mode);
+
+/**
  * @brief Clean up and free the parser context
  *
  * @param ctx Parser context to free
@@ -218,6 +228,16 @@ const char *parser_get_last_error(const ParserContext *ctx);
 const ASTNode *parser_get_ast_node(const ParserContext *ctx, const char *qualified_name);
 
 /**
+ * @brief Get the root of the Concrete Syntax Tree (CST).
+ *
+ * This function should only be called after a successful parse in PARSE_CST mode.
+ *
+ * @param ctx Parser context.
+ * @return const CSTNode* Root of the CST or NULL if not available.
+ */
+const CSTNode *parser_get_cst_root(const ParserContext *ctx);
+
+/**
  * @brief Get all AST nodes of a specific type
  *
  * @param ctx Parser context
@@ -265,5 +285,31 @@ bool ast_node_add_child(ASTNode *parent, ASTNode *child);
  * @return bool True on success, false on failure
  */
 bool ast_node_add_reference(ASTNode *from, ASTNode *to);
+
+/**
+ * @brief Create a new CST node.
+ *
+ * @param type Node type string (from Tree-sitter, not copied).
+ * @param content Source code content of the node (ownership transferred).
+ * @param range Source range of the node.
+ * @return CSTNode* Created node or NULL on failure.
+ */
+CSTNode *cst_node_create(const char *type, char *content, SourceRange range);
+
+/**
+ * @brief Free a CST node and all its children recursively.
+ *
+ * @param node The CST node to free.
+ */
+void cst_node_free(CSTNode *node);
+
+/**
+ * @brief Add a child node to a parent CST node.
+ *
+ * @param parent Parent node.
+ * @param child Child node.
+ * @return bool True on success, false on failure.
+ */
+bool cst_node_add_child(CSTNode *parent, CSTNode *child);
 
 #endif /* SCOPEMUX_PARSER_H */
