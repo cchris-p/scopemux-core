@@ -59,6 +59,11 @@ typedef struct CSTNode {
   unsigned int children_count;
 } CSTNode;
 
+// CST Node lifecycle functions
+CSTNode *cst_node_new(const char *type, char *content);
+void cst_node_free(CSTNode *node);
+void cst_node_add_child(CSTNode *parent, CSTNode *child);
+
 /**
  * @brief Representation of a source location
  */
@@ -110,6 +115,11 @@ typedef struct ASTNode {
   void *additional_data; // Language-specific or analysis data
 } ASTNode;
 
+// AST Node lifecycle functions
+ASTNode *ast_node_new(ASTNodeType type, const char *name);
+void ast_node_free(ASTNode *node);
+void ast_node_add_child(ASTNode *parent, ASTNode *child);
+
 /**
  * @brief Context for the parser
  *
@@ -118,6 +128,7 @@ typedef struct ASTNode {
  */
 typedef struct {
   void *ts_parser;           // Tree-sitter parser (void* to avoid dependency)
+  QueryManager *q_manager;   // Query manager for .scm files
   ParseMode mode;            // Type of parse mode (e.g., AST or CST)
   char *filename;            // Current file being parsed
   char *source_code;         // Source code content

@@ -3,190 +3,281 @@
  * @brief Implementation of the parser module for ScopeMux
  *
  * This file implements the main parser functionality, responsible for
- * parsing source code and managing the resulting AST nodes.
+ * parsing source code and managing the resulting AST and CST nodes.
  */
 
 #include "../../include/scopemux/parser.h"
+#include "../../include/scopemux/tree_sitter_integration.h" // For ts_parser_delete
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Parser initialization */
+// --- Forward Declarations for internal functions ---
+static void ast_node_free_internal(ASTNode *node);
+static void cst_node_free_internal(CSTNode *node);
+
+// --- AST Node Management ---
+
+ASTNode *ast_node_new(ASTNodeType type, const char *name) {
+    ASTNode *node = (ASTNode *)calloc(1, sizeof(ASTNode));
+    if (!node) return NULL;
+
+    node->type = type;
+    if (name) {
+        node->name = strdup(name);
+        if (!node->name) {
+            free(node);
+            return NULL;
+        }
+    }
+    return node;
+}
+
+void ast_node_add_child(ASTNode *parent, ASTNode *child) {
+    if (!parent || !child) return;
+
+    if (parent->num_children >= parent->children_capacity) {
+        size_t new_capacity = (parent->children_capacity == 0) ? 8 : parent->children_capacity * 2;
+        ASTNode **new_children = (ASTNode **)realloc(parent->children, new_capacity * sizeof(ASTNode *));
+        if (!new_children) return; // Handle allocation failure
+        parent->children = new_children;
+        parent->children_capacity = new_capacity;
+    }
+
+    parent->children[parent->num_children++] = child;
+    child->parent = parent;
+}
+
+void ast_node_free(ASTNode *node) {
+    if (!node) return;
+    // In our design, all AST nodes are part of the `all_ast_nodes` flat array
+    // in the context, which is freed in `parser_clear`. Freeing nodes recursively
+    // here would lead to double-free errors. This function is a placeholder
+    // or could be used to free a detached tree if needed.
+    // For now, the primary cleanup is handled by `parser_clear`.
+}
+
+// --- CST Node Management ---
+
+CSTNode *cst_node_new(const char *type, char *content) {
+    CSTNode *node = (CSTNode *)calloc(1, sizeof(CSTNode));
+    if (!node) return NULL;
+
+    node->type = type; // This is a pointer to a static string from Tree-sitter, no copy needed.
+    node->content = content; // Ownership is transferred to the node.
+    return node;
+}
+
+void cst_node_add_child(CSTNode *parent, CSTNode *child) {
+    if (!parent || !child) return;
+
+    // Simple dynamic array for children
+    parent->children_count++;
+    CSTNode **new_children = (CSTNode **)realloc(parent->children, parent->children_count * sizeof(CSTNode *));
+    if (!new_children) {
+        parent->children_count--; // Revert on failure
+        return;
+    }
+    parent->children = new_children;
+    parent->children[parent->children_count - 1] = child;
+}
+
+void cst_node_free(CSTNode *node) {
+    if (!node) return;
+
+    for (unsigned int i = 0; i < node->children_count; i++) {
+        cst_node_free(node->children[i]);
+    }
+
+    if (node->children) {
+        free(node->children);
+    }
+    if (node->content) {
+        free(node->content);
+    }
+    free(node);
+}
+
+// --- Parser Lifecycle ---
+
 ParserContext *parser_init(void) {
-  ParserContext *ctx = (ParserContext *)calloc(1, sizeof(ParserContext));
-  if (!ctx) {
-    return NULL; // Memory allocation failed
-  }
+    ParserContext *ctx = (ParserContext *)calloc(1, sizeof(ParserContext));
+    if (!ctx) return NULL;
 
-  // Initialize fields
-  ctx->ts_parser = NULL; // Will be initialized when needed based on language
-  ctx->filename = NULL;
-  ctx->source_code = NULL;
-  ctx->source_code_length = 0;
-  ctx->language = LANG_UNKNOWN;
+    ctx->q_manager = query_manager_init("./queries");
+    if (!ctx->q_manager) {
+        free(ctx);
+        return NULL;
+    }
 
-  ctx->ast_root = NULL;
-  ctx->all_ast_nodes = NULL;
-  ctx->num_ast_nodes = 0;
-  ctx->ast_nodes_capacity = 0;
-
-  ctx->mode = PARSE_AST; // Default mode
-  ctx->cst_root = NULL;
-
-  ctx->last_error = NULL;
-  ctx->error_code = 0;
-
-  return ctx;
+    ctx->mode = PARSE_AST; // Default mode
+    return ctx;
 }
 
-/**
- * @brief Frees all resources associated with a parser context, including the
- * context struct itself.
- *
- * This function performs a complete cleanup. After calling this, the `ctx`
- * pointer is invalid and should not be used again. This is intended for when
- * the parser is completely finished and will no longer be used.
- *
- * @param ctx The parser context to free.
- */
 void parser_free(ParserContext *ctx) {
-  if (!ctx) {
-    return;
-  }
+    if (!ctx) return;
+    parser_clear(ctx);
 
-  // Clear all data associated with the last parse run
-  parser_clear(ctx);
-
-  // Free the Tree-sitter parser instance, which is persistent across clears
-  if (ctx->ts_parser) {
-    ts_parser_delete(ctx->ts_parser);
-    ctx->ts_parser = NULL;
-  }
-
-  // Free the parser context struct itself
-  free(ctx);
+    if (ctx->ts_parser) {
+        ts_parser_delete(ctx->ts_parser);
+    }
+    if (ctx->q_manager) {
+        query_manager_free(ctx->q_manager);
+    }
+    free(ctx);
 }
 
-/**
- * @brief Clears the results of the last parse operation from the context,
- * allowing it to be reused for a new file or string.
- *
- * This function frees the AST/CST root, source code, filename, and error
- * messages from the previous run. Unlike `parser_free`, it **does not** free
- * the `ParserContext` struct itself, avoiding the overhead of re-allocation
- * when parsing multiple files sequentially.
- *
- * @param ctx The parser context to clear.
- */
 void parser_clear(ParserContext *ctx) {
-  if (!ctx) {
-    return;
-  }
+    if (!ctx) return;
 
-  // Free resources from the last parse run
-  if (ctx->source_code) {
-    free(ctx->source_code);
-    ctx->source_code = NULL;
-  }
-  if (ctx->filename) {
     free(ctx->filename);
     ctx->filename = NULL;
-  }
-  if (ctx->last_error) {
+
+    free(ctx->source_code);
+    ctx->source_code = NULL;
+
     free(ctx->last_error);
     ctx->last_error = NULL;
-  }
-  if (ctx->ast_root) {
-    ast_node_free(ctx->ast_root);
-    ctx->ast_root = NULL;
-  }
-  if (ctx->cst_root) {
-    cst_node_free(ctx->cst_root);
-    ctx->cst_root = NULL;
-  }
-  if (ctx->all_ast_nodes) {
-    free(ctx->all_ast_nodes);
-    ctx->all_ast_nodes = NULL;
-  }
 
-  // Reset context fields but keep the main context allocated
-  ctx->source_code_length = 0;
-  ctx->language = LANG_UNKNOWN;
-  ctx->num_ast_nodes = 0;
-  ctx->ast_nodes_capacity = 0;
-  ctx->error_code = 0;
+    if (ctx->ast_root) {
+        // The root itself is just one of the nodes in all_ast_nodes,
+        // so we don't need to free it separately.
+        ctx->ast_root = NULL;
+    }
+
+    if (ctx->all_ast_nodes) {
+        for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+            ASTNode *node = ctx->all_ast_nodes[i];
+            if (node) {
+                free(node->name);
+                free(node->qualified_name);
+                free(node->signature);
+                free(node->docstring);
+                free(node->raw_content);
+                free(node->children);
+                free(node->references);
+                free(node);
+            }
+        }
+        free(ctx->all_ast_nodes);
+        ctx->all_ast_nodes = NULL;
+    }
+
+    if (ctx->cst_root) {
+        cst_node_free(ctx->cst_root);
+        ctx->cst_root = NULL;
+    }
+
+    ctx->source_code_length = 0;
+    ctx->language = LANG_UNKNOWN;
+    ctx->num_ast_nodes = 0;
+    ctx->ast_nodes_capacity = 0;
+    ctx->error_code = 0;
 }
 
-/* Parser configuration */
+// --- Parser Configuration and Execution ---
 
-/**
- * @brief Sets the parsing mode (AST or CST).
- *
- * @param ctx The parser context.
- * @param mode The desired parse mode.
- */
 void parser_set_mode(ParserContext *ctx, ParseMode mode) {
-  if (ctx) {
-    ctx->mode = mode;
-  }
+    if (ctx) {
+        ctx->mode = mode;
+    }
 }
 
-/* Getters */
+void parser_set_error(ParserContext *ctx, int code, const char *message) {
+    if (!ctx) return;
 
-/**
- * @brief Retrieves the root of the Concrete Syntax Tree (CST).
- *
- * @param ctx The parser context.
- * @return A const pointer to the CST root, or NULL if not available.
- */
-const CSTNode *parser_get_cst_root(const ParserContext *ctx) {
-  if (!ctx) {
-    return NULL;
-  }
-  return ctx->cst_root;
+    free(ctx->last_error);
+    ctx->last_error = strdup(message);
+    ctx->error_code = code;
 }
 
-/* CST node management */
+bool parser_parse_string(ParserContext *ctx, const char *source, size_t length, LanguageType language) {
+    if (!ctx || !source) return false;
 
-/**
- * @brief Allocates and initializes a new CST node.
- *
- * @param type The node's type string (from Tree-sitter).
- * @param content The source text of the node (ownership is transferred).
- * @param range The source range of the node.
- * @return A pointer to the new CSTNode, or NULL on failure.
- */
-CSTNode *cst_node_create(const char *type, char *content, SourceRange range) {
-  CSTNode *node = (CSTNode *)calloc(1, sizeof(CSTNode));
-  if (!node) {
-    return NULL;
-  }
+    parser_clear(ctx);
 
-  node->type = type;
-  node->content = content;
-  node->range = range;
-  node->children = NULL;
-  node->children_count = 0;
+    ctx->source_code = (char *)malloc(length + 1);
+    if (!ctx->source_code) {
+        parser_set_error(ctx, -1, "Memory allocation failed for source code copy.");
+        return false;
+    }
+    memcpy(ctx->source_code, source, length);
+    ctx->source_code[length] = '\0';
+    ctx->source_code_length = length;
+    ctx->language = language;
 
-  return node;
+    if (!ts_init_parser(ctx, language)) {
+        // Error is already set by ts_init_parser
+        return false;
+    }
+
+    TSTree *tree = ts_parser_parse_string(ctx->ts_parser, NULL, ctx->source_code, ctx->source_code_length);
+    if (!tree) {
+        parser_set_error(ctx, -1, "Tree-sitter failed to parse the source code.");
+        return false;
+    }
+
+    TSNode root_ts_node = ts_tree_root_node(tree);
+
+    if (ctx->mode == PARSE_AST) {
+        ctx->ast_root = ts_tree_to_ast(root_ts_node, ctx);
+        if (!ctx->ast_root && ctx->error_code != 0) {
+            ts_tree_delete(tree);
+            return false; // Error occurred during AST generation
+        }
+    } else { // PARSE_CST
+        ctx->cst_root = ts_tree_to_cst(root_ts_node, ctx);
+        if (!ctx->cst_root && ctx->error_code != 0) {
+            ts_tree_delete(tree);
+            return false; // Error occurred during CST generation
+        }
+    }
+
+    ts_tree_delete(tree);
+    return true;
 }
 
-/**
- * @brief Recursively frees a CST node and all of its descendants.
- *
- * @param node The root of the CST subtree to free.
- */
-void cst_node_free(CSTNode *node) {
-  if (!node) {
-    return;
-  }
+// Dummy implementation for language detection, should be expanded
+LanguageType parser_detect_language(const char *filename, const char *content, size_t content_length) {
+    if (strstr(filename, ".py")) return LANG_PYTHON;
+    if (strstr(filename, ".c")) return LANG_C;
+    if (strstr(filename, ".cpp")) return LANG_CPP;
+    if (strstr(filename, ".js")) return LANG_JAVASCRIPT;
+    return LANG_UNKNOWN;
+}
 
-  for (unsigned int i = 0; i < node->children_count; i++) {
-    cst_node_free(node->children[i]);
-  }
+bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType language) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        parser_set_error(ctx, -1, "Failed to open file.");
+        return false;
+    }
 
-  if (node->children) {
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *buffer = (char *)malloc(length + 1);
+    if (!buffer) {
+        fclose(file);
+        parser_set_error(ctx, -1, "Memory allocation failed for file content.");
+        return false;
+    }
+
+    fread(buffer, 1, length, file);
+    fclose(file);
+    buffer[length] = '\0';
+
+    if (language == LANG_UNKNOWN) {
+        language = parser_detect_language(filename, buffer, length);
+    }
+
+    bool result = parser_parse_string(ctx, buffer, length, language);
+
+    free(buffer);
+    return result;
+}
     free(node->children);
   }
   if (node->content) {
