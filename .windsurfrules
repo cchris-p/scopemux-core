@@ -61,9 +61,6 @@ ScopeMux now supports dual-mode parsing:
   * `ASTNode`, `CSTNode`
   * Lifecycle methods: `_new`, `_free`, `_add_child`
 
-> **Note**: `ir_generator.c` and `IRNode` are deprecated for AST/CST parsing.
-> IR generation should now use the updated `ASTNode` / `CSTNode` architecture.
-
 ***
 
 ## 🛠️ How to Extend / Customize

@@ -131,114 +131,6 @@ static PyObject *TreeSitterParser_tree_to_ir(TreeSitterParserObject *self, PyObj
 }
 
 /**
- * @brief Extract comments and docstrings from a Tree-sitter syntax tree
- */
-static PyObject *TreeSitterParser_extract_comments(TreeSitterParserObject *self, PyObject *args,
-                                                   PyObject *kwds) {
-  PyObject *tree_capsule;
-  PyObject *parser_ctx_obj;
-  static char *kwlist[] = {"tree", "parser_ctx", NULL};
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &tree_capsule, &parser_ctx_obj)) {
-    return NULL;
-  }
-
-  // Extract the tree pointer from the capsule
-  void *tree = PyCapsule_GetPointer(tree_capsule, "scopemux_core.TreeSitterTree");
-  if (!tree) {
-    return NULL;
-  }
-
-  // Check if parser_ctx_obj is a ParserContextObject
-  if (!PyObject_TypeCheck(parser_ctx_obj,
-                          (PyTypeObject *)PyObject_GetAttrString(
-                              PyImport_ImportModule("scopemux_core"), "ParserContext"))) {
-    PyErr_SetString(PyExc_TypeError, "Expected a ParserContext object");
-    return NULL;
-  }
-
-  // Extract the parser context from the object
-  ParserContext *parser_ctx = ((struct { PyObject_HEAD ParserContext *ctx; } *)parser_ctx_obj)->ctx;
-
-  // Extract comments
-  size_t num_comments = ts_extract_comments(self->parser, tree, parser_ctx);
-
-  return PyLong_FromSize_t(num_comments);
-}
-
-/**
- * @brief Extract functions and methods from a Tree-sitter syntax tree
- */
-static PyObject *TreeSitterParser_extract_functions(TreeSitterParserObject *self, PyObject *args,
-                                                    PyObject *kwds) {
-  PyObject *tree_capsule;
-  PyObject *parser_ctx_obj;
-  static char *kwlist[] = {"tree", "parser_ctx", NULL};
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &tree_capsule, &parser_ctx_obj)) {
-    return NULL;
-  }
-
-  // Extract the tree pointer from the capsule
-  void *tree = PyCapsule_GetPointer(tree_capsule, "scopemux_core.TreeSitterTree");
-  if (!tree) {
-    return NULL;
-  }
-
-  // Check if parser_ctx_obj is a ParserContextObject
-  if (!PyObject_TypeCheck(parser_ctx_obj,
-                          (PyTypeObject *)PyObject_GetAttrString(
-                              PyImport_ImportModule("scopemux_core"), "ParserContext"))) {
-    PyErr_SetString(PyExc_TypeError, "Expected a ParserContext object");
-    return NULL;
-  }
-
-  // Extract the parser context from the object
-  ParserContext *parser_ctx = ((struct { PyObject_HEAD ParserContext *ctx; } *)parser_ctx_obj)->ctx;
-
-  // Extract functions
-  size_t num_functions = ts_extract_functions(self->parser, tree, parser_ctx);
-
-  return PyLong_FromSize_t(num_functions);
-}
-
-/**
- * @brief Extract classes and other type definitions from a Tree-sitter syntax tree
- */
-static PyObject *TreeSitterParser_extract_classes(TreeSitterParserObject *self, PyObject *args,
-                                                  PyObject *kwds) {
-  PyObject *tree_capsule;
-  PyObject *parser_ctx_obj;
-  static char *kwlist[] = {"tree", "parser_ctx", NULL};
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &tree_capsule, &parser_ctx_obj)) {
-    return NULL;
-  }
-
-  // Extract the tree pointer from the capsule
-  void *tree = PyCapsule_GetPointer(tree_capsule, "scopemux_core.TreeSitterTree");
-  if (!tree) {
-    return NULL;
-  }
-
-  // Check if parser_ctx_obj is a ParserContextObject
-  if (!PyObject_TypeCheck(parser_ctx_obj,
-                          (PyTypeObject *)PyObject_GetAttrString(
-                              PyImport_ImportModule("scopemux_core"), "ParserContext"))) {
-    PyErr_SetString(PyExc_TypeError, "Expected a ParserContext object");
-    return NULL;
-  }
-
-  // Extract the parser context from the object
-  ParserContext *parser_ctx = ((struct { PyObject_HEAD ParserContext *ctx; } *)parser_ctx_obj)->ctx;
-
-  // Extract classes
-  size_t num_classes = ts_extract_classes(self->parser, tree, parser_ctx);
-
-  return PyLong_FromSize_t(num_classes);
-}
-
-/**
  * @brief Get the last error message from a Tree-sitter parser
  */
 static PyObject *TreeSitterParser_get_last_error(TreeSitterParserObject *self,
@@ -258,13 +150,6 @@ static PyMethodDef TreeSitterParser_methods[] = {
      "Parse a string using Tree-sitter"},
     {"tree_to_ir", (PyCFunction)TreeSitterParser_tree_to_ir, METH_VARARGS | METH_KEYWORDS,
      "Convert a Tree-sitter syntax tree to ScopeMux IR"},
-    {"extract_comments", (PyCFunction)TreeSitterParser_extract_comments,
-     METH_VARARGS | METH_KEYWORDS,
-     "Extract comments and docstrings from a Tree-sitter syntax tree"},
-    {"extract_functions", (PyCFunction)TreeSitterParser_extract_functions,
-     METH_VARARGS | METH_KEYWORDS, "Extract functions and methods from a Tree-sitter syntax tree"},
-    {"extract_classes", (PyCFunction)TreeSitterParser_extract_classes, METH_VARARGS | METH_KEYWORDS,
-     "Extract classes and other type definitions from a Tree-sitter syntax tree"},
     {"get_last_error", (PyCFunction)TreeSitterParser_get_last_error, METH_NOARGS,
      "Get the last error message from a Tree-sitter parser"},
     {NULL} /* Sentinel */

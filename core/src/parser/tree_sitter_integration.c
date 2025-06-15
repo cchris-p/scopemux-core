@@ -153,9 +153,9 @@ ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
   ts_query_cursor_delete(cursor);
 
   if (ast_root->num_children == 0) {
-      // If no functions were found, it's not an error, but the root is empty.
-      // We can return the empty root or NULL depending on desired behavior.
-      // For now, returning the root.
+    // If no functions were found, it's not an error, but the root is empty.
+    // We can return the empty root or NULL depending on desired behavior.
+    // For now, returning the root.
   }
 
   return ast_root;
@@ -186,7 +186,8 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
   char *content = ts_node_to_string(ts_node, source_code);
   CSTNode *cst_node = cst_node_new(type, content);
   if (!cst_node) {
-    if (content) free(content);
+    if (content)
+      free(content);
     return NULL;
   }
 

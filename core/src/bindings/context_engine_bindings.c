@@ -23,7 +23,7 @@
 
 // These type definitions are now in python_utils.h
 // ParserContextObject - Python wrapper for ParserContext
-// IRNodeObject - Python wrapper for IRNode
+
 // ContextEngineObject - Python wrapper for ContextEngine
 // InfoBlockObject - Python wrapper for InfoBlock
 
@@ -399,29 +399,10 @@ static PyObject *InfoBlock_get_compressed_content(InfoBlockObject *self, void *c
   return PyUnicode_FromString(self->block->compressed_content);
 }
 
-static PyObject *InfoBlock_get_ir_node(InfoBlockObject *self, void *closure) {
-  if (!self->block || !self->block->ir_node) {
-    Py_RETURN_NONE;
-  }
 
-  // Create a PyObject for the node
-  PyTypeObject *ir_node_type =
-      (PyTypeObject *)PyObject_GetAttrString(PyImport_ImportModule("scopemux_core"), "IRNode");
-  if (!ir_node_type) {
-    return NULL;
-  }
-
-  IRNodeObject *py_node = (IRNodeObject *)ir_node_type->tp_alloc(ir_node_type, 0);
-  if (!py_node) {
-    Py_DECREF(ir_node_type);
-    return NULL;
-  }
-
-  py_node->node = self->block->ir_node;
-  py_node->owned = 0; // This is a reference, not owned
-
-  Py_DECREF(ir_node_type);
-  return (PyObject *)py_node;
+  // This function has been removed as part of IRNode deprecation
+  // InfoBlock now uses ASTNode instead of IRNode
+  Py_RETURN_NONE;
 }
 
 /**
@@ -436,7 +417,6 @@ static PyGetSetDef InfoBlock_getsetters[] = {
     {"relevance", (getter)InfoBlock_get_relevance, NULL, "Relevance metrics for ranking", NULL},
     {"compressed_content", (getter)InfoBlock_get_compressed_content, NULL, "Compressed content",
      NULL},
-    {"ir_node", (getter)InfoBlock_get_ir_node, NULL, "Reference to the original IR node", NULL},
     {NULL} /* Sentinel */
 };
 

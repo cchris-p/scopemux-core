@@ -36,9 +36,6 @@
 struct ParserContext;
 #endif
 
-#ifndef IR_NODE_H_INCLUDED
-struct IRNode;
-#endif
 
 #ifndef CONTEXT_ENGINE_H_INCLUDED
 struct ContextEngine;
@@ -54,18 +51,6 @@ typedef struct {
       struct ParserContext *context;
 } ParserContextObject;
 
-/**
- * @brief Python wrapper object for IRNode
- */
-typedef struct {
-  PyObject_HEAD
-      /* The C IRNode instance */
-      struct IRNode *node;
-  /* Keep reference to parent context */
-  ParserContextObject *parser_ctx_obj;
-  /* Flag to indicate if we own the IRNode memory */
-  int owned;
-} IRNodeObject;
 
 /**
  * @brief Python wrapper object for ContextEngine

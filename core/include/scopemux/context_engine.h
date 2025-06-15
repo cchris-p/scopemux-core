@@ -41,7 +41,7 @@ typedef struct {
  * @brief Information Block representing a unit of code or documentation
  */
 struct InfoBlock {
-  struct IRNode *ir_node;     // Reference to the original IR node
+  struct ASTNode *ast_node;     // Reference to the AST node
   char *compressed_content;   // Compressed content
   size_t original_tokens;     // Original token count
   size_t compressed_tokens;   // Compressed token count
@@ -102,13 +102,13 @@ ContextEngine *context_engine_init(const ContextOptions *options);
 void context_engine_free(ContextEngine *engine);
 
 /**
- * @brief Add an IR node to the context engine
+ * @brief Add an AST node to the context engine
  *
  * @param engine Context engine
- * @param node IR node to add
+ * @param node AST node to add
  * @return InfoBlock* Created info block or NULL on failure
  */
-InfoBlock *context_engine_add_node(ContextEngine *engine, const IRNode *node);
+InfoBlock *context_engine_add_node(ContextEngine *engine, const ASTNode *node);
 
 /**
  * @brief Add all nodes from a parser context to the context engine

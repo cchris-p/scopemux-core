@@ -77,18 +77,18 @@ Manages the parsing process and stores the resulting Intermediate Representation
         *   Parses the given string content.
         *   `filename`: Optional; used for context and language detection if `language` is `LANG_UNKNOWN`.
         *   `language`: Optional; one of the `LANG_*` constants.
-    *   `get_node(qualified_name: str) -> IRNode | None`
-        *   Retrieves an `IRNode` by its fully qualified name.
-        *   Returns the `IRNode` object if found, otherwise `None`.
-    *   `get_nodes_by_type(node_type: int) -> list[IRNode]`
-        *   Retrieves all `IRNode` objects of a specific type.
+    *   `get_node(qualified_name: str) -> ASTNode | None`
+        *   Retrieves an `ASTNode` by its fully qualified name.
+        *   Returns the `ASTNode` object if found, otherwise `None`.
+    *   `get_nodes_by_type(node_type: int) -> list[ASTNode]`
+        *   Retrieves all `ASTNode` objects of a specific type.
         *   `node_type`: One of the `NODE_*` constants.
-        *   Returns a list of `IRNode` objects.
+        *   Returns a list of `ASTNode` objects.
 
-### 2. `scopemux_core.IRNode`
+### 2. `scopemux_core.ASTNode`
 
-Represents a node in the Intermediate Representation (e.g., a function, class, comment).
-Instances are typically obtained from `ParserContext` methods, not constructed directly in Python.
+Represents a node in the Abstract Syntax Tree (e.g., a function, class, comment).
+Instances are typically obtained from `ParserContext` methods or Tree-sitter queries, not constructed directly in Python.
 
 *   **Properties** (read-only):
     *   `name` (str): The simple name of the node (e.g., function name, class name).
@@ -145,7 +145,7 @@ Represents a unit of code or documentation managed by the `ContextEngine`. Insta
     *   `relevance` (dict): A dictionary containing various relevance scores for the block.
         *   Keys: `recency`, `cursor_proximity`, `semantic_similarity`, `reference_count`, `user_focus` (all floats).
     *   `compressed_content` (str): The current (possibly compressed) textual content of the block.
-    *   `ir_node` (`IRNode`): A reference to the original `IRNode` from which this information block was derived.
+    *   `ast_node` (`ASTNode`): A reference to the original `ASTNode` from which this information block was derived.
 
 ### 5. `scopemux_core.TreeSitterParser`
 
@@ -164,13 +164,13 @@ Provides an interface to Tree-sitter parsers for specific languages and utilitie
         *   `tree`: The `PyCapsule` returned by `parse_string`.
         *   `parser_ctx`: The `ParserContext` to populate with IR nodes.
     *   `extract_comments(tree: PyCapsule, parser_ctx: ParserContext) -> int`
-        *   Extracts comments and docstrings from the Tree-sitter tree and adds them as `IRNode` objects to the `ParserContext`.
+        *   Extracts comments and docstrings from the Tree-sitter tree and adds them as `ASTNode` objects to the `ParserContext`.
         *   Returns the number of comments/docstrings extracted.
     *   `extract_functions(tree: PyCapsule, parser_ctx: ParserContext) -> int`
-        *   Extracts functions and methods from the Tree-sitter tree and adds them as `IRNode` objects to the `ParserContext`.
+        *   Extracts functions and methods from the Tree-sitter tree and adds them as `ASTNode` objects to the `ParserContext`.
         *   Returns the number of functions/methods extracted.
     *   `extract_classes(tree: PyCapsule, parser_ctx: ParserContext) -> int`
-        *   Extracts classes, structs, enums, interfaces, etc., from the Tree-sitter tree and adds them as `IRNode` objects to the `ParserContext`.
+        *   Extracts classes, structs, enums, interfaces, etc., from the Tree-sitter tree and adds them as `ASTNode` objects to the `ParserContext`.
         *   Returns the number of class-like structures extracted.
     *   `get_last_error() -> str | None`
         *   Returns the last error message from the Tree-sitter parser operations as a string, or `None` if no error occurred.
