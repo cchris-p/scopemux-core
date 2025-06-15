@@ -3,77 +3,313 @@
  * @brief Implementation of the parser module for ScopeMux
  *
  * This file implements the main parser functionality, responsible for
- * parsing source code and managing the resulting IR nodes.
+ * parsing source code and managing the resulting AST and CST nodes.
  */
 
 #include "../../include/scopemux/parser.h"
+#include "../../include/scopemux/tree_sitter_integration.h" // For ts_parser_delete
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Parser initialization */
-ParserContext *parser_init(void) {
-  ParserContext *ctx = (ParserContext *)calloc(1, sizeof(ParserContext));
-  if (!ctx) {
-    return NULL; // Memory allocation failed
-  }
+// --- Forward Declarations for internal functions ---
+static void ast_node_free_internal(ASTNode *node);
+static void cst_node_free_internal(CSTNode *node);
 
-  // Initialize fields
-  ctx->ts_parser = NULL; // Will be initialized when needed based on language
-  ctx->filename = NULL;
-  ctx->source_code = NULL;
-  ctx->source_code_length = 0;
-  ctx->language = LANG_UNKNOWN;
+// --- AST Node Management ---
 
-  ctx->root_node = NULL;
-  ctx->all_nodes = NULL;
-  ctx->num_nodes = 0;
-  ctx->nodes_capacity = 0;
+ASTNode *ast_node_new(ASTNodeType type, const char *name) {
+    ASTNode *node = (ASTNode *)calloc(1, sizeof(ASTNode));
+    if (!node) return NULL;
 
-  ctx->last_error = NULL;
-  ctx->error_code = 0;
-
-  return ctx;
+    node->type = type;
+    if (name) {
+        node->name = strdup(name);
+        if (!node->name) {
+            free(node);
+            return NULL;
+        }
+    }
+    return node;
 }
 
-/* Parser cleanup */
+void ast_node_add_child(ASTNode *parent, ASTNode *child) {
+    if (!parent || !child) return;
+
+    if (parent->num_children >= parent->children_capacity) {
+        size_t new_capacity = (parent->children_capacity == 0) ? 8 : parent->children_capacity * 2;
+        ASTNode **new_children = (ASTNode **)realloc(parent->children, new_capacity * sizeof(ASTNode *));
+        if (!new_children) return; // Handle allocation failure
+        parent->children = new_children;
+        parent->children_capacity = new_capacity;
+    }
+
+    parent->children[parent->num_children++] = child;
+    child->parent = parent;
+}
+
+void ast_node_free(ASTNode *node) {
+    if (!node) return;
+    // In our design, all AST nodes are part of the `all_ast_nodes` flat array
+    // in the context, which is freed in `parser_clear`. Freeing nodes recursively
+    // here would lead to double-free errors. This function is a placeholder
+    // or could be used to free a detached tree if needed.
+    // For now, the primary cleanup is handled by `parser_clear`.
+}
+
+// --- CST Node Management ---
+
+CSTNode *cst_node_new(const char *type, char *content) {
+    CSTNode *node = (CSTNode *)calloc(1, sizeof(CSTNode));
+    if (!node) return NULL;
+
+    node->type = type; // This is a pointer to a static string from Tree-sitter, no copy needed.
+    node->content = content; // Ownership is transferred to the node.
+    return node;
+}
+
+void cst_node_add_child(CSTNode *parent, CSTNode *child) {
+    if (!parent || !child) return;
+
+    // Simple dynamic array for children
+    parent->children_count++;
+    CSTNode **new_children = (CSTNode **)realloc(parent->children, parent->children_count * sizeof(CSTNode *));
+    if (!new_children) {
+        parent->children_count--; // Revert on failure
+        return;
+    }
+    parent->children = new_children;
+    parent->children[parent->children_count - 1] = child;
+}
+
+void cst_node_free(CSTNode *node) {
+    if (!node) return;
+
+    for (unsigned int i = 0; i < node->children_count; i++) {
+        cst_node_free(node->children[i]);
+    }
+
+    if (node->children) {
+        free(node->children);
+    }
+    if (node->content) {
+        free(node->content);
+    }
+    free(node);
+}
+
+// --- Parser Lifecycle ---
+
+ParserContext *parser_init(void) {
+    ParserContext *ctx = (ParserContext *)calloc(1, sizeof(ParserContext));
+    if (!ctx) return NULL;
+
+    ctx->q_manager = query_manager_init("./queries");
+    if (!ctx->q_manager) {
+        free(ctx);
+        return NULL;
+    }
+
+    ctx->mode = PARSE_AST; // Default mode
+    return ctx;
+}
+
 void parser_free(ParserContext *ctx) {
-  if (!ctx) {
-    return;
-  }
+    if (!ctx) return;
+    parser_clear(ctx);
 
-  // Free source code and filename
-  if (ctx->source_code) {
-    free(ctx->source_code);
-    ctx->source_code = NULL;
-  }
+    if (ctx->ts_parser) {
+        ts_parser_delete(ctx->ts_parser);
+    }
+    if (ctx->q_manager) {
+        query_manager_free(ctx->q_manager);
+    }
+    free(ctx);
+}
 
-  if (ctx->filename) {
+void parser_clear(ParserContext *ctx) {
+    if (!ctx) return;
+
     free(ctx->filename);
     ctx->filename = NULL;
-  }
 
-  // Free error message
-  if (ctx->last_error) {
+    free(ctx->source_code);
+    ctx->source_code = NULL;
+
     free(ctx->last_error);
     ctx->last_error = NULL;
+
+    if (ctx->ast_root) {
+        // The root itself is just one of the nodes in all_ast_nodes,
+        // so we don't need to free it separately.
+        ctx->ast_root = NULL;
+    }
+
+    if (ctx->all_ast_nodes) {
+        for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+            ASTNode *node = ctx->all_ast_nodes[i];
+            if (node) {
+                free(node->name);
+                free(node->qualified_name);
+                free(node->signature);
+                free(node->docstring);
+                free(node->raw_content);
+                free(node->children);
+                free(node->references);
+                free(node);
+            }
+        }
+        free(ctx->all_ast_nodes);
+        ctx->all_ast_nodes = NULL;
+    }
+
+    if (ctx->cst_root) {
+        cst_node_free(ctx->cst_root);
+        ctx->cst_root = NULL;
+    }
+
+    ctx->source_code_length = 0;
+    ctx->language = LANG_UNKNOWN;
+    ctx->num_ast_nodes = 0;
+    ctx->ast_nodes_capacity = 0;
+    ctx->error_code = 0;
+}
+
+// --- Parser Configuration and Execution ---
+
+void parser_set_mode(ParserContext *ctx, ParseMode mode) {
+    if (ctx) {
+        ctx->mode = mode;
+    }
+}
+
+void parser_set_error(ParserContext *ctx, int code, const char *message) {
+    if (!ctx) return;
+
+    free(ctx->last_error);
+    ctx->last_error = strdup(message);
+    ctx->error_code = code;
+}
+
+bool parser_parse_string(ParserContext *ctx, const char *source, size_t length, LanguageType language) {
+    if (!ctx || !source) return false;
+
+    parser_clear(ctx);
+
+    ctx->source_code = (char *)malloc(length + 1);
+    if (!ctx->source_code) {
+        parser_set_error(ctx, -1, "Memory allocation failed for source code copy.");
+        return false;
+    }
+    memcpy(ctx->source_code, source, length);
+    ctx->source_code[length] = '\0';
+    ctx->source_code_length = length;
+    ctx->language = language;
+
+    if (!ts_init_parser(ctx, language)) {
+        // Error is already set by ts_init_parser
+        return false;
+    }
+
+    TSTree *tree = ts_parser_parse_string(ctx->ts_parser, NULL, ctx->source_code, ctx->source_code_length);
+    if (!tree) {
+        parser_set_error(ctx, -1, "Tree-sitter failed to parse the source code.");
+        return false;
+    }
+
+    TSNode root_ts_node = ts_tree_root_node(tree);
+
+    if (ctx->mode == PARSE_AST) {
+        ctx->ast_root = ts_tree_to_ast(root_ts_node, ctx);
+        if (!ctx->ast_root && ctx->error_code != 0) {
+            ts_tree_delete(tree);
+            return false; // Error occurred during AST generation
+        }
+    } else { // PARSE_CST
+        ctx->cst_root = ts_tree_to_cst(root_ts_node, ctx);
+        if (!ctx->cst_root && ctx->error_code != 0) {
+            ts_tree_delete(tree);
+            return false; // Error occurred during CST generation
+        }
+    }
+
+    ts_tree_delete(tree);
+    return true;
+}
+
+// Dummy implementation for language detection, should be expanded
+LanguageType parser_detect_language(const char *filename, const char *content, size_t content_length) {
+    if (strstr(filename, ".py")) return LANG_PYTHON;
+    if (strstr(filename, ".c")) return LANG_C;
+    if (strstr(filename, ".cpp")) return LANG_CPP;
+    if (strstr(filename, ".js")) return LANG_JAVASCRIPT;
+    return LANG_UNKNOWN;
+}
+
+bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType language) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        parser_set_error(ctx, -1, "Failed to open file.");
+        return false;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *buffer = (char *)malloc(length + 1);
+    if (!buffer) {
+        fclose(file);
+        parser_set_error(ctx, -1, "Memory allocation failed for file content.");
+        return false;
+    }
+
+    fread(buffer, 1, length, file);
+    fclose(file);
+    buffer[length] = '\0';
+
+    if (language == LANG_UNKNOWN) {
+        language = parser_detect_language(filename, buffer, length);
+    }
+
+    bool result = parser_parse_string(ctx, buffer, length, language);
+
+    free(buffer);
+    return result;
+}
+    free(node->children);
+  }
+  if (node->content) {
+    free(node->content);
   }
 
-  // Free IR nodes
-  if (ctx->root_node) {
-    ir_node_free(ctx->root_node);
-    ctx->root_node = NULL;
+  free(node);
+}
+
+/**
+ * @brief Appends a child node to a parent's list of children.
+ *
+ * @param parent The parent CSTNode.
+ * @param child The child CSTNode to add.
+ * @return True on success, false on failure (e.g., memory allocation error).
+ */
+bool cst_node_add_child(CSTNode *parent, CSTNode *child) {
+  if (!parent || !child) {
+    return false;
   }
 
-  // Free the flat array of nodes (but not the nodes themselves as they're freed via root_node)
-  if (ctx->all_nodes) {
-    free(ctx->all_nodes);
-    ctx->all_nodes = NULL;
+  CSTNode **new_children = (CSTNode **)realloc(
+      parent->children, (parent->children_count + 1) * sizeof(CSTNode *));
+  if (!new_children) {
+    return false;
   }
 
-  // Free the parser context itself
-  free(ctx);
+  parent->children = new_children;
+  parent->children[parent->children_count] = child;
+  parent->children_count++;
+
+  return true;
 }
 
 /* Language detection */
@@ -195,70 +431,76 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
 }
 
 /* String parsing */
-bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
+bool parser_parse_string(ParserContext *ctx, const char *const content, size_t content_length,
                          const char *filename, LanguageType language) {
   if (!ctx || !content || content_length == 0) {
+    parser_set_error(ctx, -1, "Invalid arguments to parser_parse_string");
     return false;
   }
 
-  // Clean up any previous parsing state
-  if (ctx->source_code) {
-    free(ctx->source_code);
-  }
-  if (ctx->filename) {
-    free(ctx->filename);
-  }
-  if (ctx->last_error) {
-    free(ctx->last_error);
-    ctx->last_error = NULL;
-  }
+  // Clear any previous parse results before starting a new run
+  parser_clear(ctx);
 
-  // Store the content and filename
-  ctx->source_code = (char *)malloc(content_length + 1);
+  // Store source code and metadata in the context
+  ctx->source_code = strdup(content);
   if (!ctx->source_code) {
-    ctx->last_error = strdup("Memory allocation failed for source code");
+    parser_set_error(ctx, -1, "Failed to allocate memory for source code");
     return false;
   }
-  memcpy(ctx->source_code, content, content_length);
-  ctx->source_code[content_length] = '\0';
   ctx->source_code_length = content_length;
 
   if (filename) {
     ctx->filename = strdup(filename);
-  } else {
-    ctx->filename = strdup("<unknown>");
-  }
-
-  // Determine language if not specified
-  if (language == LANG_UNKNOWN) {
-    language = parser_detect_language(filename, content, content_length);
+    if (!ctx->filename) {
+      parser_set_error(ctx, -1, "Failed to allocate memory for filename");
+      return false; // source_code will be freed by parser_clear/free
+    }
   }
   ctx->language = language;
 
-  if (ctx->language == LANG_UNKNOWN) {
-    ctx->last_error = strdup("Unable to determine language");
+  // Initialize the Tree-sitter parser for the given language if not already done
+  if (!ts_init_parser(ctx, language)) {
+    // ts_init_parser is responsible for setting a detailed error message
     return false;
   }
 
-  // Initialize the Tree-sitter parser based on the language
-  // This would typically call the tree_sitter_integration module
-  // For now, we'll just set a placeholder for the parsing result
-
-  // Create a root IR node for the file
-  SourceRange file_range = {{0, 0, 0}, {0, 0, 0}}; // Will be populated properly later
-  ctx->root_node = ir_node_create(NODE_MODULE, ctx->filename, ctx->filename, file_range);
-  if (!ctx->root_node) {
-    ctx->last_error = strdup("Failed to create root IR node");
+  // Parse the source code to get a raw Tree-sitter tree
+  TSTree *tree = ts_parser_parse_string(ctx->ts_parser, NULL, content, content_length);
+  if (!tree) {
+    parser_set_error(ctx, -1, "Tree-sitter failed to parse the source code");
     return false;
   }
 
-  // In a real implementation, we would now:
-  // 1. Call the appropriate Tree-sitter parser based on language
-  // 2. Traverse the resulting AST to build our IR nodes
-  // 3. Populate the ctx->all_nodes array for easy access
+  // Get the root node of the syntax tree
+  TSNode root_node = ts_tree_root_node(tree);
+  if (ts_node_is_null(root_node)) {
+    parser_set_error(ctx, -1, "Tree-sitter returned a null root node");
+    ts_tree_delete(tree);
+    return false;
+  }
 
-  // For this implementation, we'll just return success
-  return true;
+  bool success = false;
+  // Based on the selected mode, generate either an AST or a CST
+  if (ctx->mode == PARSE_AST) {
+    ctx->ast_root = ts_tree_to_ast(root_node, ctx);
+    if (ctx->ast_root) {
+      success = true;
+    }
+    // ts_tree_to_ast will set the error on failure
+  } else if (ctx->mode == PARSE_CST) {
+    ctx->cst_root = ts_tree_to_cst(root_node, ctx);
+    if (ctx->cst_root) {
+      success = true;
+    }
+    // ts_tree_to_cst will set the error on failure
+  } else {
+    parser_set_error(ctx, -1, "Unknown or unsupported parse mode selected");
+  }
+
+  // Clean up the raw Tree-sitter tree, as it's no longer needed
+  ts_tree_delete(tree);
+
+  return success;
 }
 
 /* Error handling */
@@ -271,36 +513,34 @@ const char *parser_get_last_error(const ParserContext *ctx) {
 }
 
 /* Node retrieval by qualified name */
-const IRNode *parser_get_node(const ParserContext *ctx, const char *qualified_name) {
-  if (!ctx || !qualified_name || !ctx->all_nodes || ctx->num_nodes == 0) {
+const ASTNode *parser_get_ast_node(const ParserContext *ctx, const char *qualified_name) {
+  if (!ctx || !qualified_name) {
     return NULL;
   }
 
   // Linear search through all nodes
-  for (size_t i = 0; i < ctx->num_nodes; i++) {
-    if (ctx->all_nodes[i] && ctx->all_nodes[i]->qualified_name &&
-        strcmp(ctx->all_nodes[i]->qualified_name, qualified_name) == 0) {
-      return ctx->all_nodes[i];
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    if (ctx->all_ast_nodes[i] &&
+        strcmp(ctx->all_ast_nodes[i]->qualified_name, qualified_name) == 0) {
+      return ctx->all_ast_nodes[i];
     }
   }
 
-  return NULL; // Node not found
+  return NULL; // Not found
 }
 
 /* Node retrieval by type */
-size_t parser_get_nodes_by_type(const ParserContext *ctx, NodeType type, const IRNode **out_nodes,
-                                size_t max_nodes) {
-  if (!ctx || !ctx->all_nodes || ctx->num_nodes == 0) {
+size_t parser_get_ast_nodes_by_type(const ParserContext *ctx, ASTNodeType type,
+                                    const ASTNode **out_nodes, size_t max_nodes) {
+  if (!ctx || !out_nodes || max_nodes == 0) {
     return 0;
   }
 
   size_t count = 0;
-
-  // Linear search through all nodes
-  for (size_t i = 0; i < ctx->num_nodes && (out_nodes == NULL || count < max_nodes); i++) {
-    if (ctx->all_nodes[i] && ctx->all_nodes[i]->type == type) {
-      if (out_nodes) {
-        out_nodes[count] = ctx->all_nodes[i];
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    if (ctx->all_ast_nodes[i] && ctx->all_ast_nodes[i]->type == type) {
+      if (count < max_nodes) {
+        out_nodes[count] = ctx->all_ast_nodes[i];
       }
       count++;
     }
@@ -309,14 +549,14 @@ size_t parser_get_nodes_by_type(const ParserContext *ctx, NodeType type, const I
   return count;
 }
 
-/* IR node creation */
-IRNode *ir_node_create(NodeType type, const char *name, const char *qualified_name,
-                       SourceRange range) {
+/* AST node creation */
+ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name,
+                         SourceRange range) {
   if (!name || !qualified_name) {
     return NULL;
   }
 
-  IRNode *node = (IRNode *)calloc(1, sizeof(IRNode));
+  ASTNode *node = (ASTNode *)calloc(1, sizeof(ASTNode));
   if (!node) {
     return NULL; // Memory allocation failed
   }
@@ -342,15 +582,15 @@ IRNode *ir_node_create(NodeType type, const char *name, const char *qualified_na
 
   // Check if memory allocation for strings succeeded
   if (!node->name || !node->qualified_name) {
-    ir_node_free(node);
+    ast_node_free(node);
     return NULL;
   }
 
   return node;
 }
 
-/* IR node cleanup */
-void ir_node_free(IRNode *node) {
+/* AST node cleanup */
+void ast_node_free(ASTNode *node) {
   if (!node) {
     return;
   }
@@ -378,7 +618,7 @@ void ir_node_free(IRNode *node) {
       if (node->children[i]) {
         // Set parent to NULL to avoid circular references
         node->children[i]->parent = NULL;
-        ir_node_free(node->children[i]);
+        ast_node_free(node->children[i]);
       }
     }
     free(node->children);
@@ -400,8 +640,8 @@ void ir_node_free(IRNode *node) {
   free(node);
 }
 
-/* IR node relationship management */
-bool ir_node_add_child(IRNode *parent, IRNode *child) {
+/* AST node relationship management */
+bool ast_node_add_child(ASTNode *parent, ASTNode *child) {
   if (!parent || !child) {
     return false;
   }
@@ -416,14 +656,15 @@ bool ir_node_add_child(IRNode *parent, IRNode *child) {
   if (!parent->children) {
     // Initial allocation
     parent->children_capacity = 4; // Start with space for 4 children
-    parent->children = (IRNode **)malloc(parent->children_capacity * sizeof(IRNode *));
+    parent->children = (ASTNode **)malloc(parent->children_capacity * sizeof(ASTNode *));
     if (!parent->children) {
       return false; // Memory allocation failed
     }
   } else if (parent->num_children >= parent->children_capacity) {
     // Need to resize
     size_t new_capacity = parent->children_capacity * 2;
-    IRNode **new_children = (IRNode **)realloc(parent->children, new_capacity * sizeof(IRNode *));
+    ASTNode **new_children =
+        (ASTNode **)realloc(parent->children, new_capacity * sizeof(ASTNode *));
     if (!new_children) {
       return false; // Memory allocation failed
     }
@@ -438,7 +679,7 @@ bool ir_node_add_child(IRNode *parent, IRNode *child) {
   return true;
 }
 
-bool ir_node_add_reference(IRNode *from, IRNode *to) {
+bool ast_node_add_reference(ASTNode *from, ASTNode *to) {
   if (!from || !to) {
     return false;
   }
@@ -447,14 +688,15 @@ bool ir_node_add_reference(IRNode *from, IRNode *to) {
   if (!from->references) {
     // Initial allocation
     from->references_capacity = 4; // Start with space for 4 references
-    from->references = (IRNode **)malloc(from->references_capacity * sizeof(IRNode *));
+    from->references = (ASTNode **)malloc(from->references_capacity * sizeof(ASTNode *));
     if (!from->references) {
       return false; // Memory allocation failed
     }
   } else if (from->num_references >= from->references_capacity) {
     // Need to resize
     size_t new_capacity = from->references_capacity * 2;
-    IRNode **new_references = (IRNode **)realloc(from->references, new_capacity * sizeof(IRNode *));
+    ASTNode **new_references =
+        (ASTNode **)realloc(from->references, new_capacity * sizeof(ASTNode *));
     if (!new_references) {
       return false; // Memory allocation failed
     }
