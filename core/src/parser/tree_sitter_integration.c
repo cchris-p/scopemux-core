@@ -90,74 +90,216 @@ static char *ts_node_to_string(TSNode node, const char *source_code) {
   return str;
 }
 
+// Helper function to generate a qualified name for an AST node
+static char *generate_qualified_name(const char *name, ASTNode *parent) {
+  if (!name) return NULL;
+  
+  if (!parent || parent->type == AST_ROOT || !parent->qualified_name) {
+    return strdup(name);
+  }
+  
+  size_t len = strlen(parent->qualified_name) + strlen(name) + 2; // +2 for '::' and null terminator
+  char *qualified = malloc(len);
+  if (qualified) {
+    snprintf(qualified, len, "%s::%s", parent->qualified_name, name);
+  }
+  return qualified;
+}
+
+// Helper function to extract the raw content for a node
+static char *extract_raw_content(TSNode node, const char *source_code) {
+  if (!source_code || ts_node_is_null(node)) return NULL;
+  
+  uint32_t start_byte = ts_node_start_byte(node);
+  uint32_t end_byte = ts_node_end_byte(node);
+  uint32_t length = end_byte - start_byte;
+  
+  char *content = malloc(length + 1);
+  if (content) {
+    memcpy(content, source_code + start_byte, length);
+    content[length] = '\0';
+  }
+  return content;
+}
+
+// Helper function to extract AST nodes from a specific query type
+static void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, 
+                         ASTNode *ast_root, ASTNode **node_map) {
+  // Get the query for the specified type
+  const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
+  if (!query) {
+    // Skip if query doesn't exist for this language
+    return;
+  }
+
+  // Execute the query
+  TSQueryCursor *cursor = ts_query_cursor_new();
+  ts_query_cursor_exec(cursor, query, root_node);
+
+  // Iterate over matches
+  TSQueryMatch match;
+  while (ts_query_cursor_next_match(cursor, &match)) {
+    char *node_name = NULL;
+    TSNode target_node = {0};
+    TSNode body_node = {0};
+    TSNode params_node = {0};
+    char *docstring = NULL;
+    uint32_t node_type = AST_UNKNOWN;
+    ASTNode *parent_node = ast_root; // Default parent is root
+    
+    // Determine node type based on query
+    if (strcmp(query_type, "functions") == 0) {
+      node_type = AST_FUNCTION;
+    } else if (strcmp(query_type, "classes") == 0) {
+      node_type = AST_CLASS;
+    } else if (strcmp(query_type, "methods") == 0) {
+      node_type = AST_METHOD;
+    } else if (strcmp(query_type, "variables") == 0) {
+      node_type = AST_VARIABLE;
+    } else if (strcmp(query_type, "imports") == 0) {
+      node_type = AST_IMPORT;
+    } else if (strcmp(query_type, "control_flow") == 0) {
+      node_type = AST_CONTROL_FLOW;
+    }
+
+    // Process captures to populate node information
+    for (uint32_t i = 0; i < match.capture_count; ++i) {
+      TSNode captured_node = match.captures[i].node;
+      uint32_t capture_index = match.captures[i].index;
+      const char *capture_name = ts_query_capture_name_for_id(query, capture_index, NULL);
+
+      if (strstr(capture_name, "function") || 
+          strstr(capture_name, "class") || 
+          strstr(capture_name, "method") ||
+          strstr(capture_name, "variable") ||
+          strstr(capture_name, "import") ||
+          strstr(capture_name, "if_statement") ||
+          strstr(capture_name, "for_loop") ||
+          strstr(capture_name, "while_loop") ||
+          strstr(capture_name, "try_statement")) {
+        target_node = captured_node;
+      } else if (strcmp(capture_name, "name") == 0) {
+        node_name = ts_node_to_string(captured_node, ctx->source_code);
+      } else if (strcmp(capture_name, "body") == 0) {
+        body_node = captured_node;
+      } else if (strcmp(capture_name, "params") == 0 || 
+                strcmp(capture_name, "parameters") == 0) {
+        params_node = captured_node;
+      } else if (strcmp(capture_name, "docstring") == 0) {
+        docstring = ts_node_to_string(captured_node, ctx->source_code);
+      } else if (strcmp(capture_name, "class_name") == 0 && 
+                 strcmp(query_type, "methods") == 0) {
+        // Use node_map to find the parent class for methods
+        char *class_name = ts_node_to_string(captured_node, ctx->source_code);
+        if (class_name && node_map[AST_CLASS]) {
+          parent_node = node_map[AST_CLASS];
+        }
+        free(class_name);
+      }
+    }
+
+    if (node_name && !ts_node_is_null(target_node)) {
+      ASTNode *ast_node = ast_node_new(node_type, node_name);
+      if (ast_node) {
+        // Set source range
+        ast_node->range.start_line = ts_node_start_point(target_node).row;
+        ast_node->range.end_line = ts_node_end_point(target_node).row;
+        ast_node->range.start_column = ts_node_start_point(target_node).column;
+        ast_node->range.end_column = ts_node_end_point(target_node).column;
+
+        // Populate signature if params are available
+        if (!ts_node_is_null(params_node)) {
+          ast_node->signature = ts_node_to_string(params_node, ctx->source_code);
+        }
+
+        // Populate docstring if available
+        if (docstring) {
+          ast_node->docstring = docstring;
+          // Don't free docstring as it's now owned by the node
+        }
+        
+        // Extract raw content
+        ast_node->raw_content = extract_raw_content(target_node, ctx->source_code);
+        
+        // Generate qualified name based on parent
+        ast_node->qualified_name = generate_qualified_name(node_name, parent_node);
+        
+        // Store parent reference
+        ast_node->parent = parent_node;
+
+        // Add to parent (either root or another node)
+        ast_node_add_child(parent_node, ast_node);
+        
+        // Store in node_map for potential parent-child relationships
+        if (node_type < 256) { // Ensure we're within array bounds
+          node_map[node_type] = ast_node;
+        }
+      }
+      free(node_name); // Free the copied name
+    }
+  }
+  
+  ts_query_cursor_delete(cursor);
+}
+
 ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
   if (ts_node_is_null(root_node) || !ctx || !ctx->q_manager) {
     parser_set_error(ctx, -1, "Invalid context for AST generation.");
     return NULL;
   }
 
-  // 1. Get the query for functions for the current language
-  const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, "functions");
-  if (!query) {
-    parser_set_error(ctx, -1, "Could not load 'functions' query for the specified language.");
-    return NULL; // Error is already logged by query manager
-  }
-
-  // 2. Execute the query
-  TSQueryCursor *cursor = ts_query_cursor_new();
-  ts_query_cursor_exec(cursor, query, root_node);
-
-  // 3. Create a root node for the AST
+  // Create a root node for the AST
   ASTNode *ast_root = ast_node_new(AST_ROOT, "ROOT");
   if (!ast_root) {
     parser_set_error(ctx, -1, "Failed to create AST root node.");
-    ts_query_cursor_delete(cursor);
     return NULL;
   }
-
-  // 4. Iterate over matches and create AST nodes
-  TSQueryMatch match;
-  while (ts_query_cursor_next_match(cursor, &match)) {
-    char *function_name = NULL;
-    TSNode function_node = {0};
-
-    for (uint32_t i = 0; i < match.capture_count; ++i) {
-      TSNode captured_node = match.captures[i].node;
-      uint32_t capture_index = match.captures[i].index;
-      const char *capture_name = ts_query_capture_name_for_id(query, capture_index, NULL);
-
-      if (strcmp(capture_name, "function") == 0) {
-        function_node = captured_node;
-      } else if (strcmp(capture_name, "name") == 0) {
-        function_name = ts_node_to_string(captured_node, ctx->source_code);
-      }
-    }
-
-    if (function_name && !ts_node_is_null(function_node)) {
-      ASTNode *func_node = ast_node_new(AST_FUNCTION, function_name);
-      if (func_node) {
-        // Set source range
-        func_node->range.start_line = ts_node_start_point(function_node).row;
-        func_node->range.end_line = ts_node_end_point(function_node).row;
-        func_node->range.start_column = ts_node_start_point(function_node).column;
-        func_node->range.end_column = ts_node_end_point(function_node).column;
-
-        // Add to the root
-        ast_node_add_child(ast_root, func_node);
-      }
-      free(function_name); // Free the copied name
-    }
+  
+  // Set qualified name for root to be the file path or module name
+  if (ctx->file_path) {
+    ast_root->qualified_name = strdup(ctx->file_path);
   }
+
+  // Node map to help build hierarchical relationships
+  // Simple approach: store the last node of each type
+  // More sophisticated approach would use unique IDs
+  ASTNode *node_map[256] = {NULL}; // Assuming AST_* constants are < 256
+
+  // Process different query types in order of hierarchy
+  // Classes first, then methods (which are children of classes), then standalone functions
+  const char *query_types[] = {
+    // Process types that define scope first
+    "classes",       // Classes should be processed first as methods belong to them
+    "structs",       // C structures
+    "unions",        // C unions
+    "enums",         // C enumerations
+    "typedefs",      // C type definitions 
+    
+    // Process members and functions next
+    "methods",       // Class methods (belong to classes)
+    "functions",     // Standalone functions
+    
+    // Process remaining constructs
+    "variables",     // Variable declarations
+    "imports",       // Module imports
+    "includes",      // C includes
+    "macros",        // C preprocessor macros
+    "control_flow",  // Control flow statements
+    "docstrings",    // Documentation strings
+    NULL
+  };
+
+  // Process each query type
+  for (int i = 0; query_types[i]; i++) {
+    process_query(query_types[i], root_node, ctx, ast_root, node_map);
+  }
+  
+  // Post-processing step to enrich nodes with additional info or establish more complex relationships
+  // For example, resolve references between nodes, establish cross-file links, etc.
+  // This would typically involve analysis of identifier usage and reference resolution
+  // For now, this is a placeholder for future enhancement
 
   // 5. Clean up and return
-  ts_query_cursor_delete(cursor);
-
-  if (ast_root->num_children == 0) {
-    // If no functions were found, it's not an error, but the root is empty.
-    // We can return the empty root or NULL depending on desired behavior.
-    // For now, returning the root.
-  }
-
   return ast_root;
 }
 
