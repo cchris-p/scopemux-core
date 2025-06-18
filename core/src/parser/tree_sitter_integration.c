@@ -17,8 +17,9 @@
 extern const TSLanguage *tree_sitter_c(void);
 extern const TSLanguage *tree_sitter_cpp(void);
 extern const TSLanguage *tree_sitter_python(void);
-extern const TSLanguage *tree_sitter_javascript(void);
-extern const TSLanguage *tree_sitter_typescript(void);
+// JavaScript and TypeScript support removed temporarily
+// extern const TSLanguage *tree_sitter_javascript(void);
+// extern const TSLanguage *tree_sitter_typescript(void);
 
 /**
  * @brief Initializes or retrieves a Tree-sitter parser for the given language.
@@ -52,12 +53,16 @@ bool ts_init_parser(ParserContext *ctx, LanguageType language) {
     ts_language = tree_sitter_python();
     break;
   case LANG_JAVASCRIPT:
-    ts_language = tree_sitter_javascript();
-    break;
   case LANG_TYPESCRIPT:
-    // For TypeScript, we often use the typescript-tsx grammar
-    ts_language = tree_sitter_typescript();
-    break;
+    // JavaScript and TypeScript support removed temporarily
+    parser_set_error(ctx, -1, "JavaScript and TypeScript support temporarily disabled");
+    return false;
+    // ts_language = tree_sitter_javascript();
+    // break;
+  // case LANG_TYPESCRIPT:
+  // For TypeScript, we often use the typescript-tsx grammar
+  // ts_language = tree_sitter_typescript();
+  // break;
   default:
     parser_set_error(ctx, -1, "Unsupported language for Tree-sitter parser");
     return false;

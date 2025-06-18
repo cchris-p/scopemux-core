@@ -1,13 +1,5 @@
-cmake_minimum_required(VERSION 3.16)  # Updated to match main CMakeLists.txt
-project(ScopemuxBindingsCTests LANGUAGES C CXX)
-
-# Set C++ standard (needed for pybind11)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Set C standard (Criterion tests are in C)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+# Configuration for ScopeMux Bindings C Tests
+# C/C++ standards are set in the root CMakeLists.txt
 
 # Find PkgConfig for locating Criterion via .pc file
 find_package(PkgConfig REQUIRED)
@@ -16,15 +8,22 @@ pkg_check_modules(Criterion REQUIRED criterion)
 
 # Include directories
 include_directories(
+    # Project directories
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include/scopemux
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../vendor/tree-sitter/lib/include
+    # Tree-sitter include directories (from root CMakeLists.txt)
+    ${TS_CORE_INCLUDE_DIR}
+    ${TS_C_INCLUDE_DIR}
+    ${TS_CPP_INCLUDE_DIR}
+    ${TS_PYTHON_INCLUDE_DIR}
+    # JavaScript and TypeScript support removed temporarily
+    # ${TS_JS_INCLUDE_DIR}
+    # ${TS_TS_INCLUDE_DIR}
+    # Criterion
     ${Criterion_INCLUDE_DIRS}
-    ${TS_CORE_INCLUDE_DIR} # For tree_sitter/api.h, from root CMake
-    # Add other necessary include directories for your core C libraries if they are not covered
 )
 
 # --- Test Utilities and Common Test Helpers ---
@@ -145,55 +144,111 @@ add_executable(cpp_example_ast_tests
 # Link against Criterion and your project's C libraries
 target_link_libraries(init_parser_tests PRIVATE
     ${Criterion_LIBRARIES} # Provided by pkg_check_modules
+    parser_core
     m # Math library, often needed
     dl # Dynamic linking library, sometimes needed by test frameworks or tree-sitter
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
 )
 
 # Link C Basic AST tests
 target_link_libraries(c_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
+    parser_core
     m
     dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
 )
 
 # Link Python Basic AST tests
 target_link_libraries(python_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
+    parser_core
     m
     dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
 )
 
 # Link C++ Basic AST tests
 target_link_libraries(cpp_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
+    parser_core
     m
     dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
 )
 
 # Link Example AST tests
 target_link_libraries(c_example_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
+    parser_core
     m
     dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
 )
 
 target_link_libraries(python_example_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
+    parser_core
     m
     dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
 )
 
 target_link_libraries(cpp_example_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
+    parser_core
     m
     dl
-)
-
-# Link Edge Case tests
-target_link_libraries(edge_case_tests PRIVATE
-    ${Criterion_LIBRARIES}
-    m
-    dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
 )
 
 # Add tests to CTest 
@@ -205,5 +260,21 @@ add_test(NAME CExampleASTTests COMMAND c_example_ast_tests)
 add_test(NAME PythonExampleASTTests COMMAND python_example_ast_tests)
 add_test(NAME CPPExampleASTTests COMMAND cpp_example_ast_tests)
 add_test(NAME EdgeCaseTests COMMAND edge_case_tests)
+
+# Link Edge Case tests
+target_link_libraries(edge_case_tests PRIVATE
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
+)
 
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")

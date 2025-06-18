@@ -1,6 +1,8 @@
-# Most Important Best Practice
+# Most Important Notes
 
-The most important note is to not write "you" or "your" in the code. Write comments with a standard documentation tone. In the comments, note useful information, caveats, and todo/action items. If you see commented code that do not follow this best practice, update them at the spot. Also clarify vague messages whenever possible.
+* Do not write "you" or "your" in the code. Write comments with a standard documentation tone. In the comments, note useful information, caveats, and todo/action items. If you see commented code that do not follow this best practice, update them at the spot. Also clarify vague messages whenever possible.
+
+* Run the test suite from the project root directory: `./run_c_bindings_tests.sh`
 
 # 🔍 Tree-sitter Parsing in ScopeMux
 

@@ -83,21 +83,18 @@ void free_json_value(JsonValue *json) {
  */
 static const char *ast_type_to_string(ASTNodeType type) {
   switch (type) {
-    case AST_ROOT:          return "root";
-    case AST_FUNCTION:      return "function";
-    case AST_CLASS:         return "class";
-    case AST_METHOD:        return "method";
-    case AST_STRUCT:        return "struct";
-    case AST_ENUM:          return "enum";
-    case AST_UNION:         return "union";
-    case AST_TYPEDEF:       return "typedef";
-    case AST_VARIABLE:      return "variable";
-    case AST_PARAMETER:     return "parameter";
-    case AST_FIELD:         return "field";
-    case AST_IF_STATEMENT:  return "if";
-    case AST_FOR_STATEMENT: return "for";
-    case AST_WHILE_STATEMENT: return "while";
-    default:                return "unknown";
+    case NODE_UNKNOWN:    return "unknown";
+    case NODE_FUNCTION:   return "function";
+    case NODE_METHOD:     return "method";
+    case NODE_CLASS:      return "class";
+    case NODE_STRUCT:     return "struct";
+    case NODE_ENUM:       return "enum";
+    case NODE_INTERFACE:  return "interface";
+    case NODE_NAMESPACE:  return "namespace";
+    case NODE_MODULE:     return "module";
+    case NODE_COMMENT:    return "comment";
+    case NODE_DOCSTRING:  return "docstring";
+    default:              return "unknown";
   }
 }
 

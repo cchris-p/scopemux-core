@@ -1,13 +1,5 @@
-cmake_minimum_required(VERSION 3.16)  # Updated to a more recent version for better compatibility with modern pybind11
-project(scopemux VERSION 0.1.0 LANGUAGES C CXX)
-
-# Set C standard
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-
-# Set C++ standard (needed for pybind11)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Set compiler flags for this directory
+# Note: C/C++ standards are already set in the root CMakeLists.txt
 
 # Set compiler flags
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -28,11 +20,14 @@ FetchContent_MakeAvailable(pybind11)
 
 # Include directories - make sure all targets can find the headers
 include_directories(
-    # Tree-sitter headers must come first to ensure they're found correctly
-    ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tree-sitter/lib/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tree-sitter-c/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tree-sitter-cpp/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tree-sitter-python/src
+    # Tree-sitter headers (defined in the root CMakeLists.txt)
+    ${TS_CORE_INCLUDE_DIR}
+    ${TS_C_INCLUDE_DIR}
+    ${TS_CPP_INCLUDE_DIR}
+    ${TS_PYTHON_INCLUDE_DIR}
+    # JavaScript and TypeScript support removed temporarily
+    # ${TS_JS_INCLUDE_DIR}
+    # ${TS_TS_INCLUDE_DIR}
     # Project headers
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
@@ -105,6 +100,17 @@ add_library(context_engine STATIC ${CONTEXT_ENGINE_SOURCES} ${COMMON_SOURCES})
 # Set include directories for each target
 target_include_directories(parser_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(context_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Link parser_core with Tree-sitter libraries
+target_link_libraries(parser_core PRIVATE
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    # JavaScript and TypeScript support removed temporarily
+    # ts_javascript
+    # ts_typescript
+)
 
 # Python bindings module
 pybind11_add_module(scopemux_core

@@ -10,6 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Forward declarations for Tree-sitter language functions
+extern const TSLanguage *tree_sitter_c(void);
+extern const TSLanguage *tree_sitter_cpp(void);
+extern const TSLanguage *tree_sitter_python(void);
+
 /**
  * @brief Map a language type to the corresponding Tree-sitter language
  *
@@ -17,17 +22,20 @@
  * @return TSLanguage* Tree-sitter language or NULL on error
  */
 static TSLanguage *get_language_for_type(LanguageType language) {
-  // This function would normally return the appropriate Tree-sitter language
-  // For now, return NULL to simulate the language being loaded
-  // In a real implementation, this would include proper Tree-sitter language loading
-  // such as:
-  // case LANG_C:
-  //     return tree_sitter_c();
-  // case LANG_CPP:
-  //     return tree_sitter_cpp();
-  // etc.
-
-  return NULL;
+  switch (language) {
+  case LANG_C:
+    return (TSLanguage *)tree_sitter_c();
+  case LANG_CPP:
+    return (TSLanguage *)tree_sitter_cpp();
+  case LANG_PYTHON:
+    return (TSLanguage *)tree_sitter_python();
+  case LANG_JAVASCRIPT:
+  case LANG_TYPESCRIPT:
+    // JavaScript and TypeScript support removed temporarily
+    return NULL;
+  default:
+    return NULL;
+  }
 }
 
 /**
@@ -57,9 +65,10 @@ TreeSitterParser *ts_parser_init(LanguageType language) {
   // Get the language and set it on the parser
   parser->ts_language = get_language_for_type(language);
 
-  // Set the language on the parser
-  // In a real implementation, we would check if ts_language is NULL
-  // and handle accordingly
+  // Set the language on the parser if available
+  if (parser->ts_language) {
+    ts_parser_set_language(parser->ts_parser, parser->ts_language);
+  }
 
   // For now, we'll just set the language type for testing
   parser->language = language;

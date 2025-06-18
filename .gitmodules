@@ -16,3 +16,9 @@
 [submodule "core/tests/examples"]
 	path = core/tests/examples
 	url = https://github.com/cchris-p/scopemux-test-cases
+[submodule "vendor/tree-sitter-javascript"]
+	path = vendor/tree-sitter-javascript
+	url = https://github.com/tree-sitter/tree-sitter-javascript.git
+[submodule "vendor/tree-sitter-typescript"]
+	path = vendor/tree-sitter-typescript
+	url = https://github.com/tree-sitter/tree-sitter-typescript.git

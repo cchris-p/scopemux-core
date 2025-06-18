@@ -34,7 +34,16 @@ RUN_CPP_BASIC_AST_TESTS=false
 RUN_CPP_EXAMPLE_AST_TESTS=false
 RUN_CPP_CST_TESTS=false
 
-# --- Configuration ---
+# JavaScript Language Test Toggles
+RUN_JS_BASIC_AST_TESTS=false
+RUN_JS_EXAMPLE_AST_TESTS=false
+RUN_JS_CST_TESTS=false
+
+# TypeScript Language Test Toggles
+RUN_TS_BASIC_AST_TESTS=false
+RUN_TS_EXAMPLE_AST_TESTS=false
+RUN_TS_CST_TESTS=false
+
 # Project root directory (assuming this script is in the root)
 PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CORE_DIR="${PROJECT_ROOT_DIR}/core"
@@ -63,7 +72,16 @@ PYTHON_CST_EXECUTABLE_RELPATH="core/tests/python_cst_tests"
 CPP_BASIC_AST_EXECUTABLE_RELPATH="core/tests/cpp_basic_ast_tests"
 CPP_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/cpp_example_ast_tests"
 CPP_CST_EXECUTABLE_RELPATH="core/tests/cpp_cst_tests"
-set +x # Disable debug output
+# JavaScript language test executables
+JS_BASIC_AST_EXECUTABLE_RELPATH="core/tests/js_basic_ast_tests"
+JS_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/js_example_ast_tests"
+JS_CST_EXECUTABLE_RELPATH="core/tests/js_cst_tests"
+
+# TypeScript language test executables
+TS_BASIC_AST_EXECUTABLE_RELPATH="core/tests/ts_basic_ast_tests"
+TS_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/ts_example_ast_tests"
+TS_CST_EXECUTABLE_RELPATH="core/tests/ts_cst_tests"
+
 
 # Sample code and expected output paths
 CPP_SAMPLE_DIR="${TESTS_DIR}/sample_code/cpp"
@@ -129,10 +147,35 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Configuring project with CMake... (from ${PWD})"
-cmake "${CORE_DIR}"
+cmake "${PROJECT_ROOT_DIR}"
 if [ $? -ne 0 ]; then
     echo "ERROR: CMake configuration failed."
-    cd "${PROJECT_ROOT_DIR}"
+    # JavaScript language tests
+if [ "${RUN_JS_BASIC_AST_TESTS}" = true ]; then
+    build_test "js_basic_ast_tests" "JavaScript Basic AST Tests"
+fi
+
+if [ "${RUN_JS_EXAMPLE_AST_TESTS}" = true ]; then
+    build_test "js_example_ast_tests" "JavaScript Example AST Tests"
+fi
+
+if [ "${RUN_JS_CST_TESTS}" = true ]; then
+    build_test "js_cst_tests" "JavaScript CST Tests"
+fi
+
+# TypeScript language tests
+if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
+    build_test "ts_basic_ast_tests" "TypeScript Basic AST Tests"
+fi
+
+if [ "${RUN_TS_EXAMPLE_AST_TESTS}" = true ]; then
+    build_test "ts_example_ast_tests" "TypeScript Example AST Tests"
+fi
+
+if [ "${RUN_TS_CST_TESTS}" = true ]; then
+    build_test "ts_cst_tests" "TypeScript CST Tests"
+fi
+
     exit 1
 fi
 
@@ -273,7 +316,38 @@ if [ "${RUN_CPP_CST_TESTS}" = true ]; then
         "${CMAKE_PROJECT_BUILD_DIR}/${CPP_CST_EXECUTABLE_RELPATH}"
 fi
 
-echo "ScopeMux Testing Suite Finished."
+# JavaScript language tests
+if [ "${RUN_JS_BASIC_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "JavaScript Basic AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${JS_BASIC_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_JS_EXAMPLE_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "JavaScript Example AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${JS_EXAMPLE_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_JS_CST_TESTS}" = true ]; then
+    run_criterion_test_executable "JavaScript CST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${JS_CST_EXECUTABLE_RELPATH}"
+fi
+
+# TypeScript language tests
+if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "TypeScript Basic AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${TS_BASIC_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_TS_EXAMPLE_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "TypeScript Example AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${TS_EXAMPLE_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_TS_CST_TESTS}" = true ]; then
+    run_criterion_test_executable "TypeScript CST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${TS_CST_EXECUTABLE_RELPATH}"
+fi
+
 echo "Note: Tests marked as false in the toggle section were skipped."
 
 # Note: This script doesn't aggregate overall pass/fail status yet.
