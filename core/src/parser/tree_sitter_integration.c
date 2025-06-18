@@ -149,7 +149,7 @@ static void process_query(const char *query_type, TSNode root_node, ParserContex
   while (ts_query_cursor_next_match(cursor, &match)) {
     char *node_name = NULL;
     TSNode target_node = {0};
-    TSNode body_node = {0};
+    TSNode body_node __attribute__((unused)) = {0};
     TSNode params_node = {0};
     char *docstring = NULL;
     uint32_t node_type = NODE_UNKNOWN;

@@ -24,6 +24,7 @@ static void ast_node_free_internal(ASTNode *node);
  * Recursively free an AST node and its resources, but not its children
  * This is different from ast_node_free which also frees children
  */
+static void ast_node_free_internal(ASTNode *node) __attribute__((unused));
 static void ast_node_free_internal(ASTNode *node) {
   if (!node) return;
   
@@ -82,11 +83,31 @@ ASTNode *ast_node_new(ASTNodeType type, const char *name) {
 void ast_node_free(ASTNode *node) {
   if (!node)
     return;
-  // In our design, all AST nodes are part of the `all_ast_nodes` flat array
-  // in the context, which is freed in `parser_clear`. Freeing nodes recursively
-  // here would lead to double-free errors. This function is a placeholder
-  // or could be used to free a detached tree if needed.
-  // For now, the primary cleanup is handled by `parser_clear`.
+  
+  // In our design, most AST nodes are part of the `all_ast_nodes` flat array
+  // in the context and are freed in `parser_clear`. However, this function can be
+  // used to free detached nodes that aren't tracked by a ParserContext.
+  
+  // Free all resources owned by this node
+  free(node->name);
+  free(node->qualified_name);
+  free(node->signature);
+  free(node->docstring);
+  free(node->raw_content);
+  
+  // Free all children recursively
+  for (size_t i = 0; i < node->num_children; i++) {
+    if (node->children[i]) {
+      ast_node_free(node->children[i]);
+    }
+  }
+  
+  // Free array pointers
+  free(node->children);
+  free(node->references);
+  
+  // Free the node itself
+  free(node);
 }
 
 // --- CST Node Management ---
@@ -337,7 +358,7 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
   size_t bytes_read = fread(content, 1, file_size, file);
   fclose(file);
 
-  if (bytes_read != file_size) {
+  if (bytes_read != (size_t)file_size) {
     free(content);
     if (ctx->last_error) {
       free(ctx->last_error);

@@ -217,7 +217,7 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
   if (range_field && range_field->type == JSON_OBJECT) {
     JsonValue *start_line = find_json_field(range_field, "start_line");
     if (start_line && start_line->type == JSON_NUMBER) {
-      if ((int)start_line->value.number != node->range.start.line) {
+      if ((int)start_line->value.number != (int)node->range.start.line) {
         cr_log_error("%s: Start line mismatch - expected %d, got %d",
                       node_path, (int)start_line->value.number, node->range.start.line);
         valid = false;
@@ -226,7 +226,7 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
     
     JsonValue *end_line = find_json_field(range_field, "end_line");
     if (end_line && end_line->type == JSON_NUMBER) {
-      if ((int)end_line->value.number != node->range.end.line) {
+      if ((int)end_line->value.number != (int)node->range.end.line) {
         cr_log_error("%s: End line mismatch - expected %d, got %d",
                       node_path, (int)end_line->value.number, node->range.end.line);
         valid = false;
