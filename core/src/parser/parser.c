@@ -35,24 +35,6 @@ ASTNode *ast_node_new(ASTNodeType type, const char *name) {
   return node;
 }
 
-void ast_node_add_child(ASTNode *parent, ASTNode *child) {
-  if (!parent || !child)
-    return;
-
-  if (parent->num_children >= parent->children_capacity) {
-    size_t new_capacity = (parent->children_capacity == 0) ? 8 : parent->children_capacity * 2;
-    ASTNode **new_children =
-        (ASTNode **)realloc(parent->children, new_capacity * sizeof(ASTNode *));
-    if (!new_children)
-      return; // Handle allocation failure
-    parent->children = new_children;
-    parent->children_capacity = new_capacity;
-  }
-
-  parent->children[parent->num_children++] = child;
-  child->parent = parent;
-}
-
 void ast_node_free(ASTNode *node) {
   if (!node)
     return;
@@ -73,22 +55,6 @@ CSTNode *cst_node_new(const char *type, char *content) {
   node->type = type;       // This is a pointer to a static string from Tree-sitter, no copy needed.
   node->content = content; // Ownership is transferred to the node.
   return node;
-}
-
-void cst_node_add_child(CSTNode *parent, CSTNode *child) {
-  if (!parent || !child)
-    return;
-
-  // Simple dynamic array for children
-  parent->children_count++;
-  CSTNode **new_children =
-      (CSTNode **)realloc(parent->children, parent->children_count * sizeof(CSTNode *));
-  if (!new_children) {
-    parent->children_count--; // Revert on failure
-    return;
-  }
-  parent->children = new_children;
-  parent->children[parent->children_count - 1] = child;
 }
 
 void cst_node_free(CSTNode *node) {
@@ -203,69 +169,6 @@ void parser_set_error(ParserContext *ctx, int code, const char *message) {
   free(ctx->last_error);
   ctx->last_error = strdup(message);
   ctx->error_code = code;
-}
-
-bool parser_parse_string(ParserContext *ctx, const char *source, size_t length,
-                         LanguageType language) {
-  if (!ctx || !source)
-    return false;
-
-  parser_clear(ctx);
-
-  ctx->source_code = (char *)malloc(length + 1);
-  if (!ctx->source_code) {
-    parser_set_error(ctx, -1, "Memory allocation failed for source code copy.");
-    return false;
-  }
-  memcpy(ctx->source_code, source, length);
-  ctx->source_code[length] = '\0';
-  ctx->source_code_length = length;
-  ctx->language = language;
-
-  if (!ts_init_parser(ctx, language)) {
-    // Error is already set by ts_init_parser
-    return false;
-  }
-
-  TSTree *tree =
-      ts_parser_parse_string(ctx->ts_parser, NULL, ctx->source_code, ctx->source_code_length);
-  if (!tree) {
-    parser_set_error(ctx, -1, "Tree-sitter failed to parse the source code.");
-    return false;
-  }
-
-  TSNode root_ts_node = ts_tree_root_node(tree);
-
-  if (ctx->mode == PARSE_AST) {
-    ctx->ast_root = ts_tree_to_ast(root_ts_node, ctx);
-    if (!ctx->ast_root && ctx->error_code != 0) {
-      ts_tree_delete(tree);
-      return false; // Error occurred during AST generation
-    }
-  } else { // PARSE_CST
-    ctx->cst_root = ts_tree_to_cst(root_ts_node, ctx);
-    if (!ctx->cst_root && ctx->error_code != 0) {
-      ts_tree_delete(tree);
-      return false; // Error occurred during CST generation
-    }
-  }
-
-  ts_tree_delete(tree);
-  return true;
-}
-
-// Dummy implementation for language detection, should be expanded
-LanguageType parser_detect_language(const char *filename, const char *content,
-                                    size_t content_length) {
-  if (strstr(filename, ".py"))
-    return LANG_PYTHON;
-  if (strstr(filename, ".c"))
-    return LANG_C;
-  if (strstr(filename, ".cpp"))
-    return LANG_CPP;
-  if (strstr(filename, ".js"))
-    return LANG_JAVASCRIPT;
-  return LANG_UNKNOWN;
 }
 
 /**
@@ -570,56 +473,8 @@ ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualifi
   return node;
 }
 
-/* AST node cleanup */
-void ast_node_free(ASTNode *node) {
-  if (!node) {
-    return;
-  }
-
-  // Free string properties
-  if (node->name) {
-    free(node->name);
-  }
-  if (node->qualified_name) {
-    free(node->qualified_name);
-  }
-  if (node->signature) {
-    free(node->signature);
-  }
-  if (node->docstring) {
-    free(node->docstring);
-  }
-  if (node->raw_content) {
-    free(node->raw_content);
-  }
-
-  // Free children recursively
-  if (node->children) {
-    for (size_t i = 0; i < node->num_children; i++) {
-      if (node->children[i]) {
-        // Set parent to NULL to avoid circular references
-        node->children[i]->parent = NULL;
-        ast_node_free(node->children[i]);
-      }
-    }
-    free(node->children);
-  }
-
-  // Free references array (but not the nodes it points to)
-  if (node->references) {
-    free(node->references);
-  }
-
-  // Free additional data if needed
-  if (node->additional_data) {
-    // This would depend on what additional_data contains
-    // For now, we'll just free the pointer
-    free(node->additional_data);
-  }
-
-  // Free the node itself
-  free(node);
-}
+/* AST node cleanup - Implementation of the function declared in parser.h */
+/* This implementation is already provided earlier in this file */
 
 /* AST node relationship management */
 bool ast_node_add_child(ASTNode *parent, ASTNode *child) {

@@ -7,6 +7,7 @@
 // Include the necessary header files for tree-sitter integration
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/tree_sitter_integration.h"
+#include "../../include/scopemux/tree_sitter_parser.h"
 
 // --- Helper function (example) to read a file ---
 char *read_file_to_string(const char *filepath) {

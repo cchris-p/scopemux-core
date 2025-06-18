@@ -16,6 +16,26 @@
 #include <stdlib.h>
 
 /**
+ * @brief Representation of a source location
+ */
+typedef struct {
+  uint32_t line;   // 0-indexed line number
+  uint32_t column; // 0-indexed column number
+  uint32_t offset; // Byte offset from the start of the file
+} SourceLocation;
+
+/**
+ * @brief Representation of a source range
+ */
+typedef struct {
+  SourceLocation start;
+  SourceLocation end;
+} SourceRange;
+
+// Forward declaration of QueryManager
+typedef struct QueryManager QueryManager;
+
+/**
  * @brief Supported programming languages
  */
 typedef enum {
@@ -62,24 +82,7 @@ typedef struct CSTNode {
 // CST Node lifecycle functions
 CSTNode *cst_node_new(const char *type, char *content);
 void cst_node_free(CSTNode *node);
-void cst_node_add_child(CSTNode *parent, CSTNode *child);
-
-/**
- * @brief Representation of a source location
- */
-typedef struct {
-  uint32_t line;   // 0-indexed line number
-  uint32_t column; // 0-indexed column number
-  uint32_t offset; // Byte offset from the start of the file
-} SourceLocation;
-
-/**
- * @brief Representation of a source range
- */
-typedef struct {
-  SourceLocation start;
-  SourceLocation end;
-} SourceRange;
+bool cst_node_add_child(CSTNode *parent, CSTNode *child);
 
 /**
  * @brief AST node representing a parsed semantic entity.
@@ -118,7 +121,7 @@ typedef struct ASTNode {
 // AST Node lifecycle functions
 ASTNode *ast_node_new(ASTNodeType type, const char *name);
 void ast_node_free(ASTNode *node);
-void ast_node_add_child(ASTNode *parent, ASTNode *child);
+bool ast_node_add_child(ASTNode *parent, ASTNode *child);
 
 /**
  * @brief Context for the parser
@@ -228,6 +231,15 @@ bool parser_parse_string(ParserContext *ctx, const char *const content, size_t c
  * @return const char* Error message or NULL if no error
  */
 const char *parser_get_last_error(const ParserContext *ctx);
+
+/**
+ * @brief Set an error message and code in the parser context
+ *
+ * @param ctx Parser context
+ * @param code Error code
+ * @param message Error message
+ */
+void parser_set_error(ParserContext *ctx, int code, const char *message);
 
 /**
  * @brief Get the AST node for a specific entity
