@@ -26,23 +26,28 @@ Test(ast_extraction, c_functions, .description = "Test AST extraction of C funct
   cr_assert_not_null(source_code, "Failed to read test file");
 
   // Initialize parser context
-  ParserContext *ctx = parser_context_new();
-  ctx->language = LANG_C;
-  ctx->source_code = source_code;
-  ctx->file_path = "variables_loops_conditions.c";
+  ParserContext *ctx = parser_init();
 
   // Parse the source code
-  parser_parse_string(ctx, source_code, strlen(source_code));
-  cr_assert_null(ctx->error_message, "Parser error: %s",
-                 ctx->error_message ? ctx->error_message : "");
+  parser_parse_string(ctx, source_code, strlen(source_code), "variables_loops_conditions.c", LANG_C);
+  const char *error_message = parser_get_last_error(ctx);
+  cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");
 
-  // Verify the AST root was created
-  cr_assert_not_null(ctx->ast_root, "AST root should not be NULL");
-
+  // Verify we can access AST nodes
+  const ASTNode *ast_nodes[10];
+  size_t node_count = parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, ast_nodes, 10);
+  cr_assert_gt(node_count, 0, "Should find at least one function node");
+  
   // Check for main function extraction
-  ASTNode *main_func = find_node_by_name(ctx->ast_root, "main", AST_FUNCTION);
+  const ASTNode *main_func = NULL;
+  for (size_t i = 0; i < node_count; i++) {
+    if (ast_nodes[i]->name && strcmp(ast_nodes[i]->name, "main") == 0) {
+      main_func = ast_nodes[i];
+      break;
+    }
+  }
   if (main_func) {
-    assert_node_fields(main_func, "main");
+    assert_node_fields((ASTNode *)main_func, "main");
 
     // Check function signature
     cr_assert_not_null(main_func->signature, "Function should have signature populated");
@@ -55,7 +60,7 @@ Test(ast_extraction, c_functions, .description = "Test AST extraction of C funct
   }
 
   // Clean up
-  parser_context_free(ctx);
+  parser_free(ctx);
   free(source_code);
 }
 
@@ -69,34 +74,35 @@ Test(ast_extraction, c_structs, .description = "Test AST extraction of C structs
   cr_log_info("Testing C struct AST extraction");
 
   // Read test file with C structs
-  char *source_code = read_test_file("c", "struct_union_enum", "structs.c");
+  char *source_code = read_test_file("c", "struct_union_enum", "complex_data_types.c");
   cr_assert_not_null(source_code, "Failed to read test file");
 
   // Initialize parser context
-  ParserContext *ctx = parser_context_new();
-  ctx->language = LANG_C;
-  ctx->source_code = source_code;
-  ctx->file_path = "structs.c";
+  ParserContext *ctx = parser_init();
 
   // Parse the source code
-  parser_parse_string(ctx, source_code, strlen(source_code));
-  cr_assert_null(ctx->error_message, "Parser error: %s",
-                 ctx->error_message ? ctx->error_message : "");
+  parser_parse_string(ctx, source_code, strlen(source_code), "complex_data_types.c", LANG_C);
+  const char *error_message = parser_get_last_error(ctx);
+  cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");
 
-  // Verify the AST root was created
-  cr_assert_not_null(ctx->ast_root, "AST root should not be NULL");
+  // Verify we can access AST nodes
+  const ASTNode *ast_nodes[10];
+  size_t node_count = parser_get_ast_nodes_by_type(ctx, NODE_STRUCT, ast_nodes, 10);
+  cr_assert_gt(node_count, 0, "Should find at least one struct node");
 
   // Count struct definitions
-  int struct_count = count_nodes_by_type(ctx->ast_root, AST_STRUCT);
+  int struct_count = node_count;
   cr_log_info("Found %d struct definitions", struct_count);
   cr_assert_gt(struct_count, 0, "Should have at least one struct definition");
 
   // Debug: Dump AST structure to visualize the parsed tree
   // Uncomment if needed for debugging
-  // dump_ast_structure(ctx->ast_root, 0);
+  // for (size_t i = 0; i < node_count; i++) {
+  //   dump_ast_structure(ast_nodes[i], 0);
+  // }
 
   // Clean up
-  parser_context_free(ctx);
+  parser_free(ctx);
   free(source_code);
 }
 
@@ -113,29 +119,34 @@ Test(ast_extraction, c_basic_syntax, .description = "Test AST extraction of basi
   cr_assert_not_null(source_code, "Failed to read test file");
 
   // Initialize parser context
-  ParserContext *ctx = parser_context_new();
-  ctx->language = LANG_C;
-  ctx->source_code = source_code;
-  ctx->file_path = "hello_world.c";
+  ParserContext *ctx = parser_init();
 
   // Parse the source code
-  parser_parse_string(ctx, source_code, strlen(source_code));
-  cr_assert_null(ctx->error_message, "Parser error: %s",
-                 ctx->error_message ? ctx->error_message : "");
+  parser_parse_string(ctx, source_code, strlen(source_code), "hello_world.c", LANG_C);
+  const char *error_message = parser_get_last_error(ctx);
+  cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");
 
-  // Verify the AST root was created
-  cr_assert_not_null(ctx->ast_root, "AST root should not be NULL");
+  // Verify we can access AST nodes
+  const ASTNode *ast_nodes[10];
+  size_t node_count = parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, ast_nodes, 10);
+  cr_assert_gt(node_count, 0, "Should find at least one function node");
 
   // Validate specific syntax elements
-  ASTNode *main_func = find_node_by_name(ctx->ast_root, "main", AST_FUNCTION);
+  const ASTNode *main_func = NULL;
+  for (size_t i = 0; i < node_count; i++) {
+    if (ast_nodes[i]->name && strcmp(ast_nodes[i]->name, "main") == 0) {
+      main_func = ast_nodes[i];
+      break;
+    }
+  }
   cr_assert_not_null(main_func, "Should find main function in hello_world.c");
-  assert_node_fields(main_func, "main");
+  assert_node_fields((ASTNode *)main_func, "main");
 
   // Check function signature
   cr_assert_not_null(main_func->signature, "Function should have signature populated");
   cr_log_info("Main function signature: %s", main_func->signature);
 
   // Clean up
-  parser_context_free(ctx);
+  parser_free(ctx);
   free(source_code);
 }

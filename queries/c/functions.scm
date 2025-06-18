@@ -22,7 +22,7 @@
 
 ;; Function with type qualifiers (const, volatile)
 (function_definition
-  type_qualifier: (_) @type_qualifier
+  type: (primitive_type) @return_type
   declarator: (function_declarator
     declarator: (identifier) @name
     parameters: (parameter_list) @params)

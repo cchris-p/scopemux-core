@@ -1,13 +1,24 @@
 #include "../../include/test_helpers.h"
+#include <errno.h>
+#include <unistd.h>
 
 /* Helper function to read test files */
 char *read_test_file(const char *language, const char *category, const char *file_name) {
   char filepath[512];
-  snprintf(filepath, sizeof(filepath), "../examples/%s/%s/%s", language, category, file_name);
+  snprintf(filepath, sizeof(filepath), "../../../core/tests/examples/%s/%s/%s", language, category, file_name);
 
+  // Print current working directory for debugging
+  char cwd[512];
+  if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    cr_log_info("Current working directory: %s", cwd);
+  } else {
+    cr_log_error("Failed to get current working directory");
+  }
+
+  cr_log_info("Attempting to open file: %s", filepath);
   FILE *f = fopen(filepath, "rb");
   if (!f) {
-    cr_log_error("Failed to open test file: %s", filepath);
+    cr_log_error("Failed to open test file: %s (errno: %d, %s)", filepath, errno, strerror(errno));
     return NULL;
   }
 

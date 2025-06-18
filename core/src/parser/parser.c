@@ -149,7 +149,9 @@ ParserContext *parser_init(void) {
   if (!ctx)
     return NULL;
 
-  ctx->q_manager = query_manager_init("./queries");
+  // Use absolute path to the queries directory in the project root
+  // This ensures queries can be found regardless of the current working directory
+  ctx->q_manager = query_manager_init("/home/matrillo/apps/scopemux/queries");
   if (!ctx->q_manager) {
     free(ctx);
     return NULL;

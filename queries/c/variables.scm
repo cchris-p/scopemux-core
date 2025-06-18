@@ -1,52 +1,52 @@
 ;; Global variable declarations
 (declaration
-  type: (_) @variable_type
-  declarator: (identifier) @name) @global_variable
+  (_) @variable_type
+  (identifier) @name) @global_variable
 
 ;; Global variable with initializer
 (declaration
-  type: (_) @variable_type
-  declarator: (init_declarator
-    declarator: (identifier) @name
-    value: (_) @value)) @global_variable_with_init
+  (_) @variable_type
+  (init_declarator
+    (identifier) @name
+    (_) @value)) @global_variable_with_init
 
 ;; Variables with storage class specifiers (static, extern, etc.)
 (declaration
   (storage_class_specifier) @storage_class
-  type: (_) @variable_type
-  declarator: [
+  (_) @variable_type
+  [
     (identifier) @name
     (init_declarator
-      declarator: (identifier) @name
-      value: (_) @value)
+      (identifier) @name
+      (_) @value)
   ]) @variable_with_storage_class
 
 ;; Variables with type qualifiers (const, volatile)
 (declaration
   (type_qualifier) @type_qualifier
-  type: (_) @variable_type
-  declarator: [
+  (_) @variable_type
+  [
     (identifier) @name
     (init_declarator
-      declarator: (identifier) @name
-      value: (_) @value)
+      (identifier) @name
+      (_) @value)
   ]) @variable_with_type_qualifier
 
 ;; Array declarations
 (declaration
-  type: (_) @array_type
-  declarator: (array_declarator
-    declarator: (identifier) @name
-    size: (_)? @array_size)) @array_variable
+  (_) @array_type
+  (array_declarator
+    (identifier) @name
+    (_)? @array_size)) @array_variable
 
 ;; Array with initializer
 (declaration
-  type: (_) @array_type
-  declarator: (init_declarator
-    declarator: (array_declarator
-      declarator: (identifier) @name
-      size: (_)? @array_size)
-    value: (_) @value)) @array_variable_with_init
+  (_) @array_type
+  (init_declarator
+    (array_declarator
+      (identifier) @name
+      (_)? @array_size)
+    (_) @value)) @array_variable_with_init
 
 ;; Local variables (inside function body)
 (compound_statement
