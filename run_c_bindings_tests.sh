@@ -3,7 +3,7 @@
 # Clean build directory before running tests
 rm -rf build
 
-set -x # Enable debug output
+# set -x # Enable debug output
 
 # ================ IMPORTANT NOTE ================
 # Test Case Toggles control BOTH building AND running of tests
@@ -16,7 +16,7 @@ set -x # Enable debug output
 
 # Common Test Toggles
 RUN_INIT_PARSER_TESTS=true
-RUN_EDGE_CASE_TESTS=false
+RUN_EDGE_CASE_TESTS=true
 
 # C Language Test Toggles
 RUN_C_BASIC_AST_TESTS=false

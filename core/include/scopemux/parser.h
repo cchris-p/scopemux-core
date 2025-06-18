@@ -159,6 +159,15 @@ typedef struct {
 } ParserContext;
 
 /**
+ * @brief Adds an AST node to the parser context's tracking list
+ *
+ * @param ctx Parser context
+ * @param node Node to add to tracking
+ * @return bool True on success, false on failure
+ */
+bool parser_add_ast_node(ParserContext *ctx, ASTNode *node);
+
+/**
  * @brief Initialize the parser
  *
  * @return ParserContext* Initialized parser context or NULL on failure

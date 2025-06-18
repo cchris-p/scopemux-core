@@ -133,40 +133,47 @@ static PyTypeObject ParserContextType = {
     .tp_methods = ParserContext_methods,
 };
 
-if (!self->node || !self->node->name) {
-  Py_RETURN_NONE;
-}
-return PyUnicode_FromString(self->node->name);
-}
-
-if (!self->node || !self->node->qualified_name) {
-  Py_RETURN_NONE;
-}
-return PyUnicode_FromString(self->node->qualified_name);
+// Node property getter functions
+static PyObject *ASTNode_get_name(ASTNodeObject *self, void *closure) {
+  if (!self->node || !self->node->name) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->name);
 }
 
-if (!self->node || !self->node->signature) {
-  Py_RETURN_NONE;
-}
-return PyUnicode_FromString(self->node->signature);
-}
-
-if (!self->node || !self->node->docstring) {
-  Py_RETURN_NONE;
-}
-return PyUnicode_FromString(self->node->docstring);
+static PyObject *ASTNode_get_qualified_name(ASTNodeObject *self, void *closure) {
+  if (!self->node || !self->node->qualified_name) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->qualified_name);
 }
 
-if (!self->node || !self->node->raw_content) {
-  Py_RETURN_NONE;
-}
-return PyUnicode_FromString(self->node->raw_content);
+static PyObject *ASTNode_get_signature(ASTNodeObject *self, void *closure) {
+  if (!self->node || !self->node->signature) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->signature);
 }
 
-if (!self->node) {
-  Py_RETURN_NONE;
+static PyObject *ASTNode_get_docstring(ASTNodeObject *self, void *closure) {
+  if (!self->node || !self->node->docstring) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->docstring);
 }
-return PyLong_FromLong(self->node->type);
+
+static PyObject *ASTNode_get_raw_content(ASTNodeObject *self, void *closure) {
+  if (!self->node || !self->node->raw_content) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->raw_content);
+}
+
+static PyObject *ASTNode_get_type(ASTNodeObject *self, void *closure) {
+  if (!self->node) {
+    Py_RETURN_NONE;
+  }
+  return PyLong_FromLong(self->node->type);
 }
 
 /**

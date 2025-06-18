@@ -4,6 +4,8 @@
 
 * Run the test suite from the project root directory: `./run_c_bindings_tests.sh`
 
+* Build the python bindings with this command ran from the project root directory: `cd core/ && pybind`
+
 # 🔍 Tree-sitter Parsing in ScopeMux
 
 ## 📚 Role of Tree-sitter

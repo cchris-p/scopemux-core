@@ -9,6 +9,7 @@
 
 #include "../../include/scopemux/tree_sitter_integration.h"
 #include "../../include/scopemux/parser.h"
+#include "../../include/scopemux/query_manager.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -201,6 +202,11 @@ static void process_query(const char *query_type, TSNode root_node, ParserContex
 
     if (node_name && !ts_node_is_null(target_node)) {
       ASTNode *ast_node = ast_node_new(node_type, node_name);
+      if (ast_node && !parser_add_ast_node(ctx, ast_node)) {
+        // Failed to add to context, must free manually to avoid leak
+        ast_node_free(ast_node);
+        ast_node = NULL;
+      }
       if (ast_node) {
         // Set source range
         ast_node->range.start.line = ts_node_start_point(target_node).row;
@@ -244,62 +250,60 @@ static void process_query(const char *query_type, TSNode root_node, ParserContex
 }
 
 ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
-  if (ts_node_is_null(root_node) || !ctx || !ctx->q_manager) {
-    parser_set_error(ctx, -1, "Invalid context for AST generation.");
+  if (ts_node_is_null(root_node) || !ctx) {
+    parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
     return NULL;
   }
 
-  // Create a root node for the AST
-  ASTNode *ast_root = ast_node_new(NODE_UNKNOWN, "ROOT");
+  // Create root AST node
+  ASTNode *ast_root = ast_node_new(NODE_MODULE, "Program");
   if (!ast_root) {
-    parser_set_error(ctx, -1, "Failed to create AST root node.");
+    parser_set_error(ctx, -1, "Failed to allocate AST root node");
     return NULL;
   }
 
+  // IMPORTANT: Always register the root node with the parser context first
+  // This ensures it will be properly freed during parser_clear
+  if (!parser_add_ast_node(ctx, ast_root)) {
+    parser_set_error(ctx, -1, "Failed to register AST root node with parser context");
+    ast_node_free(ast_root); // Free directly since it's not tracked by context yet
+    return NULL;
+  }
+  
   // Set qualified name for root to be the file path or module name
   if (ctx->filename) {
     ast_root->qualified_name = strdup(ctx->filename);
   }
 
   // Node map to help build hierarchical relationships
-  // Simple approach: store the last node of each type
-  // More sophisticated approach would use unique IDs
   ASTNode *node_map[256] = {NULL}; // Assuming AST_* constants are < 256
 
   // Process different query types in order of hierarchy
-  // Classes first, then methods (which are children of classes), then standalone functions
-  const char *query_types[] = {
-      // Process types that define scope first
-      "classes",  // Classes should be processed first as methods belong to them
-      "structs",  // C structures
-      "unions",   // C unions
-      "enums",    // C enumerations
-      "typedefs", // C type definitions
+  const char *query_types[] = {"classes", "structs",      "unions",     "enums",   "typedefs",
+                               "methods", "functions",    "variables",  "imports", "includes",
+                               "macros",  "control_flow", "docstrings", NULL};
 
-      // Process members and functions next
-      "methods",   // Class methods (belong to classes)
-      "functions", // Standalone functions
-
-      // Process remaining constructs
-      "variables",    // Variable declarations
-      "imports",      // Module imports
-      "includes",     // C includes
-      "macros",       // C preprocessor macros
-      "control_flow", // Control flow statements
-      "docstrings",   // Documentation strings
-      NULL};
+  size_t initial_child_count = ast_root->num_children;
 
   // Process each query type
   for (int i = 0; query_types[i]; i++) {
     process_query(query_types[i], root_node, ctx, ast_root, node_map);
   }
 
-  // Post-processing step to enrich nodes with additional info or establish more complex
-  // relationships For example, resolve references between nodes, establish cross-file links, etc.
-  // This would typically involve analysis of identifier usage and reference resolution
-  // For now, this is a placeholder for future enhancement
+  // If no semantic nodes were found, treat as special edge case - empty files/invalid syntax
+  if (ast_root->num_children == initial_child_count) {
+    // Set an error message but don't consider this a failure
+    // We still return a valid AST root node, just with no children
+    parser_set_error(ctx, -1, "No AST nodes generated (empty or invalid input)");
+    
+    // The root node is already registered with the context and will be freed
+    // when parser_clear or parser_free is called
+    return ast_root;
+  }
 
-  // 5. Clean up and return
+  // Post-processing step to enrich nodes with additional info or establish more complex
+  // relationships (placeholder for future enhancement)
+
   return ast_root;
 }
 

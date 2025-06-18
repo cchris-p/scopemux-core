@@ -7,6 +7,7 @@
  */
 
 #include "../../include/scopemux/parser.h"
+#include "../../include/scopemux/query_manager.h"
 #include "../../include/scopemux/tree_sitter_integration.h" // For ts_parser_delete
 #include <stdbool.h>
 #include <stdio.h>
@@ -15,9 +16,52 @@
 
 // --- Forward Declarations for internal functions ---
 static void ast_node_free_internal(ASTNode *node);
-static void cst_node_free_internal(CSTNode *node);
+// Note: cst_node_free_internal was removed as it's not needed
 
 // --- AST Node Management ---
+
+/**
+ * Recursively free an AST node and its resources, but not its children
+ * This is different from ast_node_free which also frees children
+ */
+static void ast_node_free_internal(ASTNode *node) {
+  if (!node) return;
+  
+  // Free all resources owned by this node
+  free(node->name);
+  free(node->qualified_name);
+  free(node->signature);
+  free(node->docstring);
+  free(node->raw_content);
+  free(node->children);
+  free(node->references);
+  free(node);
+}
+
+/**
+ * Add an AST node to the parser context's tracking array
+ * This ensures all allocated nodes are properly tracked and can be freed later
+ */
+bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
+  if (!ctx || !node) {
+    return false;
+  }
+  
+  // Check if we need to grow the array
+  if (ctx->num_ast_nodes >= ctx->ast_nodes_capacity) {
+    size_t new_capacity = ctx->ast_nodes_capacity == 0 ? 16 : ctx->ast_nodes_capacity * 2;
+    ASTNode **new_nodes = realloc(ctx->all_ast_nodes, new_capacity * sizeof(ASTNode *));
+    if (!new_nodes) {
+      return false;
+    }
+    ctx->all_ast_nodes = new_nodes;
+    ctx->ast_nodes_capacity = new_capacity;
+  }
+  
+  // Add the node to the tracking array
+  ctx->all_ast_nodes[ctx->num_ast_nodes++] = node;
+  return true;
+}
 
 ASTNode *ast_node_new(ASTNodeType type, const char *name) {
   ASTNode *node = (ASTNode *)calloc(1, sizeof(ASTNode));

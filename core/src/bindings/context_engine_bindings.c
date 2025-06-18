@@ -399,11 +399,8 @@ static PyObject *InfoBlock_get_compressed_content(InfoBlockObject *self, void *c
   return PyUnicode_FromString(self->block->compressed_content);
 }
 
-
-  // This function has been removed as part of IRNode deprecation
-  // InfoBlock now uses ASTNode instead of IRNode
-  Py_RETURN_NONE;
-}
+// This function was removed as part of IRNode deprecation
+// InfoBlock now uses ASTNode instead of IRNode
 
 /**
  * @brief Property definition for InfoBlock

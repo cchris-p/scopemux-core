@@ -79,7 +79,7 @@ set(CPP_EXAMPLE_AST_TEST_SOURCES
 
 # --- Edge Case Tests ---
 set(EDGE_CASE_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/edge_case_tests.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/edge_case_tests.c
 )
 
 # --- Init Parser Tests ---

@@ -95,6 +95,7 @@ void *memory_pool_init(size_t size) {
 void *memory_pool_alloc(void *pool, size_t size) {
   // TODO: Implement memory pool allocation
   // This is a placeholder for a more advanced memory pool implementation
+  (void)pool; // Mark parameter as unused to avoid compiler warnings
   return safe_malloc(size);
 }
 
