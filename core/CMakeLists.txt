@@ -1,14 +1,30 @@
-cmake_minimum_required(VERSION 3.10)
-project(scopemux VERSION 0.1.0 LANGUAGES C)
+cmake_minimum_required(VERSION 3.16)  # Updated to a more recent version for better compatibility with modern pybind11
+project(scopemux VERSION 0.1.0 LANGUAGES C CXX)
 
 # Set C standard
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# Set C++ standard (needed for pybind11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Set compiler flags
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
 endif()
+
+# Find Python packages needed for the project
+find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development)
+
+# Fetch pybind11 first, before we use any of its variables
+include(FetchContent)
+FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11
+    GIT_TAG v2.11.1  # Updated to latest version to fix CMake compatibility issues
+)
+FetchContent_MakeAvailable(pybind11)
 
 # Include directories - make sure all targets can find the headers
 include_directories(
@@ -34,10 +50,6 @@ add_compile_definitions(
 
 # Add compiler flags for Python C API
 add_compile_options($<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>)
-
-# Find Python packages needed for the project
-find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development)
-find_package(pybind11 REQUIRED)
 
 # Get the Python include directories explicitly
 execute_process(
@@ -65,20 +77,13 @@ add_compile_options(
 message(STATUS "Python include dirs: ${Python_INCLUDE_DIRS}")
 message(STATUS "Python libraries: ${Python_LIBRARIES}")
 
-# Find pybind11
-include(FetchContent)
-FetchContent_Declare(
-    pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11
-    GIT_TAG        v2.10.4  # Adjust version as needed
-)
-FetchContent_MakeAvailable(pybind11)
+# pybind11 is already loaded above
 
 # Define source files
 set(PARSER_SOURCES
     src/parser/parser.c
-    src/parser/ir_generator.c
     src/parser/tree_sitter_integration.c
+    # src/parser/ir_generator.c  # Commented out missing file
 )
 
 set(CONTEXT_ENGINE_SOURCES
@@ -102,7 +107,7 @@ target_include_directories(parser_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includ
 target_include_directories(context_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Python bindings module
-pybind11_add_module(scopemux_core 
+pybind11_add_module(scopemux_core
     src/bindings/module.c
     src/bindings/parser_bindings.c
     src/bindings/context_engine_bindings.c
@@ -113,7 +118,7 @@ pybind11_add_module(scopemux_core
 target_link_libraries(scopemux_core PRIVATE parser_core context_engine)
 
 # Set include directories for the Python module
-target_include_directories(scopemux_core PRIVATE 
+target_include_directories(scopemux_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
     ${PYTHON_INCLUDE_PATH}

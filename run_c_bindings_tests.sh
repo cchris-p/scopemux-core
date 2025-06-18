@@ -1,8 +1,18 @@
 #!/bin/bash
+
+# Clean build directory before running tests
+rm -rf build
+
 set -x # Enable debug output
 
+# ================ IMPORTANT NOTE ================
+# Test Case Toggles control BOTH building AND running of tests
+# When a toggle is set to true, the test will be built AND run
+# When a toggle is set to false, the test will NOT be built and NOT run
+# ===============================================
+
 # Test Case Toggles
-RUN_C_PARSER_CRITERION_TESTS=true
+RUN_INIT_PARSER_TESTS=true
 # Add more toggles if you create other Criterion test executables
 
 # --- Configuration ---
@@ -15,7 +25,7 @@ TESTS_DIR="${CORE_DIR}/tests"
 CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
 
 # Relative path from the CMAKE_PROJECT_BUILD_DIR to where the C test executable is located
-C_TEST_EXECUTABLE_RELPATH="core/tests/scopemux_c_parser_tests"
+INIT_PARSER_EXECUTABLE_RELPATH="core/tests/init_parser_tests"
 set +x # Disable debug output
 
 # Sample code and expected output paths
@@ -25,8 +35,6 @@ CPP_EXPECTED_DIR="${TESTS_DIR}/expected_output/cpp"
 PYTHON_EXPECTED_DIR="${TESTS_DIR}/expected_output/python"
 
 # --- Helper Functions ---
-
-# (ensure_build_dir function removed as build steps are now included below)
 
 # Function to run a single Criterion test executable
 # Expects: test_suite_name executable_path
@@ -48,7 +56,7 @@ run_criterion_test_executable() {
     # Running from the build directory where the executable is located can help with relative paths in tests.
     local executable_dir=$(dirname "${executable_path}")
     local executable_name=$(basename "${executable_path}")
-    
+
     (cd "${executable_dir}" && ./${executable_name} --verbose)
     local test_exit_code=$?
 
@@ -65,7 +73,7 @@ run_criterion_test_executable() {
 
 echo "Starting C Bindings Test Suite..."
 
-# --- Build C Tests --- 
+# --- Build C Tests ---
 echo "Ensuring C tests are built..."
 
 echo "DEBUG: PROJECT_ROOT_DIR is '${PROJECT_ROOT_DIR}'"
@@ -84,30 +92,35 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Configuring project with CMake... (from ${PWD})"
-cmake "${PROJECT_ROOT_DIR}"
+cmake "${CORE_DIR}"
 if [ $? -ne 0 ]; then
     echo "ERROR: CMake configuration failed."
     cd "${PROJECT_ROOT_DIR}"
     exit 1
 fi
 
-C_TEST_TARGET_NAME="scopemux_c_parser_tests" # Make sure this matches the target name in CMake
-echo "Building C test target: ${C_TEST_TARGET_NAME}..."
-make "${C_TEST_TARGET_NAME}"
-if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to build C test target '${C_TEST_TARGET_NAME}'."
-    cd "${PROJECT_ROOT_DIR}"
-    exit 1
+# Build tests based on toggle settings
+if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
+    INIT_PARSER_TARGET_NAME="init_parser_tests" # Target name in CMake
+    echo "Building C test target: ${INIT_PARSER_TARGET_NAME}..."
+    make "${INIT_PARSER_TARGET_NAME}"
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to build C test target '${INIT_PARSER_TARGET_NAME}'."
+        cd "${PROJECT_ROOT_DIR}"
+        exit 1
+    fi
 fi
+
+# Add more build commands here based on toggles
 
 cd "${PROJECT_ROOT_DIR}"
 echo "C tests build process finished."
 
 # --- Run C Tests ---
-if [ "${RUN_C_PARSER_CRITERION_TESTS}" = true ]; then
-    C_TEST_EXECUTABLE_FULL_PATH="${CMAKE_PROJECT_BUILD_DIR}/${C_TEST_EXECUTABLE_RELPATH}"
-    run_criterion_test_executable "C Parser Criterion Tests" \
-        "${C_TEST_EXECUTABLE_FULL_PATH}"
+if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
+    INIT_PARSER_EXECUTABLE_FULL_PATH="${CMAKE_PROJECT_BUILD_DIR}/${INIT_PARSER_EXECUTABLE_RELPATH}"
+    run_criterion_test_executable "Init Parser Criterion Tests" \
+        "${INIT_PARSER_EXECUTABLE_FULL_PATH}"
 fi
 
 # Add more test calls here based on toggles

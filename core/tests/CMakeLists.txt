@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
-project(ScopemuxBindingsCTests)
+cmake_minimum_required(VERSION 3.16)  # Updated to match main CMakeLists.txt
+project(ScopemuxBindingsCTests LANGUAGES C CXX)
+
+# Set C++ standard (needed for pybind11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set C standard (Criterion tests are in C)
 set(CMAKE_C_STANDARD 11)
@@ -18,7 +22,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vendor/tree-sitter/lib/include
     ${Criterion_INCLUDE_DIRS}
-    ${TS_CORE_INCLUDE_DIR}                 # For tree_sitter/api.h, from root CMake
+    ${TS_CORE_INCLUDE_DIR} # For tree_sitter/api.h, from root CMake
     # Add other necessary include directories for your core C libraries if they are not covered
 )
 
@@ -37,35 +41,32 @@ set(TEST_UTIL_SOURCES
 set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/tree_sitter_integration.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ir_generator.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ir_generator.c  # Commented out missing file
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/error_handling.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/logging.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/memory_management.c
     # Tree-sitter core and grammar sources are now linked as libraries
 )
 
-set(C_PARSER_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/c_parser_tests.c
-    src/c_parser_tests.c
+# --- Init Parser Tests ---
+set(INIT_PARSER_TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/init_parser_tests.c
     ${TEST_UTIL_SOURCES} # Compile utilities directly with the test executable
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
 
-add_executable(scopemux_c_parser_tests ${C_PARSER_TEST_SOURCES})
+add_executable(init_parser_tests ${INIT_PARSER_TEST_SOURCES})
 
 # Link against Criterion and your project's C libraries
-# Link against Criterion (found via pkg-config) and other necessary system libraries
-target_link_libraries(scopemux_c_parser_tests PRIVATE
+target_link_libraries(init_parser_tests PRIVATE
     ${Criterion_LIBRARIES} # Provided by pkg_check_modules
-    tree-sitter-core       # Tree-sitter core library
-    tree-sitter-grammars   # Tree-sitter language grammar libraries
-    m                      # Math library, often needed
-    dl                     # Dynamic linking library, sometimes needed by test frameworks or tree-sitter
+    tree-sitter-core # Tree-sitter core library
+    tree-sitter-grammars # Tree-sitter language grammar libraries
+    m # Math library, often needed
+    dl # Dynamic linking library, sometimes needed by test frameworks or tree-sitter
 )
 
-# Add test to CTest (optional, but good practice)
-# This allows 'ctest' command to discover and run it.
-include(CTest)
-add_test(NAME CParserTests COMMAND scopemux_c_parser_tests)
+# Add test to CTest 
+add_test(NAME InitParserTests COMMAND init_parser_tests)
 
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
