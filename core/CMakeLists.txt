@@ -117,7 +117,6 @@ pybind11_add_module(scopemux_core
     src/bindings/module.c
     src/bindings/parser_bindings.c
     src/bindings/context_engine_bindings.c
-    src/bindings/tree_sitter_bindings.c
 )
 
 # Link libraries to the Python module

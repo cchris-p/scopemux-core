@@ -6,6 +6,9 @@
  * parsing source code and managing the resulting AST and CST nodes.
  */
 
+// Define _POSIX_C_SOURCE to make strdup available
+#define _POSIX_C_SOURCE 200809L
+
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/query_manager.h"
 #include "../../include/scopemux/tree_sitter_integration.h" // For ts_parser_delete

@@ -7,6 +7,9 @@
  * Tree-sitter trees into ScopeMux's AST or CST representations.
  */
 
+// Define _POSIX_C_SOURCE to make strdup available
+#define _POSIX_C_SOURCE 200809L
+
 #include "../../include/scopemux/tree_sitter_integration.h"
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/query_manager.h"

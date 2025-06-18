@@ -7,7 +7,6 @@
  */
 
 /* Python header includes must come first */
-#define PY_SSIZE_T_CLEAN /* Make sure PY_SSIZE_T_CLEAN is defined before including Python.h */
 #include <Python.h>
 #include <structmember.h>
 
@@ -39,6 +38,8 @@ static void ParserContext_dealloc(ParserContextObject *self) {
  * @brief Create a new ParserContextObject
  */
 static PyObject *ParserContext_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+  (void)args; // Silence unused parameter warning
+  (void)kwds; // Silence unused parameter warning
   ParserContextObject *self;
   self = (ParserContextObject *)type->tp_alloc(type, 0);
   if (self != NULL) {
@@ -51,6 +52,8 @@ static PyObject *ParserContext_new(PyTypeObject *type, PyObject *args, PyObject 
  * @brief Initialize a ParserContextObject
  */
 static int ParserContext_init(ParserContextObject *self, PyObject *args, PyObject *kwds) {
+  (void)args; // Silence the unused parameter warning
+  (void)kwds; // Silence the unused parameter warning
   self->context = parser_init();
   if (!self->context) {
     PyErr_SetString(PyExc_RuntimeError, "Failed to initialize parser context");
@@ -62,8 +65,8 @@ static int ParserContext_init(ParserContextObject *self, PyObject *args, PyObjec
 /**
  * @brief Parse a file
  */
-static PyObject *ParserContext_parse_file(ParserContextObject *self, PyObject *args,
-                                          PyObject *kwds) {
+static PyObject *ParserContext_parse_file(PyObject *self_obj, PyObject *args, PyObject *kwds) {
+  ParserContextObject *self = (ParserContextObject *)self_obj;
   const char *filename;
   int language = LANG_UNKNOWN;
   static char *kwlist[] = {"filename", "language", NULL};
@@ -84,8 +87,8 @@ static PyObject *ParserContext_parse_file(ParserContextObject *self, PyObject *a
 /**
  * @brief Parse a string
  */
-static PyObject *ParserContext_parse_string(ParserContextObject *self, PyObject *args,
-                                            PyObject *kwds) {
+static PyObject *ParserContext_parse_string(PyObject *self_obj, PyObject *args, PyObject *kwds) {
+  ParserContextObject *self = (ParserContextObject *)self_obj;
   const char *content;
   Py_ssize_t content_length;
   const char *filename = NULL;
@@ -112,9 +115,9 @@ static PyObject *ParserContext_parse_string(ParserContextObject *self, PyObject 
  */
 static PyMethodDef ParserContext_methods[] = {
     {"parse_file", (PyCFunction)ParserContext_parse_file, METH_VARARGS | METH_KEYWORDS,
-     "Parse a file and generate IR"},
-    {"parse_string", (PyCFunction)ParserContext_parse_string, METH_VARARGS | METH_KEYWORDS,
-     "Parse a string and generate IR"},
+     "Parse a file"},
+    {"parse_string", (PyCFunction)ParserContext_parse_string,
+     METH_VARARGS | METH_KEYWORDS, "Parse a string of code"},
     {NULL} /* Sentinel */
 };
 
@@ -133,8 +136,47 @@ static PyTypeObject ParserContextType = {
     .tp_methods = ParserContext_methods,
 };
 
+/**
+ * @brief Deallocation function for ASTNodeObject
+ */
+static void ASTNode_dealloc(ASTNodeObject *self) {
+  if (self->node && self->owned) {
+    ast_node_free(self->node);
+    self->node = NULL;
+  }
+  Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+/**
+ * @brief Create a new ASTNodeObject
+ */
+static PyObject *ASTNode_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+  (void)args; // Silence unused parameter warning
+  (void)kwds; // Silence unused parameter warning
+  ASTNodeObject *self;
+  self = (ASTNodeObject *)type->tp_alloc(type, 0);
+  if (self != NULL) {
+    self->node = NULL;
+    self->owned = 0;
+  }
+  return (PyObject *)self;
+}
+
+/**
+ * @brief Initialize an ASTNodeObject
+ */
+static int ASTNode_init(ASTNodeObject *self, PyObject *args, PyObject *kwds) {
+  (void)self; // Silence unused parameter warning
+  (void)args; // Silence unused parameter warning
+  (void)kwds; // Silence unused parameter warning
+  // This is typically initialized from C code, not from Python
+  // For now, this is a placeholder that just succeeds
+  return 0;
+}
+
 // Node property getter functions
 static PyObject *ASTNode_get_name(ASTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
   if (!self->node || !self->node->name) {
     Py_RETURN_NONE;
   }
@@ -142,6 +184,7 @@ static PyObject *ASTNode_get_name(ASTNodeObject *self, void *closure) {
 }
 
 static PyObject *ASTNode_get_qualified_name(ASTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
   if (!self->node || !self->node->qualified_name) {
     Py_RETURN_NONE;
   }
@@ -149,6 +192,7 @@ static PyObject *ASTNode_get_qualified_name(ASTNodeObject *self, void *closure) 
 }
 
 static PyObject *ASTNode_get_signature(ASTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
   if (!self->node || !self->node->signature) {
     Py_RETURN_NONE;
   }
@@ -156,6 +200,7 @@ static PyObject *ASTNode_get_signature(ASTNodeObject *self, void *closure) {
 }
 
 static PyObject *ASTNode_get_docstring(ASTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
   if (!self->node || !self->node->docstring) {
     Py_RETURN_NONE;
   }
@@ -163,6 +208,7 @@ static PyObject *ASTNode_get_docstring(ASTNodeObject *self, void *closure) {
 }
 
 static PyObject *ASTNode_get_raw_content(ASTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
   if (!self->node || !self->node->raw_content) {
     Py_RETURN_NONE;
   }
@@ -170,6 +216,7 @@ static PyObject *ASTNode_get_raw_content(ASTNodeObject *self, void *closure) {
 }
 
 static PyObject *ASTNode_get_type(ASTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
   if (!self->node) {
     Py_RETURN_NONE;
   }
@@ -177,9 +224,39 @@ static PyObject *ASTNode_get_type(ASTNodeObject *self, void *closure) {
 }
 
 /**
+ * @brief Property getters for ASTNode
+ */
+static PyGetSetDef ASTNode_getsetters[] = {
+    {"name", (getter)ASTNode_get_name, NULL, "Name of the node", NULL},
+    {"qualified_name", (getter)ASTNode_get_qualified_name, NULL, "Qualified name of the node",
+     NULL},
+    {"signature", (getter)ASTNode_get_signature, NULL, "Function/method signature", NULL},
+    {"docstring", (getter)ASTNode_get_docstring, NULL, "Associated documentation", NULL},
+    {"raw_content", (getter)ASTNode_get_raw_content, NULL, "Raw source code content", NULL},
+    {"type", (getter)ASTNode_get_type, NULL, "Type of the node", NULL},
+    {NULL} /* Sentinel */
+};
+
+/**
+ * @brief Type definition for ASTNode
+ */
+static PyTypeObject ASTNodePyType = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "scopemux_core.ASTNode",
+    .tp_doc = "AST node representing a parsed semantic entity",
+    .tp_basicsize = sizeof(ASTNodeObject),
+    .tp_itemsize = 0,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_new = ASTNode_new,
+    .tp_init = (initproc)ASTNode_init,
+    .tp_dealloc = (destructor)ASTNode_dealloc,
+    .tp_getset = ASTNode_getsetters,
+};
+
+/**
  * @brief Detect language from filename
  */
 static PyObject *detect_language(PyObject *self, PyObject *args, PyObject *kwds) {
+  (void)self; // Silence the unused parameter warning
   const char *filename;
   const char *content = NULL;
   Py_ssize_t content_length = 0;
@@ -199,7 +276,7 @@ static PyObject *detect_language(PyObject *self, PyObject *args, PyObject *kwds)
  */
 static PyMethodDef module_methods[] = {
     {"detect_language", (PyCFunction)detect_language, METH_VARARGS | METH_KEYWORDS,
-     "Detect language from filename and optional content"},
+     "Detect language from filename and optionally content"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
@@ -216,35 +293,38 @@ void init_parser_bindings(void *m) {
     return;
   }
 
-  return;
-}
+  if (PyType_Ready(&ASTNodePyType) < 0) {
+    return;
+  }
 
-// Add the types to the module
-Py_INCREF(&ParserContextType);
-PyModule_AddObject(module, "ParserContext", (PyObject *)&ParserContextType);
+  // Add the types to the module
+  Py_INCREF(&ParserContextType);
+  PyModule_AddObject(module, "ParserContext", (PyObject *)&ParserContextType);
 
-// Add module methods
-PyModule_AddFunctions(module, module_methods);
+  Py_INCREF(&ASTNodePyType);
+  PyModule_AddObject(module, "ASTNode", (PyObject *)&ASTNodePyType);
 
-// Add language type constants
-PyModule_AddIntConstant(module, "LANG_UNKNOWN", LANG_UNKNOWN);
-PyModule_AddIntConstant(module, "LANG_C", LANG_C);
-PyModule_AddIntConstant(module, "LANG_CPP", LANG_CPP);
-PyModule_AddIntConstant(module, "LANG_PYTHON", LANG_PYTHON);
-PyModule_AddIntConstant(module, "LANG_JAVASCRIPT", LANG_JAVASCRIPT);
-PyModule_AddIntConstant(module, "LANG_TYPESCRIPT", LANG_TYPESCRIPT);
-PyModule_AddIntConstant(module, "LANG_RUST", LANG_RUST);
+  // Add module methods
+  PyModule_AddFunctions(module, module_methods);
 
-// Add node type constants
-PyModule_AddIntConstant(module, "NODE_UNKNOWN", NODE_UNKNOWN);
-PyModule_AddIntConstant(module, "NODE_FUNCTION", NODE_FUNCTION);
-PyModule_AddIntConstant(module, "NODE_METHOD", NODE_METHOD);
-PyModule_AddIntConstant(module, "NODE_CLASS", NODE_CLASS);
-PyModule_AddIntConstant(module, "NODE_STRUCT", NODE_STRUCT);
-PyModule_AddIntConstant(module, "NODE_ENUM", NODE_ENUM);
-PyModule_AddIntConstant(module, "NODE_INTERFACE", NODE_INTERFACE);
-PyModule_AddIntConstant(module, "NODE_NAMESPACE", NODE_NAMESPACE);
-PyModule_AddIntConstant(module, "NODE_MODULE", NODE_MODULE);
-PyModule_AddIntConstant(module, "NODE_COMMENT", NODE_COMMENT);
-PyModule_AddIntConstant(module, "NODE_DOCSTRING", NODE_DOCSTRING);
+  // Add language type constants
+  PyModule_AddIntConstant(module, "LANG_UNKNOWN", LANG_UNKNOWN);
+  PyModule_AddIntConstant(module, "LANG_C", LANG_C);
+  PyModule_AddIntConstant(module, "LANG_CPP", LANG_CPP);
+  PyModule_AddIntConstant(module, "LANG_PYTHON", LANG_PYTHON);
+  PyModule_AddIntConstant(module, "LANG_JAVASCRIPT", LANG_JAVASCRIPT);
+  PyModule_AddIntConstant(module, "LANG_TYPESCRIPT", LANG_TYPESCRIPT);
+
+  // Add node type constants
+  PyModule_AddIntConstant(module, "NODE_UNKNOWN", NODE_UNKNOWN);
+  PyModule_AddIntConstant(module, "NODE_FUNCTION", NODE_FUNCTION);
+  PyModule_AddIntConstant(module, "NODE_METHOD", NODE_METHOD);
+  PyModule_AddIntConstant(module, "NODE_CLASS", NODE_CLASS);
+  PyModule_AddIntConstant(module, "NODE_STRUCT", NODE_STRUCT);
+  PyModule_AddIntConstant(module, "NODE_ENUM", NODE_ENUM);
+  PyModule_AddIntConstant(module, "NODE_INTERFACE", NODE_INTERFACE);
+  PyModule_AddIntConstant(module, "NODE_NAMESPACE", NODE_NAMESPACE);
+  PyModule_AddIntConstant(module, "NODE_MODULE", NODE_MODULE);
+  PyModule_AddIntConstant(module, "NODE_COMMENT", NODE_COMMENT);
+  PyModule_AddIntConstant(module, "NODE_DOCSTRING", NODE_DOCSTRING);
 }

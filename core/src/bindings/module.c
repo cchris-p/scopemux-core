@@ -19,7 +19,6 @@
 // Include forward declarations for binding initialization functions
 extern void init_parser_bindings(void *m);
 extern void init_context_engine_bindings(void *m);
-extern void init_tree_sitter_bindings(void *m);
 
 /**
  * @brief Module documentation string
@@ -49,9 +48,6 @@ void init_scopemux_module(void *m) {
 
   // Initialize the context engine bindings
   init_context_engine_bindings(m);
-
-  // Initialize the tree-sitter bindings
-  init_tree_sitter_bindings(m);
 
   // Add version information
   PyModule_AddStringConstant(module, "__version__", "0.1.0");

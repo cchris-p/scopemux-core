@@ -26,10 +26,8 @@ ext_modules = [
             "src/bindings/module.c",
             "src/bindings/parser_bindings.c",
             "src/bindings/context_engine_bindings.c",
-            "src/bindings/tree_sitter_bindings.c",
             # Parser core files
             "src/parser/parser.c",
-            "src/parser/ir_generator.c",
             "src/parser/tree_sitter_integration.c",
             # Context engine files
             "src/context_engine/compressor.c",

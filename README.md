@@ -75,8 +75,7 @@ c-bindings/
 │   └── bindings/               # Python bindings
 │       ├── module.c
 │       ├── parser_bindings.c
-│       ├── context_engine_bindings.c
-│       └── tree_sitter_bindings.c
+│       └── context_engine_bindings.c
 ├── tests/                      # Unit tests
 └── examples/                   # Example usage
 ```

@@ -19,7 +19,7 @@ RUN_INIT_PARSER_TESTS=true
 RUN_EDGE_CASE_TESTS=true
 
 # C Language Test Toggles
-RUN_C_BASIC_AST_TESTS=false
+RUN_C_BASIC_AST_TESTS=true
 RUN_C_EXAMPLE_AST_TESTS=false
 RUN_C_CST_TESTS=false
 RUN_C_PREPROCESSOR_TESTS=false
@@ -81,7 +81,6 @@ JS_CST_EXECUTABLE_RELPATH="core/tests/js_cst_tests"
 TS_BASIC_AST_EXECUTABLE_RELPATH="core/tests/ts_basic_ast_tests"
 TS_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/ts_example_ast_tests"
 TS_CST_EXECUTABLE_RELPATH="core/tests/ts_cst_tests"
-
 
 # Sample code and expected output paths
 CPP_SAMPLE_DIR="${TESTS_DIR}/sample_code/cpp"
@@ -151,30 +150,30 @@ cmake "${PROJECT_ROOT_DIR}"
 if [ $? -ne 0 ]; then
     echo "ERROR: CMake configuration failed."
     # JavaScript language tests
-if [ "${RUN_JS_BASIC_AST_TESTS}" = true ]; then
-    build_test "js_basic_ast_tests" "JavaScript Basic AST Tests"
-fi
+    if [ "${RUN_JS_BASIC_AST_TESTS}" = true ]; then
+        build_test "js_basic_ast_tests" "JavaScript Basic AST Tests"
+    fi
 
-if [ "${RUN_JS_EXAMPLE_AST_TESTS}" = true ]; then
-    build_test "js_example_ast_tests" "JavaScript Example AST Tests"
-fi
+    if [ "${RUN_JS_EXAMPLE_AST_TESTS}" = true ]; then
+        build_test "js_example_ast_tests" "JavaScript Example AST Tests"
+    fi
 
-if [ "${RUN_JS_CST_TESTS}" = true ]; then
-    build_test "js_cst_tests" "JavaScript CST Tests"
-fi
+    if [ "${RUN_JS_CST_TESTS}" = true ]; then
+        build_test "js_cst_tests" "JavaScript CST Tests"
+    fi
 
-# TypeScript language tests
-if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
-    build_test "ts_basic_ast_tests" "TypeScript Basic AST Tests"
-fi
+    # TypeScript language tests
+    if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
+        build_test "ts_basic_ast_tests" "TypeScript Basic AST Tests"
+    fi
 
-if [ "${RUN_TS_EXAMPLE_AST_TESTS}" = true ]; then
-    build_test "ts_example_ast_tests" "TypeScript Example AST Tests"
-fi
+    if [ "${RUN_TS_EXAMPLE_AST_TESTS}" = true ]; then
+        build_test "ts_example_ast_tests" "TypeScript Example AST Tests"
+    fi
 
-if [ "${RUN_TS_CST_TESTS}" = true ]; then
-    build_test "ts_cst_tests" "TypeScript CST Tests"
-fi
+    if [ "${RUN_TS_CST_TESTS}" = true ]; then
+        build_test "ts_cst_tests" "TypeScript CST Tests"
+    fi
 
     exit 1
 fi

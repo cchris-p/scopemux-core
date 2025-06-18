@@ -21,8 +21,9 @@
  * @param level Compression level
  * @return bool True on success, false on failure
  */
-bool context_engine_compress_block(ContextEngine *engine, InfoBlock *block,
-                                   CompressionLevel level) {
+bool context_engine_compress_block(ContextEngine *engine __attribute__((unused)),
+                                   InfoBlock *block __attribute__((unused)),
+                                   CompressionLevel level __attribute__((unused))) {
   // TODO: Implement block compression
   // Apply the specified compression level to the block
   // Different strategies should be used for different levels
@@ -35,7 +36,7 @@ bool context_engine_compress_block(ContextEngine *engine, InfoBlock *block,
  * @param engine Context engine
  * @return bool True on success, false on failure
  */
-bool context_engine_compress(ContextEngine *engine) {
+bool context_engine_compress(ContextEngine *engine __attribute__((unused))) {
   // TODO: Implement compression to fit within token budget
   // This should use a greedy algorithm to compress blocks based on their relevance
   // Start with low-relevance blocks and increase compression until budget is met
@@ -47,7 +48,7 @@ bool context_engine_compress(ContextEngine *engine) {
  *
  * @param engine Context engine
  */
-void context_engine_reset_compression(ContextEngine *engine) {
+void context_engine_reset_compression(ContextEngine *engine __attribute__((unused))) {
   // TODO: Implement compression reset
   // Iterate through all blocks and reset compression to NONE
 }
@@ -59,7 +60,10 @@ void context_engine_reset_compression(ContextEngine *engine) {
  * @param content_length Length of content
  * @return char* Compressed content (must be freed by caller)
  */
-static char *compress_whitespace(const char *content, size_t content_length) {
+static __attribute__((unused)) char *compress_whitespace(const char *content, size_t content_length) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)content;
+  (void)content_length;
   // TODO: Implement whitespace compression
   // Remove unnecessary whitespace, compress multiple blank lines, etc.
   return NULL; // Placeholder
@@ -72,7 +76,10 @@ static char *compress_whitespace(const char *content, size_t content_length) {
  * @param content_length Length of content
  * @return char* Compressed content (must be freed by caller)
  */
-static char *compress_names(const char *content, size_t content_length) {
+static __attribute__((unused)) char *compress_names(const char *content, size_t content_length) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)content;
+  (void)content_length;
   // TODO: Implement name shortening
   // Replace long variable/function names with shorter versions
   return NULL; // Placeholder
@@ -85,7 +92,10 @@ static char *compress_names(const char *content, size_t content_length) {
  * @param content_length Length of content
  * @return char* Compressed content (must be freed by caller)
  */
-static char *remove_comments(const char *content, size_t content_length) {
+static __attribute__((unused)) char *remove_comments(const char *content, size_t content_length) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)content;
+  (void)content_length;
   // TODO: Implement comment removal
   // Remove all comments from the content
   return NULL; // Placeholder
@@ -98,7 +108,10 @@ static char *remove_comments(const char *content, size_t content_length) {
  * @param content_length Length of content
  * @return char* Compressed content (must be freed by caller)
  */
-static char *extract_signature(const char *content, size_t content_length) {
+static __attribute__((unused)) char *extract_signature(const char *content, size_t content_length) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)content;
+  (void)content_length;
   // TODO: Implement signature extraction
   // Extract only the signature from the content
   return NULL; // Placeholder

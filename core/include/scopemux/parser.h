@@ -129,7 +129,7 @@ bool ast_node_add_child(ASTNode *parent, ASTNode *child);
  * This structure holds the state of the parser, including the
  * Tree-sitter parser, parsed file information, and the resulting IR.
  */
-typedef struct {
+typedef struct ParserContext {
   void *ts_parser;           // Tree-sitter parser (void* to avoid dependency)
   QueryManager *q_manager;   // Query manager for .scm files
   ParseMode mode;            // Type of parse mode (e.g., AST or CST)

@@ -17,8 +17,8 @@
  * struct definitions and Python object handling across all binding files.
  */
 
-/* Make sure PY_SSIZE_T_CLEAN is defined before including Python.h */
-#define PY_SSIZE_T_CLEAN
+/* PY_SSIZE_T_CLEAN is already defined by the build system in CMakeLists.txt */
+/* No need to define it here, removed to avoid redefinition warnings */
 
 /* Include Python.h first before using any Python macros */
 #include <Python.h>
@@ -41,6 +41,17 @@ struct ParserContext;
 struct ContextEngine;
 struct InfoBlock;
 #endif
+
+/**
+ * @brief Python wrapper object for ASTNode
+ */
+typedef struct {
+  PyObject_HEAD
+  /* The C ASTNode instance */
+  struct ASTNode *node;
+  /* Flag to indicate if we own the ASTNode memory */
+  int owned;
+} ASTNodeObject;
 
 /**
  * @brief Python wrapper object for ParserContext
