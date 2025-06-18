@@ -11,9 +11,28 @@ set -x # Enable debug output
 # When a toggle is set to false, the test will NOT be built and NOT run
 # ===============================================
 
-# Test Case Toggles
+# -------- Test Case Toggles --------
+# Set to true to build and run, false to skip
+
+# Common Test Toggles
 RUN_INIT_PARSER_TESTS=true
-# Add more toggles if you create other Criterion test executables
+RUN_EDGE_CASE_TESTS=false
+
+# C Language Test Toggles
+RUN_C_BASIC_AST_TESTS=false
+RUN_C_EXAMPLE_AST_TESTS=false
+RUN_C_CST_TESTS=false
+RUN_C_PREPROCESSOR_TESTS=false
+
+# Python Language Test Toggles
+RUN_PYTHON_BASIC_AST_TESTS=false
+RUN_PYTHON_EXAMPLE_AST_TESTS=false
+RUN_PYTHON_CST_TESTS=false
+
+# C++ Language Test Toggles
+RUN_CPP_BASIC_AST_TESTS=false
+RUN_CPP_EXAMPLE_AST_TESTS=false
+RUN_CPP_CST_TESTS=false
 
 # --- Configuration ---
 # Project root directory (assuming this script is in the root)
@@ -24,8 +43,26 @@ TESTS_DIR="${CORE_DIR}/tests"
 # Main CMake build directory for the entire project
 CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
 
-# Relative path from the CMAKE_PROJECT_BUILD_DIR to where the C test executable is located
+# Relative paths from the CMAKE_PROJECT_BUILD_DIR to where the test executables are located
+# Common test executables
 INIT_PARSER_EXECUTABLE_RELPATH="core/tests/init_parser_tests"
+EDGE_CASE_EXECUTABLE_RELPATH="core/tests/edge_case_tests"
+
+# C language test executables
+C_BASIC_AST_EXECUTABLE_RELPATH="core/tests/c_basic_ast_tests"
+C_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/c_example_ast_tests"
+C_CST_EXECUTABLE_RELPATH="core/tests/c_cst_tests"
+C_PREPROCESSOR_EXECUTABLE_RELPATH="core/tests/c_preprocessor_tests"
+
+# Python language test executables
+PYTHON_BASIC_AST_EXECUTABLE_RELPATH="core/tests/python_basic_ast_tests"
+PYTHON_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/python_example_ast_tests"
+PYTHON_CST_EXECUTABLE_RELPATH="core/tests/python_cst_tests"
+
+# C++ language test executables
+CPP_BASIC_AST_EXECUTABLE_RELPATH="core/tests/cpp_basic_ast_tests"
+CPP_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/cpp_example_ast_tests"
+CPP_CST_EXECUTABLE_RELPATH="core/tests/cpp_cst_tests"
 set +x # Disable debug output
 
 # Sample code and expected output paths
@@ -100,32 +137,144 @@ if [ $? -ne 0 ]; then
 fi
 
 # Build tests based on toggle settings
-if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
-    INIT_PARSER_TARGET_NAME="init_parser_tests" # Target name in CMake
-    echo "Building C test target: ${INIT_PARSER_TARGET_NAME}..."
-    make "${INIT_PARSER_TARGET_NAME}"
+build_test() {
+    local target_name="$1"
+    local display_name="$2"
+
+    echo "Building test target: ${display_name}..."
+    make "${target_name}"
     if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to build C test target '${INIT_PARSER_TARGET_NAME}'."
+        echo "ERROR: Failed to build test target '${display_name}'."
         cd "${PROJECT_ROOT_DIR}"
         exit 1
     fi
+    echo "Successfully built: ${display_name}"
+}
+
+# Common tests
+if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
+    build_test "init_parser_tests" "Init Parser Tests"
 fi
 
-# Add more build commands here based on toggles
+if [ "${RUN_EDGE_CASE_TESTS}" = true ]; then
+    build_test "edge_case_tests" "Edge Case Tests"
+fi
+
+# C language tests
+if [ "${RUN_C_BASIC_AST_TESTS}" = true ]; then
+    build_test "c_basic_ast_tests" "C Basic AST Tests"
+fi
+
+if [ "${RUN_C_EXAMPLE_AST_TESTS}" = true ]; then
+    build_test "c_example_ast_tests" "C Example AST Tests"
+fi
+
+if [ "${RUN_C_CST_TESTS}" = true ]; then
+    build_test "c_cst_tests" "C CST Tests"
+fi
+
+if [ "${RUN_C_PREPROCESSOR_TESTS}" = true ]; then
+    build_test "c_preprocessor_tests" "C Preprocessor Tests"
+fi
+
+# Python language tests
+if [ "${RUN_PYTHON_BASIC_AST_TESTS}" = true ]; then
+    build_test "python_basic_ast_tests" "Python Basic AST Tests"
+fi
+
+if [ "${RUN_PYTHON_EXAMPLE_AST_TESTS}" = true ]; then
+    build_test "python_example_ast_tests" "Python Example AST Tests"
+fi
+
+if [ "${RUN_PYTHON_CST_TESTS}" = true ]; then
+    build_test "python_cst_tests" "Python CST Tests"
+fi
+
+# C++ language tests
+if [ "${RUN_CPP_BASIC_AST_TESTS}" = true ]; then
+    build_test "cpp_basic_ast_tests" "C++ Basic AST Tests"
+fi
+
+if [ "${RUN_CPP_EXAMPLE_AST_TESTS}" = true ]; then
+    build_test "cpp_example_ast_tests" "C++ Example AST Tests"
+fi
+
+if [ "${RUN_CPP_CST_TESTS}" = true ]; then
+    build_test "cpp_cst_tests" "C++ CST Tests"
+fi
 
 cd "${PROJECT_ROOT_DIR}"
 echo "C tests build process finished."
 
-# --- Run C Tests ---
+# --- Run Tests ---
+echo "Running enabled tests..."
+
+# Common tests
 if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
-    INIT_PARSER_EXECUTABLE_FULL_PATH="${CMAKE_PROJECT_BUILD_DIR}/${INIT_PARSER_EXECUTABLE_RELPATH}"
-    run_criterion_test_executable "Init Parser Criterion Tests" \
-        "${INIT_PARSER_EXECUTABLE_FULL_PATH}"
+    run_criterion_test_executable "Init Parser Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${INIT_PARSER_EXECUTABLE_RELPATH}"
 fi
 
-# Add more test calls here based on toggles
+if [ "${RUN_EDGE_CASE_TESTS}" = true ]; then
+    run_criterion_test_executable "Edge Case Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${EDGE_CASE_EXECUTABLE_RELPATH}"
+fi
 
-echo "C Bindings Test Suite Finished."
+# C language tests
+if [ "${RUN_C_BASIC_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "C Basic AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${C_BASIC_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_C_EXAMPLE_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "C Example AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${C_EXAMPLE_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_C_CST_TESTS}" = true ]; then
+    run_criterion_test_executable "C CST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${C_CST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_C_PREPROCESSOR_TESTS}" = true ]; then
+    run_criterion_test_executable "C Preprocessor Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${C_PREPROCESSOR_EXECUTABLE_RELPATH}"
+fi
+
+# Python language tests
+if [ "${RUN_PYTHON_BASIC_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "Python Basic AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${PYTHON_BASIC_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_PYTHON_EXAMPLE_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "Python Example AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${PYTHON_EXAMPLE_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_PYTHON_CST_TESTS}" = true ]; then
+    run_criterion_test_executable "Python CST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${PYTHON_CST_EXECUTABLE_RELPATH}"
+fi
+
+# C++ language tests
+if [ "${RUN_CPP_BASIC_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "C++ Basic AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${CPP_BASIC_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_CPP_EXAMPLE_AST_TESTS}" = true ]; then
+    run_criterion_test_executable "C++ Example AST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${CPP_EXAMPLE_AST_EXECUTABLE_RELPATH}"
+fi
+
+if [ "${RUN_CPP_CST_TESTS}" = true ]; then
+    run_criterion_test_executable "C++ CST Tests" \
+        "${CMAKE_PROJECT_BUILD_DIR}/${CPP_CST_EXECUTABLE_RELPATH}"
+fi
+
+echo "ScopeMux Testing Suite Finished."
+echo "Note: Tests marked as false in the toggle section were skipped."
 
 # Note: This script doesn't aggregate overall pass/fail status yet.
 # You could add a counter for failed tests and exit with a non-zero status if any test fails.
