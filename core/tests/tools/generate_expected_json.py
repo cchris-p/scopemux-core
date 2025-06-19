@@ -36,11 +36,21 @@ import argparse
 import difflib
 from typing import Dict, List, Any, Optional, Tuple, Union
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
+                '../../build/lib.linux-x86_64-3.10')))
+
+print("sys.path:", sys.path)
+print("build dir contents:", os.listdir(os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '../../build/lib.linux-x86_64-3.10'))))
+
 try:
     import scopemux_core
-except ImportError:
+except ImportError as e:
     print("Error: scopemux_core module not found.")
     print("Make sure the ScopeMux core Python bindings are installed.")
+    print("ImportError details:", e)
     sys.exit(1)
 
 # Constants
@@ -223,7 +233,8 @@ def parse_file(
 
         success = parser.parse_file(file_path)
         if not success:
-            print(f"Error parsing {file_path} in AST mode: {parser.get_last_error()}")
+            print(
+                f"Error parsing {file_path} in AST mode: {parser.get_last_error()}")
             return None, None
 
         # Assuming there's a method to get the AST root
@@ -231,7 +242,8 @@ def parse_file(
         ast_root = parser.get_ast_root() if hasattr(parser, "get_ast_root") else None
 
         if ast_root:
-            ast_dict = {"language": lang_name, "ast_root": ast_node_to_dict(ast_root)}
+            ast_dict = {"language": lang_name,
+                        "ast_root": ast_node_to_dict(ast_root)}
 
     # Parse the file in CST mode
     if mode in ("cst", "both"):
@@ -255,7 +267,8 @@ def parse_file(
         )
 
         if cst_root:
-            cst_dict = {"language": lang_name, "cst_root": cst_node_to_dict(cst_root)}
+            cst_dict = {"language": lang_name,
+                        "cst_root": cst_node_to_dict(cst_root)}
 
     return ast_dict, cst_dict
 
@@ -329,12 +342,14 @@ def process_file(
     if output_dir:
         output_path = os.path.join(output_dir, output_file_name)
     else:
-        output_path = os.path.join(os.path.dirname(file_path), output_file_name)
+        output_path = os.path.join(
+            os.path.dirname(file_path), output_file_name)
 
     # Check if output file exists
     file_exists = os.path.exists(output_path)
     if file_exists and not update:
-        print(f"Output file {output_path} already exists. Use --update to overwrite.")
+        print(
+            f"Output file {output_path} already exists. Use --update to overwrite.")
         return False
 
     # Parse the file
@@ -437,7 +452,8 @@ def main():
             0
         ],  # Use the module docstring for the epilog
     )
-    parser.add_argument("source_path", help="Source file or directory to process")
+    parser.add_argument(
+        "source_path", help="Source file or directory to process")
     parser.add_argument("--output-dir", help="Directory to write output files")
     parser.add_argument(
         "--mode",
@@ -456,7 +472,8 @@ def main():
     parser.add_argument(
         "--dry-run", action="store_true", help="Don't actually write files"
     )
-    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument("--verbose", "-v",
+                        action="store_true", help="Verbose output")
 
     args = parser.parse_args()
 

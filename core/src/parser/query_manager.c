@@ -6,6 +6,8 @@
  * Tree-sitter queries from .scm files.
  */
 
+#define _POSIX_C_SOURCE 200809L // For strdup
+
 #include "../../include/scopemux/query_manager.h"
 #include <errno.h>
 #include <fcntl.h>

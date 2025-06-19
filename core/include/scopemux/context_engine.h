@@ -10,6 +10,10 @@
 #ifndef SCOPEMUX_CONTEXT_ENGINE_H
 #define SCOPEMUX_CONTEXT_ENGINE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "parser.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -41,12 +45,13 @@ typedef struct {
  * @brief Information Block representing a unit of code or documentation
  */
 struct InfoBlock {
-  struct ASTNode *ast_node;     // Reference to the AST node
+  struct ASTNode *ast_node;   // Reference to the AST node
   char *compressed_content;   // Compressed content
   size_t original_tokens;     // Original token count
   size_t compressed_tokens;   // Compressed token count
   CompressionLevel level;     // Current compression level
   RelevanceMetrics relevance; // Relevance metrics for ranking
+  float rank_score;           // Overall ranking score
   struct InfoBlock *next;     // Next block in a linked list
 };
 
@@ -198,5 +203,9 @@ size_t context_engine_update_focus(ContextEngine *engine, const char **node_qual
  * @param engine Context engine
  */
 void context_engine_reset_compression(ContextEngine *engine);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SCOPEMUX_CONTEXT_ENGINE_H */

@@ -116,8 +116,8 @@ static PyObject *ParserContext_parse_string(PyObject *self_obj, PyObject *args, 
 static PyMethodDef ParserContext_methods[] = {
     {"parse_file", (PyCFunction)ParserContext_parse_file, METH_VARARGS | METH_KEYWORDS,
      "Parse a file"},
-    {"parse_string", (PyCFunction)ParserContext_parse_string,
-     METH_VARARGS | METH_KEYWORDS, "Parse a string of code"},
+    {"parse_string", (PyCFunction)ParserContext_parse_string, METH_VARARGS | METH_KEYWORDS,
+     "Parse a string of code"},
     {NULL} /* Sentinel */
 };
 
@@ -274,7 +274,7 @@ static PyObject *detect_language(PyObject *self, PyObject *args, PyObject *kwds)
 /**
  * @brief Module methods
  */
-static PyMethodDef module_methods[] = {
+PyMethodDef module_methods[] = {
     {"detect_language", (PyCFunction)detect_language, METH_VARARGS | METH_KEYWORDS,
      "Detect language from filename and optionally content"},
     {NULL, NULL, 0, NULL} /* Sentinel */
