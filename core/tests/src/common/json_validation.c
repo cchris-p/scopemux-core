@@ -1,7 +1,10 @@
 #include "../../include/json_validation.h"
 #include <criterion/criterion.h>
-#include <criterion/logging.h>
+#include <criterion/logging.h>    /* For cr_log_* functions */
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>            /* For getcwd() */
 
 // Forward declarations of helper functions
 static JsonValue *parse_json_value(const char **json);
@@ -10,15 +13,75 @@ static char *parse_string(const char **json);
 
 JsonValue *load_expected_json(const char *language, const char *category, const char *file_name) {
   char filepath[512];
-  snprintf(filepath, sizeof(filepath), "../examples/%s/%s/%s.expected.json", language, category,
-           file_name);
-
-  FILE *f = fopen(filepath, "rb");
-  if (!f) {
-    cr_log_error("Failed to open expected JSON file: %s", filepath);
+  char project_root_path[512] = "";
+  FILE *f = NULL;
+  
+  // First try using PROJECT_ROOT_DIR environment variable
+  const char *project_root = getenv("PROJECT_ROOT_DIR");
+  if (project_root) {
+    snprintf(project_root_path, sizeof(project_root_path), "%s/core/tests/examples/%s/%s/%s.expected.json", 
+             project_root, language, category, file_name);
+    f = fopen(project_root_path, "rb");
+    if (f) {
+      cr_log_info("Successfully opened expected JSON file using PROJECT_ROOT_DIR: %s", project_root_path);
+      goto file_found;
+    }
+  }
+  
+  // Get current working directory for logging and path calculation
+  char cwd[512];
+  if (getcwd(cwd, sizeof(cwd)) == NULL) {
+    cr_log_error("Failed to get current working directory");
     return NULL;
   }
+  cr_log_info("Current working directory for JSON: %s", cwd);
+  
+  // Try multiple possible paths based on where the test might be running from
+  const char *possible_paths[] = {
+    "../../../core/tests/examples/%s/%s/%s.expected.json",  // From build/core/tests/
+    "../../core/tests/examples/%s/%s/%s.expected.json",    // One level up
+    "../core/tests/examples/%s/%s/%s.expected.json",       // Two levels up
+    "../examples/%s/%s/%s.expected.json",                  // Original path
+    "./core/tests/examples/%s/%s/%s.expected.json",        // From project root
+    "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s.expected.json"  // Absolute path
+  };
+  
+  for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
+    snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
+    f = fopen(filepath, "rb");
+    if (f) {
+      cr_log_info("Successfully opened expected JSON file: %s", filepath);
+      goto file_found;
+    }
+  }
+  
+  // Try to construct paths by navigating from the build directory to the source directory
+  if (strstr(cwd, "/build/")) {
+    // If we're in a build subdirectory, try to navigate to source
+    char build_path[512];
+    strcpy(build_path, cwd);
+    
+    char *build_pos = strstr(build_path, "/build/");
+    if (build_pos) {
+      *build_pos = '\0'; // Terminate string at /build to get project root
+      
+      // Construct path from project root to examples
+      snprintf(filepath, sizeof(filepath), "%s/core/tests/examples/%s/%s/%s.expected.json", 
+               build_path, language, category, file_name);
+      f = fopen(filepath, "rb");
+      if (f) {
+        cr_log_info("Successfully opened expected JSON file using build directory logic: %s", filepath);
+        goto file_found;
+      }
+    }
+  }
+  
+  // If all paths failed
+  cr_log_error("Failed to open expected JSON file: %s/%s/%s.expected.json (from working dir: %s)", 
+               language, category, file_name, cwd);
+  return NULL;
 
+file_found:
   // Get file size
   fseek(f, 0, SEEK_END);
   long length = ftell(f);

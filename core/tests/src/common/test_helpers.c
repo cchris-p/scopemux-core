@@ -5,9 +5,28 @@
 /* Helper function to read test files */
 char *read_test_file(const char *language, const char *category, const char *file_name) {
   char filepath[512];
+  char project_root_path[512] = "";
   
-  // Get absolute path to the source directory
-  // Based on the GDB output, we need to adjust the relative path
+  // First try using PROJECT_ROOT_DIR environment variable
+  const char *project_root = getenv("PROJECT_ROOT_DIR");
+  if (project_root) {
+    snprintf(project_root_path, sizeof(project_root_path), "%s/core/tests/examples/%s/%s/%s", 
+             project_root, language, category, file_name);
+    FILE *f = fopen(project_root_path, "rb");
+    if (f) {
+      cr_log_info("Successfully opened file using PROJECT_ROOT_DIR: %s", project_root_path);
+      goto file_found;
+    }
+  }
+  
+  // Get current working directory for logging and path calculation
+  char cwd[512];
+  if (getcwd(cwd, sizeof(cwd)) == NULL) {
+    cr_log_error("Failed to get current working directory");
+    return NULL;
+  }
+  cr_log_info("Current working directory: %s", cwd);
+  
   // Try multiple possible paths based on where the test might be running from
   const char *possible_paths[] = {
     "../../../core/tests/examples/%s/%s/%s",           // Original path
@@ -21,29 +40,35 @@ char *read_test_file(const char *language, const char *category, const char *fil
   for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
     snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
     f = fopen(filepath, "rb");
-    if (f) break;
+    if (f) {
+      cr_log_info("Successfully opened file: %s", filepath);
+      goto file_found;
+    }
   }
   
-  // If all paths failed, try one more with the absolute path from project root
-  if (!f) {
-    // Fall back to the original path for error reporting
-    snprintf(filepath, sizeof(filepath), "../../../core/tests/examples/%s/%s/%s", language, category, file_name);
-
-    // Print current working directory for debugging
-    char cwd[512];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-      cr_log_info("Current working directory: %s", cwd);
-    } else {
-      cr_log_error("Failed to get current working directory");
+  // Try to construct paths by navigating from the build directory to the source directory
+  // This is a common approach for finding test data in CMake projects
+  if (strstr(cwd, "/build/")) {
+    // If we're in a build subdirectory, try to navigate to source
+    char *build_pos = strstr(cwd, "/build/");
+    *build_pos = '\0'; // Terminate string at /build to get project root
+    
+    // Construct path from project root to examples
+    snprintf(filepath, sizeof(filepath), "%s/core/tests/examples/%s/%s/%s", 
+             cwd, language, category, file_name);
+    f = fopen(filepath, "rb");
+    if (f) {
+      cr_log_info("Successfully opened file using build directory logic: %s", filepath);
+      goto file_found;
     }
-
-    cr_log_info("Attempting to open file: %s", filepath);
-    cr_log_error("Failed to open test file: %s (errno: %d, %s)", filepath, errno, strerror(errno));
-    return NULL;
-  } else {
-    // We found the file, log which path worked
-    cr_log_info("Successfully opened file: %s", filepath);
   }
+  
+  // If all paths failed
+  cr_log_error("Failed to open test file: %s/%s/%s (from working dir: %s)", 
+               language, category, file_name, cwd);
+  return NULL;
+  
+file_found:
 
   fseek(f, 0, SEEK_END);
   long length = ftell(f);
