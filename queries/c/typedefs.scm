@@ -1,4 +1,8 @@
-;; Simplified typedef only
+;; Typedef with name
+(type_definition
+  declarator: (type_identifier) @name) @typedef
+
+;; Generic typedef fallback
 (type_definition) @typedef
 
 ;; Pointer typedefs
