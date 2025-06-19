@@ -63,6 +63,12 @@ typedef enum {
   NODE_MODULE,
   NODE_COMMENT,
   NODE_DOCSTRING,
+  // C-specific node types
+  NODE_UNION,
+  NODE_TYPEDEF,
+  NODE_INCLUDE,
+  NODE_MACRO,
+  NODE_VARIABLE,
   // Add more node types as needed
 } ASTNodeType;
 

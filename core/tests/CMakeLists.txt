@@ -19,9 +19,8 @@ include_directories(
     ${TS_C_INCLUDE_DIR}
     ${TS_CPP_INCLUDE_DIR}
     ${TS_PYTHON_INCLUDE_DIR}
-    # JavaScript and TypeScript support removed temporarily
-    # ${TS_JS_INCLUDE_DIR}
-    # ${TS_TS_INCLUDE_DIR}
+    ${TS_JS_INCLUDE_DIR}
+    ${TS_TS_INCLUDE_DIR}
     # Criterion
     ${Criterion_INCLUDE_DIRS}
 )
@@ -152,9 +151,8 @@ target_link_libraries(init_parser_tests PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 # Link C Basic AST tests
@@ -168,9 +166,8 @@ target_link_libraries(c_basic_ast_tests PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 # Link Python Basic AST tests
@@ -184,9 +181,8 @@ target_link_libraries(python_basic_ast_tests PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 # Link C++ Basic AST tests
@@ -200,9 +196,8 @@ target_link_libraries(cpp_basic_ast_tests PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 # Link Example AST tests
@@ -216,9 +211,8 @@ target_link_libraries(c_example_ast_tests PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 target_link_libraries(python_example_ast_tests PRIVATE
@@ -231,9 +225,8 @@ target_link_libraries(python_example_ast_tests PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 target_link_libraries(cpp_example_ast_tests PRIVATE
@@ -246,9 +239,8 @@ target_link_libraries(cpp_example_ast_tests PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 # Add tests to CTest 
@@ -272,9 +264,8 @@ target_link_libraries(edge_case_tests PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")

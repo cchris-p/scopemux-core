@@ -18,20 +18,26 @@
  * their properties are extracted properly.
  */
 Test(ast_extraction, c_functions, .description = "Test AST extraction of C functions") {
+  fprintf(stderr, "Starting c_functions test\n");
 
   cr_log_info("Testing C function AST extraction");
 
   // Read test file with C functions
+  fprintf(stderr, "Reading test file...\n");
   char *source_code = read_test_file("c", "basic_syntax", "variables_loops_conditions.c");
   cr_assert_not_null(source_code, "Failed to read test file");
+  fprintf(stderr, "Test file read successfully\n");
 
   // Initialize parser context
   ParserContext *ctx = parser_init();
 
   // Parse the source code
+  fprintf(stderr, "About to parse source code...\n");
   parser_parse_string(ctx, source_code, strlen(source_code), "variables_loops_conditions.c", LANG_C);
+  fprintf(stderr, "Source code parsed\n");
   const char *error_message = parser_get_last_error(ctx);
   cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");
+  fprintf(stderr, "No parser errors detected\n");
 
   // Verify we can access AST nodes
   const ASTNode *ast_nodes[10];
@@ -47,6 +53,14 @@ Test(ast_extraction, c_functions, .description = "Test AST extraction of C funct
     }
   }
   if (main_func) {
+    // Debug node fields before assertion
+    fprintf(stderr, "DEBUG: About to assert main_func fields\n");
+    fprintf(stderr, "DEBUG: main_func=%p\n", (void*)main_func);
+    if (main_func) {
+      fprintf(stderr, "DEBUG: main_func->name=%s\n", main_func->name ? main_func->name : "(null)");
+      fprintf(stderr, "DEBUG: main_func->qualified_name=%s\n", main_func->qualified_name ? main_func->qualified_name : "(null)");
+      fprintf(stderr, "DEBUG: main_func->range.end.line=%d\n", main_func->range.end.line);
+    }
     assert_node_fields((ASTNode *)main_func, "main");
 
     // Check function signature
@@ -70,6 +84,7 @@ Test(ast_extraction, c_functions, .description = "Test AST extraction of C funct
  * and their properties are extracted properly.
  */
 Test(ast_extraction, c_structs, .description = "Test AST extraction of C structs") {
+  fprintf(stderr, "Starting c_structs test\n");
 
   cr_log_info("Testing C struct AST extraction");
 
@@ -81,7 +96,9 @@ Test(ast_extraction, c_structs, .description = "Test AST extraction of C structs
   ParserContext *ctx = parser_init();
 
   // Parse the source code
+  fprintf(stderr, "About to parse source code (c_structs)...\n");
   parser_parse_string(ctx, source_code, strlen(source_code), "complex_data_types.c", LANG_C);
+  fprintf(stderr, "Source code parsed (c_structs)\n");
   const char *error_message = parser_get_last_error(ctx);
   cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");
 
@@ -111,6 +128,7 @@ Test(ast_extraction, c_structs, .description = "Test AST extraction of C structs
  * Specifically tests hello_world.c, which is a simple example.
  */
 Test(ast_extraction, c_basic_syntax, .description = "Test AST extraction of basic C syntax") {
+  fprintf(stderr, "Starting c_basic_syntax test\n");
 
   cr_log_info("Testing AST extraction of basic C syntax");
 
@@ -140,6 +158,14 @@ Test(ast_extraction, c_basic_syntax, .description = "Test AST extraction of basi
     }
   }
   cr_assert_not_null(main_func, "Should find main function in hello_world.c");
+  // Debug node fields before assertion
+  fprintf(stderr, "DEBUG: About to assert main_func fields (c_basic_syntax)\n");
+  fprintf(stderr, "DEBUG: main_func=%p\n", (void*)main_func);
+  if (main_func) {
+    fprintf(stderr, "DEBUG: main_func->name=%s\n", main_func->name ? main_func->name : "(null)");
+    fprintf(stderr, "DEBUG: main_func->qualified_name=%s\n", main_func->qualified_name ? main_func->qualified_name : "(null)");
+    fprintf(stderr, "DEBUG: main_func->range.end.line=%d\n", main_func->range.end.line);
+  }
   assert_node_fields((ASTNode *)main_func, "main");
 
   // Check function signature

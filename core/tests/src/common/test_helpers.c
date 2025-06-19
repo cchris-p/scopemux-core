@@ -5,21 +5,44 @@
 /* Helper function to read test files */
 char *read_test_file(const char *language, const char *category, const char *file_name) {
   char filepath[512];
-  snprintf(filepath, sizeof(filepath), "../../../core/tests/examples/%s/%s/%s", language, category, file_name);
-
-  // Print current working directory for debugging
-  char cwd[512];
-  if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    cr_log_info("Current working directory: %s", cwd);
-  } else {
-    cr_log_error("Failed to get current working directory");
+  
+  // Get absolute path to the source directory
+  // Based on the GDB output, we need to adjust the relative path
+  // Try multiple possible paths based on where the test might be running from
+  const char *possible_paths[] = {
+    "../../../core/tests/examples/%s/%s/%s",           // Original path
+    "../../core/tests/examples/%s/%s/%s",            // One level up
+    "../core/tests/examples/%s/%s/%s",               // Two levels up
+    "./core/tests/examples/%s/%s/%s",                // From project root
+    "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s"  // Absolute path
+  };
+  
+  FILE *f = NULL;
+  for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
+    snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
+    f = fopen(filepath, "rb");
+    if (f) break;
   }
-
-  cr_log_info("Attempting to open file: %s", filepath);
-  FILE *f = fopen(filepath, "rb");
+  
+  // If all paths failed, try one more with the absolute path from project root
   if (!f) {
+    // Fall back to the original path for error reporting
+    snprintf(filepath, sizeof(filepath), "../../../core/tests/examples/%s/%s/%s", language, category, file_name);
+
+    // Print current working directory for debugging
+    char cwd[512];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+      cr_log_info("Current working directory: %s", cwd);
+    } else {
+      cr_log_error("Failed to get current working directory");
+    }
+
+    cr_log_info("Attempting to open file: %s", filepath);
     cr_log_error("Failed to open test file: %s (errno: %d, %s)", filepath, errno, strerror(errno));
     return NULL;
+  } else {
+    // We found the file, log which path worked
+    cr_log_info("Successfully opened file: %s", filepath);
   }
 
   fseek(f, 0, SEEK_END);

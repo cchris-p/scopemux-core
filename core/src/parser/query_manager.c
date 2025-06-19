@@ -7,47 +7,47 @@
  */
 
 #include "../../include/scopemux/query_manager.h"
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
 
+#include "scopemux/parser.h" // For LanguageType constants
 #include "scopemux/query_manager.h"
-#include "scopemux/parser.h"  // For LanguageType constants
 
 // Forward declarations for Tree-sitter language functions from vendor library
 extern const TSLanguage *tree_sitter_c(void);
 extern const TSLanguage *tree_sitter_cpp(void);
 extern const TSLanguage *tree_sitter_python(void);
 // JavaScript and TypeScript support removed temporarily
-// extern const TSLanguage *tree_sitter_javascript(void);
-// extern const TSLanguage *tree_sitter_typescript(void);
+extern const TSLanguage *tree_sitter_javascript(void);
+extern const TSLanguage *tree_sitter_typescript(void);
 
 /**
  * @brief Structure to represent a cached query.
  */
 typedef struct QueryCacheEntry {
-  const char *query_name;    // Name of the query (e.g., "functions", "calls")
-  const TSQuery *query;      // Compiled Tree-sitter query
+  const char *query_name; // Name of the query (e.g., "functions", "calls")
+  const TSQuery *query;   // Compiled Tree-sitter query
 } QueryCacheEntry;
 
 /**
  * @brief Structure for the QueryManager that manages Tree-sitter queries.
  */
 struct QueryManager {
-  const char *queries_dir;                  // Root directory for query files
-  const TSLanguage **languages;             // Array of supported languages
-  LanguageType *language_types;            // Array of language type enums
-  QueryCacheEntry **cached_queries;        // Array of cached queries per language
-  size_t *query_counts;                    // Array of query counts per language
-  size_t language_count;                   // Number of supported languages
-  size_t max_queries_per_language;         // Maximum number of languages supported
+  const char *queries_dir;          // Root directory for query files
+  const TSLanguage **languages;     // Array of supported languages
+  LanguageType *language_types;     // Array of language type enums
+  QueryCacheEntry **cached_queries; // Array of cached queries per language
+  size_t *query_counts;             // Array of query counts per language
+  size_t language_count;            // Number of supported languages
+  size_t max_queries_per_language;  // Maximum number of languages supported
 };
 
-#define MAX_LANGUAGES 6  // UNKNOWN, C, CPP, PYTHON, JAVASCRIPT, TYPESCRIPT
+#define MAX_LANGUAGES 6 // UNKNOWN, C, CPP, PYTHON, JAVASCRIPT, TYPESCRIPT
 
 /**
  * @brief Initializes the query manager.
@@ -71,35 +71,34 @@ QueryManager *query_manager_init(const char *queries_dir) {
     free(manager);
     return NULL;
   }
-  
+
   // Initialize the supported languages
   manager->language_count = MAX_LANGUAGES;
   manager->max_queries_per_language = 16; // Reasonable max number of queries per language
-  
+
   // Allocate arrays for languages, language_types, cached_queries, and query_counts
   manager->languages = (const TSLanguage **)calloc(MAX_LANGUAGES, sizeof(TSLanguage *));
   manager->language_types = (LanguageType *)calloc(MAX_LANGUAGES, sizeof(LanguageType));
-  manager->cached_queries = (QueryCacheEntry **)calloc(MAX_LANGUAGES, 
-                                                      sizeof(QueryCacheEntry *));
+  manager->cached_queries = (QueryCacheEntry **)calloc(MAX_LANGUAGES, sizeof(QueryCacheEntry *));
   manager->query_counts = (size_t *)calloc(MAX_LANGUAGES, sizeof(size_t));
-  
+
   // Check if all allocations succeeded
-  if (!manager->languages || !manager->language_types || 
-      !manager->cached_queries || !manager->query_counts) {
+  if (!manager->languages || !manager->language_types || !manager->cached_queries ||
+      !manager->query_counts) {
     query_manager_free(manager);
     return NULL;
   }
-  
+
   // Initialize memory for query cache entries
   for (size_t i = 0; i < MAX_LANGUAGES; i++) {
-    manager->cached_queries[i] = (QueryCacheEntry *)calloc(manager->max_queries_per_language,
-                                                         sizeof(QueryCacheEntry));
+    manager->cached_queries[i] =
+        (QueryCacheEntry *)calloc(manager->max_queries_per_language, sizeof(QueryCacheEntry));
     if (!manager->cached_queries[i]) {
       query_manager_free(manager);
       return NULL;
     }
   }
-  
+
   // Set up the supported languages
   // Initialize both language types and the corresponding Tree-sitter language objects
   manager->language_types[0] = LANG_UNKNOWN;
@@ -108,18 +107,19 @@ QueryManager *query_manager_init(const char *queries_dir) {
   manager->language_types[3] = LANG_PYTHON;
   manager->language_types[4] = LANG_JAVASCRIPT;
   manager->language_types[5] = LANG_TYPESCRIPT;
-  
+
   // Initialize language objects
   manager->languages[1] = tree_sitter_c();
   manager->languages[2] = tree_sitter_cpp();
   manager->languages[3] = tree_sitter_python();
-  // JavaScript and TypeScript parsers temporarily removed
-  
+  manager->languages[4] = tree_sitter_javascript();
+  manager->languages[5] = tree_sitter_typescript();
+
   // Initialize all query counts to 0
   for (size_t i = 0; i < MAX_LANGUAGES; i++) {
     manager->query_counts[i] = 0;
   }
-  
+
   return manager;
 }
 
@@ -148,7 +148,7 @@ void query_manager_free(QueryManager *manager) {
             free((void *)manager->cached_queries[i][j].query_name);
           }
           if (manager->cached_queries[i][j].query) {
-            ts_query_delete((TSQuery *)manager->cached_queries[i][j].query);  // Cast away const
+            ts_query_delete((TSQuery *)manager->cached_queries[i][j].query); // Cast away const
           }
         }
         // Free the array of QueryCacheEntry
@@ -188,26 +188,25 @@ void query_manager_free(QueryManager *manager) {
  * @return A dynamically allocated string with the full path, or NULL on failure.
  *         The caller is responsible for freeing this memory.
  */
-static char *construct_query_path(const QueryManager *manager, const char *language_name, 
+static char *construct_query_path(const QueryManager *manager, const char *language_name,
                                   const char *query_name) {
   if (!manager || !manager->queries_dir || !language_name || !query_name) {
     return NULL;
   }
-  
+
   // Calculate the required buffer size for the full path
   // queries_dir + "/" + language_name + "/" + query_name + ".scm" + "\0"
-  size_t path_len = strlen(manager->queries_dir) + strlen(language_name) + 
-                    strlen(query_name) + 7; // 7 for "/", "/", ".scm", and null terminator
-  
+  size_t path_len = strlen(manager->queries_dir) + strlen(language_name) + strlen(query_name) +
+                    7; // 7 for "/", "/", ".scm", and null terminator
+
   char *full_path = (char *)malloc(path_len);
   if (!full_path) {
     return NULL;
   }
-  
+
   // Format the path string
-  snprintf(full_path, path_len, "%s/%s/%s.scm", 
-           manager->queries_dir, language_name, query_name);
-  
+  snprintf(full_path, path_len, "%s/%s/%s.scm", manager->queries_dir, language_name, query_name);
+
   return full_path;
 }
 
@@ -223,15 +222,14 @@ static char *read_query_file(const char *file_path, uint32_t *content_len) {
   if (!file_path || !content_len) {
     return NULL;
   }
-  
+
   // Open the file
   FILE *file = fopen(file_path, "rb");
   if (!file) {
-    fprintf(stderr, "Failed to open query file: %s (error: %s)\n", 
-            file_path, strerror(errno));
+    fprintf(stderr, "Failed to open query file: %s (error: %s)\n", file_path, strerror(errno));
     return NULL;
   }
-  
+
   // Get the file size
   fseek(file, 0, SEEK_END);
   long file_size = ftell(file);
@@ -241,7 +239,7 @@ static char *read_query_file(const char *file_path, uint32_t *content_len) {
     return NULL;
   }
   rewind(file);
-  
+
   // Allocate buffer for the file content
   char *content = (char *)malloc(file_size + 1); // +1 for null terminator
   if (!content) {
@@ -249,21 +247,21 @@ static char *read_query_file(const char *file_path, uint32_t *content_len) {
     fclose(file);
     return NULL;
   }
-  
+
   // Read the file content
   size_t bytes_read = fread(content, 1, file_size, file);
   fclose(file);
-  
+
   if (bytes_read != (size_t)file_size) {
     fprintf(stderr, "Failed to read entire query file: %s\n", file_path);
     free(content);
     return NULL;
   }
-  
+
   // Null-terminate the content buffer
   content[file_size] = '\0';
   *content_len = (uint32_t)file_size;
-  
+
   return content;
 }
 
@@ -276,38 +274,33 @@ static char *read_query_file(const char *file_path, uint32_t *content_len) {
  * @param error_offset Pointer to store the error offset if compilation fails.
  * @return A pointer to the compiled TSQuery, or NULL on failure.
  */
-static const TSQuery *compile_query(const TSLanguage *language, 
-                                   const char *query_str, 
-                                   uint32_t query_len, 
-                                   uint32_t *error_offset) {
+static const TSQuery *compile_query(const TSLanguage *language, const char *query_str,
+                                    uint32_t query_len, uint32_t *error_offset) {
   if (!language || !query_str || query_len == 0) {
     return NULL;
   }
-  
+
   // Compile the query using Tree-sitter
   uint32_t error_type;
-  const TSQuery *query = ts_query_new(language, query_str, query_len, 
-                                      error_offset, &error_type);
-  
+  const TSQuery *query = ts_query_new(language, query_str, query_len, error_offset, &error_type);
+
   if (!query) {
     const char *error_types[] = {"None", "Syntax", "NodeType", "Field", "Capture"};
-    const char *error_type_str = (error_type < 5) ? 
-                               error_types[error_type] : "Unknown";
-    
-    fprintf(stderr, "Failed to compile query: %s error at offset %u\n",
-            error_type_str, error_offset ? *error_offset : 0);
-    
+    const char *error_type_str = (error_type < 5) ? error_types[error_type] : "Unknown";
+
+    fprintf(stderr, "Failed to compile query: %s error at offset %u\n", error_type_str,
+            error_offset ? *error_offset : 0);
+
     // Print a snippet of the query string around the error location
     if (error_offset && *error_offset < query_len) {
       uint32_t start = *error_offset > 20 ? *error_offset - 20 : 0;
       uint32_t end = *error_offset + 20 < query_len ? *error_offset + 20 : query_len;
-      
-      fprintf(stderr, "Query snippet: ...%.*s[ERROR]%.*s...\n",
-              *error_offset - start, query_str + start,
-              end - *error_offset, query_str + *error_offset);
+
+      fprintf(stderr, "Query snippet: ...%.*s[ERROR]%.*s...\n", *error_offset - start,
+              query_str + start, end - *error_offset, query_str + *error_offset);
     }
   }
-  
+
   return query;
 }
 
@@ -319,18 +312,18 @@ static const TSQuery *compile_query(const TSLanguage *language,
  */
 static const char *get_language_name(LanguageType language) {
   switch (language) {
-    case LANG_C:
-      return "c";
-    case LANG_CPP:
-      return "cpp";
-    case LANG_PYTHON:
-      return "python";
-    case LANG_JAVASCRIPT:
-      return "javascript";
-    case LANG_TYPESCRIPT:
-      return "typescript";
-    default:
-      return NULL;
+  case LANG_C:
+    return "c";
+  case LANG_CPP:
+    return "cpp";
+  case LANG_PYTHON:
+    return "python";
+  case LANG_JAVASCRIPT:
+    return "javascript";
+  case LANG_TYPESCRIPT:
+    return "typescript";
+  default:
+    return NULL;
   }
 }
 
@@ -345,13 +338,13 @@ static int get_language_index(const QueryManager *manager, LanguageType language
   if (!manager || language == LANG_UNKNOWN) {
     return -1;
   }
-  
+
   for (size_t i = 0; i < manager->language_count; i++) {
     if (manager->language_types[i] == language) {
       return (int)i;
     }
   }
-  
+
   return -1; // Language not found
 }
 
@@ -367,14 +360,14 @@ static int find_cached_query(const QueryManager *manager, int lang_idx, const ch
   if (!manager || lang_idx < 0 || lang_idx >= (int)manager->language_count || !query_name) {
     return -1;
   }
-  
+
   for (size_t i = 0; i < manager->query_counts[lang_idx]; i++) {
-    if (manager->cached_queries[lang_idx][i].query_name && 
+    if (manager->cached_queries[lang_idx][i].query_name &&
         strcmp(manager->cached_queries[lang_idx][i].query_name, query_name) == 0) {
       return (int)i;
     }
   }
-  
+
   return -1; // Query not found in cache
 }
 
@@ -387,13 +380,13 @@ static int find_cached_query(const QueryManager *manager, int lang_idx, const ch
  * @param query The compiled Tree-sitter query.
  * @return true if the query was successfully cached, false otherwise.
  */
-static bool cache_query(QueryManager *manager, int lang_idx, const char *query_name, 
-                       const TSQuery *query) {
-  if (!manager || lang_idx < 0 || lang_idx >= (int)manager->language_count || 
-      !query_name || !query) {
+static bool cache_query(QueryManager *manager, int lang_idx, const char *query_name,
+                        const TSQuery *query) {
+  if (!manager || lang_idx < 0 || lang_idx >= (int)manager->language_count || !query_name ||
+      !query) {
     return false;
   }
-  
+
   // Check if we've reached the maximum number of queries for this language
   size_t query_count = manager->query_counts[lang_idx];
   if (query_count >= manager->max_queries_per_language) {
@@ -401,16 +394,16 @@ static bool cache_query(QueryManager *manager, int lang_idx, const char *query_n
             lang_idx);
     return false;
   }
-  
+
   // Add the query to the cache
   manager->cached_queries[lang_idx][query_count].query_name = strdup(query_name);
   if (!manager->cached_queries[lang_idx][query_count].query_name) {
     return false;
   }
-  
+
   manager->cached_queries[lang_idx][query_count].query = query;
   manager->query_counts[lang_idx]++;
-  
+
   return true;
 }
 
@@ -423,78 +416,82 @@ static bool cache_query(QueryManager *manager, int lang_idx, const char *query_n
  * @return A const pointer to the compiled TSQuery, or NULL if not found.
  */
 const TSQuery *query_manager_get_query(QueryManager *manager, LanguageType language,
-                                        const char *query_name) {
+                                       const char *query_name) {
+  // Direct debug output
+  fprintf(stderr, "DIRECT DEBUG: Entered query_manager_get_query for language %d, query_name: %s\n",
+          language, query_name ? query_name : "NULL");
+  fflush(stderr);
   if (!manager || !query_name || language == LANG_UNKNOWN) {
     return NULL;
   }
-  
+
   // Step 1: Find  // Check if language index is in range
   size_t lang_idx = get_language_index(manager, language);
   if (lang_idx == (size_t)-1) {
     fprintf(stderr, "Unsupported language %d in query_manager_get_query\n", language);
     return NULL;
   }
-  
+
   // Check if corresponding Tree-sitter language object is available
   if (!manager->languages[lang_idx]) {
     fprintf(stderr, "No Tree-sitter language object available for language %d\n", language);
     return NULL;
   }
-  
+
   // Step 2: Check if the query is already cached
   int query_idx = find_cached_query(manager, lang_idx, query_name);
   if (query_idx >= 0) {
     // Query found in cache, return it
     return manager->cached_queries[lang_idx][query_idx].query;
   }
-  
+
   // Step 3: Query not found in cache, need to load and compile it
   const TSLanguage *ts_language = manager->languages[lang_idx];
   if (!ts_language) {
     fprintf(stderr, "No Tree-sitter language object available for language %d\n", language);
     return NULL;
   }
-  
+
   // Get the language name string for file path construction
   const char *lang_name = get_language_name(language);
   if (!lang_name) {
     fprintf(stderr, "Could not determine language name for language %d\n", language);
     return NULL;
   }
-  
+
   // Construct the query file path
   char *query_path = construct_query_path(manager, lang_name, query_name);
   if (!query_path) {
     fprintf(stderr, "Failed to construct query path for %s/%s\n", lang_name, query_name);
     return NULL;
   }
-  
+
   // Load the query file content
   uint32_t content_len = 0;
   char *query_content = read_query_file(query_path, &content_len);
   free(query_path); // Free the path string as we don't need it anymore
-  
+
   if (!query_content) {
     fprintf(stderr, "Failed to read query file for %s/%s\n", lang_name, query_name);
     return NULL;
   }
-  
+
   // Compile the query
   uint32_t error_offset = 0;
   const TSQuery *query = compile_query(ts_language, query_content, content_len, &error_offset);
   free(query_content); // Free the file content as we don't need it anymore
-  
+
   if (!query) {
     fprintf(stderr, "Failed to compile query %s/%s\n", lang_name, query_name);
     return NULL;
   }
-  
+
   // Cache the compiled query for future use
   if (!cache_query(manager, lang_idx, query_name, query)) {
     fprintf(stderr, "Failed to cache query %s/%s\n", lang_name, query_name);
-    ts_query_delete((TSQuery *)query);  // Cast away const
+    ts_query_delete((TSQuery *)query); // Cast away const
     return NULL;
   }
-  
+
   return query;
 }

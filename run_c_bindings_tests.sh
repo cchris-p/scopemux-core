@@ -20,7 +20,7 @@ RUN_EDGE_CASE_TESTS=true
 
 # C Language Test Toggles
 RUN_C_BASIC_AST_TESTS=true
-RUN_C_EXAMPLE_AST_TESTS=false
+RUN_C_EXAMPLE_AST_TESTS=true
 RUN_C_CST_TESTS=false
 RUN_C_PREPROCESSOR_TESTS=false
 
@@ -40,8 +40,8 @@ RUN_JS_EXAMPLE_AST_TESTS=false
 RUN_JS_CST_TESTS=false
 
 # TypeScript Language Test Toggles
-RUN_TS_BASIC_AST_TESTS=false
-RUN_TS_EXAMPLE_AST_TESTS=false
+RUN_TS_BASIC_AST_TESTS=true
+RUN_TS_EXAMPLE_AST_TESTS=true
 RUN_TS_CST_TESTS=false
 
 # Project root directory (assuming this script is in the root)

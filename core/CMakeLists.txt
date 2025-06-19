@@ -25,9 +25,8 @@ include_directories(
     ${TS_C_INCLUDE_DIR}
     ${TS_CPP_INCLUDE_DIR}
     ${TS_PYTHON_INCLUDE_DIR}
-    # JavaScript and TypeScript support removed temporarily
-    # ${TS_JS_INCLUDE_DIR}
-    # ${TS_TS_INCLUDE_DIR}
+    ${TS_JS_INCLUDE_DIR}
+    ${TS_TS_INCLUDE_DIR}
     # Project headers
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
@@ -107,9 +106,8 @@ target_link_libraries(parser_core PRIVATE
     ts_c
     ts_cpp
     ts_python
-    # JavaScript and TypeScript support removed temporarily
-    # ts_javascript
-    # ts_typescript
+    ts_javascript
+    ts_typescript
 )
 
 # Python bindings module

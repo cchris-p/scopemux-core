@@ -463,7 +463,8 @@ const char *parser_get_last_error(const ParserContext *ctx) {
     return "Invalid parser context";
   }
 
-  return ctx->last_error ? ctx->last_error : "No error";
+  // Return NULL when there's no error, not a string "No error"
+  return ctx->last_error;
 }
 
 /* Node retrieval by qualified name */
