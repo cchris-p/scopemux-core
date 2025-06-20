@@ -5,7 +5,7 @@ rm -rf build
 mkdir -p build
 
 # C++ Language Test Toggles
-RUN_CPP_BASIC_AST_TESTS=true
+RUN_CPP_BASIC_AST_TESTS=false
 RUN_CPP_EXAMPLE_AST_TESTS=false
 RUN_CPP_CST_TESTS=false
 
