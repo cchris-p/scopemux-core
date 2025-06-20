@@ -29,8 +29,9 @@ static void ast_node_free_internal(ASTNode *node);
  */
 static void ast_node_free_internal(ASTNode *node) __attribute__((unused));
 static void ast_node_free_internal(ASTNode *node) {
-  if (!node) return;
-  
+  if (!node)
+    return;
+
   // Free all resources owned by this node
   free(node->name);
   free(node->qualified_name);
@@ -50,7 +51,7 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
   if (!ctx || !node) {
     return false;
   }
-  
+
   // Check if we need to grow the array
   if (ctx->num_ast_nodes >= ctx->ast_nodes_capacity) {
     size_t new_capacity = ctx->ast_nodes_capacity == 0 ? 16 : ctx->ast_nodes_capacity * 2;
@@ -61,7 +62,7 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
     ctx->all_ast_nodes = new_nodes;
     ctx->ast_nodes_capacity = new_capacity;
   }
-  
+
   // Add the node to the tracking array
   ctx->all_ast_nodes[ctx->num_ast_nodes++] = node;
   return true;
@@ -86,29 +87,29 @@ ASTNode *ast_node_new(ASTNodeType type, const char *name) {
 void ast_node_free(ASTNode *node) {
   if (!node)
     return;
-  
+
   // In our design, most AST nodes are part of the `all_ast_nodes` flat array
   // in the context and are freed in `parser_clear`. However, this function can be
   // used to free detached nodes that aren't tracked by a ParserContext.
-  
+
   // Free all resources owned by this node
   free(node->name);
   free(node->qualified_name);
   free(node->signature);
   free(node->docstring);
   free(node->raw_content);
-  
+
   // Free all children recursively
   for (size_t i = 0; i < node->num_children; i++) {
     if (node->children[i]) {
       ast_node_free(node->children[i]);
     }
   }
-  
+
   // Free array pointers
   free(node->children);
   free(node->references);
-  
+
   // Free the node itself
   free(node);
 }

@@ -60,7 +60,8 @@ void context_engine_reset_compression(ContextEngine *engine __attribute__((unuse
  * @param content_length Length of content
  * @return char* Compressed content (must be freed by caller)
  */
-static __attribute__((unused)) char *compress_whitespace(const char *content, size_t content_length) {
+static __attribute__((unused)) char *compress_whitespace(const char *content,
+                                                         size_t content_length) {
   // Mark unused parameters to avoid compiler warnings
   (void)content;
   (void)content_length;

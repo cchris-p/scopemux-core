@@ -49,27 +49,49 @@ typedef enum {
 } LanguageType;
 
 /**
- * @brief Types of AST nodes that we care about
+ * @brief Standard AST node types used across all supported languages
+ * 
+ * These node types define the common semantic structure that ScopeMux uses
+ * across all supported programming languages. Each language-specific parser
+ * maps its syntax constructs to these standard types, enabling language-agnostic
+ * analysis and transformation tools.
+ * 
+ * The node types are organized in a hierarchical fashion that mirrors typical
+ * code organization (files contain modules/namespaces, which contain classes,
+ * which contain methods, etc.).
  */
 typedef enum {
-  NODE_UNKNOWN = 0,
-  NODE_FUNCTION,
-  NODE_METHOD,
-  NODE_CLASS,
-  NODE_STRUCT,
-  NODE_ENUM,
-  NODE_INTERFACE,
-  NODE_NAMESPACE,
-  NODE_MODULE,
-  NODE_COMMENT,
-  NODE_DOCSTRING,
-  // C-specific node types
-  NODE_UNION,
-  NODE_TYPEDEF,
-  NODE_INCLUDE,
-  NODE_MACRO,
-  NODE_VARIABLE,
+  NODE_UNKNOWN = 0,   // Unknown or unclassified node type
+  NODE_ROOT,          // Root node for the AST (represents a file or module)
+  NODE_FUNCTION,      // Function definition (common across all languages)
+  NODE_METHOD,        // Method definition (functions within classes/objects)
+  NODE_CLASS,         // Class definition (OOP languages: C++, Python, JS, etc.)
+  NODE_STRUCT,        // Structure definition (C, C++, Go, etc.)
+  NODE_ENUM,          // Enumeration type (C, C++, TypeScript, etc.)
+  NODE_INTERFACE,     // Interface definition (TypeScript, Java, etc.)
+  NODE_NAMESPACE,     // Namespace definition (C++, C#, etc.)
+  NODE_MODULE,        // Module definition (Python, JavaScript, etc.)
+  NODE_COMMENT,       // Regular comment
+  NODE_DOCSTRING,     // Documentation comment/string
+  
+  // Language-specific node types with standardized semantics
+  NODE_UNION,         // Union type (C, C++, TypeScript)
+  NODE_TYPEDEF,       // Type alias/definition (C, C++, TypeScript)
+  NODE_INCLUDE,       // Include/import statement (represented consistently across languages)
+  NODE_MACRO,         // Macro definitions (C, C++, Rust)
+  NODE_VARIABLE,      // Variable declarations (common across all languages)
+  
   // Add more node types as needed
+  
+  /*
+   * Note on cross-language mapping:
+   * - C++ classes map to NODE_CLASS
+   * - Python classes map to NODE_CLASS
+   * - JavaScript/TypeScript classes map to NODE_CLASS
+   * - C structs map to NODE_STRUCT
+   * - Python imports map to NODE_INCLUDE
+   * - JavaScript imports/requires map to NODE_INCLUDE
+   */
 } ASTNodeType;
 
 typedef enum { PARSE_AST, PARSE_CST } ParseMode;
@@ -91,14 +113,28 @@ void cst_node_free(CSTNode *node);
 bool cst_node_add_child(CSTNode *parent, CSTNode *child);
 
 /**
- * @brief AST node representing a parsed semantic entity.
+ * @brief AST node representing a parsed semantic entity in a language-agnostic way.
+ *
+ * This is the core data structure for representing parsed code entities across
+ * all supported languages. It provides a standardized representation that enables
+ * consistent analysis regardless of the source language.
+ *
+ * Key aspects of the cross-language standardization:
+ * 
+ * 1. Common node types (defined in ASTNodeType) represent equivalent semantic constructs
+ *    across languages (e.g., NODE_FUNCTION represents functions in C, Python, JavaScript)
+ * 
+ * 2. Hierarchical relationships are preserved consistently (classes contain methods,
+ *    namespaces contain classes, etc.)
+ * 
+ * 3. Qualified names provide a consistent way to reference entities regardless of
+ *    language-specific namespacing mechanisms
+ *
+ * 4. Language-specific details are preserved in attributes like signature, raw_content,
+ *    and additional_data while maintaining the common structure
  *
  * All string fields (name, signature, etc.) are owned by this struct
  * and will be freed when the AST is destroyed via parser_free().
- *
- * This is the core data structure for representing parsed code entities.
- * It contains metadata about the entity, its location, and references to
- * related entities.
  */
 typedef struct ASTNode {
   ASTNodeType type;     // Type of the node

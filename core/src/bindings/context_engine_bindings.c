@@ -55,7 +55,7 @@ static PyObject *ContextEngine_new(PyTypeObject *type, PyObject *args, PyObject 
   // Mark unused parameters to avoid compiler warnings
   (void)args;
   (void)kwds;
-  
+
   ContextEngineObject *self;
   self = (ContextEngineObject *)type->tp_alloc(type, 0);
   if (self != NULL) {
@@ -320,16 +320,16 @@ static PyObject *ContextEngine_reset_compression(PyObject *self_obj, PyObject *P
 static PyMethodDef ContextEngine_methods[] = {
     {"add_parser_context", (PyCFunction)ContextEngine_add_parser_context,
      METH_VARARGS | METH_KEYWORDS, "Add a parser context"},
-    {"rank_blocks", (PyCFunction)ContextEngine_rank_blocks,
-     METH_VARARGS | METH_KEYWORDS, "Rank blocks by relevance"},
+    {"rank_blocks", (PyCFunction)ContextEngine_rank_blocks, METH_VARARGS | METH_KEYWORDS,
+     "Rank blocks by relevance"},
     {"compress", (PyCFunction)ContextEngine_compress, METH_NOARGS,
      "Apply compression to fit within token budget"},
     {"get_context", (PyCFunction)ContextEngine_get_context, METH_NOARGS,
      "Get compressed context as a single string"},
-    {"estimate_tokens", (PyCFunction)ContextEngine_estimate_tokens,
-     METH_VARARGS | METH_KEYWORDS, "Estimate the number of tokens in a text string"},
-    {"update_focus", (PyCFunction)ContextEngine_update_focus,
-     METH_VARARGS | METH_KEYWORDS, "Update the user focus for specific blocks"},
+    {"estimate_tokens", (PyCFunction)ContextEngine_estimate_tokens, METH_VARARGS | METH_KEYWORDS,
+     "Estimate the number of tokens in a text string"},
+    {"update_focus", (PyCFunction)ContextEngine_update_focus, METH_VARARGS | METH_KEYWORDS,
+     "Update the user focus for specific blocks"},
     {"reset_compression", (PyCFunction)ContextEngine_reset_compression, METH_NOARGS,
      "Reset all compression to COMPRESSION_NONE"},
     {NULL} /* Sentinel */

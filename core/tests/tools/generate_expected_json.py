@@ -231,7 +231,8 @@ def parse_file(
         if hasattr(parser, "set_mode"):
             parser.set_mode(scopemux_core.PARSE_AST)
 
-        success = parser.parse_file(file_path)
+        # Pass the detected language to parse_file to avoid "Unsupported language" error
+        success = parser.parse_file(file_path, language=detected_lang)
         if not success:
             print(
                 f"Error parsing {file_path} in AST mode: {parser.get_last_error()}")

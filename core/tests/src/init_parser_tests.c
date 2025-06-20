@@ -1,3 +1,5 @@
+#define DEBUG_MODE true
+
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
 #include <stdio.h>
@@ -28,7 +30,9 @@ char *read_file_to_string(const char *filepath) {
 
 Test(cpp_parsing, tree_sitter_initialization,
      .description = "Test Tree-sitter parser initialization for C++") {
-  cr_log_info("Testing Tree-sitter parser initialization for C++");
+  if (DEBUG_MODE) {
+    cr_log_info("Testing Tree-sitter parser initialization for C++");
+  }
 
   // Initialize a Tree-sitter parser for C++
   TreeSitterParser *parser = ts_parser_init(LANG_CPP);
@@ -46,12 +50,16 @@ Test(cpp_parsing, tree_sitter_initialization,
   // Clean up
   ts_parser_free(parser);
 
-  cr_log_info("Tree-sitter C++ parser test passed");
+  if (DEBUG_MODE) {
+    cr_log_info("Tree-sitter C++ parser test passed");
+  }
 }
 
 Test(python_parsing, tree_sitter_initialization,
      .description = "Test Tree-sitter parser initialization for Python") {
-  cr_log_info("Testing Tree-sitter parser initialization for Python");
+  if (DEBUG_MODE) {
+    cr_log_info("Testing Tree-sitter parser initialization for Python");
+  }
 
   // Initialize a Tree-sitter parser for Python
   TreeSitterParser *parser = ts_parser_init(LANG_PYTHON);
@@ -69,7 +77,9 @@ Test(python_parsing, tree_sitter_initialization,
   // Clean up
   ts_parser_free(parser);
 
-  cr_log_info("Tree-sitter Python parser test passed");
+  if (DEBUG_MODE) {
+    cr_log_info("Tree-sitter Python parser test passed");
+  }
 }
 
 // Add more Test(...) blocks for other C-level functionalities.

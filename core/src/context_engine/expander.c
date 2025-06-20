@@ -25,7 +25,7 @@ bool context_engine_expand_block(ContextEngine *engine, InfoBlock *block) {
   // Mark unused parameters to avoid compiler warnings
   (void)engine;
   (void)block;
-  
+
   // TODO: Implement block expansion
   // Restore the original content of the block
   return false; // Placeholder
@@ -47,7 +47,7 @@ size_t context_engine_get_expanded_block(ContextEngine *engine, InfoBlock *block
   (void)block;
   (void)out_buffer;
   (void)buffer_size;
-  
+
   // TODO: Implement expanded block retrieval
   // Get the expanded form of a specific block
   return 0; // Placeholder
@@ -67,7 +67,7 @@ size_t context_engine_expand_relevant_blocks(ContextEngine *engine, size_t max_b
   (void)engine;
   (void)max_blocks;
   (void)max_tokens;
-  
+
   // TODO: Implement selective expansion based on relevance
   // Expand the most relevant blocks within the token budget
   return 0; // Placeholder
@@ -84,7 +84,7 @@ static bool reset_block_compression(ContextEngine *engine, InfoBlock *block) {
   // Mark unused parameters to avoid compiler warnings
   (void)engine;
   (void)block;
-  
+
   // TODO: Implement block reset
   // Reset the block to its original uncompressed form
   return false; // Placeholder

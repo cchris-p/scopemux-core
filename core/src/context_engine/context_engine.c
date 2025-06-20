@@ -1,9 +1,9 @@
 #define _POSIX_C_SOURCE 200809L // For strdup
 
 #include "../../include/scopemux/context_engine.h"
-#include <string.h> // For strlen, strncpy, strdup
+#include <stdio.h>  // For snprintf
 #include <stdlib.h> // For malloc, calloc, free
-#include <stdio.h> // For snprintf
+#include <string.h> // For strlen, strncpy, strdup
 
 /**
  * @brief Get the last error message from a ContextEngine instance.
@@ -30,7 +30,7 @@ size_t context_engine_get_context(const ContextEngine *engine, char *out_buffer,
   if (!engine) {
     return 0;
   }
-  
+
   // Calculate the total size needed for all compressed blocks
   size_t total_size = 0;
   for (InfoBlock *block = engine->blocks; block != NULL; block = block->next) {
@@ -38,30 +38,30 @@ size_t context_engine_get_context(const ContextEngine *engine, char *out_buffer,
       total_size += strlen(block->compressed_content) + 1; // +1 for newline
     }
   }
-  
+
   // If out_buffer is NULL, just return the required size
   if (!out_buffer) {
     return total_size;
   }
-  
+
   // Copy the blocks to the output buffer, ensuring we don't overflow
   size_t remaining = buffer_size > 0 ? buffer_size - 1 : 0; // -1 for null terminator
   size_t copied = 0;
-  
+
   if (remaining > 0 && engine->blocks) {
     char *pos = out_buffer;
-    
+
     for (InfoBlock *block = engine->blocks; block != NULL && remaining > 0; block = block->next) {
       if (block->compressed_content) {
         size_t block_len = strlen(block->compressed_content);
         size_t copy_size = block_len < remaining ? block_len : remaining;
-        
+
         if (copy_size > 0) {
           strncpy(pos, block->compressed_content, copy_size);
           pos += copy_size;
           copied += copy_size;
           remaining -= copy_size;
-          
+
           // Add a newline between blocks if there's space
           if (remaining > 0 && block->next) {
             *pos = '\n';
@@ -72,14 +72,14 @@ size_t context_engine_get_context(const ContextEngine *engine, char *out_buffer,
         }
       }
     }
-    
+
     // Ensure null termination
     *pos = '\0';
   } else if (buffer_size > 0) {
     // No blocks or no space, just return empty string
     out_buffer[0] = '\0';
   }
-  
+
   return total_size;
 }
 
@@ -98,40 +98,40 @@ bool context_engine_rank_blocks(ContextEngine *engine, const char *cursor_file,
   if (!engine) {
     return false;
   }
-  
+
   // Simple implementation for now to make the function available
   // Just set an error message if needed
   if (!engine->blocks) {
     if (engine->last_error) {
       free(engine->last_error);
     }
-    
+
     char error_msg[256];
     snprintf(error_msg, sizeof(error_msg), "No blocks available for ranking");
     engine->last_error = strdup(error_msg);
     return false;
   }
-  
+
   // In a real implementation, we would rank blocks based on:
   // 1. Proximity to cursor position (if in same file)
   // 2. Semantic similarity to query (if provided)
   // 3. Other relevance metrics like recency, importance, etc.
-  
+
   // Simple ranking based on position in the list for now
   size_t count = 0;
   InfoBlock *current = engine->blocks;
-  
+
   // Count blocks first
   while (current != NULL) {
     count++;
     current = current->next;
   }
-  
+
   // Assign rank scores
   if (count > 0) {
     size_t i = 0;
     current = engine->blocks;
-    
+
     while (current != NULL) {
       // Higher rank for blocks that appear earlier in the list
       current->rank_score = (float)(count - i) / (float)count;
@@ -139,7 +139,7 @@ bool context_engine_rank_blocks(ContextEngine *engine, const char *cursor_file,
       current = current->next;
     }
   }
-  
+
   return true;
 }
 
@@ -157,37 +157,39 @@ size_t context_engine_update_focus(ContextEngine *engine, const char **node_qual
   if (!engine || !node_qualified_names || num_nodes == 0) {
     return 0;
   }
-  
+
   // Clamp focus value between 0.0 and 1.0
   float clamped_focus = focus_value;
-  if (clamped_focus < 0.0f) clamped_focus = 0.0f;
-  if (clamped_focus > 1.0f) clamped_focus = 1.0f;
-  
+  if (clamped_focus < 0.0f)
+    clamped_focus = 0.0f;
+  if (clamped_focus > 1.0f)
+    clamped_focus = 1.0f;
+
   size_t num_updated = 0;
-  
+
   // Iterate through all blocks and update focus for matching nodes
   for (InfoBlock *block = engine->blocks; block != NULL; block = block->next) {
     // Skip blocks without an AST node
     if (!block->ast_node) {
       continue;
     }
-    
+
     // Check if the block's node matches any of the qualified names
     for (size_t i = 0; i < num_nodes; i++) {
       const char *qualified_name = node_qualified_names[i];
-      
+
       // In a real implementation, we would match the qualified name against
       // the AST node's name/path. For now, we'll do a simple string check
       // assuming the ast_node has a name member we can access.
       // This is just a placeholder implementation to make linking work.
-      
+
       // Update the block's focus value
       block->relevance.user_focus = clamped_focus;
       num_updated++;
       break; // Only need to match once per block
     }
   }
-  
+
   return num_updated;
 }
 
@@ -203,7 +205,7 @@ ContextEngine *context_engine_init(const ContextOptions *options) {
   if (!engine) {
     return NULL;
   }
-  
+
   // Copy options if provided, otherwise use defaults
   if (options) {
     memcpy(&engine->options, options, sizeof(ContextOptions));
@@ -218,7 +220,7 @@ ContextEngine *context_engine_init(const ContextOptions *options) {
     engine->options.preserve_structure = true;
     engine->options.prioritize_functions = true;
   }
-  
+
   // Initialize other members
   engine->blocks = NULL;
   engine->num_blocks = 0;
@@ -226,7 +228,7 @@ ContextEngine *context_engine_init(const ContextOptions *options) {
   engine->compressed_tokens = 0;
   engine->last_error = NULL;
   engine->error_code = 0;
-  
+
   return engine;
 }
 
@@ -239,29 +241,29 @@ void context_engine_free(ContextEngine *engine) {
   if (!engine) {
     return;
   }
-  
+
   // Free all info blocks in the linked list
   InfoBlock *current_block = engine->blocks;
   while (current_block) {
     InfoBlock *next_block = current_block->next;
-    
+
     // Free the compressed content string if it exists
     if (current_block->compressed_content) {
       free(current_block->compressed_content);
     }
-    
+
     // Note: In a real implementation, we would need to handle AST node cleanup
     // But we don't own those pointers, they're managed by the parser context
-    
+
     free(current_block);
     current_block = next_block;
   }
-  
+
   // Free the last error message if it exists
   if (engine->last_error) {
     free(engine->last_error);
   }
-  
+
   // Free the engine itself
   free(engine);
 }
@@ -277,11 +279,11 @@ size_t context_engine_add_parser_context(ContextEngine *engine, const ParserCont
   if (!engine || !parser_ctx) {
     return 0;
   }
-  
+
   // This is a placeholder implementation
   // In a real implementation, we would iterate over all nodes in the parser context
   // and add them to the context engine using context_engine_add_node()
-  
+
   // For now, just return 0 to indicate no nodes were added
   return 0;
 }

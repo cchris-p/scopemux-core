@@ -73,6 +73,23 @@ set(CPP_EXAMPLE_AST_TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/cpp_example_ast_tests.c
 )
 
+# JavaScript and TypeScript test sources
+set(JS_BASIC_AST_TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/js/js_basic_ast_tests.c
+)
+
+set(TS_BASIC_AST_TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ts/ts_basic_ast_tests.c
+)
+
+set(JS_EXAMPLE_AST_TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/js/js_example_ast_tests.c
+)
+
+set(TS_EXAMPLE_AST_TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ts/ts_example_ast_tests.c
+)
+
 # --- Common Test Sources ---
 # (Previously contained ast_extraction_tests.c which has been migrated to language-specific files)
 
@@ -136,6 +153,31 @@ add_executable(python_example_ast_tests
 
 add_executable(cpp_example_ast_tests
     ${CPP_EXAMPLE_AST_TEST_SOURCES}
+    ${TEST_UTIL_SOURCES}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+
+# JavaScript and TypeScript test executables
+add_executable(js_basic_ast_tests
+    ${JS_BASIC_AST_TEST_SOURCES}
+    ${TEST_UTIL_SOURCES}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+
+add_executable(ts_basic_ast_tests
+    ${TS_BASIC_AST_TEST_SOURCES}
+    ${TEST_UTIL_SOURCES}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+
+add_executable(js_example_ast_tests
+    ${JS_EXAMPLE_AST_TEST_SOURCES}
+    ${TEST_UTIL_SOURCES}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+
+add_executable(ts_example_ast_tests
+    ${TS_EXAMPLE_AST_TEST_SOURCES}
     ${TEST_UTIL_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
@@ -243,6 +285,63 @@ target_link_libraries(cpp_example_ast_tests PRIVATE
     ts_typescript
 )
 
+# Link JavaScript and TypeScript tests
+target_link_libraries(js_basic_ast_tests PRIVATE
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+
+target_link_libraries(ts_basic_ast_tests PRIVATE
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+
+target_link_libraries(js_example_ast_tests PRIVATE
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+
+target_link_libraries(ts_example_ast_tests PRIVATE
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets from root CMake
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+
 # Add tests to CTest 
 add_test(NAME InitParserTests COMMAND init_parser_tests)
 add_test(NAME CBasicASTTests COMMAND c_basic_ast_tests)
@@ -251,6 +350,10 @@ add_test(NAME CPPBasicASTTests COMMAND cpp_basic_ast_tests)
 add_test(NAME CExampleASTTests COMMAND c_example_ast_tests)
 add_test(NAME PythonExampleASTTests COMMAND python_example_ast_tests)
 add_test(NAME CPPExampleASTTests COMMAND cpp_example_ast_tests)
+add_test(NAME JSBasicASTTests COMMAND js_basic_ast_tests)
+add_test(NAME TSBasicASTTests COMMAND ts_basic_ast_tests)
+add_test(NAME JSExampleASTTests COMMAND js_example_ast_tests)
+add_test(NAME TSExampleASTTests COMMAND ts_example_ast_tests)
 add_test(NAME EdgeCaseTests COMMAND edge_case_tests)
 
 # Link Edge Case tests
@@ -268,4 +371,30 @@ target_link_libraries(edge_case_tests PRIVATE
     ts_typescript
 )
 
+# Copy test example files and their expected JSON outputs to the build directory for testing
+# This ensures the tests can find the JSON files where they're looking for them
+
+# Process C example files and expected JSON outputs
+file(GLOB_RECURSE C_EXAMPLES "${CMAKE_CURRENT_SOURCE_DIR}/examples/c/**/*.c")
+file(GLOB_RECURSE C_EXPECTED_JSON "${CMAKE_CURRENT_SOURCE_DIR}/examples/c/**/*.expected.json")
+
+# First copy to the standard examples location in build dir
+foreach(EXAMPLE_FILE ${C_EXAMPLES} ${C_EXPECTED_JSON})
+    file(RELATIVE_PATH REL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/examples ${EXAMPLE_FILE})
+    get_filename_component(REL_DIR ${REL_PATH} DIRECTORY)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/examples/${REL_DIR})
+    configure_file(${EXAMPLE_FILE} ${CMAKE_CURRENT_BINARY_DIR}/examples/${REL_PATH} COPYONLY)
+endforeach()
+
+# Now copy to the direct test location to match test search paths
+foreach(EXPECTED_JSON ${C_EXPECTED_JSON})
+    get_filename_component(JSON_FILENAME ${EXPECTED_JSON} NAME)
+    get_filename_component(JSON_DIR ${EXPECTED_JSON} DIRECTORY)
+    get_filename_component(CATEGORY ${JSON_DIR} NAME)
+    string(REPLACE ".c.expected.json" ".expected.json" DEST_NAME ${JSON_FILENAME})
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/c/${CATEGORY})
+    configure_file(${EXPECTED_JSON} ${CMAKE_CURRENT_BINARY_DIR}/c/${CATEGORY}/${DEST_NAME} COPYONLY)
+endforeach()
+
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
+message(STATUS "Copied example files and expected JSON to build directory for validation.")

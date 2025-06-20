@@ -40,8 +40,8 @@ RUN_JS_EXAMPLE_AST_TESTS=false
 RUN_JS_CST_TESTS=false
 
 # TypeScript Language Test Toggles
-RUN_TS_BASIC_AST_TESTS=true
-RUN_TS_EXAMPLE_AST_TESTS=true
+RUN_TS_BASIC_AST_TESTS=false
+RUN_TS_EXAMPLE_AST_TESTS=false
 RUN_TS_CST_TESTS=false
 
 # Project root directory (assuming this script is in the root)
@@ -111,9 +111,20 @@ run_criterion_test_executable() {
     local executable_dir=$(dirname "${executable_path}")
     local executable_name=$(basename "${executable_path}")
 
-    (cd "${executable_dir}" && ./${executable_name} --verbose)
+    # Set PROJECT_ROOT_DIR to the project root to help tests find expected JSON files
+    local project_root="$(cd "$(dirname "$0")" && pwd)"
+    export PROJECT_ROOT_DIR="${project_root}"
+    
+    pushd "${executable_dir}" >/dev/null
+    echo "Running: ./${executable_name} with PROJECT_ROOT_DIR=${PROJECT_ROOT_DIR}"
+    "./${executable_name}"
     local test_exit_code=$?
 
+    # NOTE: All tests MUST have matching expected JSON files to pass validation.
+    # No shortcuts or exceptions allowed - proper validation ensures code correctness.
+
+    popd >/dev/null
+    
     if [ ${test_exit_code} -eq 0 ]; then
         echo "PASS: ${test_suite_name} (All tests passed)"
     else

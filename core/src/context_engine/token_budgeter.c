@@ -22,7 +22,7 @@
 bool token_estimator_init(ContextEngine *engine) {
   // Mark unused parameter to avoid compiler warning
   (void)engine;
-  
+
   // TODO: Implement token estimator initialization
   // This might involve loading a tokenizer model or rules
   return false; // Placeholder
@@ -36,7 +36,7 @@ bool token_estimator_init(ContextEngine *engine) {
 void token_estimator_free(ContextEngine *engine) {
   // Mark unused parameter to avoid compiler warning
   (void)engine;
-  
+
   // TODO: Implement token estimator cleanup
   // Free all resources associated with the token estimator
 }
@@ -50,12 +50,12 @@ void token_estimator_free(ContextEngine *engine) {
  * @return size_t Estimated token count
  */
 size_t context_engine_estimate_tokens(const ContextEngine *engine, const char *text,
-                                       size_t text_length) {
+                                      size_t text_length) {
   // Mark unused parameters to avoid compiler warnings
   (void)engine;
   (void)text;
   (void)text_length;
-  
+
   // TODO: Implement token estimation
   // This should use a similar tokenizer to what the LLM uses
   return 0; // Placeholder
@@ -70,7 +70,7 @@ size_t context_engine_estimate_tokens(const ContextEngine *engine, const char *t
 bool token_budget_distribute(ContextEngine *engine) {
   // Mark unused parameter to avoid compiler warning
   (void)engine;
-  
+
   // TODO: Implement token budget distribution
   // Allocate token budget to blocks based on their relevance
   return false; // Placeholder
@@ -85,7 +85,7 @@ bool token_budget_distribute(ContextEngine *engine) {
 bool token_budget_check(ContextEngine *engine) {
   // Mark unused parameter to avoid compiler warning
   (void)engine;
-  
+
   // TODO: Implement token budget check
   // Calculate total tokens and compare to budget
   return false; // Placeholder
@@ -102,7 +102,7 @@ size_t token_budget_get_total(ContextEngine *engine, bool use_compressed) {
   // Mark unused parameters to avoid compiler warnings
   (void)engine;
   (void)use_compressed;
-  
+
   // TODO: Implement total token calculation
   // Sum up token counts for all blocks
   return 0; // Placeholder

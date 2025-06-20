@@ -1,3 +1,5 @@
+#define DEBUG_MODE true
+
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
 #include <stdio.h>
@@ -18,7 +20,9 @@
  */
 Test(edge_cases, empty_file, .description = "Test AST extraction with empty file") {
 
-  cr_log_info("Testing AST extraction with empty file");
+  if (DEBUG_MODE) {
+    cr_log_info("Testing AST extraction with empty file");
+  }
 
   // Create an empty source string
   const char *source_code = "";
@@ -72,7 +76,9 @@ Test(edge_cases, empty_file, .description = "Test AST extraction with empty file
  */
 Test(edge_cases, invalid_syntax, .description = "Test AST extraction with invalid syntax") {
 
-  cr_log_info("Testing AST extraction with invalid syntax");
+  if (DEBUG_MODE) {
+    cr_log_info("Testing AST extraction with invalid syntax");
+  }
 
   // Create some clearly invalid source code for different languages
   struct {
@@ -96,14 +102,17 @@ Test(edge_cases, invalid_syntax, .description = "Test AST extraction with invali
     const char *err2 = parser_get_last_error(ctx);
     // It's acceptable to return an error message for invalid code
     if (err2) {
-      cr_log_info("Parser error for invalid %s code: %s",
+      if (DEBUG_MODE) {
+        cr_log_info("Parser error for invalid %s code: %s",
+                    test_cases[i].lang == LANG_PYTHON ? "Python" : "C", err2);
+      }
                   test_cases[i].lang == LANG_PYTHON ? "Python" : "C", err2);
     } else {
       // If no error message, the parse_result should be false
       cr_assert(!parse_result, "Expected error message or failed parse for invalid %s code",
                 test_cases[i].lang == LANG_PYTHON ? "Python" : "C");
     }
-    
+
     // Reset for next test case
     parser_clear(ctx);
   }
