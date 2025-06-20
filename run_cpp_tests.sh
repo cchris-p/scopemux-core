@@ -1,7 +1,11 @@
 #!/bin/bash
 
+# Clean build directory before running tests
+rm -rf build
+mkdir -p build
+
 # C++ Language Test Toggles
-RUN_CPP_BASIC_AST_TESTS=false
+RUN_CPP_BASIC_AST_TESTS=true
 RUN_CPP_EXAMPLE_AST_TESTS=false
 RUN_CPP_CST_TESTS=false
 
@@ -55,6 +59,14 @@ run_test() {
 
 # Build and run C++ language tests
 cd "${CMAKE_PROJECT_BUILD_DIR}"
+
+# Configure project with CMake
+echo "Configuring project with CMake..."
+cmake "${PROJECT_ROOT_DIR}"
+if [ $? -ne 0 ]; then
+    echo "ERROR: CMake configuration failed."
+    exit 1
+fi
 
 # C++ language tests
 if [ "${RUN_CPP_BASIC_AST_TESTS}" = true ]; then

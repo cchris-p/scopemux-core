@@ -171,16 +171,9 @@ static const char *ast_type_to_string(ASTNodeType type) {
   cr_log_info("Converting AST node type (%d) to string (for node name: %s)", (int)type,
               current_node_name ? current_node_name : "NULL");
 
-  // Direct handling for ROOT node type
+  // Handle ROOT node type
   if (type == NODE_ROOT) {
     cr_log_info("Converting NODE_ROOT to 'ROOT'");
-    return "ROOT";
-  }
-  
-  // Legacy special case for ROOT node which was previously NODE_UNKNOWN with name "ROOT"
-  // Keep this for backward compatibility
-  if (type == NODE_UNKNOWN && current_node_name && strcmp(current_node_name, "ROOT") == 0) {
-    cr_log_info("Special case: Converting NODE_UNKNOWN to 'ROOT' for root node");
     return "ROOT";
   }
 

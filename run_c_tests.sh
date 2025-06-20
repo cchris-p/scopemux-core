@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Clean build directory before running tests
+rm -rf build
+mkdir -p build
+
 # C Language Test Toggles
 RUN_C_BASIC_AST_TESTS=true
 RUN_C_EXAMPLE_AST_TESTS=true
@@ -21,21 +25,17 @@ build_test() {
     local target_name="$1"
     local display_name="$2"
 
-    echo "Building test target: ${display_name}..."
     make "${target_name}"
     if [ $? -ne 0 ]; then
         echo "ERROR: Failed to build test target '${display_name}'."
         exit 1
     fi
-    echo "Successfully built: ${display_name}"
 }
 
 # Function to run a test
 run_test() {
     local test_suite_name="$1"
     local executable_path="$2"
-
-    echo "Running Test Suite: ${test_suite_name}"
 
     if [ ! -f "${executable_path}" ]; then
         echo "FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
@@ -57,6 +57,13 @@ run_test() {
 
 # Build and run C language tests
 cd "${CMAKE_PROJECT_BUILD_DIR}"
+
+# Configure project with CMake
+cmake "${PROJECT_ROOT_DIR}"
+if [ $? -ne 0 ]; then
+    echo "ERROR: CMake configuration failed."
+    exit 1
+fi
 
 # C language tests
 if [ "${RUN_C_BASIC_AST_TESTS}" = true ]; then

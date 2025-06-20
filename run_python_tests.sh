@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Clean build directory before running tests
+rm -rf build
+mkdir -p build
+
 # Python Language Test Toggles
 RUN_PYTHON_BASIC_AST_TESTS=false
 RUN_PYTHON_EXAMPLE_AST_TESTS=false
@@ -55,6 +59,14 @@ run_test() {
 
 # Build and run Python language tests
 cd "${CMAKE_PROJECT_BUILD_DIR}"
+
+# Configure project with CMake
+echo "Configuring project with CMake..."
+cmake "${PROJECT_ROOT_DIR}"
+if [ $? -ne 0 ]; then
+    echo "ERROR: CMake configuration failed."
+    exit 1
+fi
 
 # Python language tests
 if [ "${RUN_PYTHON_BASIC_AST_TESTS}" = true ]; then
