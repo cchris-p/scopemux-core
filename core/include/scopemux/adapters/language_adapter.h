@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../tree_sitter/api.h"      // For TSQuery, TSQueryMatch
 #include "../common.h"                  // For LanguageType
 #include "../parser.h"                  // For ASTNode, ParserContext
-#include "../tree_sitter_integration.h" // For TSNode
+#include "../tree_sitter_integration.h" // For TSNode, TSQuery, TSQueryMatch
+#include <stdint.h>                     // For uint32_t
 
 typedef struct LanguageAdapter {
   LanguageType language_type;

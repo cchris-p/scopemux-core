@@ -8,6 +8,9 @@
  */
 
 #include "../../include/scopemux/processors/ast_post_processor.h"
+
+// File-level logging toggle. Set to true to enable logs for this file.
+static bool enable_logging = false;
 #include "../../include/scopemux/logging.h"
 
 #include <stdlib.h>
@@ -28,7 +31,7 @@ ASTNode *post_process_ast(ASTNode *ast_root, ParserContext *ctx) {
     return NULL;
   }
 
-  LOG_DEBUG("Starting AST post-processing");
+  if (enable_logging) log_debug("Starting AST post-processing");
 
   // Order nodes by priority type
   order_ast_nodes(ast_root);
@@ -36,7 +39,7 @@ ASTNode *post_process_ast(ASTNode *ast_root, ParserContext *ctx) {
   // Clean up temporary nodes and finalize structure
   cleanup_ast_nodes(ast_root);
 
-  LOG_DEBUG("AST post-processing complete");
+  if (enable_logging) log_debug("AST post-processing complete");
   return ast_root;
 }
 
@@ -51,7 +54,7 @@ void order_ast_nodes(ASTNode *ast_root) {
     return;
   }
 
-  LOG_DEBUG("Reordering AST nodes by priority type");
+  if (enable_logging) log_debug("Reordering AST nodes by priority type");
 
   // Create temporary arrays to categorize nodes
   ASTNode **docstring_nodes = malloc(sizeof(ASTNode *) * ast_root->num_children);
@@ -61,7 +64,7 @@ void order_ast_nodes(ASTNode *ast_root) {
 
   if (!docstring_nodes || !include_nodes || !function_nodes || !other_nodes) {
     // Handle allocation failure
-    LOG_ERROR("Memory allocation failed during AST node reordering");
+    if (enable_logging) log_error("Memory allocation failed during AST node reordering");
     if (docstring_nodes)
       free(docstring_nodes);
     if (include_nodes)
@@ -96,7 +99,7 @@ void order_ast_nodes(ASTNode *ast_root) {
     }
   }
 
-  LOG_DEBUG("Categorized nodes - Docstrings: %zu, Includes: %zu, Functions: %zu, Other: %zu",
+  if (enable_logging) log_debug("Categorized nodes - Docstrings: %zu, Includes: %zu, Functions: %zu, Other: %zu",
             doc_count, inc_count, func_count, other_count);
 
   // Reconstruct children array in order: DOCSTRING -> INCLUDE -> FUNCTION -> OTHER
@@ -128,7 +131,7 @@ void order_ast_nodes(ASTNode *ast_root) {
   free(function_nodes);
   free(other_nodes);
 
-  LOG_DEBUG("Reordered AST nodes by priority");
+  if (enable_logging) log_debug("Reordered AST nodes by priority");
 }
 
 /**
@@ -142,7 +145,7 @@ size_t cleanup_ast_nodes(ASTNode *ast_root) {
     return 0;
   }
 
-  LOG_DEBUG("Cleaning up temporary and removed nodes");
+  if (enable_logging) log_debug("Cleaning up temporary and removed nodes");
 
   // Final cleanup pass - remove any nodes marked as NODE_REMOVED
   size_t final_count = 0;
@@ -172,6 +175,6 @@ size_t cleanup_ast_nodes(ASTNode *ast_root) {
   // Update the child count
   ast_root->num_children = final_count;
 
-  LOG_DEBUG("AST cleanup complete, %zu nodes remaining", final_count);
+  if (enable_logging) log_debug("AST cleanup complete, %zu nodes remaining", final_count);
   return final_count;
 }

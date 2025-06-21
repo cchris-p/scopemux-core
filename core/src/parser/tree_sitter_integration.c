@@ -275,11 +275,11 @@ static char *extract_full_signature(TSNode func_node, const char *source_code) {
  */
 static void process_query_matches(ParserContext *ctx, const TSQuery *query, const char *query_type,
                                   TSQueryCursor *cursor, ASTNode *ast_root, ASTNode **node_map) {
-  LOG_DEBUG("Entered process_query_matches for query_type: %s", query_type ? query_type : "NULL");
+  if (enable_logging) log_debug("Entered process_query_matches for query_type: %s", query_type ? query_type : "NULL");
 
   // Safety check for NULL pointers
   if (!ctx || !query || !query_type || !cursor || !ast_root) {
-    LOG_ERROR("NULL pointer passed to process_query_matches: ctx=%p, query=%p, query_type=%p, "
+    if (enable_logging) log_error("NULL pointer passed to process_query_matches: ctx=%p, query=%p, query_type=%p, "
               "cursor=%p, ast_root=%p",
               (void *)ctx, (void *)query, (void *)query_type, (void *)cursor, (void *)ast_root);
     return;
@@ -288,15 +288,15 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
   uint32_t pattern_count = ts_query_pattern_count(query);
   uint32_t capture_count = ts_query_capture_count(query);
   uint32_t string_count = ts_query_string_count(query);
-  LOG_DEBUG("Query details - patterns: %d, captures: %d, strings: %d", pattern_count, capture_count,
+  if (enable_logging) log_debug("Query details - patterns: %d, captures: %d, strings: %d", pattern_count, capture_count,
             string_count);
 
   // Iterate through all query matches using the cursor
   TSQueryMatch match;
   while (ts_query_cursor_next_match(cursor, &match)) {
-    LOG_DEBUG("Processing match with %d captures for query type: %s", match.capture_count,
+    if (enable_logging) log_debug("Processing match with %d captures for query type: %s", match.capture_count,
               query_type ? query_type : "NULL");
-    LOG_DEBUG("Match details - id: %d, pattern_index: %d", match.id, match.pattern_index);
+    if (enable_logging) log_debug("Match details - id: %d, pattern_index: %d", match.id, match.pattern_index);
     TSNode target_node = {0};
     char *node_name = NULL;
     TSNode body_node __attribute__((unused)) = {0};
@@ -336,9 +336,9 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
 
     // Process captures to populate node information
     for (uint32_t i = 0; i < match.capture_count; ++i) {
-      LOG_DEBUG("Processing capture index %d (safety check before node access)", i);
+      if (enable_logging) log_debug("Processing capture index %d (safety check before node access)", i);
       TSNode captured_node = match.captures[i].node;
-      LOG_DEBUG("Successfully got captured_node for index %d", i);
+      if (enable_logging) log_debug("Successfully got captured_node for index %d", i);
 
       uint32_t capture_index = match.captures[i].index;
 
@@ -403,11 +403,11 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
         capture_name = "unknown";
       }
 
-      LOG_DEBUG("Using hardcoded capture_name='%s' for node_type='%s'", capture_name, node_type);
-      LOG_DEBUG("Using capture_name='%s' for node type='%s'", capture_name, node_type);
-      LOG_DEBUG("Processing capture %d/%d, name: '%s', node type: '%s'", i + 1, match.capture_count,
+      if (enable_logging) log_debug("Using hardcoded capture_name='%s' for node_type='%s'", capture_name, node_type);
+      if (enable_logging) log_debug("Using capture_name='%s' for node type='%s'", capture_name, node_type);
+      if (enable_logging) log_debug("Processing capture %d/%d, name: '%s', node type: '%s'", i + 1, match.capture_count,
                 capture_name, node_type);
-      LOG_DEBUG("Capture node range: start_byte=%u, end_byte=%u", start_byte, end_byte);
+      if (enable_logging) log_debug("Capture node range: start_byte=%u, end_byte=%u", start_byte, end_byte);
 
       if (strstr(capture_name, "function") || strstr(capture_name, "class") ||
           strstr(capture_name, "method") || strstr(capture_name, "variable") ||
@@ -707,11 +707,11 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
  */
 static void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
                           ASTNode *ast_root, ASTNode **node_map) {
-  LOG_DEBUG("Entered process_query for query_type: %s", query_type ? query_type : "NULL");
+  if (enable_logging) log_debug("Entered process_query for query_type: %s", query_type ? query_type : "NULL");
 
   // If query manager isn't available, AST generation should fail
   if (!ctx->q_manager) {
-    LOG_ERROR("No query manager available");
+    if (enable_logging) log_error("No query manager available");
     parser_set_error(ctx, -1, "No query manager available for AST generation");
     return;
   }
@@ -844,7 +844,7 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
     return ast_root;
   }
   if (ctx && ctx->filename && ctx->source_code && is_hello_world_test(ctx)) {
-    LOG_DEBUG("Detected hello world test - applying test specific adaptations");
+    if (enable_logging) log_debug("Detected hello world test - applying test specific adaptations");
     ast_root = adapt_hello_world_test(ast_root, ctx);
     if (getenv("SCOPEMUX_RUNNING_C_EXAMPLE_TESTS") != NULL) {
       return ast_root;
@@ -867,9 +867,9 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
  * 7. Final validation and return
  */
 ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
-  LOG_DEBUG("Entered ts_tree_to_ast");
+  if (enable_logging) log_debug("Entered ts_tree_to_ast");
   if (ts_node_is_null(root_node) || !ctx) {
-    LOG_ERROR("Invalid arguments to ts_tree_to_ast: root_node is null=%d, ctx=%p",
+    if (enable_logging) log_error("Invalid arguments to ts_tree_to_ast: root_node is null=%d, ctx=%p",
               ts_node_is_null(root_node), (void *)ctx);
     parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
     return NULL;

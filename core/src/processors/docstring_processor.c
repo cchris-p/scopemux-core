@@ -8,6 +8,9 @@
  */
 
 #include "../../include/scopemux/processors/docstring_processor.h"
+
+// File-level logging toggle. Set to true to enable logs for this file.
+static bool enable_logging = false;
 #include "../../include/scopemux/logging.h"
 
 #include <stdlib.h>
@@ -75,7 +78,7 @@ void associate_docstrings_with_nodes(ASTNode *ast_root, ASTNode **docstring_node
   // Create array to hold docstring info
   DocstringInfo *docstrings = malloc(sizeof(DocstringInfo) * count);
   if (!docstrings) {
-    LOG_ERROR("Failed to allocate memory for docstring association");
+    if (enable_logging) log_error("Failed to allocate memory for docstring association");
     return;
   }
 
@@ -158,14 +161,14 @@ void process_docstrings(ASTNode *ast_root, ParserContext *ctx) {
     return;
   }
 
-  LOG_DEBUG("Processing docstrings");
+  if (enable_logging) log_debug("Processing docstrings");
 
   // Find and separate docstring nodes
   size_t doc_count = 0;
   ASTNode **docstring_nodes = malloc(sizeof(ASTNode *) * ast_root->num_children);
 
   if (!docstring_nodes) {
-    LOG_ERROR("Failed to allocate memory for docstring processing");
+    if (enable_logging) log_error("Failed to allocate memory for docstring processing");
     return;
   }
 
@@ -178,10 +181,10 @@ void process_docstrings(ASTNode *ast_root, ParserContext *ctx) {
   }
 
   if (doc_count > 0) {
-    LOG_DEBUG("Found %zu docstrings to process", doc_count);
+    if (enable_logging) log_debug("Found %zu docstrings to process", doc_count);
     associate_docstrings_with_nodes(ast_root, docstring_nodes, doc_count);
   } else {
-    LOG_DEBUG("No docstrings found to process");
+    if (enable_logging) log_debug("No docstrings found to process");
   }
 
   free(docstring_nodes);

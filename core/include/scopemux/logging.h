@@ -1,17 +1,24 @@
 #ifndef SCOPEMUX_LOGGING_H
 #define SCOPEMUX_LOGGING_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
-// Global toggle for logging. Define this in one .c file (e.g., main or test harness)
-extern int logging_enabled;
+// Log levels
+typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR } LogLevel;
 
-#define LOG_DEBUG(fmt, ...)                                                                        \
-  do {                                                                                             \
-    if (logging_enabled)                                                                           \
-      fprintf(stderr, "DIRECT DEBUG: " fmt "\n", ##__VA_ARGS__);                                   \
-  } while (0)
+// Centralized logging API
+bool log_init(LogLevel level, const char *log_path);
+void log_cleanup(void);
+void log_set_level(LogLevel level);
 
-#define LOG_ERROR(fmt, ...) fprintf(stderr, "DIRECT ERROR: " fmt "\n", ##__VA_ARGS__)
+void log_debug(const char *format, ...);
+void log_info(const char *format, ...);
+void log_warning(const char *format, ...);
+void log_error(const char *format, ...);
+
+// Optional: Per-file logging toggle pattern
+// static int file_logging_enabled = 1; // in your .c file
+// if (file_logging_enabled) log_debug(...);
 
 #endif // SCOPEMUX_LOGGING_H

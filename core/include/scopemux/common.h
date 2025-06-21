@@ -31,18 +31,7 @@ void *memory_pool_init(size_t size);
 void *memory_pool_alloc(void *pool, size_t size);
 void memory_pool_free(void *pool);
 
-/**
- * @brief Logging functions
- */
-typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR } LogLevel;
-
-bool log_init(LogLevel level, const char *log_path);
-void log_cleanup(void);
-void log_set_level(LogLevel level);
-void log_message(LogLevel level, const char *format, ...);
-void log_debug(const char *format, ...);
-void log_info(const char *format, ...);
-void log_warning(const char *format, ...);
-void log_error(const char *format, ...);
+/* Logging API is provided by logging.h */
+#include "./logging.h"
 
 #endif /* SCOPEMUX_COMMON_H */

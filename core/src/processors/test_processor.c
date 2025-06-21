@@ -8,6 +8,9 @@
  */
 
 #include "../../include/scopemux/processors/test_processor.h"
+
+// File-level logging toggle. Set to true to enable logs for this file.
+static bool enable_logging = false;
 #include "../../include/scopemux/logging.h"
 
 #include <stdlib.h>
@@ -75,16 +78,16 @@ bool is_variables_loops_conditions_test(ParserContext *ctx) {
     char snippet[101];
     strncpy(snippet, ctx->source_code, 100);
     snippet[100] = '\0';
-    LOG_DEBUG("variables_loops_conditions.c source code snippet: %.100s", snippet);
+    if (enable_logging) log_debug("variables_loops_conditions.c source code snippet: %.100s", snippet);
   }
 
   // Check for a robust marker in the source code
   if (!ctx->source_code || !strstr(ctx->source_code, "variables_loops_conditions")) {
-    LOG_DEBUG("variables_loops_conditions.c marker not found in source code");
+    if (enable_logging) log_debug("variables_loops_conditions.c marker not found in source code");
     return false;
   }
 
-  LOG_DEBUG("Detected variables_loops_conditions.c test case");
+  if (enable_logging) log_debug("Detected variables_loops_conditions.c test case");
   return true;
 }
 
@@ -97,10 +100,10 @@ bool is_variables_loops_conditions_test(ParserContext *ctx) {
  * @return The modified AST root
  */
 ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext *ctx) {
-  LOG_DEBUG("Adapting variables_loops_conditions.c test AST");
+  if (enable_logging) log_debug("Adapting variables_loops_conditions.c test AST");
 
   if (!ast_root) {
-    LOG_ERROR("Cannot adapt NULL AST root");
+    if (enable_logging) log_error("Cannot adapt NULL AST root");
     return NULL;
   }
 
@@ -121,7 +124,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // Allocate new children array for 12 nodes
   ast_root->children = calloc(12, sizeof(ASTNode*));
   if (!ast_root->children) {
-    LOG_ERROR("Failed to allocate children array for variables_loops_conditions.c root node");
+    if (enable_logging) log_error("Failed to allocate children array for variables_loops_conditions.c root node");
     return ast_root;
   }
 
@@ -188,9 +191,9 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
 
   ast_root->num_children = 5;
 
-  LOG_DEBUG("variables_loops_conditions.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu", ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
+  if (enable_logging) log_debug("variables_loops_conditions.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu", ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
   for (size_t i = 0; i < ast_root->num_children; ++i) {
-    LOG_DEBUG("  child[%zu]: type=%d, name=%s, qualified_name=%s", i, ast_root->children[i]->type, ast_root->children[i]->name, ast_root->children[i]->qualified_name);
+    if (enable_logging) log_debug("  child[%zu]: type=%d, name=%s, qualified_name=%s", i, ast_root->children[i]->type, ast_root->children[i]->name, ast_root->children[i]->qualified_name);
   }
 
   // Use the same literal \n approach for consistency
@@ -203,7 +206,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
     strcat(main_docstring_text, main_doc_part2);
     main_func->docstring = main_docstring_text;
   } else {
-    LOG_ERROR("Failed to allocate memory for main function docstring");
+    if (enable_logging) log_error("Failed to allocate memory for main function docstring");
     main_func->docstring = NULL;
   }
   main_func->range.start.line = 20;
@@ -213,7 +216,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   main_func->raw_content = strdup("int main() {\n  // ... main function content ... \n}");
   ast_node_add_child(ast_root, main_func);
 
-  LOG_DEBUG("Successfully created variables_loops_conditions test AST structure with %zu children",
+  if (enable_logging) log_debug("Successfully created variables_loops_conditions test AST structure with %zu children",
             ast_root->num_children);
 
   // Now populate main_func->children with 12 children as per expected JSON
@@ -299,24 +302,24 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
  */
 ASTNode *apply_test_adaptations(ASTNode *ast_root, ParserContext *ctx) {
   if (!ast_root || !ctx) {
-    LOG_DEBUG("Missing AST root or context, cannot apply test adaptations");
+    if (enable_logging) log_debug("Missing AST root or context, cannot apply test adaptations");
     return ast_root;
   }
 
   if (!is_test_environment()) {
-    LOG_DEBUG("Not in test environment, skipping test adaptations");
+    if (enable_logging) log_debug("Not in test environment, skipping test adaptations");
     return ast_root;
   }
 
   // Apply specific test adaptations
   if (is_hello_world_test(ctx)) {
-    LOG_DEBUG("Detected hello_world.c test case, applying special adaptations");
+    if (enable_logging) log_debug("Detected hello_world.c test case, applying special adaptations");
     return adapt_hello_world_test(ast_root, ctx);
   } else if (is_variables_loops_conditions_test(ctx)) {
-    LOG_DEBUG("Detected variables_loops_conditions.c test case, applying specific adaptations");
+    if (enable_logging) log_debug("Detected variables_loops_conditions.c test case, applying specific adaptations");
     return adapt_variables_loops_conditions_test(ast_root, ctx);
   } else {
-    LOG_DEBUG("No test adaptation applied: filename=%s, env=%d", ctx->filename ? ctx->filename : "(null)", is_test_environment());
+    if (enable_logging) log_debug("No test adaptation applied: filename=%s, env=%d", ctx->filename ? ctx->filename : "(null)", is_test_environment());
   }
   return ast_root;
 }
@@ -333,7 +336,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
     return ast_root;
   }
 
-  LOG_DEBUG("Applying Hello World test adaptations");
+  if (enable_logging) log_debug("Applying Hello World test adaptations");
 
   // First extract the base filename
   const char *base_filename = "hello_world.c";
@@ -374,7 +377,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   // Create a new main function node
   ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main");
   if (!main_func) {
-    LOG_ERROR("Failed to create main function node");
+    if (enable_logging) log_error("Failed to create main function node");
     return ast_root;
   }
 
@@ -395,7 +398,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
     strcat(main_docstring, docstr_part2);
     main_func->docstring = main_docstring;
   } else {
-    LOG_ERROR("Failed to allocate memory for hello world main docstring");
+    if (enable_logging) log_error("Failed to allocate memory for hello world main docstring");
     main_func->docstring = NULL;
   }
 
@@ -414,15 +417,15 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   }
   ast_root->children = calloc(1, sizeof(ASTNode*));
   if (!ast_root->children) {
-    LOG_ERROR("Failed to allocate children array for hello_world.c root node");
+    if (enable_logging) log_error("Failed to allocate children array for hello_world.c root node");
     return ast_root;
   }
   ast_root->children[0] = main_func;
   ast_root->num_children = 1;
   main_func->parent = ast_root;
 
-  LOG_DEBUG("hello_world.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu", ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
-  LOG_DEBUG("hello_world.c test AST: main node type=%d, name=%s, qualified_name=%s", main_func->type, main_func->name, main_func->qualified_name);
+  if (enable_logging) log_debug("hello_world.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu", ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
+  if (enable_logging) log_debug("hello_world.c test AST: main node type=%d, name=%s, qualified_name=%s", main_func->type, main_func->name, main_func->qualified_name);
 
   return ast_root;
 }
