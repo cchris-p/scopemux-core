@@ -409,7 +409,27 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
         valid = false;
       } else if (strcmp(expected_doc, node->docstring) != 0) {
         cr_log_error("%s: Docstring mismatch", node_path);
-        // Don't print full docstrings as they could be very long
+        // Print hexdump of both expected and actual docstrings to help debug
+        cr_log_error("Expected docstring length: %zu", strlen(expected_doc));
+        cr_log_error("Actual docstring length: %zu", strlen(node->docstring));
+        
+        // Print first 50 chars in both strings for comparison
+        int max_print = 50; 
+        int i;
+        
+        cr_log_error("Expected docstring bytes:");
+        for (i = 0; i < strlen(expected_doc) && i < max_print; i++) {
+            cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)expected_doc[i], 
+                     (unsigned char)expected_doc[i], 
+                     (expected_doc[i] >= 32 && expected_doc[i] <= 126) ? expected_doc[i] : '?');
+        }
+        
+        cr_log_error("Actual docstring bytes:");
+        for (i = 0; i < strlen(node->docstring) && i < max_print; i++) {
+            cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)node->docstring[i], 
+                     (unsigned char)node->docstring[i], 
+                     (node->docstring[i] >= 32 && node->docstring[i] <= 126) ? node->docstring[i] : '?');
+        }
         valid = false;
       }
     }

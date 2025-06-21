@@ -78,6 +78,9 @@ set(PARSER_SOURCES
     src/parser/parser.c
     src/parser/tree_sitter_integration.c
     # src/parser/ir_generator.c  # Commented out missing file
+    src/processors/test_processor.c
+    src/processors/ast_post_processor.c
+    src/processors/docstring_processor.c
 )
 
 set(CONTEXT_ENGINE_SOURCES

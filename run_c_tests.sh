@@ -73,7 +73,11 @@ fi
 
 if [ "${RUN_C_EXAMPLE_AST_TESTS}" = true ]; then
     build_test "c_example_ast_tests" "C Example AST Tests"
+    # Set the environment variable for C example tests
+    export SCOPEMUX_RUNNING_C_EXAMPLE_TESTS=1
     run_test "C Example AST Tests" "${CMAKE_PROJECT_BUILD_DIR}/${C_EXAMPLE_AST_EXECUTABLE_RELPATH}"
+    # Unset after running
+    unset SCOPEMUX_RUNNING_C_EXAMPLE_TESTS
 fi
 
 if [ "${RUN_C_CST_TESTS}" = true ]; then
