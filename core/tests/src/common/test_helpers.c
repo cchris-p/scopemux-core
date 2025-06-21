@@ -1,4 +1,8 @@
 #include "../../include/test_helpers.h"
+#include "../../../include/scopemux/logging.h"
+
+// Centralized logging toggle for all test executables
+int logging_enabled = 0;
 #include <errno.h>
 #include <unistd.h>
 
@@ -12,9 +16,9 @@ char *read_test_file(const char *language, const char *category, const char *fil
   
   fprintf(stderr, "DEBUG: read_test_file called for %s/%s/%s\n", language, category, file_name);
   
-  char filepath[512];
-  char project_root_path[512] = "";
-  char cwd_safe[512] = "";
+  char filepath[1024];
+  char project_root_path[1024] = "";
+  char cwd_safe[1024] = "";
   FILE *f = NULL;
   
   // First try using PROJECT_ROOT_DIR environment variable

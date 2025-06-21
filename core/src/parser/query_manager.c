@@ -4,7 +4,32 @@
  *
  * This file implements the functionality for loading, compiling, and caching
  * Tree-sitter queries from .scm files.
+ *
+ * Debug Control:
+ * - DEBUG_MODE: Controls general test-focused debugging messages
+ * - DIRECT_DEBUG_MODE: Controls verbose query loading and execution diagnostics
+ * - QUERY_PATH_DEBUG_MODE: Controls query path resolution debugging messages
+ *
+ * The debug mechanism operates on three levels:
+ * 1. Standard DEBUG_MODE (defined in test files) - Controls basic test diagnostics
+ * 2. DIRECT_DEBUG_MODE - Controls detailed parsing and query execution information
+ * 3. QUERY_PATH_DEBUG_MODE - Controls query path resolution messages
+ *
+ * To enable detailed diagnostics during query loading and compilation, set
+ * DIRECT_DEBUG_MODE to true. This will show comprehensive information about query
+ * processing and execution.
+ *
+ * For query path resolution diagnostics only, set QUERY_PATH_DEBUG_MODE to true.
+ * This will show the paths being tried when resolving query files.
  */
+
+// Controls detailed debug output from the query manager
+// Only enable temporarily when diagnosing issues with query loading or compilation
+#define DIRECT_DEBUG_MODE false
+
+// Controls debugging output for query path resolution
+// Shows paths attempted when loading .scm query files
+#define QUERY_PATH_DEBUG_MODE false
 
 #define _POSIX_C_SOURCE 200809L // For strdup
 
@@ -207,7 +232,23 @@ static char *construct_query_path(const QueryManager *manager, const char *langu
   }
 
   // Format the path string
+  // First try project root relative path
   snprintf(full_path, path_len, "%s/%s/%s.scm", manager->queries_dir, language_name, query_name);
+
+  // Debug path construction - only shown when query path debugging is enabled
+  if (QUERY_PATH_DEBUG_MODE) {
+    fprintf(stderr, "Trying query path: %s\n", full_path);
+  }
+
+  // Check if file exists
+  if (access(full_path, F_OK) == -1) {
+    // Try with /home/matrillo/apps/scopemux/queries/
+    snprintf(full_path, path_len, "/home/matrillo/apps/scopemux/queries/%s/%s.scm", language_name,
+             query_name);
+    if (QUERY_PATH_DEBUG_MODE) {
+      fprintf(stderr, "Trying alternative query path: %s\n", full_path);
+    }
+  }
 
   return full_path;
 }
@@ -419,10 +460,13 @@ static bool cache_query(QueryManager *manager, int lang_idx, const char *query_n
  */
 const TSQuery *query_manager_get_query(QueryManager *manager, LanguageType language,
                                        const char *query_name) {
-  // Direct debug output
-  fprintf(stderr, "DIRECT DEBUG: Entered query_manager_get_query for language %d, query_name: %s\n",
-          language, query_name ? query_name : "NULL");
-  fflush(stderr);
+  // Direct debug output - only shown when debug mode is enabled
+  if (DIRECT_DEBUG_MODE) {
+    fprintf(stderr,
+            "DIRECT DEBUG: Entered query_manager_get_query for language %d, query_name: %s\n",
+            language, query_name ? query_name : "NULL");
+    fflush(stderr);
+  }
   if (!manager || !query_name || language == LANG_UNKNOWN) {
     return NULL;
   }

@@ -5,9 +5,9 @@ rm -rf build
 mkdir -p build
 
 # Python Language Test Toggles
-RUN_PYTHON_BASIC_AST_TESTS=false
-RUN_PYTHON_EXAMPLE_AST_TESTS=false
-RUN_PYTHON_CST_TESTS=false
+RUN_PYTHON_BASIC_AST_TESTS=true
+RUN_PYTHON_EXAMPLE_AST_TESTS=true
+RUN_PYTHON_CST_TESTS=true
 
 # Project root directory (assuming this script is in the root)
 PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)

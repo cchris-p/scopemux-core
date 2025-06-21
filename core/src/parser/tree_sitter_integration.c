@@ -18,7 +18,19 @@
  * across all supported languages while preserving language-specific details
  * in node attributes. This enables consistent analysis and transformation
  * tools to work across multiple languages.
+ *
+ * Debug Control:
+ * - DEBUG_MODE: Controls general test-focused debugging messages
+ * - DIRECT_DEBUG_MODE: Controls verbose Tree-sitter parsing diagnostics
+ *
+ * Set DIRECT_DEBUG_MODE to true to display detailed diagnostics during Tree-sitter
+ * processing, query execution, and AST construction. This is primarily useful when
+ * debugging parser issues or when implementing new language support.
  */
+
+// Controls verbose Tree-sitter integration debugging output
+// Set to true only when debugging parser issues, as it generates extensive output
+#define DIRECT_DEBUG_MODE false
 
 // Define _POSIX_C_SOURCE to make strdup available
 #define _POSIX_C_SOURCE 200809L
@@ -27,8 +39,10 @@
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/query_manager.h"
 #include <stdio.h>
+#include "../../include/scopemux/logging.h"
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 // Forward declarations for Tree-sitter language functions from vendor library
 extern const TSLanguage *tree_sitter_c(void);
@@ -154,6 +168,79 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
 // between tree-sitter node types and AST node types.
 
 /**
+ * Helper to extract a full signature including return type for C-family languages
+ * @param func_node The function definition node
+ * @param source_code The source code string
+ * @return A dynamically allocated string containing the full signature
+ */
+static char *extract_full_signature(TSNode func_node, const char *source_code) {
+  // Look for the return type (primitive_type node)
+  TSNode return_type_node = ts_node_named_child(func_node, 0);
+  
+  if (ts_node_is_null(return_type_node)) {
+    return strdup("()");  // Fallback
+  }
+  
+  // Get return type text
+  const char *return_type = NULL;
+  if (strcmp(ts_node_type(return_type_node), "primitive_type") == 0) {
+    return_type = ts_node_to_string(return_type_node, source_code);
+  }
+  
+  // Look for function declarator which contains the function name and parameters
+  TSNode declarator_node = ts_node_named_child(func_node, 1);
+  if (ts_node_is_null(declarator_node)) {
+    free((void*)return_type);
+    return strdup("()");  // Fallback
+  }
+  
+  // Extract parameter list
+  const char *params = NULL;
+  for (uint32_t i = 0; i < ts_node_named_child_count(declarator_node); i++) {
+    TSNode child = ts_node_named_child(declarator_node, i);
+    if (strcmp(ts_node_type(child), "parameter_list") == 0) {
+      params = ts_node_to_string(child, source_code);
+      break;
+    }
+  }
+  
+  // Get function name
+  const char *func_name = NULL;
+  for (uint32_t i = 0; i < ts_node_named_child_count(declarator_node); i++) {
+    TSNode child = ts_node_named_child(declarator_node, i);
+    if (strcmp(ts_node_type(child), "identifier") == 0) {
+      func_name = ts_node_to_string(child, source_code);
+      break;
+    }
+  }
+  
+  // Create the full signature
+  char *signature = NULL;
+  if (return_type && func_name && params) {
+    size_t sig_len = strlen(return_type) + strlen(func_name) + strlen(params) + 3; // Space + () + null
+    signature = malloc(sig_len);
+    if (signature) {
+      snprintf(signature, sig_len, "%s %s%s", return_type, func_name, params);
+    }
+  } else if (return_type && func_name) {
+    size_t sig_len = strlen(return_type) + strlen(func_name) + 4; // Space + () + null
+    signature = malloc(sig_len);
+    if (signature) {
+      snprintf(signature, sig_len, "%s %s()", return_type, func_name);
+    }
+  } else {
+    signature = strdup("()"); // Fallback
+  }
+  
+  // Free intermediate allocations
+  free((void*)return_type);
+  free((void*)func_name);
+  free((void*)params);
+  
+  return signature;
+}
+
+/**
  * @brief Process Tree-sitter query matches and build standardized AST nodes
  *
  * This function is the heart of the language-agnostic AST generation process.
@@ -177,40 +264,24 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
  */
 static void process_query_matches(ParserContext *ctx, const TSQuery *query, const char *query_type,
                                   TSQueryCursor *cursor, ASTNode *ast_root, ASTNode **node_map) {
-  // Direct debug output that will always be visible
-  fprintf(stderr, "DIRECT DEBUG: Entered process_query_matches for query_type: %s\n",
-          query_type ? query_type : "NULL");
-  fflush(stderr);
+  LOG_DEBUG("Entered process_query_matches for query_type: %s", query_type ? query_type : "NULL");
 
   // Safety check for NULL pointers
   if (!ctx || !query || !query_type || !cursor || !ast_root) {
-    fprintf(stderr,
-            "DIRECT DEBUG ERROR: NULL pointer passed to process_query_matches: ctx=%p, query=%p, "
-            "query_type=%p, cursor=%p, ast_root=%p\n",
-            (void *)ctx, (void *)query, (void *)query_type, (void *)cursor, (void *)ast_root);
-    fflush(stderr);
+    LOG_ERROR("NULL pointer passed to process_query_matches: ctx=%p, query=%p, query_type=%p, cursor=%p, ast_root=%p", (void *)ctx, (void *)query, (void *)query_type, (void *)cursor, (void *)ast_root);
     return;
   }
   // Add detailed query info for debugging
   uint32_t pattern_count = ts_query_pattern_count(query);
   uint32_t capture_count = ts_query_capture_count(query);
   uint32_t string_count = ts_query_string_count(query);
-
-  fprintf(stderr, "DIRECT DEBUG: Query details - patterns: %d, captures: %d, strings: %d\n",
-          pattern_count, capture_count, string_count);
-  fflush(stderr);
+  LOG_DEBUG("Query details - patterns: %d, captures: %d, strings: %d", pattern_count, capture_count, string_count);
 
   // Iterate through all query matches using the cursor
   TSQueryMatch match;
   while (ts_query_cursor_next_match(cursor, &match)) {
-    fprintf(stderr, "DIRECT DEBUG: Processing match with %d captures for query type: %s\n",
-            match.capture_count, query_type ? query_type : "NULL");
-    fflush(stderr);
-
-    // Log more details about this match
-    fprintf(stderr, "DIRECT DEBUG: Match details - id: %d, pattern_index: %d\n", match.id,
-            match.pattern_index);
-    fflush(stderr);
+    LOG_DEBUG("Processing match with %d captures for query type: %s", match.capture_count, query_type ? query_type : "NULL");
+    LOG_DEBUG("Match details - id: %d, pattern_index: %d", match.id, match.pattern_index);
     TSNode target_node = {0};
     char *node_name = NULL;
     TSNode body_node __attribute__((unused)) = {0};
@@ -250,13 +321,9 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
 
     // Process captures to populate node information
     for (uint32_t i = 0; i < match.capture_count; ++i) {
-      fprintf(stderr,
-              "DIRECT DEBUG: Processing capture index %d (safety check before node access)\n", i);
-      fflush(stderr);
-
+      LOG_DEBUG("Processing capture index %d (safety check before node access)", i);
       TSNode captured_node = match.captures[i].node;
-      fprintf(stderr, "DIRECT DEBUG: Successfully got captured_node for index %d\n", i);
-      fflush(stderr);
+      LOG_DEBUG("Successfully got captured_node for index %d", i);
 
       uint32_t capture_index = match.captures[i].index;
 
@@ -267,16 +334,20 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
       uint32_t start_byte = is_null ? 0 : ts_node_start_byte(node);
       uint32_t end_byte = is_null ? 0 : ts_node_end_byte(node);
 
-      fprintf(
-          stderr,
-          "DIRECT DEBUG: Captured node details - index: %d, is_null: %d, type: %s, bytes: %d-%d\n",
-          capture_index, is_null, node_type ? node_type : "UNKNOWN", start_byte, end_byte);
-      fflush(stderr);
+      if (DIRECT_DEBUG_MODE) {
+        fprintf(
+            stderr,
+            "DIRECT DEBUG: Captured node details - index: %d, is_null: %d, type: %s, bytes: %d-%d\n",
+            capture_index, is_null, node_type ? node_type : "UNKNOWN", start_byte, end_byte);
+        fflush(stderr);
+      }
 
       // Determine capture name directly from node type instead of using a helper function
-      fprintf(stderr, "DIRECT DEBUG: Determining capture name for index %d from node type\n",
-              capture_index);
-      fflush(stderr);
+      if (DIRECT_DEBUG_MODE) {
+        fprintf(stderr, "DIRECT DEBUG: Determining capture name for index %d from node type\n",
+                capture_index);
+        fflush(stderr);
+      }
 
       // WORKAROUND: Skip ts_query_capture_name_for_id entirely - use hardcoded names
       // that match what AST node creation expects in lines 305-347
@@ -286,16 +357,19 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
       // Handle primary node types for target_node creation
       if (strcmp(node_type, "function_definition") == 0) {
         capture_name = "function";
-      } else if (strcmp(node_type, "struct_specifier") == 0) {
-        capture_name = "struct";
-      } else if (strcmp(node_type, "enum_specifier") == 0) {
-        capture_name = "enum";
-      } else if (strcmp(node_type, "union_specifier") == 0) {
-        capture_name = "union";
+      } else if (strstr(node_type, "comment") != NULL) {
+        capture_name = "docstring";
+      } else if (strstr(node_type, "class") != NULL) {
+        capture_name = "class";
+      } else if (strstr(node_type, "method") != NULL) {
+        capture_name = "method";
       } else if (strcmp(node_type, "typedef") == 0 || strstr(node_type, "typedef") != NULL) {
         capture_name = "typedef";
-      } else if (strcmp(node_type, "preproc_include") == 0) {
-        capture_name = "include";
+      } else if (strcmp(node_type, "struct_specifier") == 0 || strstr(node_type, "struct_specifier") != NULL) {
+        capture_name = "struct";
+        // Explicitly mark as struct type - note that node_type is a string identifier, not an enum
+        // Store "struct" string rather than enum NODE_STRUCT which would cause type mismatch
+        node_type = "struct";
       } else if (strstr(node_type, "identifier") != NULL) {
         // Identifiers are typically names
         capture_name = "name";
@@ -313,19 +387,10 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
         capture_name = "unknown";
       }
 
-      fprintf(stderr, "DIRECT DEBUG: Using hardcoded capture_name='%s' for node_type='%s'\n",
-              capture_name, node_type);
-      fflush(stderr);
-      fprintf(stderr, "DIRECT DEBUG: Using capture_name='%s' for node type='%s'\n",
-              capture_name ? capture_name : "NULL", node_type ? node_type : "NULL");
-      fflush(stderr);
-
-      fprintf(stderr, "DIRECT DEBUG: Processing capture %d/%d, name: '%s', node type: '%s'\n",
-              i + 1, match.capture_count, capture_name ? capture_name : "NULL",
-              ts_node_is_null(captured_node) ? "NULL_NODE" : ts_node_type(captured_node));
-      fprintf(stderr, "DIRECT DEBUG: Capture node range: start_byte=%u, end_byte=%u\n",
-              ts_node_start_byte(captured_node), ts_node_end_byte(captured_node));
-      fflush(stderr);
+      LOG_DEBUG("Using hardcoded capture_name='%s' for node_type='%s'", capture_name, node_type);
+      LOG_DEBUG("Using capture_name='%s' for node type='%s'", capture_name, node_type);
+      LOG_DEBUG("Processing capture %d/%d, name: '%s', node type: '%s'", i + 1, match.capture_count, capture_name, node_type);
+      LOG_DEBUG("Capture node range: start_byte=%u, end_byte=%u", start_byte, end_byte);
 
       if (strstr(capture_name, "function") || strstr(capture_name, "class") ||
           strstr(capture_name, "method") || strstr(capture_name, "variable") ||
@@ -335,19 +400,25 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
           // C-specific captures
           strstr(capture_name, "struct") || strstr(capture_name, "union") ||
           strstr(capture_name, "enum") || strstr(capture_name, "typedef") ||
-          strstr(capture_name, "include") || strstr(capture_name, "macro")) {
+          strstr(capture_name, "include") || strstr(capture_name, "macro") ||
+          // Catch the struct_specifier directly
+          strcmp(node_type, "struct_specifier") == 0) {
         target_node = captured_node;
       } else if (strcmp(capture_name, "name") == 0) {
         // Free previous name if we've captured multiple names
         if (node_name) {
           free(node_name);
         }
-        fprintf(stderr, "DIRECT DEBUG: About to call ts_node_to_string for node_name\n");
-        fflush(stderr);
+        if (DIRECT_DEBUG_MODE) {
+          fprintf(stderr, "DIRECT DEBUG: About to call ts_node_to_string for node_name\n");
+          fflush(stderr);
+        }
         node_name = ts_node_to_string(captured_node, ctx->source_code);
-        fprintf(stderr, "DIRECT DEBUG: ts_node_to_string returned node_name='%s'\n",
-                node_name ? node_name : "NULL");
-        fflush(stderr);
+        if (DIRECT_DEBUG_MODE) {
+          fprintf(stderr, "DIRECT DEBUG: ts_node_to_string returned node_name='%s'\n",
+                  node_name ? node_name : "NULL");
+          fflush(stderr);
+        }
       } else if (strcmp(capture_name, "body") == 0) {
         body_node = captured_node;
       } else if (strcmp(capture_name, "params") == 0 || strcmp(capture_name, "parameters") == 0) {
@@ -356,12 +427,16 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
         if (docstring) {
           free(docstring);
         }
-        fprintf(stderr, "DIRECT DEBUG: About to call ts_node_to_string for docstring\n");
-        fflush(stderr);
+        if (DIRECT_DEBUG_MODE) {
+          fprintf(stderr, "DIRECT DEBUG: About to call ts_node_to_string for docstring\n");
+          fflush(stderr);
+        }
         docstring = ts_node_to_string(captured_node, ctx->source_code);
-        fprintf(stderr, "DIRECT DEBUG: ts_node_to_string returned docstring='%s'\n",
-                docstring ? docstring : "NULL");
-        fflush(stderr);
+        if (DIRECT_DEBUG_MODE) {
+          fprintf(stderr, "DIRECT DEBUG: ts_node_to_string returned docstring='%s'\n",
+                  docstring ? docstring : "NULL");
+          fflush(stderr);
+        }
       } else if (strcmp(capture_name, "class_name") == 0 && strcmp(query_type, "methods") == 0) {
         // Use node_map to find the parent class for methods
         char *class_name = ts_node_to_string(captured_node, ctx->source_code);
@@ -394,13 +469,16 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
       }
     }
 
-    // DIRECT DEBUG: Check the state before node creation
-    fprintf(stderr,
-            "DIRECT DEBUG: Before node creation - node_name='%s', target_node_is_null=%d, "
-            "parent_node=%p, ast_root=%p\n",
-            node_name ? node_name : "NULL", ts_node_is_null(target_node), (void *)parent_node,
-            (void *)ast_root);
-    fflush(stderr);
+    // Check the state before node creation
+    if (DIRECT_DEBUG_MODE) {
+      fprintf(
+              stderr,
+              "DIRECT DEBUG: Before node creation - node_name='%s', target_node_is_null=%d, "
+              "parent_node=%p, ast_root=%p\n",
+              node_name ? node_name : "NULL", ts_node_is_null(target_node), (void *)parent_node,
+              (void *)ast_root);
+      fflush(stderr);
+    }
 
     if (node_name && !ts_node_is_null(target_node)) {
 // Print debug info about what we're trying to create
@@ -410,27 +488,34 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
 #endif
 
       // Debug before node creation
-      fprintf(stderr, "DIRECT DEBUG: About to create AST node, type=%d, name='%s'\n", node_type,
-              node_name ? node_name : "NULL");
-      fflush(stderr);
+      if (DIRECT_DEBUG_MODE) {
+        fprintf(stderr, "DIRECT DEBUG: About to create AST node, type=%d, name='%s'\n", node_type,
+                node_name ? node_name : "NULL");
+        fflush(stderr);
+      }
 
       // ast_node_new internally duplicates node_name, so we need to free our copy after
       ASTNode *ast_node = ast_node_new(node_type, node_name);
       if (!ast_node) {
         // Failed to create node
-        fprintf(stderr, "DIRECT DEBUG ERROR: Failed to create AST node for '%s'\n",
-                node_name ? node_name : "NULL");
-        fflush(stderr);
+        if (DIRECT_DEBUG_MODE) {
+          fprintf(stderr, "DIRECT DEBUG ERROR: Failed to create AST node for '%s'\n",
+                  node_name ? node_name : "NULL");
+          fflush(stderr);
+        }
         free(node_name);
         free(docstring);
         continue;
       }
 
-      fprintf(stderr,
-              "DIRECT DEBUG: Successfully created AST node %p, name='%s', qualified_name='%s'\n",
-              (void *)ast_node, ast_node->name ? ast_node->name : "NULL",
-              ast_node->qualified_name ? ast_node->qualified_name : "NULL");
-      fflush(stderr);
+      if (DIRECT_DEBUG_MODE) {
+        fprintf(
+                stderr,
+                "DIRECT DEBUG: Successfully created AST node %p, name='%s', qualified_name='%s'\n",
+                (void *)ast_node, ast_node->name ? ast_node->name : "NULL",
+                ast_node->qualified_name ? ast_node->qualified_name : "NULL");
+        fflush(stderr);
+      }
 
       // No longer need our local copy of node_name
       free(node_name);
@@ -452,8 +537,14 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
       ast_node->range.start.column = ts_node_start_point(target_node).column;
       ast_node->range.end.column = ts_node_end_point(target_node).column;
 
-      // Populate signature if params are available
-      if (!ts_node_is_null(params_node)) {
+      // Populate signature correctly with return type included for functions
+      if (strcmp(query_type, "functions") == 0) {
+        // For functions, generate complete signature with return type
+        if (ast_node->signature) {
+          free(ast_node->signature); // Free any previous signature
+        }
+        ast_node->signature = extract_full_signature(target_node, ctx->source_code);
+      } else if (!ts_node_is_null(params_node)) {
         ast_node->signature = ts_node_to_string(params_node, ctx->source_code);
       } else if (node_type == NODE_FUNCTION) {
         // Ensure functions always have at least an empty signature
@@ -597,15 +688,11 @@ static void process_query_matches(ParserContext *ctx, const TSQuery *query, cons
  */
 static void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
                    ASTNode **node_map) {
-  // Direct debug output
-  fprintf(stderr, "DIRECT DEBUG: Entered process_query for query_type: %s\n",
-          query_type ? query_type : "NULL");
-  fflush(stderr);
+  LOG_DEBUG("Entered process_query for query_type: %s", query_type ? query_type : "NULL");
 
   // If query manager isn't available, AST generation should fail
   if (!ctx->q_manager) {
-    fprintf(stderr, "DIRECT DEBUG ERROR: No query manager available\n");
-    fflush(stderr);
+    LOG_ERROR("No query manager available");
     parser_set_error(ctx, -1, "No query manager available for AST generation");
     return;
   }
@@ -643,16 +730,10 @@ static void process_query(const char *query_type, TSNode root_node, ParserContex
  * a common structure for analysis and transformation tools.
  */
 ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
-  // Direct debug output
-  fprintf(stderr, "DIRECT DEBUG: Entered ts_tree_to_ast\n");
-  fflush(stderr);
+  LOG_DEBUG("Entered ts_tree_to_ast");
 
   if (ts_node_is_null(root_node) || !ctx) {
-    fprintf(
-        stderr,
-        "DIRECT DEBUG ERROR: Invalid arguments to ts_tree_to_ast: root_node is null=%d, ctx=%p\n",
-        ts_node_is_null(root_node), (void *)ctx);
-    fflush(stderr);
+    LOG_ERROR("Invalid arguments to ts_tree_to_ast: root_node is null=%d, ctx=%p", ts_node_is_null(root_node), (void *)ctx);
     parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
     return NULL;
   }
@@ -733,174 +814,198 @@ ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
     return ast_root;
   }
 
-  // Post-processing step to create a test-optimized AST structure
-  // Special case handling for C tests to make the test JSON validation pass
-  // This ensures our AST matches exactly the structure expected by the tests
-  
-  // Final processing - special handling for C test files
-  if (ast_root && ctx && ctx->filename) {
-    const char *filename = ctx->filename;
-    fprintf(stderr, "DIRECT DEBUG: Processing file: '%s'\n", filename);
+  // Post-processing step: sort AST nodes by type to ensure consistent ordering
+  // This standardizes the AST structure for all languages and files
+  if (ast_root) {
+    if (DIRECT_DEBUG_MODE) {
+      fprintf(stderr, "DIRECT DEBUG: Post-processing AST for standard ordering\n");
+    }
     
+    const char *filename = ctx && ctx->filename ? ctx->filename : "unknown";
+    // Extract just the base filename for diagnostic purposes
     const char *base_filename = strrchr(filename, '/');
     if (base_filename) {
       base_filename = base_filename + 1;
     } else {
       base_filename = filename;
     }
-    fprintf(stderr, "DIRECT DEBUG: Base filename: '%s'\n", base_filename);
+    LOG_DEBUG("Processing file: '%s'", base_filename);
+    LOG_DEBUG("Applying standard AST node ordering for %s", base_filename);
     
-    // Special handling for files in the C examples/tests directories
-    // Broaden our search to catch various possible paths
-    if (strstr(filename, "/c/") && (strstr(filename, "basic_syntax") || strstr(filename, "hello_world"))) {
-      fprintf(stderr, "DIRECT DEBUG: Applying special C test AST fixups for %s\n", base_filename);
+    // First, update the qualified names for all child nodes to ensure consistency
+    for (size_t i = 0; i < ast_root->num_children; i++) {
+      ASTNode *child = ast_root->children[i];
+      if (!child || !child->name) continue;
       
-      // Special case for hello_world.c - directly modify the AST to match expected JSON
-      if (strcmp(base_filename, "hello_world.c") == 0) {
-        fprintf(stderr, "DIRECT DEBUG: Special case handling for hello_world.c\n");
-        
-        // Test expects exactly 3 nodes in a specific order
-        // Create fresh nodes to replace existing ones
-        
-        // Preserve the root node, but clear children
-        ASTNode *preserved_root = ast_root;
-        size_t num_children_orig = preserved_root->num_children;
-        
-        // Clear and start fresh
-        if (preserved_root->children) {
-          for (size_t i = 0; i < preserved_root->num_children; i++) {
-            // We don't free the old child nodes as they might be referenced elsewhere
-            preserved_root->children[i] = NULL;
-          }
-          preserved_root->num_children = 0;
+      // Free existing qualified name if present
+      if (child->qualified_name) {
+        free(child->qualified_name);
+      }
+      
+      // Set qualified name based on parent's qualified name (basename) and child name
+      if (ast_root->qualified_name) {
+        // Properly format the qualified name as "filename.node_name"
+        child->qualified_name = malloc(strlen(ast_root->qualified_name) + strlen(child->name) + 2);
+        if (child->qualified_name) {
+          sprintf(child->qualified_name, "%s.%s", ast_root->qualified_name, child->name);
         }
-        
-        fprintf(stderr, "DIRECT DEBUG: Original root had %zu children, now cleared\n", num_children_orig);
-        
-        // 1. Create and add docstring node first
-        ASTNode *docstring = ast_node_new(NODE_DOCSTRING, "file_docstring");
-        if (docstring) {
-          docstring->qualified_name = malloc(strlen(base_filename) + 20);
-          sprintf(docstring->qualified_name, "%s.file_docstring", base_filename);
-          
-          // Set direct content
-          docstring->docstring = strdup("@file hello_world.c\n@brief A simple \"Hello, World!\" program in C\n\nThis example demonstrates basic C syntax including:\n- Comments\n- Include directives\n- Function declarations\n- Function definitions\n- Print statements");
-          docstring->raw_content = strdup("/**\n * @file hello_world.c\n * @brief A simple \"Hello, World!\" program in C\n *\n * This example demonstrates basic C syntax including:\n * - Comments\n * - Include directives\n * - Function declarations\n * - Function definitions\n * - Print statements\n */");
-          
-          // Set source range
-          docstring->range.start.line = 1;
-          docstring->range.start.column = 0;
-          docstring->range.end.line = 11;
-          docstring->range.end.column = 3;
-          
-          ast_node_add_child(preserved_root, docstring);
-        }
-        
-        // 2. Create and add include node second
-        ASTNode *include = ast_node_new(NODE_INCLUDE, "stdio_include");
-        if (include) {
-          include->qualified_name = malloc(strlen(base_filename) + 20);
-          sprintf(include->qualified_name, "%s.stdio_include", base_filename);
-          
-          include->raw_content = strdup("#include <stdio.h>");
-          
-          // Set source range
-          include->range.start.line = 13;
-          include->range.start.column = 0;
-          include->range.end.line = 13;
-          include->range.end.column = 19;
-          
-          ast_node_add_child(preserved_root, include);
-        }
-        
-        // 3. Create and add function node last
-        ASTNode *function = ast_node_new(NODE_FUNCTION, "main");
-        if (function) {
-          function->qualified_name = malloc(strlen(base_filename) + 10);
-          sprintf(function->qualified_name, "%s.main", base_filename);
-          
-          function->signature = strdup("int main()");
-          function->docstring = strdup("@brief Program entry point\n@return Exit status code");
-          function->raw_content = strdup("int main() {\n  printf(\"Hello, World!\\n\");\n  return 0;\n}");
-          
-          // Set source range
-          function->range.start.line = 19;
-          function->range.start.column = 0;
-          function->range.end.line = 22;
-          function->range.end.column = 1;
-          
-          ast_node_add_child(preserved_root, function);
-        }
-        
-        fprintf(stderr, "DIRECT DEBUG: Replacement complete - now root has %zu children\n", preserved_root->num_children);
-        
-        // Skip normal AST sorting since we've manually constructed it
-        return preserved_root;
-      } else {
-        // For other test files, just sort the nodes by type
-        fprintf(stderr, "DIRECT DEBUG: Sorting %zu child nodes by type priority\n", ast_root->num_children);
-        fflush(stderr);
-        
-        // Temporary arrays to hold nodes of different types
-        ASTNode **docstring_nodes = calloc(ast_root->num_children, sizeof(ASTNode *));
-        ASTNode **include_nodes = calloc(ast_root->num_children, sizeof(ASTNode *));
-        ASTNode **function_nodes = calloc(ast_root->num_children, sizeof(ASTNode *));
-        ASTNode **other_nodes = calloc(ast_root->num_children, sizeof(ASTNode *));
-        
-        size_t doc_count = 0, inc_count = 0, func_count = 0, other_count = 0;
-        
-        // Categorize nodes by type
-        for (size_t i = 0; i < ast_root->num_children; i++) {
-          ASTNode *child = ast_root->children[i];
-          if (!child) continue;
-          
-          if (child->type == NODE_DOCSTRING) {
-            docstring_nodes[doc_count++] = child;
-          } else if (child->type == NODE_INCLUDE) {
-            include_nodes[inc_count++] = child;
-          } else if (child->type == NODE_FUNCTION) {
-            function_nodes[func_count++] = child;
-          } else {
-            other_nodes[other_count++] = child;
-          }
-        }
-        
-        fprintf(stderr, "DIRECT DEBUG: Categorized nodes - Docstrings: %zu, Includes: %zu, Functions: %zu, Other: %zu\n",
-               doc_count, inc_count, func_count, other_count);
-        fflush(stderr);
-        
-        // Reconstruct children array in order: DOCSTRING -> INCLUDE -> FUNCTION -> OTHER
-        size_t new_index = 0;
-        
-        // Add docstring nodes first
-        for (size_t i = 0; i < doc_count; i++) {
-          ast_root->children[new_index++] = docstring_nodes[i];
-        }
-        
-        // Add include nodes next
-        for (size_t i = 0; i < inc_count; i++) {
-          ast_root->children[new_index++] = include_nodes[i];
-        }
-        
-        // Add function nodes next
-        for (size_t i = 0; i < func_count; i++) {
-          ast_root->children[new_index++] = function_nodes[i];
-        }
-        
-        // Add any other node types last
-        for (size_t i = 0; i < other_count; i++) {
-          ast_root->children[new_index++] = other_nodes[i];
-        }
-        
-        // Free temporary arrays
-        free(docstring_nodes);
-        free(include_nodes);
-        free(function_nodes);
-        free(other_nodes);
       }
     }
+    
+    // Sort nodes by type priority
+    LOG_DEBUG("Sorting %zu child nodes by type priority", ast_root->num_children);
+    
+    // Temporary arrays to hold nodes of different types
+    ASTNode **docstring_nodes = calloc(ast_root->num_children, sizeof(ASTNode *));
+    ASTNode **include_nodes = calloc(ast_root->num_children, sizeof(ASTNode *));
+    ASTNode **function_nodes = calloc(ast_root->num_children, sizeof(ASTNode *));
+    ASTNode **other_nodes = calloc(ast_root->num_children, sizeof(ASTNode *));
+    
+    size_t doc_count = 0, inc_count = 0, func_count = 0, other_count = 0;
+    
+    // Improve docstring association with functions/methods
+    // Use a temporary array to track which nodes should receive docstrings
+    typedef struct {
+      int line;            // Source line number
+      char *docstring;     // Content of the docstring
+      int used;            // Whether this docstring has been used
+    } DocstringInfo;
+    
+    // First pass: collect all docstrings
+    size_t max_docstrings = 100; // Reasonable limit
+    DocstringInfo *docstrings = calloc(max_docstrings, sizeof(DocstringInfo));
+    size_t docstring_count = 0;
+    
+    // Also track which nodes should be removed
+    bool *nodes_to_remove = calloc(ast_root->num_children, sizeof(bool));
+    
+    // Find all docstrings/comments and collect them
+    for (size_t i = 0; i < ast_root->num_children; i++) {
+      ASTNode *child = ast_root->children[i];
+      if (child->type == NODE_COMMENT || child->type == NODE_DOCSTRING) {
+        // Only add if we have space and the node has content
+        if (docstring_count < max_docstrings && child->raw_content) {
+          docstrings[docstring_count].line = child->range.end.line;
+          docstrings[docstring_count].docstring = strdup(child->raw_content);
+          docstrings[docstring_count].used = 0;
+          docstring_count++;
+        }
+        
+        // Mark comments/docstrings to be removed from the root AST
+        nodes_to_remove[i] = true;
+      }
+    }
+    
+    // Second pass: associate docstrings with functions/classes/methods
+    for (size_t i = 0; i < ast_root->num_children; i++) {
+      ASTNode *node = ast_root->children[i];
+      if (node->type == NODE_FUNCTION || node->type == NODE_CLASS || 
+          node->type == NODE_METHOD || node->type == NODE_STRUCT) {
+        // Find the closest preceding docstring
+        uint32_t best_distance = UINT32_MAX;
+        size_t best_index = (size_t)-1;
+        
+        for (size_t j = 0; j < docstring_count; j++) {
+          // Skip docstrings that have been used
+          if (docstrings[j].used) continue;
+          
+          // Check if docstring appears before this node
+          if (docstrings[j].line < node->range.start.line) {
+            uint32_t distance = node->range.start.line - docstrings[j].line;
+            // Only consider docstrings that are close (within 2 lines)
+            if (distance <= 2 && distance < best_distance) {
+              best_distance = distance;
+              best_index = j;
+            }
+          }
+        }
+        
+        // Associate the best docstring with this node
+        if (best_index != (size_t)-1) {
+          // Free any existing docstring
+          if (node->docstring) {
+            free(node->docstring);
+          }
+          node->docstring = strdup(docstrings[best_index].docstring);
+          docstrings[best_index].used = 1; // Mark as used
+        }
+      }
+    }
+    
+    // Cleanup docstring info array
+    for (size_t i = 0; i < docstring_count; i++) {
+      free(docstrings[i].docstring);
+    }
+    free(docstrings);
+    
+    // Remove nodes marked for removal (docstrings/comments that have been processed)
+    size_t new_count = 0;
+    for (size_t i = 0; i < ast_root->num_children; i++) {
+      if (!nodes_to_remove[i]) {
+        // Keep this node
+        if (new_count != i) {
+          ast_root->children[new_count] = ast_root->children[i];
+        }
+        new_count++;
+      } else {
+        // Free the node marked for removal
+        ast_node_free(ast_root->children[i]);
+      }
+    }
+    ast_root->num_children = new_count;
+    free(nodes_to_remove);
+    
+    // Categorize nodes by type
+    for (size_t i = 0; i < ast_root->num_children; i++) {
+      ASTNode *child = ast_root->children[i];
+      if (!child) continue;
+      
+      if (child->type == NODE_DOCSTRING) {
+        docstring_nodes[doc_count++] = child;
+      } else if (child->type == NODE_INCLUDE) {
+        include_nodes[inc_count++] = child;
+      } else if (child->type == NODE_FUNCTION) {
+        function_nodes[func_count++] = child;
+      } else {
+        other_nodes[other_count++] = child;
+      }
+    }
+    
+    LOG_DEBUG("Categorized nodes - Docstrings: %zu, Includes: %zu, Functions: %zu, Other: %zu", doc_count, inc_count, func_count, other_count);
+    
+    // Reconstruct children array in order: DOCSTRING -> INCLUDE -> FUNCTION -> OTHER
+    size_t new_index = 0;
+    
+    // Add docstring nodes first
+    for (size_t i = 0; i < doc_count; i++) {
+      ast_root->children[new_index++] = docstring_nodes[i];
+    }
+    
+    // Add include nodes next
+    for (size_t i = 0; i < inc_count; i++) {
+      ast_root->children[new_index++] = include_nodes[i];
+    }
+    
+    // Add function nodes next
+    for (size_t i = 0; i < func_count; i++) {
+      ast_root->children[new_index++] = function_nodes[i];
+    }
+    
+    // Add other nodes last
+    for (size_t i = 0; i < other_count; i++) {
+      ast_root->children[new_index++] = other_nodes[i];
+    }
+    
+    // Free temporary arrays
+    free(docstring_nodes);
+    free(include_nodes);
+    free(function_nodes);
+    free(other_nodes);
+    
+    LOG_DEBUG("Reordered AST nodes by priority");
   }
-
+  
+  // Return the properly ordered AST with consistent node types and qualified names
   return ast_root;
 }
 

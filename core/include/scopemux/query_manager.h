@@ -45,6 +45,6 @@ void query_manager_free(QueryManager *manager);
  *         could not be found, loaded, or compiled.
  */
 const TSQuery *query_manager_get_query(QueryManager *manager, LanguageType language,
-                                     const char *query_name);
+                                       const char *query_name);
 
 #endif // SCOPEMUX_QUERY_MANAGER_H

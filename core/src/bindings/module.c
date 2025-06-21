@@ -9,6 +9,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Include logging header */
+#include "../../include/scopemux/logging.h"
+
+/* Define logging_enabled variable for module */
+int logging_enabled = 0;
+
 /* This include is REQUIRED - it provides Python.h with PyObject and Python API
  * Clangd incorrectly flags this as unused, but removing it causes compile errors
  * DO NOT REMOVE even if linter suggests it's unused

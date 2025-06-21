@@ -4,6 +4,16 @@
 
 * Build the python bindings with this command ran from the project root directory: `cd core/ && pybind`
 
+* I am going to suggest you to fix errors in the test suite at times. Do not manually execute command strings to run the test suite unless if you are targeting a single test, even though that is not preferred. Run the tests via the shell scripts in the project root directory.
+
+Here are the shell scripts
+- run_cpp_tests.sh
+- run_c_tests.sh
+- run_js_tests.sh
+- run_misc_tests.sh <- Tests basic functionality for parsing
+- run_python_tests.sh
+- run_ts_tests.sh
+
 # 🔍 Tree-sitter Parsing in ScopeMux
 
 ## 📚 Role of Tree-sitter

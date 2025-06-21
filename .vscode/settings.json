@@ -7,14 +7,14 @@
   "[cpp]": {
     "editor.defaultFormatter": "xaver.clang-format"
   },
+  "[markdown]": {
+    "editor.defaultFormatter": "unifiedjs.vscode-remark",
+    "editor.formatOnSave": false
+  },
   "files.associations": {
     "*.h": "c",
     "*.hpp": "cpp"
   },
-  "clangd.arguments": [
-    "--header-insertion=never",
-    "--diagnostic-filter=-pragma*visibility*"
-  ],
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,

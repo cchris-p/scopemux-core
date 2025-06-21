@@ -7,7 +7,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 # Find Python packages needed for the project
-find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
 
 # Fetch pybind11 first, before we use any of its variables
 include(FetchContent)

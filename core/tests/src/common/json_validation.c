@@ -12,8 +12,8 @@ static void skip_whitespace(const char **json);
 static char *parse_string(const char **json);
 
 JsonValue *load_expected_json(const char *language, const char *category, const char *file_name) {
-  char filepath[512];
-  char project_root_path[512] = "";
+  char filepath[1024];
+  char project_root_path[1024] = "";
   FILE *f = NULL;
 
   // First try using PROJECT_ROOT_DIR environment variable
