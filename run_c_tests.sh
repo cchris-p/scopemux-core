@@ -6,9 +6,15 @@ mkdir -p build
 
 # C Language Test Toggles
 RUN_C_BASIC_AST_TESTS=true
-RUN_C_EXAMPLE_AST_TESTS=true
 RUN_C_CST_TESTS=false
 RUN_C_PREPROCESSOR_TESTS=false
+
+# C example test directory toggles
+RUN_C_BASIC_SYNTAX_TESTS=true
+RUN_C_COMPLEX_STRUCTURES_TESTS=true
+RUN_C_FILE_IO_TESTS=true
+RUN_C_MEMORY_MANAGEMENT_TESTS=true
+RUN_C_STRUCT_UNION_ENUM_TESTS=true
 
 # Project root directory (assuming this script is in the root)
 PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -66,15 +72,23 @@ run_test() {
 }
 
 
-# Build and run C language tests
-cd "${CMAKE_PROJECT_BUILD_DIR}"
+# Ensure a clean build directory every test run
+if [ -d "$CMAKE_PROJECT_BUILD_DIR" ]; then
+    echo "[run_c_tests.sh] Cleaning build directory: $CMAKE_PROJECT_BUILD_DIR"
+    rm -rf "$CMAKE_PROJECT_BUILD_DIR"
+fi
+mkdir -p "$CMAKE_PROJECT_BUILD_DIR"
 
-# Configure project with CMake
-cmake "${PROJECT_ROOT_DIR}"
+# Always run CMake configuration in the build directory
+echo "[run_c_tests.sh] Running CMake configuration in $CMAKE_PROJECT_BUILD_DIR"
+cd "$CMAKE_PROJECT_BUILD_DIR"
+cmake "$PROJECT_ROOT_DIR"
 if [ $? -ne 0 ]; then
     echo "ERROR: CMake configuration failed."
     exit 1
 fi
+
+# Build and run C language tests
 
 # C language tests
 if [ "${RUN_C_BASIC_AST_TESTS}" = true ]; then
@@ -82,13 +96,45 @@ if [ "${RUN_C_BASIC_AST_TESTS}" = true ]; then
     run_test "C Basic AST Tests" "${CMAKE_PROJECT_BUILD_DIR}/${C_BASIC_AST_EXECUTABLE_RELPATH}"
 fi
 
-if [ "${RUN_C_EXAMPLE_AST_TESTS}" = true ]; then
-    build_test "c_example_ast_tests" "C Example AST Tests"
-    # Set the environment variable for C example tests
-    export SCOPEMUX_RUNNING_C_EXAMPLE_TESTS=1
-    run_test "C Example AST Tests" "${CMAKE_PROJECT_BUILD_DIR}/${C_EXAMPLE_AST_EXECUTABLE_RELPATH}"
-    # Unset after running
-    unset SCOPEMUX_RUNNING_C_EXAMPLE_TESTS
+# Process C example test directories
+process_c_example_tests() {
+    local dir="$1"
+    local test_files=($(find "${PROJECT_ROOT_DIR}/core/tests/examples/c/${dir}" -name "*.c" 2>/dev/null))
+    
+    for test_file in "${test_files[@]}"; do
+        local json_file="${test_file}.expected.json"
+        local example_exe="${CMAKE_PROJECT_BUILD_DIR}/core/tests/c_example_ast_tests"
+        if [ -f "$json_file" ]; then
+            # Ensure the example test binary is built before running
+            if [ ! -f "$example_exe" ]; then
+                build_test "c_example_ast_tests" "C Example AST Example Tests"
+            fi
+            export SCOPEMUX_TEST_FILE="$test_file"
+            export SCOPEMUX_EXPECTED_JSON="$json_file"
+            run_test "C Example Test: ${test_file}" "$example_exe"
+            unset SCOPEMUX_TEST_FILE
+            unset SCOPEMUX_EXPECTED_JSON
+        else
+            echo "WARN: Missing expected JSON for ${test_file}"
+        fi
+    done
+}
+
+# Run enabled C example tests
+if [ "${RUN_C_BASIC_SYNTAX_TESTS}" = true ]; then
+    process_c_example_tests "basic_syntax"
+fi
+if [ "${RUN_C_COMPLEX_STRUCTURES_TESTS}" = true ]; then
+    process_c_example_tests "complex_structures"
+fi
+if [ "${RUN_C_FILE_IO_TESTS}" = true ]; then
+    process_c_example_tests "file_io"
+fi
+if [ "${RUN_C_MEMORY_MANAGEMENT_TESTS}" = true ]; then
+    process_c_example_tests "memory_management"
+fi
+if [ "${RUN_C_STRUCT_UNION_ENUM_TESTS}" = true ]; then
+    process_c_example_tests "struct_union_enum"
 fi
 
 if [ "${RUN_C_CST_TESTS}" = true ]; then

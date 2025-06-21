@@ -1025,5 +1025,21 @@ static char *parse_string(const char **json) {
   return result;
 }
 
+/**
+ * Parse a JSON string into a JsonValue structure
+ * 
+ * @param json_str The JSON string to parse
+ * @return Pointer to parsed JSON structure, or NULL on failure
+ */
+JsonValue *parse_json_string(const char *json_str) {
+    if (!json_str) {
+        return NULL;
+    }
+    
+    // Create a copy that can be modified by the parser functions
+    const char *json_copy = json_str;
+    return parse_json_value(&json_copy);
+}
+
 // Note: This is a simplified JSON parser implementation
 // In a production environment, use a full-featured JSON library

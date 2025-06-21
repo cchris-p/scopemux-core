@@ -48,6 +48,14 @@ JsonValue *load_expected_json(const char *language, const char *category, const 
 void free_json_value(JsonValue *json);
 
 /**
+ * Parse a JSON string
+ *
+ * @param json_str JSON string to parse
+ * @return Pointer to parsed JSON structure, or NULL on failure
+ */
+JsonValue *parse_json_string(const char *json_str);
+
+/**
  * Validate AST against expected JSON
  *
  * @param node AST node to validate

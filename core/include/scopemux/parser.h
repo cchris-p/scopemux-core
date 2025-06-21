@@ -11,7 +11,7 @@
 #ifndef SCOPEMUX_PARSER_H
 #define SCOPEMUX_PARSER_H
 
-#include "scopemux/logging.h"
+#include "logging.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>

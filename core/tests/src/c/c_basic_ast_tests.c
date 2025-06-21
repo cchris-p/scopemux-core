@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/scopemux/parser.h"
 #include "../../../include/scopemux/tree_sitter_integration.h"
+#include "../../include/minimal_parser.h"
+#define LOG_WARN(fmt, ...) criterion_log(CR_LOG_WARNING, fmt, ##__VA_ARGS__)
 #include "../../include/test_helpers.h"
-#include "../../../include/scopemux/logging.h"
 
 //=================================
 // C AST Extraction Tests

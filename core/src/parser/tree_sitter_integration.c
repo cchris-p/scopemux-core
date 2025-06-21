@@ -831,6 +831,7 @@ static void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNod
  * @param ctx The parser context
  */
 static void apply_qualified_naming_to_children(ASTNode *ast_root, ParserContext *ctx) {
+  (void)ctx; // Mark unused parameter to silence compiler warning
   for (size_t i = 0; i < ast_root->num_children; i++) {
     ASTNode *child = ast_root->children[i];
     if (!child || !child->name)

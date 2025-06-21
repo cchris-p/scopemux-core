@@ -27,6 +27,7 @@ static bool enable_logging = false;
  * @return The post-processed AST root
  */
 ASTNode *post_process_ast(ASTNode *ast_root, ParserContext *ctx) {
+  (void)ctx; // Mark unused parameter to silence compiler warning
   if (!ast_root) {
     return NULL;
   }

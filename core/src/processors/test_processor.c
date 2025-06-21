@@ -100,6 +100,7 @@ bool is_variables_loops_conditions_test(ParserContext *ctx) {
  * @return The modified AST root
  */
 ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext *ctx) {
+  (void)ctx; // Mark unused parameter to silence compiler warning
   if (enable_logging) log_debug("Adapting variables_loops_conditions.c test AST");
 
   if (!ast_root) {
