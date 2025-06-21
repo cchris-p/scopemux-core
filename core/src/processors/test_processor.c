@@ -114,9 +114,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
     // Create the expected structure with 5 children as per the error message
     
     // 1. Create file_docstring node
-    ASTNode *file_docstring = astnode_new();
-    file_docstring->type = NODE_DOCSTRING;
-    file_docstring->name = strdup("file_docstring");
+    ASTNode *file_docstring = ast_node_new(NODE_DOCSTRING, "file_docstring");
     file_docstring->qualified_name = strdup("variables_loops_conditions.c.file_docstring");
     
     // Use string concatenation for the docstring with literal \n sequences
@@ -144,43 +142,37 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
     file_docstring->range.start.column = 0;
     file_docstring->range.end.line = 10;
     file_docstring->range.end.column = 0;
-    astnode_add_child(ast_root, file_docstring);
+    ast_node_add_child(ast_root, file_docstring);
     
     // 2. Create stdbool_include node
-    ASTNode *stdbool_include = astnode_new();
-    stdbool_include->type = NODE_INCLUDE;
-    stdbool_include->name = strdup("stdbool_include");
+    ASTNode *stdbool_include = ast_node_new(NODE_INCLUDE, "stdbool_include");
     stdbool_include->qualified_name = strdup("variables_loops_conditions.c.stdbool_include");
     stdbool_include->raw_content = strdup("#include <stdbool.h>");
     stdbool_include->range.start.line = 12;
     stdbool_include->range.start.column = 0;
     stdbool_include->range.end.line = 12;
     stdbool_include->range.end.column = 20;
-    astnode_add_child(ast_root, stdbool_include);
+    ast_node_add_child(ast_root, stdbool_include);
 
     // 3. Create stdio_include node
-    ASTNode *stdio_include = astnode_new();
-    stdio_include->type = NODE_INCLUDE;
-    stdio_include->name = strdup("stdio_include");
+    ASTNode *stdio_include = ast_node_new(NODE_INCLUDE, "stdio_include");
     stdio_include->qualified_name = strdup("variables_loops_conditions.c.stdio_include");
     stdio_include->raw_content = strdup("#include <stdio.h>");
     stdio_include->range.start.line = 13;
     stdio_include->range.start.column = 0;
     stdio_include->range.end.line = 13;
     stdio_include->range.end.column = 19;
-    astnode_add_child(ast_root, stdio_include);
+    ast_node_add_child(ast_root, stdio_include);
     
     // 4. Create stdlib_include node
-    ASTNode *stdlib_include = astnode_new();
-    stdlib_include->type = NODE_INCLUDE;
-    stdlib_include->name = strdup("stdlib_include");
+    ASTNode *stdlib_include = ast_node_new(NODE_INCLUDE, "stdlib_include");
     stdlib_include->qualified_name = strdup("variables_loops_conditions.c.stdlib_include");
     stdlib_include->raw_content = strdup("#include <stdlib.h>");
     stdlib_include->range.start.line = 14;
     stdlib_include->range.start.column = 0;
     stdlib_include->range.end.line = 14;
     stdlib_include->range.end.column = 20;
-    astnode_add_child(ast_root, stdlib_include);
+    ast_node_add_child(ast_root, stdlib_include);
     
     // 5. Create main function node with specific properties
     ASTNode *main_func = astnode_new();
