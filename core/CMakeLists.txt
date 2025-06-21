@@ -13,8 +13,7 @@ find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
 include(FetchContent)
 FetchContent_Declare(
     pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11
-    GIT_TAG v2.11.1  # Updated to latest version to fix CMake compatibility issues
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/vendor/pybind11
 )
 FetchContent_MakeAvailable(pybind11)
 
@@ -139,6 +138,8 @@ install(TARGETS scopemux_core DESTINATION ${CMAKE_INSTALL_PREFIX})
 # Add subdirectories for tests and examples if they exist
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     add_subdirectory(tests)
+    add_subdirectory(src/adapters)
+    add_subdirectory(src/config)
 endif()
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples)

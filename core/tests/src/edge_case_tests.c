@@ -106,7 +106,6 @@ Test(edge_cases, invalid_syntax, .description = "Test AST extraction with invali
         cr_log_info("Parser error for invalid %s code: %s",
                     test_cases[i].lang == LANG_PYTHON ? "Python" : "C", err2);
       }
-                  test_cases[i].lang == LANG_PYTHON ? "Python" : "C", err2);
     } else {
       // If no error message, the parse_result should be false
       cr_assert(!parse_result, "Expected error message or failed parse for invalid %s code",

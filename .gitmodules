@@ -22,3 +22,6 @@
 [submodule "vendor/tree-sitter-typescript"]
 	path = vendor/tree-sitter-typescript
 	url = https://github.com/tree-sitter/tree-sitter-typescript.git
+[submodule "vendor/pybind11"]
+	path = vendor/pybind11
+	url = https://github.com/pybind/pybind11.git
