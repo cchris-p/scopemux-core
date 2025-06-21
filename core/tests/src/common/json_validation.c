@@ -216,6 +216,20 @@ static const char *ast_type_to_string(ASTNodeType type) {
     return "MACRO";
   case NODE_VARIABLE:
     return "VARIABLE";
+  case NODE_VARIABLE_DECLARATION:
+    return "VARIABLE_DECLARATION";
+  case NODE_FOR_STATEMENT:
+    return "FOR_STATEMENT";
+  case NODE_WHILE_STATEMENT:
+    return "WHILE_STATEMENT";
+  case NODE_DO_WHILE_STATEMENT:
+    return "DO_WHILE_STATEMENT";
+  case NODE_IF_STATEMENT:
+    return "IF_STATEMENT";
+  case NODE_IF_ELSE_IF_STATEMENT:
+    return "IF_STATEMENT";
+  case NODE_SWITCH_STATEMENT:
+    return "SWITCH_STATEMENT";
   default:
     cr_log_warn("Unknown AST node type: %d", (int)type);
     return "UNKNOWN"; // Changed to uppercase for consistency

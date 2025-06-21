@@ -869,26 +869,26 @@ ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
 
     // Process docstrings
     process_docstrings(ast_root, ctx);
-    
+
     // Apply post-processing with the AST post-processor
     LOG_DEBUG("Applying AST post-processing");
     ast_root = post_process_ast(ast_root, ctx);
-    
+
     // Apply any test-specific adaptations that haven't been applied yet
     ast_root = apply_test_adaptations(ast_root, ctx);
 
     // Use the test processor to detect test environments
     if (ctx && ctx->filename && ctx->source_code && is_hello_world_test(ctx)) {
       LOG_DEBUG("Detected hello world test - applying test specific adaptations");
-      
+
       // Apply special hello world test adaptations using the test processor
       ast_root = adapt_hello_world_test(ast_root, ctx);
-      
+
       // For full example tests, we can return early with the fully adapted AST
       if (getenv("SCOPEMUX_RUNNING_C_EXAMPLE_TESTS") != NULL) {
         return ast_root;
       }
-      
+
       // For other cases, continue with normal processing
     }
   }

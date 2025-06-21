@@ -80,7 +80,16 @@ typedef enum {
   NODE_INCLUDE,       // Include/import statement (represented consistently across languages)
   NODE_MACRO,         // Macro definitions (C, C++, Rust)
   NODE_VARIABLE,      // Variable declarations (common across all languages)
-  
+
+  // Test-specific and extended node types for precise AST adaptation
+  NODE_VARIABLE_DECLARATION,
+  NODE_FOR_STATEMENT,
+  NODE_WHILE_STATEMENT,
+  NODE_DO_WHILE_STATEMENT,
+  NODE_IF_STATEMENT,
+  NODE_IF_ELSE_IF_STATEMENT,
+  NODE_SWITCH_STATEMENT,
+
   // Add more node types as needed
   
   /*
