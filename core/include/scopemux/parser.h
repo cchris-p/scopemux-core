@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "scopemux/logging.h"
 
 /**
  * @brief Representation of a source location
@@ -146,6 +147,7 @@ bool cst_node_add_child(CSTNode *parent, CSTNode *child);
  * and will be freed when the AST is destroyed via parser_free().
  */
 typedef struct ASTNode {
+    uint32_t magic; ///< Canary for heap corruption/use-after-free detection
   ASTNodeType type;     // Type of the node
   char *name;           // Name of the entity
   char *qualified_name; // Fully qualified name (e.g., namespace::class::method)
@@ -207,6 +209,12 @@ typedef struct ParserContext {
   // Error handling
   char *last_error; // Last error message
   int error_code;   // Error code
+
+  /**
+   * @brief Logging level for this parser context (see logging.h)
+   * Set to LOG_ERROR, LOG_DEBUG, etc. to control output.
+   */
+  LogLevel log_level;
 } ParserContext;
 
 /**
@@ -395,4 +403,26 @@ void cst_node_free(CSTNode *node);
  */
 bool cst_node_add_child(CSTNode *parent, CSTNode *child);
 
+
+/**
+ * @brief Unified status codes for parser and processor helpers
+ */
+typedef enum {
+    PARSE_OK = 0,      ///< Operation succeeded
+    PARSE_SKIP = 1,    ///< Skip this entity (not an error)
+    PARSE_ERROR = 2    ///< Error occurred, check context for details
+} ParseStatus;
+
+/**
+ * @brief Logging level for parser and processor modules
+ *
+ * This field allows unified control of logging output per context.
+ * Set to LOG_ERROR, LOG_DEBUG, etc. (see logging.h)
+ */
+// Add this to ParserContext:
+//   LogLevel log_level;
+// Example usage:
+//   ctx->log_level = LOG_DEBUG;
+
 #endif /* SCOPEMUX_PARSER_H */
+

@@ -80,11 +80,14 @@ static void test_python_example(const char *category, const char *filename) {
   cr_assert(source != NULL, "Failed to read source file: %s/%s", category, filename);
   
   // 2. Parse the Python code into an AST
-  ParserContext *ctx = parser_context_new();
+  ParserContext *ctx = parser_init();
   cr_assert(ctx != NULL, "Failed to create parser context");
-  
-  ASTNode *ast = parse_python_ast(ctx, source);
-  cr_assert(ast != NULL, "Failed to parse Python code into AST");
+
+  parser_set_mode(ctx, PARSE_AST);
+  bool parse_ok = parser_parse_string(ctx, source, strlen(source), filename, LANG_PYTHON);
+  cr_assert(parse_ok, "Failed to parse Python code into AST");
+  ASTNode *ast = ctx->ast_root;
+  cr_assert(ast != NULL, "AST root is NULL after parsing");
   
   // 3. Load the expected JSON file
   JsonValue *expected_json = load_expected_json("python", category, base_filename);
@@ -93,7 +96,7 @@ static void test_python_example(const char *category, const char *filename) {
                category, base_filename);
     free(base_filename);
     free(source);
-    parser_context_free(ctx);
+    parser_free(ctx);
     return;
   }
   
@@ -104,7 +107,7 @@ static void test_python_example(const char *category, const char *filename) {
   free_json_value(expected_json);
   free(base_filename);
   free(source);
-  parser_context_free(ctx);
+  parser_free(ctx);
   
   // 5. Report results
   cr_assert(valid, "AST validation failed against expected JSON for %s/%s",

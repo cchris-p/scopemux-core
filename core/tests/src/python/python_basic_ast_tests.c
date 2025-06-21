@@ -26,37 +26,36 @@ Test(ast_extraction, python_functions, .description = "Test AST extraction of Py
   cr_assert_not_null(source_code, "Failed to read test file");
 
   // Initialize parser context
-  ParserContext *ctx = parser_context_new();
+  // Initialize parser context (updated API)
+  ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->source_code = source_code;
-  ctx->file_path = "functions.py";
+    ctx->filename = "functions.py"; // Updated: use filename
 
   // Parse the source code
-  parser_parse_string(ctx, source_code, strlen(source_code));
-  cr_assert_null(ctx->error_message, "Parser error: %s",
-                 ctx->error_message ? ctx->error_message : "");
+  parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);
+  cr_assert_null(ctx->last_error, "Parser error: %s", ctx->last_error ? ctx->last_error : "");
 
   // Verify the AST root was created
   cr_assert_not_null(ctx->ast_root, "AST root should not be NULL");
 
   // Check for basic function extraction
-  ASTNode *simple_func = find_node_by_name(ctx->ast_root, "simple_function", AST_FUNCTION);
+  ASTNode *simple_func = find_node_by_name(ctx->ast_root, "simple_function", NODE_FUNCTION);
   assert_node_fields(simple_func, "simple_function");
 
   // Check for function with parameters
   ASTNode *func_with_params =
-      find_node_by_name(ctx->ast_root, "function_with_parameters", AST_FUNCTION);
+      find_node_by_name(ctx->ast_root, "function_with_parameters", NODE_FUNCTION);
   assert_node_fields(func_with_params, "function_with_parameters");
   cr_assert_not_null(func_with_params->signature, "Function should have signature populated");
 
   // Check for function with docstring
   ASTNode *func_with_docstring =
-      find_node_by_name(ctx->ast_root, "function_with_docstring", AST_FUNCTION);
+      find_node_by_name(ctx->ast_root, "function_with_docstring", NODE_FUNCTION);
   assert_node_fields(func_with_docstring, "function_with_docstring");
   cr_assert_not_null(func_with_docstring->docstring, "Function should have docstring populated");
 
   // Clean up
-  parser_context_free(ctx);
+  parser_free(ctx);
   free(source_code);
 }
 
@@ -74,25 +73,24 @@ Test(ast_extraction, python_classes, .description = "Test AST extraction of Pyth
   cr_assert_not_null(source_code, "Failed to read test file");
 
   // Initialize parser context
-  ParserContext *ctx = parser_context_new();
+  // Initialize parser context (updated API)
+  ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->source_code = source_code;
-  ctx->file_path = "classes.py";
+    ctx->filename = "classes.py"; // Updated: use filename
 
   // Parse the source code
-  parser_parse_string(ctx, source_code, strlen(source_code));
-  cr_assert_null(ctx->error_message, "Parser error: %s",
-                 ctx->error_message ? ctx->error_message : "");
+  parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);
+  cr_assert_null(ctx->last_error, "Parser error: %s", ctx->last_error ? ctx->last_error : "");
 
   // Verify the AST root was created
   cr_assert_not_null(ctx->ast_root, "AST root should not be NULL");
 
   // Check for simple class
-  ASTNode *simple_class = find_node_by_name(ctx->ast_root, "SimpleClass", AST_CLASS);
+  ASTNode *simple_class = find_node_by_name(ctx->ast_root, "SimpleClass", NODE_CLASS);
   assert_node_fields(simple_class, "SimpleClass");
 
   // Check for class with methods
-  ASTNode *class_with_methods = find_node_by_name(ctx->ast_root, "ClassWithMethods", AST_CLASS);
+  ASTNode *class_with_methods = find_node_by_name(ctx->ast_root, "ClassWithMethods", NODE_CLASS);
   assert_node_fields(class_with_methods, "ClassWithMethods");
 
   // Check for methods within class
@@ -100,7 +98,7 @@ Test(ast_extraction, python_classes, .description = "Test AST extraction of Pyth
     // Find a method (could be __init__ or any other)
     ASTNode *class_method = NULL;
     for (size_t i = 0; i < class_with_methods->num_children; i++) {
-      if (class_with_methods->children[i]->type == AST_METHOD) {
+      if (class_with_methods->children[i]->type == NODE_METHOD) {
         class_method = class_with_methods->children[i];
         break;
       }
@@ -114,7 +112,7 @@ Test(ast_extraction, python_classes, .description = "Test AST extraction of Pyth
   }
 
   // Clean up
-  parser_context_free(ctx);
+  parser_free(ctx);
   free(source_code);
 }
 
@@ -133,18 +131,17 @@ Test(ast_extraction, python_hierarchy,
   cr_assert_not_null(source_code, "Failed to read test file");
 
   // Initialize parser context
-  ParserContext *ctx = parser_context_new();
+  // Initialize parser context (updated API)
+  ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->source_code = source_code;
-  ctx->file_path = "classes.py";
+    ctx->filename = "classes.py"; // Updated: use filename
 
   // Parse the source code
-  parser_parse_string(ctx, source_code, strlen(source_code));
-  cr_assert_null(ctx->error_message, "Parser error: %s",
-                 ctx->error_message ? ctx->error_message : "");
+  parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);
+  cr_assert_null(ctx->last_error, "Parser error: %s", ctx->last_error ? ctx->last_error : "");
 
   // Look for class with methods
-  ASTNode *class_node = find_node_by_name(ctx->ast_root, "ClassWithMethods", AST_CLASS);
+  ASTNode *class_node = find_node_by_name(ctx->ast_root, "ClassWithMethods", NODE_CLASS);
   if (class_node) {
     // Verify that the class has child nodes (methods)
     cr_assert_gt(class_node->num_children, 0, "Class should have child nodes");
@@ -155,7 +152,7 @@ Test(ast_extraction, python_hierarchy,
       // Methods should have qualified names that include the class name
       for (size_t i = 0; i < class_node->num_children; i++) {
         ASTNode *method = class_node->children[i];
-        if (method && method->type == AST_METHOD && method->qualified_name) {
+        if (method && method->type == NODE_METHOD && method->qualified_name) {
           cr_assert(strstr(method->qualified_name, class_node->name) != NULL,
                     "Method qualified name should include class name: %s", method->qualified_name);
         }
@@ -166,6 +163,6 @@ Test(ast_extraction, python_hierarchy,
   }
 
   // Clean up
-  parser_context_free(ctx);
+  parser_free(ctx);
   free(source_code);
 }

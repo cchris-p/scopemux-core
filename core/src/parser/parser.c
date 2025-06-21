@@ -29,6 +29,17 @@ static void ast_node_free_internal(ASTNode *node);
  */
 static void ast_node_free_internal(ASTNode *node) __attribute__((unused));
 static void ast_node_free_internal(ASTNode *node) {
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "ast_node_free_internal: node=%p\n", (void*)node);
+#endif
+  if (!node)
+    return;
+#ifdef DEBUG_PARSER
+  if (node->magic != ASTNODE_MAGIC) {
+    fprintf(stderr, "ERROR: ast_node_free_internal: node=%p has invalid or corrupted magic!\n", (void*)node);
+    abort();
+  }
+#endif
   if (!node)
     return;
 
@@ -48,12 +59,28 @@ static void ast_node_free_internal(ASTNode *node) {
  * This ensures all allocated nodes are properly tracked and can be freed later
  */
 bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "parser_add_ast_node: ctx=%p, node=%p, num_ast_nodes=%zu, capacity=%zu\n", (void*)ctx, (void*)node, ctx ? ctx->num_ast_nodes : 0, ctx ? ctx->ast_nodes_capacity : 0);
+#endif
   if (!ctx || !node) {
     return false;
   }
 
+  // Defensive check: prevent adding the same node pointer more than once.
+  // If a node is added multiple times, it will be freed multiple times, causing double free or memory corruption.
+  for (size_t i = 0; i < ctx->num_ast_nodes; ++i) {
+    if (ctx->all_ast_nodes[i] == node) {
+      // Optionally log this event for debugging purposes.
+      // log_debug("ASTNode pointer %p already registered, skipping duplicate add", (void*)node);
+      return true;
+    }
+  }
+
   // Check if we need to grow the array
   if (ctx->num_ast_nodes >= ctx->ast_nodes_capacity) {
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "parser_add_ast_node: realloc all_ast_nodes from %zu to %zu\n", ctx->ast_nodes_capacity, ctx->ast_nodes_capacity == 0 ? 16 : ctx->ast_nodes_capacity * 2);
+#endif
     size_t new_capacity = ctx->ast_nodes_capacity == 0 ? 16 : ctx->ast_nodes_capacity * 2;
     ASTNode **new_nodes = realloc(ctx->all_ast_nodes, new_capacity * sizeof(ASTNode *));
     if (!new_nodes) {
@@ -61,19 +88,30 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
     }
     ctx->all_ast_nodes = new_nodes;
     ctx->ast_nodes_capacity = new_capacity;
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "parser_add_ast_node: realloc success, new array=%p, new capacity=%zu\n", (void*)ctx->all_ast_nodes, ctx->ast_nodes_capacity);
+#endif
   }
 
   // Add the node to the tracking array
   ctx->all_ast_nodes[ctx->num_ast_nodes++] = node;
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "parser_add_ast_node: added node=%p, num_ast_nodes now=%zu\n", (void*)node, ctx->num_ast_nodes);
+  assert(ctx->num_ast_nodes <= ctx->ast_nodes_capacity);
+#endif
   return true;
 }
 
+
 ASTNode *ast_node_new(ASTNodeType type, const char *name) {
+#define ASTNODE_MAGIC 0xA57A57AA
+
   ASTNode *node = (ASTNode *)calloc(1, sizeof(ASTNode));
   if (!node)
     return NULL;
 
   node->type = type;
+  node->magic = ASTNODE_MAGIC;
   if (name) {
     node->name = strdup(name);
     if (!node->name) {
@@ -85,6 +123,17 @@ ASTNode *ast_node_new(ASTNodeType type, const char *name) {
 }
 
 void ast_node_free(ASTNode *node) {
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "ast_node_free: node=%p\n", (void*)node);
+#endif
+  if (!node)
+    return;
+#ifdef DEBUG_PARSER
+  if (node->magic != ASTNODE_MAGIC) {
+    fprintf(stderr, "ERROR: ast_node_free: node=%p has invalid or corrupted magic!\n", (void*)node);
+    abort();
+  }
+#endif
   if (!node)
     return;
 
@@ -93,14 +142,35 @@ void ast_node_free(ASTNode *node) {
   // used to free detached nodes that aren't tracked by a ParserContext.
 
   // Free all resources owned by this node
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "ast_node_free: node=%p, name=%s, qualified_name=%s, signature=%p, docstring=%p, raw_content=%p, num_children=%zu\n", (void*)node, node->name ? node->name : "(null)", node->qualified_name ? node->qualified_name : "(null)", (void*)node->signature, (void*)node->docstring, (void*)node->raw_content, node->num_children);
+#endif
   free(node->name);
   free(node->qualified_name);
-  free(node->signature);
-  free(node->docstring);
-  free(node->raw_content);
+  if (node->signature) {
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "Freeing signature: node=%p, ptr=%p, first 16 bytes='%.*s'\n", (void*)node, (void*)node->signature, 16, node->signature);
+#endif
+    free(node->signature);
+  }
+  if (node->docstring) {
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "Freeing docstring: node=%p, ptr=%p, first 16 bytes='%.*s'\n", (void*)node, (void*)node->docstring, 16, node->docstring);
+#endif
+    free(node->docstring);
+  }
+  if (node->raw_content) {
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "Freeing raw_content: node=%p, ptr=%p, first 16 bytes='%.*s'\n", (void*)node, (void*)node->raw_content, 16, node->raw_content);
+#endif
+    free(node->raw_content);
+  }
 
   // Free all children recursively
   for (size_t i = 0; i < node->num_children; i++) {
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "ast_node_free: node=%p, freeing child[%zu]=%p\n", (void*)node, i, (void*)node->children[i]);
+#endif
     if (node->children[i]) {
       ast_node_free(node->children[i]);
     }
@@ -110,6 +180,10 @@ void ast_node_free(ASTNode *node) {
   free(node->children);
   free(node->references);
 
+#ifdef DEBUG_PARSER
+  node->magic = 0; // Clear magic to catch use-after-free
+  fprintf(stderr, "ast_node_free: node=%p freed (magic cleared)\n", (void*)node);
+#endif
   // Free the node itself
   free(node);
 }
@@ -177,12 +251,32 @@ void parser_free(ParserContext *ctx) {
 }
 
 void parser_clear(ParserContext *ctx) {
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "Entered parser_clear: ctx=%p\n", (void*)ctx);
+#endif
   if (!ctx)
     return;
 
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "parser_clear: ctx=%p, source_code=%p, source_code_length=%zu\n", (void*)ctx, (void*)ctx->source_code, ctx ? ctx->source_code_length : 0);
+  if (ctx && ctx->source_code) {
+    fprintf(stderr, "parser_clear: source_code first 16 bytes: '%.*s'\n", 16, ctx->source_code);
+  }
+#endif
+
+#ifdef DEBUG_PARSER
+  if (ctx->filename) {
+    fprintf(stderr, "Freeing ctx->filename: ptr=%p, first 16 bytes='%.*s'\n", (void*)ctx->filename, 16, ctx->filename);
+  }
+#endif
   free(ctx->filename);
   ctx->filename = NULL;
 
+#ifdef DEBUG_PARSER
+  if (ctx->source_code) {
+    fprintf(stderr, "Freeing ctx->source_code: ptr=%p, first 16 bytes='%.*s'\n", (void*)ctx->source_code, 16, ctx->source_code);
+  }
+#endif
   free(ctx->source_code);
   ctx->source_code = NULL;
 
@@ -201,9 +295,33 @@ void parser_clear(ParserContext *ctx) {
       if (node) {
         free(node->name);
         free(node->qualified_name);
-        free(node->signature);
-        free(node->docstring);
-        free(node->raw_content);
+        if (node->signature) {
+#ifdef DEBUG_PARSER
+          fprintf(stderr, "Freeing signature: node=%p, ptr=%p, first 16 bytes='%.*s'\n", (void*)node, (void*)node->signature, 16, node->signature);
+          if (ctx && ctx->source_code && node->signature >= ctx->source_code && node->signature < ctx->source_code + ctx->source_code_length) {
+            fprintf(stderr, "WARNING: signature field points inside source_code buffer!\n");
+          }
+#endif
+          free(node->signature);
+        }
+        if (node->docstring) {
+#ifdef DEBUG_PARSER
+          fprintf(stderr, "Freeing docstring: node=%p, ptr=%p, first 16 bytes='%.*s'\n", (void*)node, (void*)node->docstring, 16, node->docstring);
+          if (ctx && ctx->source_code && node->docstring >= ctx->source_code && node->docstring < ctx->source_code + ctx->source_code_length) {
+            fprintf(stderr, "WARNING: docstring field points inside source_code buffer!\n");
+          }
+#endif
+          free(node->docstring);
+        }
+        if (node->raw_content) {
+#ifdef DEBUG_PARSER
+          fprintf(stderr, "Freeing raw_content: node=%p, ptr=%p, first 16 bytes='%.*s'\n", (void*)node, (void*)node->raw_content, 16, node->raw_content);
+          if (ctx && ctx->source_code && node->raw_content >= ctx->source_code && node->raw_content < ctx->source_code + ctx->source_code_length) {
+            fprintf(stderr, "WARNING: raw_content field points inside source_code buffer!\n");
+          }
+#endif
+          free(node->raw_content);
+        }
         free(node->children);
         free(node->references);
         free(node);
@@ -550,6 +668,9 @@ ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualifi
 
 /* AST node relationship management */
 bool ast_node_add_child(ASTNode *parent, ASTNode *child) {
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "ast_node_add_child: parent=%p, child=%p, num_children=%zu, capacity=%zu\n", (void*)parent, (void*)child, parent ? parent->num_children : 0, parent ? parent->children_capacity : 0);
+#endif
   if (!parent || !child) {
     return false;
   }
@@ -565,6 +686,9 @@ bool ast_node_add_child(ASTNode *parent, ASTNode *child) {
     // Initial allocation
     parent->children_capacity = 4; // Start with space for 4 children
     parent->children = (ASTNode **)malloc(parent->children_capacity * sizeof(ASTNode *));
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "ast_node_add_child: malloc children array, ptr=%p, capacity=%zu\n", (void*)parent->children, parent->children_capacity);
+#endif
     if (!parent->children) {
       return false; // Memory allocation failed
     }
@@ -578,16 +702,25 @@ bool ast_node_add_child(ASTNode *parent, ASTNode *child) {
     }
     parent->children = new_children;
     parent->children_capacity = new_capacity;
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "ast_node_add_child: realloc success, new array=%p, new capacity=%zu\n", (void*)parent->children, parent->children_capacity);
+#endif
   }
 
   // Add the child
   parent->children[parent->num_children++] = child;
   child->parent = parent;
-
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "ast_node_add_child: added child=%p, num_children now=%zu\n", (void*)child, parent->num_children);
+  assert(parent->num_children <= parent->children_capacity);
+#endif
   return true;
 }
 
 bool ast_node_add_reference(ASTNode *from, ASTNode *to) {
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "ast_node_add_reference: from=%p, to=%p, num_references=%zu, capacity=%zu\n", (void*)from, (void*)to, from ? from->num_references : 0, from ? from->references_capacity : 0);
+#endif
   if (!from || !to) {
     return false;
   }
@@ -597,6 +730,9 @@ bool ast_node_add_reference(ASTNode *from, ASTNode *to) {
     // Initial allocation
     from->references_capacity = 4; // Start with space for 4 references
     from->references = (ASTNode **)malloc(from->references_capacity * sizeof(ASTNode *));
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "ast_node_add_reference: malloc references array, ptr=%p, capacity=%zu\n", (void*)from->references, from->references_capacity);
+#endif
     if (!from->references) {
       return false; // Memory allocation failed
     }
@@ -610,10 +746,16 @@ bool ast_node_add_reference(ASTNode *from, ASTNode *to) {
     }
     from->references = new_references;
     from->references_capacity = new_capacity;
+#ifdef DEBUG_PARSER
+    fprintf(stderr, "ast_node_add_reference: realloc success, new array=%p, new capacity=%zu\n", (void*)from->references, from->references_capacity);
+#endif
   }
 
   // Add the reference
   from->references[from->num_references++] = to;
-
+#ifdef DEBUG_PARSER
+  fprintf(stderr, "ast_node_add_reference: added to=%p, num_references now=%zu\n", (void*)to, from->num_references);
+  assert(from->num_references <= from->references_capacity);
+#endif
   return true;
 }
