@@ -57,17 +57,8 @@ for arg in "$@"; do
     esac
 done
 
-# Handle build directory preparation
-if [ "$CLEAN_BUILD" = true ] && [ -d "$CMAKE_PROJECT_BUILD_DIR" ]; then
-    echo "[run_c_tests.sh] Cleaning build directory: $CMAKE_PROJECT_BUILD_DIR"
-    rm -rf "$CMAKE_PROJECT_BUILD_DIR"
-fi
-
-# Create build directory if it doesn't exist
-if [ ! -d "$CMAKE_PROJECT_BUILD_DIR" ]; then
-    echo "[run_c_tests.sh] Creating build directory: $CMAKE_PROJECT_BUILD_DIR"
-    mkdir -p "$CMAKE_PROJECT_BUILD_DIR"
-fi
+# Prepare build directory (clean or not, depending on flag)
+prepare_clean_build_dir "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
 
 # Setup CMake configuration using the shared library
 setup_cmake_config "$PROJECT_ROOT_DIR"

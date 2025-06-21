@@ -230,6 +230,21 @@ setup_cmake_config() {
     fi
 }
 
+# Prepare a clean build directory (optionally skip cleaning)
+# Usage: prepare_clean_build_dir <build_dir> <clean_flag>
+prepare_clean_build_dir() {
+    local build_dir="$1"
+    local clean_flag="$2"
+    if [ "$clean_flag" = true ] && [ -d "$build_dir" ]; then
+        echo "[test_runner_lib] Cleaning build directory: $build_dir"
+        rm -rf "$build_dir"
+    fi
+    if [ ! -d "$build_dir" ]; then
+        echo "[test_runner_lib] Creating build directory: $build_dir"
+        mkdir -p "$build_dir"
+    fi
+}
+
 # Print test summary
 print_test_summary() {
     local end_time=$(date +%s)
