@@ -24,10 +24,12 @@ include_directories(
     # Criterion
     ${Criterion_INCLUDE_DIRS}
 )
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 # --- Test Utilities and Common Test Helpers ---
 set(TEST_UTIL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/test_utils.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/tree_sitter_test_util.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/test_helpers.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/json_validation.c
 )
@@ -39,7 +41,7 @@ set(TEST_UTIL_SOURCES
 set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/tree_sitter_integration.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/tree_sitter_parser.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/tree_sitter_parser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
     # ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ir_generator.c  # Commented out missing file
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/error_handling.c
@@ -104,7 +106,7 @@ set(INIT_PARSER_TEST_SOURCES
 )
 
 # Define executables
-add_executable(init_parser_tests 
+add_executable(init_parser_tests
     ${INIT_PARSER_TEST_SOURCES}
     ${TEST_UTIL_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}

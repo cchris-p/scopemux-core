@@ -175,9 +175,13 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
   return content;
 }
 
-// This was previously a function to safely get capture names, but it has been
-// replaced with direct hardcoded capture names for more reliable mapping
-// between tree-sitter node types and AST node types.
+// Extension Point: To support new semantic node types, add new .scm query files in the
+// queries/<language>/ directory and update process_all_ast_queries to include the new query type.
+// To add a new language, integrate the Tree-sitter grammar, add appropriate .scm queries, and
+// register the language in QueryManager and parser initialization logic. Language-specific mapping
+// should be handled in adapters, not in core AST extraction logic.
+//
+// Note: Legacy capture name logic has been fully replaced by .scm-driven extraction.
 
 /**
  * Helper to extract a full signature including return type for C-family languages
@@ -283,37 +287,24 @@ static char *extract_full_signature(TSNode func_node, const char *source_code) {
 #define MATCH_SKIP 1
 #define MATCH_ERROR 2
 
+#include "config/node_type_mapping_loader.h"
+
 /**
- * @brief Maps a query type string to the corresponding ASTNodeType enum.
+ * @brief Maps a query type string to the corresponding ASTNodeType enum using config-driven
+ * mapping.
  * @param query_type The semantic query type (e.g., "functions", "classes").
  * @return The corresponding ASTNodeType value, or NODE_UNKNOWN if not recognized.
  */
+/**
+ * @brief Maps a query type string to the corresponding ASTNodeType enum using config-driven
+ * mapping.
+ * @param query_type The semantic query type (e.g., "functions", "classes").
+ * @return The corresponding ASTNodeType value, or NODE_UNKNOWN if not recognized.
+ *
+ * Note: The mapping is loaded/unloaded at parser init/shutdown, so no lazy-load is needed here.
+ */
 static uint32_t map_query_type_to_node_type(const char *query_type) {
-  if (strcmp(query_type, "functions") == 0)
-    return NODE_FUNCTION;
-  if (strcmp(query_type, "classes") == 0)
-    return NODE_CLASS;
-  if (strcmp(query_type, "methods") == 0)
-    return NODE_METHOD;
-  if (strcmp(query_type, "variables") == 0)
-    return NODE_VARIABLE;
-  if (strcmp(query_type, "imports") == 0)
-    return NODE_MODULE;
-  if (strcmp(query_type, "control_flow") == 0)
-    return NODE_UNKNOWN;
-  if (strcmp(query_type, "structs") == 0)
-    return NODE_STRUCT;
-  if (strcmp(query_type, "unions") == 0)
-    return NODE_UNION;
-  if (strcmp(query_type, "enums") == 0)
-    return NODE_ENUM;
-  if (strcmp(query_type, "typedefs") == 0)
-    return NODE_TYPEDEF;
-  if (strcmp(query_type, "includes") == 0)
-    return NODE_INCLUDE;
-  if (strcmp(query_type, "macros") == 0)
-    return NODE_MACRO;
-  return NODE_UNKNOWN;
+  return get_node_type_for_query(query_type);
 }
 
 // --- Helper: Determine capture name from node type string
@@ -408,6 +399,10 @@ static ParseStatus process_match_captures(const TSQueryMatch *match, ParserConte
       *docstring = ts_node_to_string(captured_node, ctx->source_code);
     } else if (strcmp(capture_name, "class_name") == 0 && strcmp(query_type, "methods") == 0) {
       char *class_name = ts_node_to_string(captured_node, ctx->source_code);
+      // NOTE: This uses NODE_CLASS for parent lookup, which is an internal enum index.
+      // If you want to make this fully config-driven, consider maintaining a mapping from query
+      // types to node_map indices. For now, this is left as is, as node_map[] is indexed by
+      // ASTNodeType enums.
       if (class_name && node_map && node_map[NODE_CLASS]) {
         *parent_node = node_map[NODE_CLASS];
       }
@@ -729,237 +724,237 @@ static ParseStatus process_query_matches(ParserContext *ctx, const TSQuery *quer
  * @param node_map Map to track nodes by type for building relationships
  */
 static void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
-                           ASTNode *ast_root, ASTNode **node_map) {
-   if (ctx && ctx->log_level <= LOG_DEBUG)
-     log_debug("Entered process_query for query_type: %s", query_type ? query_type : "NULL");
+                          ASTNode *ast_root, ASTNode **node_map) {
+  if (ctx && ctx->log_level <= LOG_DEBUG)
+    log_debug("Entered process_query for query_type: %s", query_type ? query_type : "NULL");
 
-   // If query manager isn't available, AST generation should fail
-   if (!ctx->q_manager) {
-     if (ctx && ctx->log_level <= LOG_ERROR)
-       log_error("No query manager available");
-     parser_set_error(ctx, -1, "No query manager available for AST generation");
-     return;
-   }
+  // If query manager isn't available, AST generation should fail
+  if (!ctx->q_manager) {
+    if (ctx && ctx->log_level <= LOG_ERROR)
+      log_error("No query manager available");
+    parser_set_error(ctx, -1, "No query manager available for AST generation");
+    return;
+  }
 
-   // Find the appropriate .scm query based on the query_type and language
-   const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
-   if (!query) {
-     // Queries can be optional, so this isn't always an error
-     return;
-   }
+  // Find the appropriate .scm query based on the query_type and language
+  const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
+  if (!query) {
+    // Queries can be optional, so this isn't always an error
+    return;
+  }
 
-   // Set up query cursor
-   TSQueryCursor *cursor = ts_query_cursor_new();
-   ts_query_cursor_exec(cursor, query, root_node);
+  // Set up query cursor
+  TSQueryCursor *cursor = ts_query_cursor_new();
+  ts_query_cursor_exec(cursor, query, root_node);
 
-   process_query_matches(ctx, query, query_type, cursor, ast_root, node_map);
+  process_query_matches(ctx, query, query_type, cursor, ast_root, node_map);
 
-   ts_query_cursor_delete(cursor);
- }
+  ts_query_cursor_delete(cursor);
+}
 
- /**
-  * @brief Converts a raw Tree-sitter tree into a standardized ScopeMux Abstract Syntax Tree.
-  *
-  * This is the core function responsible for building a language-agnostic AST from
-  * language-specific Tree-sitter parse trees. It follows these steps:
-  *
-  * 1. Create a root NODE_ROOT node for the entire file/module
-  * 2. Process a series of Tree-sitter queries in hierarchical order
-  *    (classes first, then methods, functions, variables, etc.)
-  * 3. Build parent-child relationships between nodes based on scope
-  * 4. Generate qualified names that reflect the hierarchical structure
-  *
-  * The standard node types ensure consistent representation across languages.
-  * Language-specific details are preserved in node attributes while maintaining
-  * a common structure for analysis and transformation tools.
-  */
- /**
-  * @brief Creates and configures the root AST node for a file
-  * @param ctx The parser context containing filename and other metadata
-  * @return A newly allocated and configured root AST node, or NULL on failure
-  */
- static ASTNode *create_ast_root_node(ParserContext *ctx) {
-   ASTNode *ast_root = ast_node_new(NODE_ROOT, "ROOT");
-   if (!ast_root) {
-     parser_set_error(ctx, -1, "Failed to allocate AST root node");
-     return NULL;
-   }
-   if (ctx->filename) {
-     if (ast_root->qualified_name) {
-       free(ast_root->qualified_name);
-     }
-     const char *filename = ctx->filename;
-     const char *base = strrchr(filename, '/');
-     if (base) {
-       filename = base + 1;
-     }
-     ast_root->qualified_name = strdup(filename);
-     if (!ast_root->qualified_name) {
-       parser_set_error(ctx, -1, "Failed to set qualified name on AST root");
-     }
-   }
-   if (!parser_add_ast_node(ctx, ast_root)) {
-     parser_set_error(ctx, -1, "Failed to register AST root node with parser context");
-     ast_node_free(ast_root);
-     return NULL;
-   }
-   return ast_root;
- }
+/**
+ * @brief Converts a raw Tree-sitter tree into a standardized ScopeMux Abstract Syntax Tree.
+ *
+ * This is the core function responsible for building a language-agnostic AST from
+ * language-specific Tree-sitter parse trees. It follows these steps:
+ *
+ * 1. Create a root NODE_ROOT node for the entire file/module
+ * 2. Process a series of Tree-sitter queries in hierarchical order
+ *    (classes first, then methods, functions, variables, etc.)
+ * 3. Build parent-child relationships between nodes based on scope
+ * 4. Generate qualified names that reflect the hierarchical structure
+ *
+ * The standard node types ensure consistent representation across languages.
+ * Language-specific details are preserved in node attributes while maintaining
+ * a common structure for analysis and transformation tools.
+ */
+/**
+ * @brief Creates and configures the root AST node for a file
+ * @param ctx The parser context containing filename and other metadata
+ * @return A newly allocated and configured root AST node, or NULL on failure
+ */
+static ASTNode *create_ast_root_node(ParserContext *ctx) {
+  ASTNode *ast_root = ast_node_new(NODE_ROOT, "ROOT");
+  if (!ast_root) {
+    parser_set_error(ctx, -1, "Failed to allocate AST root node");
+    return NULL;
+  }
+  if (ctx->filename) {
+    if (ast_root->qualified_name) {
+      free(ast_root->qualified_name);
+    }
+    const char *filename = ctx->filename;
+    const char *base = strrchr(filename, '/');
+    if (base) {
+      filename = base + 1;
+    }
+    ast_root->qualified_name = strdup(filename);
+    if (!ast_root->qualified_name) {
+      parser_set_error(ctx, -1, "Failed to set qualified name on AST root");
+    }
+  }
+  if (!parser_add_ast_node(ctx, ast_root)) {
+    parser_set_error(ctx, -1, "Failed to register AST root node with parser context");
+    ast_node_free(ast_root);
+    return NULL;
+  }
+  return ast_root;
+}
 
- /**
-  * @brief Process all semantic Tree-sitter queries and build the AST hierarchy
-  * @param root_node The root Tree-sitter node
-  * @param ctx The parser context
-  * @param ast_root The root AST node to populate
-  */
- static void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
-   ASTNode *node_map[256] = {NULL}; // Assuming AST_* constants are < 256
-   const char *query_types[] = {"classes", "structs",      "unions",     "enums",   "typedefs",
-                                "methods", "functions",    "variables",  "imports", "includes",
-                                "macros",  "control_flow", "docstrings", NULL};
-   size_t initial_child_count = ast_root->num_children;
+/**
+ * @brief Process all semantic Tree-sitter queries and build the AST hierarchy
+ * @param root_node The root Tree-sitter node
+ * @param ctx The parser context
+ * @param ast_root The root AST node to populate
+ */
+static void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
+  ASTNode *node_map[256] = {NULL}; // Assuming AST_* constants are < 256
+  const char *query_types[] = {"classes", "structs",      "unions",     "enums",   "typedefs",
+                               "methods", "functions",    "variables",  "imports", "includes",
+                               "macros",  "control_flow", "docstrings", NULL};
+  size_t initial_child_count = ast_root->num_children;
 #ifdef DEBUG_PARSER
-   fprintf(stderr, "process_all_ast_queries: Initial child count: %zu\n", initial_child_count);
+  fprintf(stderr, "process_all_ast_queries: Initial child count: %zu\n", initial_child_count);
 #endif
-   for (int i = 0; query_types[i]; i++) {
-     process_query(query_types[i], root_node, ctx, ast_root, node_map);
-   }
+  for (int i = 0; query_types[i]; i++) {
+    process_query(query_types[i], root_node, ctx, ast_root, node_map);
+  }
 #ifdef DEBUG_PARSER
-   fprintf(stderr, "process_all_ast_queries: Final child count: %zu (initial was %zu)\n",
-           ast_root->num_children, initial_child_count);
+  fprintf(stderr, "process_all_ast_queries: Final child count: %zu (initial was %zu)\n",
+          ast_root->num_children, initial_child_count);
 #endif
- }
+}
 
- /**
-  * @brief Applies qualified naming to all children of the root AST node
-  * @param ast_root The root AST node
-  * @param ctx The parser context
-  */
- static void apply_qualified_naming_to_children(ASTNode *ast_root, ParserContext *ctx) {
-   for (size_t i = 0; i < ast_root->num_children; i++) {
-     ASTNode *child = ast_root->children[i];
-     if (!child || !child->name)
-       continue;
-     if (child->qualified_name) {
-       free(child->qualified_name);
-     }
-     if (ast_root->qualified_name) {
-       child->qualified_name = malloc(strlen(ast_root->qualified_name) + strlen(child->name) + 2);
-       if (child->qualified_name) {
-         sprintf(child->qualified_name, "%s.%s", ast_root->qualified_name, child->name);
-       }
-     }
-   }
- }
+/**
+ * @brief Applies qualified naming to all children of the root AST node
+ * @param ast_root The root AST node
+ * @param ctx The parser context
+ */
+static void apply_qualified_naming_to_children(ASTNode *ast_root, ParserContext *ctx) {
+  for (size_t i = 0; i < ast_root->num_children; i++) {
+    ASTNode *child = ast_root->children[i];
+    if (!child || !child->name)
+      continue;
+    if (child->qualified_name) {
+      free(child->qualified_name);
+    }
+    if (ast_root->qualified_name) {
+      child->qualified_name = malloc(strlen(ast_root->qualified_name) + strlen(child->name) + 2);
+      if (child->qualified_name) {
+        sprintf(child->qualified_name, "%s.%s", ast_root->qualified_name, child->name);
+      }
+    }
+  }
+}
 
- /**
-  * @brief Validates and finalizes the AST, handling edge cases and test adaptations
-  * @param ast_root The root AST node
-  * @param ctx The parser context
-  * @param initial_child_count The initial number of children before query processing
-  * @return The finalized AST root node
-  */
- static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
-                                           size_t initial_child_count) {
-   if (ast_root->num_children == initial_child_count) {
-     parser_set_error(ctx, -1, "No AST nodes generated (empty or invalid input)");
+/**
+ * @brief Validates and finalizes the AST, handling edge cases and test adaptations
+ * @param ast_root The root AST node
+ * @param ctx The parser context
+ * @param initial_child_count The initial number of children before query processing
+ * @return The finalized AST root node
+ */
+static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
+                                          size_t initial_child_count) {
+  if (ast_root->num_children == initial_child_count) {
+    parser_set_error(ctx, -1, "No AST nodes generated (empty or invalid input)");
 #ifdef DEBUG_PARSER
-     fprintf(stderr, "validate_and_finalize_ast: Setting error - No AST nodes generated\n");
+    fprintf(stderr, "validate_and_finalize_ast: Setting error - No AST nodes generated\n");
 #endif
-     return ast_root;
-   }
-   if (ctx && ctx->filename && ctx->source_code && is_hello_world_test(ctx)) {
-     if (ctx && ctx->log_level <= LOG_DEBUG)
-       log_debug("Detected hello world test - applying test specific adaptations");
-     ast_root = adapt_hello_world_test(ast_root, ctx);
-     if (getenv("SCOPEMUX_RUNNING_C_EXAMPLE_TESTS") != NULL) {
-       return ast_root;
-     }
-   }
-   return ast_root;
- }
+    return ast_root;
+  }
+  if (ctx && ctx->filename && ctx->source_code && is_hello_world_test(ctx)) {
+    if (ctx && ctx->log_level <= LOG_DEBUG)
+      log_debug("Detected hello world test - applying test specific adaptations");
+    ast_root = adapt_hello_world_test(ast_root, ctx);
+    if (getenv("SCOPEMUX_RUNNING_C_EXAMPLE_TESTS") != NULL) {
+      return ast_root;
+    }
+  }
+  return ast_root;
+}
 
- /**
-  * @brief Converts a raw Tree-sitter tree into a standardized ScopeMux Abstract Syntax Tree.
-  *
-  * This is the core function responsible for building a language-agnostic AST from
-  * language-specific Tree-sitter parse trees. It follows these steps:
-  * 1. Create and configure root node
-  * 2. Process all semantic queries
-  * 3. Apply qualified naming to children
-  * 4. Process docstrings
-  * 5. Apply post-processing
-  * 6. Apply test adaptations
-  * 7. Final validation and return
-  */
- ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
-   if (ctx && ctx->log_level <= LOG_DEBUG)
-     log_debug("Entered ts_tree_to_ast");
-   if (ts_node_is_null(root_node) || !ctx) {
-     if (ctx && ctx->log_level <= LOG_ERROR)
-       log_error("Invalid arguments to ts_tree_to_ast: root_node is null=%d, ctx=%p",
-                 ts_node_is_null(root_node), (void *)ctx);
-     parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
-     return NULL;
-   }
-   ASTNode *ast_root = create_ast_root_node(ctx);
-   if (!ast_root) {
-     return NULL;
-   }
-   size_t initial_child_count = ast_root->num_children;
-   process_all_ast_queries(root_node, ctx, ast_root);
-   apply_qualified_naming_to_children(ast_root, ctx);
-   process_docstrings(ast_root, ctx);
-   ast_root = post_process_ast(ast_root, ctx);
-   ast_root = apply_test_adaptations(ast_root, ctx);
-   return validate_and_finalize_ast(ast_root, ctx, initial_child_count);
- }
+/**
+ * @brief Converts a raw Tree-sitter tree into a standardized ScopeMux Abstract Syntax Tree.
+ *
+ * This is the core function responsible for building a language-agnostic AST from
+ * language-specific Tree-sitter parse trees. It follows these steps:
+ * 1. Create and configure root node
+ * 2. Process all semantic queries
+ * 3. Apply qualified naming to children
+ * 4. Process docstrings
+ * 5. Apply post-processing
+ * 6. Apply test adaptations
+ * 7. Final validation and return
+ */
+ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
+  if (ctx && ctx->log_level <= LOG_DEBUG)
+    log_debug("Entered ts_tree_to_ast");
+  if (ts_node_is_null(root_node) || !ctx) {
+    if (ctx && ctx->log_level <= LOG_ERROR)
+      log_error("Invalid arguments to ts_tree_to_ast: root_node is null=%d, ctx=%p",
+                ts_node_is_null(root_node), (void *)ctx);
+    parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
+    return NULL;
+  }
+  ASTNode *ast_root = create_ast_root_node(ctx);
+  if (!ast_root) {
+    return NULL;
+  }
+  size_t initial_child_count = ast_root->num_children;
+  process_all_ast_queries(root_node, ctx, ast_root);
+  apply_qualified_naming_to_children(ast_root, ctx);
+  process_docstrings(ast_root, ctx);
+  ast_root = post_process_ast(ast_root, ctx);
+  ast_root = apply_test_adaptations(ast_root, ctx);
+  return validate_and_finalize_ast(ast_root, ctx, initial_child_count);
+}
 
- /**
-  * @brief Converts a raw Tree-sitter tree into a ScopeMux Concrete Syntax Tree.
-  */
- // Forward declaration for the recursive helper
- static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code);
+/**
+ * @brief Converts a raw Tree-sitter tree into a ScopeMux Concrete Syntax Tree.
+ */
+// Forward declaration for the recursive helper
+static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code);
 
- CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx) {
-   if (ts_node_is_null(root_node) || !ctx || !ctx->source_code) {
-     parser_set_error(ctx, -1, "Invalid context for CST generation.");
-     return NULL;
-   }
-   return create_cst_from_ts_node(root_node, ctx->source_code);
- }
+CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx) {
+  if (ts_node_is_null(root_node) || !ctx || !ctx->source_code) {
+    parser_set_error(ctx, -1, "Invalid context for CST generation.");
+    return NULL;
+  }
+  return create_cst_from_ts_node(root_node, ctx->source_code);
+}
 
- // Recursive helper to build the CST
- static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code) {
-   if (ts_node_is_null(ts_node)) {
-     return NULL;
-   }
+// Recursive helper to build the CST
+static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code) {
+  if (ts_node_is_null(ts_node)) {
+    return NULL;
+  }
 
-   // 1. Create a new CSTNode
-   const char *type = ts_node_type(ts_node);
-   char *content = ts_node_to_string(ts_node, source_code);
-   CSTNode *cst_node = cst_node_new(type, content);
-   if (!cst_node) {
-     if (content)
-       free(content);
-     return NULL;
-   }
+  // 1. Create a new CSTNode
+  const char *type = ts_node_type(ts_node);
+  char *content = ts_node_to_string(ts_node, source_code);
+  CSTNode *cst_node = cst_node_new(type, content);
+  if (!cst_node) {
+    if (content)
+      free(content);
+    return NULL;
+  }
 
-   // 2. Set the source range
-   cst_node->range.start.line = ts_node_start_point(ts_node).row;
-   cst_node->range.end.line = ts_node_end_point(ts_node).row;
-   cst_node->range.start.column = ts_node_start_point(ts_node).column;
-   cst_node->range.end.column = ts_node_end_point(ts_node).column;
+  // 2. Set the source range
+  cst_node->range.start.line = ts_node_start_point(ts_node).row;
+  cst_node->range.end.line = ts_node_end_point(ts_node).row;
+  cst_node->range.start.column = ts_node_start_point(ts_node).column;
+  cst_node->range.end.column = ts_node_end_point(ts_node).column;
 
-   // 3. Recursively process all children
-   uint32_t child_count = ts_node_child_count(ts_node);
-   for (uint32_t i = 0; i < child_count; ++i) {
-     TSNode ts_child = ts_node_child(ts_node, i);
-     CSTNode *cst_child = create_cst_from_ts_node(ts_child, source_code);
-     if (cst_child) {
-       cst_node_add_child(cst_node, cst_child);
-     }
-   }
+  // 3. Recursively process all children
+  uint32_t child_count = ts_node_child_count(ts_node);
+  for (uint32_t i = 0; i < child_count; ++i) {
+    TSNode ts_child = ts_node_child(ts_node, i);
+    CSTNode *cst_child = create_cst_from_ts_node(ts_child, source_code);
+    if (cst_child) {
+      cst_node_add_child(cst_node, cst_child);
+    }
+  }
 
-   return cst_node;
- }
+  return cst_node;
+}

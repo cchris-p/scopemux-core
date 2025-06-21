@@ -9,7 +9,7 @@
 #ifndef SCOPEMUX_TREE_SITTER_PARSER_H
 #define SCOPEMUX_TREE_SITTER_PARSER_H
 
-#include "./parser.h"
+#include "../../include/scopemux/parser.h"
 #include <tree_sitter/api.h>
 
 /**

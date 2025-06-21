@@ -12,6 +12,7 @@
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/query_manager.h"
 #include "../../include/scopemux/tree_sitter_integration.h" // For ts_parser_delete
+#include "../../include/scopemux/config/node_type_mapping_loader.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -232,6 +233,9 @@ ParserContext *parser_init(void) {
     return NULL;
   }
 
+  // Load config-driven node type mapping
+  load_node_type_mapping("/home/matrillo/apps/scopemux/core/config/node_type_mapping.json");
+
   ctx->mode = PARSE_AST; // Default mode
   return ctx;
 }
@@ -240,6 +244,9 @@ void parser_free(ParserContext *ctx) {
   if (!ctx)
     return;
   parser_clear(ctx);
+
+  // Free config-driven node type mapping
+  free_node_type_mapping();
 
   if (ctx->ts_parser) {
     ts_parser_delete(ctx->ts_parser);

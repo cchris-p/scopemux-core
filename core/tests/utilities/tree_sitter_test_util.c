@@ -6,7 +6,7 @@
  * and related functions for tree-sitter integration.
  */
 
-#include "../../include/scopemux/tree_sitter_parser.h"
+#include "tree_sitter_test_util.h"
 #include <stdlib.h>
 #include <string.h>
 

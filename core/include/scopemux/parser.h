@@ -11,10 +11,10 @@
 #ifndef SCOPEMUX_PARSER_H
 #define SCOPEMUX_PARSER_H
 
+#include "scopemux/logging.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "scopemux/logging.h"
 
 /**
  * @brief Representation of a source location
@@ -51,36 +51,37 @@ typedef enum {
 
 /**
  * @brief Standard AST node types used across all supported languages
- * 
+ *
  * These node types define the common semantic structure that ScopeMux uses
  * across all supported programming languages. Each language-specific parser
  * maps its syntax constructs to these standard types, enabling language-agnostic
  * analysis and transformation tools.
- * 
+ *
  * The node types are organized in a hierarchical fashion that mirrors typical
  * code organization (files contain modules/namespaces, which contain classes,
  * which contain methods, etc.).
  */
 typedef enum {
-  NODE_UNKNOWN = 0,   // Unknown or unclassified node type
-  NODE_ROOT,          // Root node for the AST (represents a file or module)
-  NODE_FUNCTION,      // Function definition (common across all languages)
-  NODE_METHOD,        // Method definition (functions within classes/objects)
-  NODE_CLASS,         // Class definition (OOP languages: C++, Python, JS, etc.)
-  NODE_STRUCT,        // Structure definition (C, C++, Go, etc.)
-  NODE_ENUM,          // Enumeration type (C, C++, TypeScript, etc.)
-  NODE_INTERFACE,     // Interface definition (TypeScript, Java, etc.)
-  NODE_NAMESPACE,     // Namespace definition (C++, C#, etc.)
-  NODE_MODULE,        // Module definition (Python, JavaScript, etc.)
-  NODE_COMMENT,       // Regular comment
-  NODE_DOCSTRING,     // Documentation comment/string
-  
+  NODE_UNKNOWN = 0, // Unknown or unclassified node type
+  NODE_ROOT,        // Root node for the AST (represents a file or module)
+  NODE_FUNCTION,    // Function definition (common across all languages)
+  NODE_METHOD,      // Method definition (functions within classes/objects)
+  NODE_CLASS,       // Class definition (OOP languages: C++, Python, JS, etc.)
+  NODE_STRUCT,      // Structure definition (C, C++, Go, etc.)
+  NODE_ENUM,        // Enumeration type (C, C++, TypeScript, etc.)
+  NODE_INTERFACE,   // Interface definition (TypeScript, Java, etc.)
+  NODE_NAMESPACE,   // Namespace definition (C++, C#, etc.)
+  NODE_MODULE,      // Module definition (Python, JavaScript, etc.)
+  NODE_COMMENT,     // Regular comment
+  NODE_DOCSTRING,   // Documentation comment/string
+
   // Language-specific node types with standardized semantics
-  NODE_UNION,         // Union type (C, C++, TypeScript)
-  NODE_TYPEDEF,       // Type alias/definition (C, C++, TypeScript)
-  NODE_INCLUDE,       // Include/import statement (represented consistently across languages)
-  NODE_MACRO,         // Macro definitions (C, C++, Rust)
-  NODE_VARIABLE,      // Variable declarations (common across all languages)
+  NODE_UNION,    // Union type (C, C++, TypeScript)
+  NODE_TYPEDEF,  // Type alias/definition (C, C++, TypeScript)
+  NODE_INCLUDE,  // Include/import statement (represented consistently across languages)
+  NODE_MACRO,    // Macro definitions (C, C++, Rust)
+  NODE_VARIABLE, // Variable declarations (common across all languages)
+  NODE_TEMPLATE, // Template definition (C++, TypeScript, etc.)
 
   // Test-specific and extended node types for precise AST adaptation
   NODE_VARIABLE_DECLARATION,
@@ -92,7 +93,7 @@ typedef enum {
   NODE_SWITCH_STATEMENT,
 
   // Add more node types as needed
-  
+
   /*
    * Note on cross-language mapping:
    * - C++ classes map to NODE_CLASS
@@ -130,13 +131,13 @@ bool cst_node_add_child(CSTNode *parent, CSTNode *child);
  * consistent analysis regardless of the source language.
  *
  * Key aspects of the cross-language standardization:
- * 
+ *
  * 1. Common node types (defined in ASTNodeType) represent equivalent semantic constructs
  *    across languages (e.g., NODE_FUNCTION represents functions in C, Python, JavaScript)
- * 
+ *
  * 2. Hierarchical relationships are preserved consistently (classes contain methods,
  *    namespaces contain classes, etc.)
- * 
+ *
  * 3. Qualified names provide a consistent way to reference entities regardless of
  *    language-specific namespacing mechanisms
  *
@@ -147,7 +148,7 @@ bool cst_node_add_child(CSTNode *parent, CSTNode *child);
  * and will be freed when the AST is destroyed via parser_free().
  */
 typedef struct ASTNode {
-    uint32_t magic; ///< Canary for heap corruption/use-after-free detection
+  uint32_t magic;       ///< Canary for heap corruption/use-after-free detection
   ASTNodeType type;     // Type of the node
   char *name;           // Name of the entity
   char *qualified_name; // Fully qualified name (e.g., namespace::class::method)
@@ -403,14 +404,13 @@ void cst_node_free(CSTNode *node);
  */
 bool cst_node_add_child(CSTNode *parent, CSTNode *child);
 
-
 /**
  * @brief Unified status codes for parser and processor helpers
  */
 typedef enum {
-    PARSE_OK = 0,      ///< Operation succeeded
-    PARSE_SKIP = 1,    ///< Skip this entity (not an error)
-    PARSE_ERROR = 2    ///< Error occurred, check context for details
+  PARSE_OK = 0,   ///< Operation succeeded
+  PARSE_SKIP = 1, ///< Skip this entity (not an error)
+  PARSE_ERROR = 2 ///< Error occurred, check context for details
 } ParseStatus;
 
 /**
@@ -425,4 +425,3 @@ typedef enum {
 //   ctx->log_level = LOG_DEBUG;
 
 #endif /* SCOPEMUX_PARSER_H */
-

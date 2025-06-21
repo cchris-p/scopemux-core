@@ -1,0 +1,17 @@
+{
+  "classes": "NODE_CLASS",
+  "control_flow": "NODE_UNKNOWN",
+  "docstrings": "NODE_DOCSTRING",
+  "enums": "NODE_ENUM",
+  "functions": "NODE_FUNCTION",
+  "imports": "NODE_MODULE",
+  "includes": "NODE_INCLUDE",
+  "interfaces": "NODE_INTERFACE",
+  "macros": "NODE_MACRO",
+  "methods": "NODE_METHOD",
+  "structs": "NODE_STRUCT",
+  "templates": "NODE_TEMPLATE",
+  "typedefs": "NODE_TYPEDEF",
+  "unions": "NODE_UNION",
+  "variables": "NODE_VARIABLE"
+}

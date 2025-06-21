@@ -1,2 +1,2 @@
-# Minimal CMakeLists.txt for config
-# Add source files or targets here as needed
+# CMakeLists.txt for config
+add_library(config_objects OBJECT node_type_mapping_loader.c)

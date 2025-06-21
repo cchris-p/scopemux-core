@@ -1,0 +1,141 @@
+#include "../../include/scopemux/config/node_type_mapping_loader.h"
+#include "../../include/scopemux/parser.h"
+#include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Simple hash table for mapping query_type -> ASTNodeType
+#define MAX_MAPPINGS 32
+
+typedef struct {
+  char *query_type;
+  ASTNodeType node_type;
+} NodeTypeMapping;
+
+static NodeTypeMapping mappings[MAX_MAPPINGS];
+static int mapping_count = 0;
+
+static ASTNodeType parse_node_type(const char *enum_str) {
+  if (strcmp(enum_str, "NODE_FUNCTION") == 0)
+    return NODE_FUNCTION;
+  if (strcmp(enum_str, "NODE_CLASS") == 0)
+    return NODE_CLASS;
+  if (strcmp(enum_str, "NODE_METHOD") == 0)
+    return NODE_METHOD;
+  if (strcmp(enum_str, "NODE_VARIABLE") == 0)
+    return NODE_VARIABLE;
+  if (strcmp(enum_str, "NODE_MODULE") == 0)
+    return NODE_MODULE;
+  if (strcmp(enum_str, "NODE_UNKNOWN") == 0)
+    return NODE_UNKNOWN;
+  if (strcmp(enum_str, "NODE_STRUCT") == 0)
+    return NODE_STRUCT;
+  if (strcmp(enum_str, "NODE_UNION") == 0)
+    return NODE_UNION;
+  if (strcmp(enum_str, "NODE_ENUM") == 0)
+    return NODE_ENUM;
+  if (strcmp(enum_str, "NODE_TYPEDEF") == 0)
+    return NODE_TYPEDEF;
+  if (strcmp(enum_str, "NODE_INCLUDE") == 0)
+    return NODE_INCLUDE;
+  if (strcmp(enum_str, "NODE_MACRO") == 0)
+    return NODE_MACRO;
+  if (strcmp(enum_str, "NODE_DOCSTRING") == 0)
+    return NODE_DOCSTRING;
+  if (strcmp(enum_str, "NODE_INTERFACE") == 0)
+    return NODE_INTERFACE;
+  if (strcmp(enum_str, "NODE_TEMPLATE") == 0)
+    return NODE_TEMPLATE;
+  return NODE_UNKNOWN;
+}
+
+/**
+ * @brief Loads the node type mapping from a JSON config file.
+ * @param config_path Path to the JSON config file.
+ *
+ * If the file cannot be opened, logs an error and leaves the mapping empty.
+ */
+void load_node_type_mapping(const char *config_path) {
+  FILE *f = fopen(config_path, "r");
+  if (!f) {
+    fprintf(stderr, "[scopemux] ERROR: Failed to open node type mapping config: %s\n", config_path);
+    return;
+  }
+  char buf[4096];
+  size_t len = fread(buf, 1, sizeof(buf) - 1, f);
+  fclose(f);
+  buf[len] = '\0';
+  char *p = buf;
+  printf("[scopemux] Loaded node type mapping config (showing all mappings):\n");
+  // Minimal JSON object parser: expects { "key": "value", ... }
+  // Does NOT support nested objects or arrays. Only works for flat string:string mappings.
+  while (*p) {
+    // Skip whitespace and delimiters
+    while (*p && (isspace((unsigned char)*p) || *p == '{' || *p == ',')) p++;
+    if (*p == '"') {
+      // Parse key
+      char *key_start = ++p;
+      while (*p && *p != '"') p++;
+      if (!*p) break;
+      size_t klen = p - key_start;
+      char key[64];
+      strncpy(key, key_start, klen);
+      key[klen] = '\0';
+      p++; // skip closing quote
+      while (*p && (isspace((unsigned char)*p) || *p == ':')) p++;
+      if (*p != '"') {
+        // Malformed JSON, skip to next
+        while (*p && *p != ',') p++;
+        continue;
+      }
+      // Parse value
+      char *val_start = ++p;
+      while (*p && *p != '"') p++;
+      if (!*p) break;
+      size_t vlen = p - val_start;
+      char val[64];
+      strncpy(val, val_start, vlen);
+      val[vlen] = '\0';
+      p++; // skip closing quote
+      // Store mapping
+      if (mapping_count < MAX_MAPPINGS) {
+        mappings[mapping_count].query_type = strdup(key);
+        mappings[mapping_count].node_type = parse_node_type(val);
+        printf("  %s -> %s\n", key, val);
+        mapping_count++;
+      }
+    } else {
+      p++;
+    }
+  }
+}
+
+/**
+ * @brief Gets the ASTNodeType for a given query type string.
+ * @param query_type The query type string (e.g., "functions").
+ * @return The corresponding ASTNodeType, or NODE_UNKNOWN if not found.
+ *
+ * Logs a warning if the mapping is missing.
+ */
+ASTNodeType get_node_type_for_query(const char *query_type) {
+  for (int i = 0; i < mapping_count; ++i) {
+    if (strcmp(mappings[i].query_type, query_type) == 0) {
+      return mappings[i].node_type;
+    }
+  }
+  fprintf(stderr, "[scopemux] WARNING: No AST node type mapping for query type: '%s'\n",
+          query_type);
+  return NODE_UNKNOWN;
+}
+
+/**
+ * @brief Frees all memory used by the node type mapping.
+ */
+void free_node_type_mapping(void) {
+  for (int i = 0; i < mapping_count; ++i) {
+    free(mappings[i].query_type);
+  }
+  mapping_count = 0;
+}

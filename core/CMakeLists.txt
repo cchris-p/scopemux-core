@@ -80,6 +80,7 @@ set(PARSER_SOURCES
     src/processors/test_processor.c
     src/processors/ast_post_processor.c
     src/processors/docstring_processor.c
+    src/config/node_type_mapping_loader.c
 )
 
 set(CONTEXT_ENGINE_SOURCES
