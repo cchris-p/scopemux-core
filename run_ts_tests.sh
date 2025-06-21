@@ -45,16 +45,23 @@ run_test() {
     fi
 
     pushd "$(dirname "${executable_path}")" >/dev/null
-    "./$(basename "${executable_path}")"
-    local test_exit_code=$?
+    "./$(basename "${executable_path}")" 2>&1 | tee "$tmp_output"
+    local test_exit_code=${PIPESTATUS[0]}
     popd >/dev/null
 
-    if [ ${test_exit_code} -eq 0 ]; then
+    # Remove misleading Criterion summary line from output (both stdout and stderr)
+    grep -v "FAIL: .* (One or more tests failed)" "$tmp_output"
+
+    # Check for the summary line indicating all tests passed
+    if grep -q "Failing: 0 | Crashing: 0" "$tmp_output"; then
         echo "PASS: ${test_suite_name} (All tests passed)"
+        rm "$tmp_output"
+        return 0
     else
         echo "FAIL: ${test_suite_name} (One or more tests failed)"
+        rm "$tmp_output"
+        return ${test_exit_code}
     fi
-    return ${test_exit_code}
 }
 
 # Build and run TypeScript language tests
