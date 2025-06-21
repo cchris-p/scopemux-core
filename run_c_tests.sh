@@ -12,7 +12,8 @@ mkdir -p build
 # - Parallel test execution
 # - Proper cleanup handling
 
-# Set default parallel jobs (adjust based on CPU cores)
+# Set fixed parallel jobs for concurrent test execution
+# Uses 4 concurrent jobs for optimal performance
 PARALLEL_JOBS=4
 
 # Exit on any error
@@ -121,23 +122,14 @@ CLEAN_BUILD=true
 # Process command line arguments
 for arg in "$@"; do
     case $arg in
-    --strict-json)
-        STRICT_JSON_MODE=true
-        echo "[run_c_tests.sh] Strict JSON mode enabled"
-        ;;
     --no-clean)
         CLEAN_BUILD=false
         echo "[run_c_tests.sh] Skipping clean build"
-        ;;
-    --jobs=*)
-        PARALLEL_JOBS="${arg#*=}"
-        echo "[run_c_tests.sh] Using $PARALLEL_JOBS parallel jobs"
         ;;
     --help)
         echo "Usage: ./run_c_tests.sh [options]"
         echo "Options:"
         echo "  --no-clean      : Skip cleaning build directory"
-        echo "  --jobs=N        : Set number of parallel test jobs (default: 4)"
         echo "  --help          : Show this help message"
         exit 0
         ;;
@@ -298,7 +290,7 @@ process_c_example_tests() {
 # Build and run C language tests
 
 # Run C language test suite with enhanced features
-echo "[run_c_tests.sh] Running C language test suite with parallel jobs: $PARALLEL_JOBS"
+echo "[run_c_tests.sh] Running C language test suite"
 
 # Run standard tests
 if [ "${RUN_C_BASIC_AST_TESTS}" = true ]; then
@@ -359,7 +351,6 @@ echo "======================================================================="
 echo "                      TEST EXECUTION SUMMARY                          "
 echo "======================================================================="
 echo "Total execution time: $TOTAL_TIME seconds"
-echo "Parallel jobs: $PARALLEL_JOBS"
 
 # Report on missing JSON files even if tests pass
 if [ $TOTAL_MISSING_JSON -gt 0 ]; then
