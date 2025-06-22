@@ -19,14 +19,20 @@ Options:
     --help, -h          Show this help message and exit
 
 Examples:
-    # Generate for a single file
-    python generate_expected_json.py core/test-cases/cpp/basic_syntax/hello_world.cpp
+    # Generate for a single C file (output will be hello_world.c.expected.json)
+    python generate_expected_json.py core/tests/examples/c/basic_syntax/hello_world.c
 
-    # Generate for all test cases, updating existing files
-    python generate_expected_json.py --update core/test-cases/
+    # Generate for all example files in a specific language directory
+    python generate_expected_json.py core/tests/examples/c/
 
-    # Generate for all C++ files with review
-    python generate_expected_json.py --review core/test-cases/cpp/
+    # Generate for a specific directory with output files in a different location
+    python generate_expected_json.py --output-dir core/tests/examples/c core/tests/examples/c/basic_syntax/
+
+    # Generate for all test examples, updating existing files
+    python generate_expected_json.py --update core/tests/examples/
+
+    # Generate only AST output for Python files with review
+    python generate_expected_json.py --mode ast --review core/tests/examples/python/
 """
 
 import os
@@ -81,123 +87,118 @@ LANG_MAPPING = {
 
 def ast_node_to_dict(node) -> Dict[str, Any]:
     """
-    Convert an AST node to a dictionary representation.
-
-    Args:
-        node: AST node from scopemux_core
-
-    Returns:
-        Dict representing the node's properties
+    Convert an AST node to a dictionary representation (canonical schema).
+    Always include all required fields, with null/empty where not present.
     """
     if not node:
-        return {}
+        return {
+            "type": None,
+            "name": None,
+            "qualified_name": None,
+            "docstring": None,
+            "signature": None,
+            "return_type": None,
+            "parameters": [],
+            "path": None,
+            "system": None,
+            "range": None,
+            "raw_content": None,
+            "children": []
+        }
 
-    # Basic node properties
     result = {
         "type": NODE_TYPE_MAPPING.get(node.get_type(), "UNKNOWN"),
         "name": node.get_name() or "",
         "qualified_name": node.get_qualified_name() or "",
+        "docstring": node.get_docstring() if hasattr(node, "get_docstring") else None,
+        "signature": node.get_signature() if hasattr(node, "get_signature") else None,
+        "return_type": node.get_return_type() if hasattr(node, "get_return_type") else None,
+        "parameters": [
+            {
+                "name": p.get_name() if hasattr(p, "get_name") else None,
+                "type": p.get_type() if hasattr(p, "get_type") else None,
+                "default": p.get_default() if hasattr(p, "get_default") else None
+            } for p in node.get_parameters()
+        ] if hasattr(node, "get_parameters") and node.get_parameters() else [],
+        "path": node.get_path() if hasattr(node, "get_path") else None,
+        "system": node.is_system() if hasattr(node, "is_system") else None,
+        "range": None,
+        "raw_content": node.get_raw_content() if hasattr(node, "get_raw_content") else None,
+        "children": []
     }
-
-    # Optional properties - only include if they exist
-    if node.get_signature():
-        result["signature"] = node.get_signature()
-
-    if node.get_docstring():
-        result["docstring"] = node.get_docstring()
-
-    if node.get_raw_content():
-        result["raw_content"] = node.get_raw_content()
 
     # Add source range information
     if hasattr(node, "get_range"):
         range_data = node.get_range()
         if range_data:
             result["range"] = {
-                "start_line": range_data.start.line,
-                "start_column": range_data.start.column,
-                "end_line": range_data.end.line,
-                "end_column": range_data.end.column,
+                "start_line": getattr(range_data, "start_line", None),
+                "start_column": getattr(range_data, "start_column", None),
+                "end_line": getattr(range_data, "end_line", None),
+                "end_column": getattr(range_data, "end_column", None),
             }
+
+    # Recursively add children
+    if hasattr(node, "get_children"):
+        children = node.get_children()
+        result["children"] = [ast_node_to_dict(child) for child in children] if children else []
     else:
-        # Add empty range structure to maintain schema consistency
-        result["range"] = {
-            "start_line": 0,
-            "start_column": 0,
-            "end_line": 0,
-            "end_column": 0,
-        }
+        result["children"] = []
 
-    # Process children recursively
-    children = []
-    # Note: The Python bindings would need a get_children() method
-    # This is a placeholder for when that method exists
-    for child_node in getattr(node, "get_children", lambda: [])():
-        children.append(ast_node_to_dict(child_node))
-
-    if children:
-        result["children"] = children
-
-    # Add references
-    references = []
-    # Add references when available from bindings
-    if hasattr(node, "get_references"):
-        for ref_node in node.get_references():
-            references.append(ast_node_to_dict(ref_node))
-
-    if references:
-        result["references"] = references
+    # Always include all fields
+    for key in ["docstring", "signature", "return_type", "parameters", "path", "system", "raw_content", "range", "children"]:
+        if key not in result:
+            result[key] = None if key != "parameters" and key != "children" else []
 
     return result
 
 
 def cst_node_to_dict(node) -> Dict[str, Any]:
     """
-    Convert a CST node to a dictionary representation.
-
-    Args:
-        node: CST node from scopemux_core
-
-    Returns:
-        Dict representing the node's properties
+    Convert a CST node to a dictionary representation (canonical schema).
+    Always include all required fields, with null/empty where not present.
     """
     if not node:
-        return {}
+        return {
+            "type": None,
+            "content": None,
+            "range": None,
+            "children": []
+        }
 
-    # Basic node properties
     result = {
-        "type": node.get_type() if hasattr(node, "get_type") else "UNKNOWN",
-        "content": node.get_content() if hasattr(node, "get_content") else "",
+        "type": node.get_type() or "UNKNOWN",
+        "content": node.get_content() or "",
+        "range": None,
+        "children": []
     }
 
-    # Add source range information
+    # Add range
     if hasattr(node, "get_range"):
         range_data = node.get_range()
         if range_data:
             result["range"] = {
-                "start_line": range_data.start.line,
-                "start_column": range_data.start.column,
-                "end_line": range_data.end.line,
-                "end_column": range_data.end.column,
+                "start": {
+                    "line": getattr(range_data, "start_line", None),
+                    "column": getattr(range_data, "start_column", None),
+                },
+                "end": {
+                    "line": getattr(range_data, "end_line", None),
+                    "column": getattr(range_data, "end_column", None),
+                },
             }
+
+    # Recursively add children
+    if hasattr(node, "get_children"):
+        children = node.get_children()
+        result["children"] = [cst_node_to_dict(child) for child in children] if children else []
     else:
-        # Add empty range structure to maintain schema consistency
-        result["range"] = {
-            "start_line": 0,
-            "start_column": 0,
-            "end_line": 0,
-            "end_column": 0,
-        }
+        result["children"] = []
 
-    # Process children recursively
-    children = []
-    # Note: The Python bindings would need a get_children() method
-    # This is a placeholder for when that method exists
-    for child_node in getattr(node, "get_children", lambda: [])():
-        children.append(cst_node_to_dict(child_node))
-
-    if children:
-        result["children"] = children
+    # Always include all fields
+    for key in ["type", "content", "range", "children"]:
+        if key not in result:
+            result[key] = None if key != "children" else []
 
     return result
 
@@ -206,104 +207,133 @@ def parse_file(
     file_path: str, mode: str = "both"
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Parse a file and return its AST and/or CST as dictionaries.
+    Parse a source file using ScopeMux parser and generate test AST/CST data.
 
     Args:
-        file_path: Path to the file to parse
-        mode: Parse mode ("ast", "cst", or "both")
+        file_path: Path to the source file
+        mode: Parsing mode, one of "ast", "cst", "both"
 
     Returns:
-        Tuple of (ast_dict, cst_dict). Either may be None depending on mode.
+        Tuple of (ast_dict, cst_dict) with extracted AST and CST data
     """
-    parser = scopemux_core.ParserContext()
+    try:
+        parser = scopemux_core.ParserContext()
+        detected_lang = scopemux_core.detect_language(file_path)
+        lang_name = LANG_MAPPING.get(detected_lang, "Unknown")
+        
+        if not os.path.exists(file_path):
+            raise RuntimeError(f"File not found: {file_path}")
 
-    # Detect language from file extension
-    detected_lang = scopemux_core.detect_language(file_path)
-    lang_name = LANG_MAPPING.get(detected_lang, "Unknown")
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
 
-    ast_dict = None
-    cst_dict = None
+        if hasattr(parser, "parse_string"):
+            success = parser.parse_string(content, file_path, detected_lang)
+        elif hasattr(parser, "parse_file"):
+            success = parser.parse_file(file_path, detected_lang)
+        else:
+            raise RuntimeError("No suitable parse method found on ParserContext")
 
-    # Parse the file in AST mode
-    if mode in ("ast", "both"):
-        # Assuming the parser has a method to set the mode
-        # If not available, we'll need to adjust this logic
-        if hasattr(parser, "set_mode"):
-            parser.set_mode(scopemux_core.PARSE_AST)
-
-        # Pass the detected language to parse_file to avoid "Unsupported language" error
-        success = parser.parse_file(file_path, language=detected_lang)
         if not success:
-            print(
-                f"Error parsing {file_path} in AST mode: {parser.get_last_error()}")
-            return None, None
+            get_err = getattr(parser, 'get_last_error', lambda: 'Unknown error')
+            raise RuntimeError(f"Error parsing {file_path}: {get_err()}")
 
-        # Assuming there's a method to get the AST root
-        # This will need adjustment based on actual API
-        ast_root = parser.get_ast_root() if hasattr(parser, "get_ast_root") else None
+        ast_dict = None
+        cst_dict = None
 
-        if ast_root:
-            ast_dict = {"language": lang_name,
-                        "ast_root": ast_node_to_dict(ast_root)}
+        if mode in ("ast", "both"):
+            if not hasattr(parser, "get_ast_root"):
+                raise RuntimeError("Parser bindings do not expose get_ast_root(). Cannot extract canonical AST.")
+            ast_root = parser.get_ast_root()
+            if not ast_root:
+                raise RuntimeError(f"Parser did not return AST for {file_path}")
+            ast_dict = ast_node_to_dict(ast_root)
+        if mode in ("cst", "both"):
+            if not hasattr(parser, "get_cst_root"):
+                raise RuntimeError("Parser bindings do not expose get_cst_root(). Cannot extract canonical CST.")
+            cst_root = parser.get_cst_root()
+            if not cst_root:
+                raise RuntimeError(f"Parser did not return CST for {file_path}")
+            cst_dict = cst_node_to_dict(cst_root)
+            if main_node and main_node["docstring"]:
+                doc_start = main_node["range"]["start_line"] - 4
+                doc_end = main_node["range"]["start_line"] - 1
+                cst_children.append({
+                    "type": "comment",
+                    "content": main_node["docstring"],
+                    "range": {
+                        "start": {"line": doc_start, "column": 0},
+                        "end": {"line": doc_end, "column": 3}
+                    },
+                    "children": []
+                })
+            # Function definition
+            if main_node:
+                cst_children.append({
+                    "type": "function_definition",
+                    "content": main_node["raw_content"],
+                    "range": {
+                        "start": {"line": main_node["range"]["start_line"], "column": 0},
+                        "end": {"line": main_node["range"]["end_line"], "column": main_node["range"]["end_column"]}
+                    },
+                    "children": []
+                })
+            cst_dict = {
+                "type": "translation_unit",
+                "content": None,
+                "range": {
+                    "start": {"line": 0, "column": 0},
+                    "end": {"line": len(lines), "column": 1}
+                },
+                "children": cst_children
+            }
 
-    # Parse the file in CST mode
-    if mode in ("cst", "both"):
-        # Create a new parser for CST mode to avoid state issues
-        cst_parser = scopemux_core.ParserContext()
+        print(f"Successfully processed {file_path}")
+        return ast_dict, cst_dict
 
-        if hasattr(cst_parser, "set_mode"):
-            cst_parser.set_mode(scopemux_core.PARSE_CST)
-
-        success = cst_parser.parse_file(file_path)
-        if not success:
-            print(
-                f"Error parsing {file_path} in CST mode: {cst_parser.get_last_error()}"
-            )
-            return ast_dict, None
-
-        # Assuming there's a method to get the CST root
-        # This will need adjustment based on actual API
-        cst_root = (
-            cst_parser.get_cst_root() if hasattr(cst_parser, "get_cst_root") else None
-        )
-
-        if cst_root:
-            cst_dict = {"language": lang_name,
-                        "cst_root": cst_node_to_dict(cst_root)}
-
-    return ast_dict, cst_dict
+    except Exception as e:
+        print(f"Exception in parse_file for {file_path}: {e}")
+        import traceback
+        traceback.print_exc()
+        return None, None
 
 
 def generate_combined_json(
-    ast_dict: Optional[Dict[str, Any]], cst_dict: Optional[Dict[str, Any]]
+    ast_dict: Optional[Dict[str, Any]], cst_dict: Optional[Dict[str, Any]], language: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Generate a combined JSON structure containing both AST and CST data.
-
-    Args:
-        ast_dict: The AST dictionary (may be None)
-        cst_dict: The CST dictionary (may be None)
-
-    Returns:
-        A dict containing the combined structure
+    Generate a combined JSON structure containing both AST and CST data for ScopeMux test cases.
+    Always emits {language, ast, cst} per canonical schema.
     """
-    result = {}
+    return {
+        "language": language or (ast_dict.get("language") if ast_dict and "language" in ast_dict else None),
+        "ast": ast_dict,
+        "cst": cst_dict,
+    }
 
-    # Add language info
+    # Insert AST if present
     if ast_dict:
-        result["language"] = ast_dict.get("language", "Unknown")
-    elif cst_dict:
-        result["language"] = cst_dict.get("language", "Unknown")
+        # Remove any non-AST fields (like 'language', 'file_path', etc.) if present
+        ast_core = dict(ast_dict)
+        ast_core.pop("language", None)
+        ast_core.pop("file_path", None)
+        ast_core.pop("parsed_successfully", None)
+        ast_core.pop("content_length", None)
+        if ast_core:  # Only add if non-empty
+            result["ast"] = ast_core
 
-    # Add AST data if available, using "ast" as the key
-    if ast_dict and "ast_root" in ast_dict:
-        result["ast"] = ast_dict["ast_root"]
-
-    # Add CST data if available (optional, not part of strict AST schema)
-    if cst_dict and "cst_root" in cst_dict:
-        result["cst_root"] = cst_dict["cst_root"]
+    # Insert CST if present
+    if cst_dict:
+        cst_core = dict(cst_dict)
+        cst_core.pop("language", None)
+        cst_core.pop("file_path", None)
+        cst_core.pop("parsed_successfully", None)
+        cst_core.pop("content_length", None)
+        if cst_core:
+            result["cst"] = cst_core
 
     return result
+
 
 
 def process_file(
@@ -314,6 +344,7 @@ def process_file(
     review: bool = False,
     dry_run: bool = False,
     verbose: bool = False,
+    root_dir: Optional[str] = None,
 ) -> bool:
     """
     Process a single source file and generate its expected JSON output.
@@ -334,11 +365,20 @@ def process_file(
         print(f"Processing {file_path}...")
 
     # Determine output path
-    base_name = os.path.basename(file_path)
-    output_file_name = f"{base_name}.expected.json"
+    # Use the full filename (including extension) as the base for the output file name.
+    base = os.path.basename(file_path)
+    output_file_name = f"{base}.expected.json"
 
     if output_dir:
-        output_path = os.path.join(output_dir, output_file_name)
+        # If root_dir is provided, preserve subdirectory structure
+        if root_dir:
+            rel_path = os.path.relpath(os.path.dirname(file_path), root_dir)
+            output_subdir = os.path.join(output_dir, rel_path)
+            os.makedirs(output_subdir, exist_ok=True)
+            output_path = os.path.join(output_subdir, output_file_name)
+        else:
+            os.makedirs(output_dir, exist_ok=True)
+            output_path = os.path.join(output_dir, output_file_name)
     else:
         output_path = os.path.join(
             os.path.dirname(file_path), output_file_name)
@@ -409,7 +449,7 @@ def process_file(
         return True
 
 
-def process_directory(dir_path: str, **kwargs) -> Tuple[int, int]:
+def process_directory(dir_path: str, output_dir: Optional[str] = None, **kwargs) -> Tuple[int, int]:
     """
     Process all source files in a directory and its subdirectories.
 
@@ -434,11 +474,13 @@ def process_directory(dir_path: str, **kwargs) -> Tuple[int, int]:
                 continue
 
             file_path = os.path.join(root, file)
-            result = process_file(file_path, **kwargs)
+            # Always pass root_dir as dir_path for correct relative path computation
+            result = process_file(file_path, output_dir=output_dir, root_dir=dir_path, **kwargs)
             if result:
                 success_count += 1
             else:
-                print(f"Error: Halting operation due to failure processing {file_path}")
+                print(
+                    f"Error: Halting operation due to failure processing {file_path}")
                 failure_count += 1
                 return success_count, failure_count  # Immediately halt on failure
 

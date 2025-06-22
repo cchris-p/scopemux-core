@@ -75,15 +75,27 @@ target_include_directories(test_utilities PRIVATE
 # Define the core C source files from the main project needed for these tests
 # These are compiled directly into the test executable.
 set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
+    # Parser core components
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/tree_sitter_integration.c
-    # ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/tree_sitter_parser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
-    # ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ir_generator.c  # Commented out missing file
+
+    # Common utilities
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/error_handling.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/logging.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/memory_management.c
-    # Tree-sitter core and grammar sources are now linked as libraries
+
+    # Adapters for language-specific functionality
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/adapters/adapter_registry.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/adapters/language_adapter.c
+
+    # Processors that post-process the AST
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/processors/ast_post_processor.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/processors/docstring_processor.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/processors/test_processor.c
+
+    # Configuration modules
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/config/node_type_mapping_loader.c
 )
 
 # --- Language-specific Test Sources ---
@@ -152,7 +164,6 @@ target_include_directories(init_parser_tests PRIVATE
     ${PROJECT_SOURCE_DIR}/core/include/scopemux
 )
 
-
 # Edge Case tests executable
 add_executable(edge_case_tests
     ${EDGE_CASE_TEST_SOURCES}
@@ -219,7 +230,6 @@ message(STATUS "[CMake Diagnostics] c_example_ast_tests include dirs: ${EXAMPLE_
 
 add_executable(python_example_ast_tests
     ${PYTHON_EXAMPLE_AST_TEST_SOURCES}
-    ${TEST_UTIL_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
 target_include_directories(python_example_ast_tests PRIVATE
@@ -230,7 +240,6 @@ target_include_directories(python_example_ast_tests PRIVATE
 
 add_executable(cpp_example_ast_tests
     ${CPP_EXAMPLE_AST_TEST_SOURCES}
-    ${TEST_UTIL_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
 target_include_directories(cpp_example_ast_tests PRIVATE
@@ -264,13 +273,11 @@ target_include_directories(ts_basic_ast_tests PRIVATE
 
 add_executable(js_example_ast_tests
     ${JS_EXAMPLE_AST_TEST_SOURCES}
-    ${TEST_UTIL_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
 
 add_executable(ts_example_ast_tests
     ${TS_EXAMPLE_AST_TEST_SOURCES}
-    ${TEST_UTIL_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
 
@@ -355,6 +362,7 @@ target_link_libraries(c_example_ast_tests PRIVATE
 )
 
 target_link_libraries(python_example_ast_tests PRIVATE
+    test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
     m
@@ -369,6 +377,7 @@ target_link_libraries(python_example_ast_tests PRIVATE
 )
 
 target_link_libraries(cpp_example_ast_tests PRIVATE
+    test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
     m
@@ -412,6 +421,7 @@ target_link_libraries(ts_basic_ast_tests PRIVATE
 )
 
 target_link_libraries(js_example_ast_tests PRIVATE
+    test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
     m
@@ -426,6 +436,7 @@ target_link_libraries(js_example_ast_tests PRIVATE
 )
 
 target_link_libraries(ts_example_ast_tests PRIVATE
+    test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
     m

@@ -9,9 +9,10 @@ TOTAL_MISSING_JSON=0
 START_TIME=$(date +%s)
 
 # Standardized error handling
+# Handles errors by printing a message and returning 1 (does not exit the script).
 handle_error() {
     echo "❌ ERROR: $1"
-    exit 1
+    return 1
 }
 
 # Cleanup function (called on exit)
@@ -25,6 +26,7 @@ cleanup() {
 trap cleanup EXIT
 
 # Standardized build function with improved logging
+# Builds a test target. On failure, prints the build log and returns 1 (does not exit the script).
 build_test_target() {
     local target_name="$1"
     local display_name="$2"
@@ -38,7 +40,7 @@ build_test_target() {
         echo "❌ ERROR: Failed to build test target '${display_name}'."
         echo "Build log output:"
         cat "$build_log"
-        exit 1
+        return 1
     else
         echo "[test_runner_lib] Successfully built ${display_name}"
     fi
@@ -222,9 +224,8 @@ setup_cmake_config() {
         mkdir -p "$build_dir"
     fi
     
-    cd "${build_dir}"
-    echo "[test_runner_lib] Running CMake configuration in $build_dir"
-    cmake "${project_root_dir}"
+    echo "[test_runner_lib] Running CMake configuration: cmake -S $project_root_dir -B $build_dir -G 'Unix Makefiles'"
+    cmake -S "$project_root_dir" -B "$build_dir" -G "Unix Makefiles"
     if [ $? -ne 0 ]; then
         handle_error "CMake configuration failed"
     fi

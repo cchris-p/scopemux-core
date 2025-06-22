@@ -7,6 +7,8 @@
  * from the main tree_sitter_integration.c file.
  */
 
+#define _GNU_SOURCE /* Required for strdup() function */
+
 #include "../../include/scopemux/processors/docstring_processor.h"
 
 // File-level logging toggle. Set to true to enable logs for this file.
@@ -14,7 +16,7 @@ static bool enable_logging = false;
 #include "../../include/scopemux/logging.h"
 
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* This header is needed for strdup */
 
 /**
  * Extracts a clean docstring from a JavaDoc-style comment

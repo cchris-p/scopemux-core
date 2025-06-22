@@ -451,15 +451,37 @@ static bool cache_query(QueryManager *manager, int lang_idx, const char *query_n
 }
 
 /**
- * @brief Retrieves a compiled Tree-sitter query for a specific language.
+ * @brief Gets a compiled Tree-sitter query by language and name.
  *
- * @param manager The query manager instance.
- * @param language The programming language for which to get the query.
+ * This function retrieves a compiled Tree-sitter query from the QueryManager.
+ * It first checks if the query is already cached. If found in the cache, it returns
+ * the cached query. Otherwise, it attempts to load the query file from disk,
+ * compile it using the Tree-sitter API, cache it for future use, and then return
+ * the compiled query.
+ *
+ * @param q_manager The QueryManager instance.
+ * @param language The language for the query.
  * @param query_name The name of the query to retrieve.
  * @return A const pointer to the compiled TSQuery, or NULL if not found.
  */
-const TSQuery *query_manager_get_query(QueryManager *manager, LanguageType language,
+const TSQuery *query_manager_get_query(QueryManager *q_manager, LanguageType language,
                                        const char *query_name) {
+  if (!q_manager) {
+    log_error("NULL query manager passed to query_manager_get_query");
+    return NULL;
+  }
+
+  if (!query_name) {
+    log_error("NULL query name passed to query_manager_get_query");
+    return NULL;
+  }
+
+  // Safety check for language bounds
+  if (language < 0 || language >= q_manager->language_count) {
+    log_error("Invalid language type (%d) passed to query_manager_get_query", language);
+    return NULL;
+  }
+
   // Direct debug output - only shown when debug mode is enabled
   if (DIRECT_DEBUG_MODE) {
     fprintf(stderr,
@@ -467,32 +489,29 @@ const TSQuery *query_manager_get_query(QueryManager *manager, LanguageType langu
             language, query_name ? query_name : "NULL");
     fflush(stderr);
   }
-  if (!manager || !query_name || language == LANG_UNKNOWN) {
-    return NULL;
-  }
 
   // Step 1: Find  // Check if language index is in range
-  size_t lang_idx = get_language_index(manager, language);
+  size_t lang_idx = get_language_index(q_manager, language);
   if (lang_idx == (size_t)-1) {
     fprintf(stderr, "Unsupported language %d in query_manager_get_query\n", language);
     return NULL;
   }
 
   // Check if corresponding Tree-sitter language object is available
-  if (!manager->languages[lang_idx]) {
+  if (!q_manager->languages[lang_idx]) {
     fprintf(stderr, "No Tree-sitter language object available for language %d\n", language);
     return NULL;
   }
 
   // Step 2: Check if the query is already cached
-  int query_idx = find_cached_query(manager, lang_idx, query_name);
+  int query_idx = find_cached_query(q_manager, lang_idx, query_name);
   if (query_idx >= 0) {
     // Query found in cache, return it
-    return manager->cached_queries[lang_idx][query_idx].query;
+    return (const TSQuery *)q_manager->cached_queries[lang_idx][query_idx].query;
   }
 
   // Step 3: Query not found in cache, need to load and compile it
-  const TSLanguage *ts_language = manager->languages[lang_idx];
+  const TSLanguage *ts_language = q_manager->languages[lang_idx];
   if (!ts_language) {
     fprintf(stderr, "No Tree-sitter language object available for language %d\n", language);
     return NULL;
@@ -506,7 +525,7 @@ const TSQuery *query_manager_get_query(QueryManager *manager, LanguageType langu
   }
 
   // Construct the query file path
-  char *query_path = construct_query_path(manager, lang_name, query_name);
+  char *query_path = construct_query_path(q_manager, lang_name, query_name);
   if (!query_path) {
     fprintf(stderr, "Failed to construct query path for %s/%s\n", lang_name, query_name);
     return NULL;
@@ -533,11 +552,11 @@ const TSQuery *query_manager_get_query(QueryManager *manager, LanguageType langu
   }
 
   // Cache the compiled query for future use
-  if (!cache_query(manager, lang_idx, query_name, query)) {
+  if (!cache_query(q_manager, lang_idx, query_name, query)) {
     fprintf(stderr, "Failed to cache query %s/%s\n", lang_name, query_name);
     ts_query_delete((TSQuery *)query); // Cast away const
     return NULL;
   }
 
-  return query;
+  return (const TSQuery *)query;
 }

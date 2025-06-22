@@ -1,5 +1,5 @@
 #pragma once
-#include "parser.h"
+#include "../scopemux/parser.h"
 
 #ifdef __cplusplus
 extern "C" {

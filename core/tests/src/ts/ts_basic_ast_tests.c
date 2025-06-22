@@ -34,7 +34,7 @@ Test(ast_extraction, ts_functions, .description = "Test AST extraction of TypeSc
   // Parse the source code
   fprintf(stderr, "About to parse source code...\n");
   parser_parse_string(ctx, source_code, strlen(source_code), "variables_loops_conditions.ts",
-                      LANG_TS);
+                      LANG_TYPESCRIPT);
   fprintf(stderr, "Source code parsed\n");
   const char *error_message = parser_get_last_error(ctx);
   cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");

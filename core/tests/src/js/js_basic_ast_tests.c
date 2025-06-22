@@ -34,7 +34,7 @@ Test(ast_extraction, js_functions, .description = "Test AST extraction of JavaSc
   // Parse the source code
   fprintf(stderr, "About to parse source code...\n");
   parser_parse_string(ctx, source_code, strlen(source_code), "variables_loops_conditions.js",
-                      LANG_JS);
+                      LANG_JAVASCRIPT);
   fprintf(stderr, "Source code parsed\n");
   const char *error_message = parser_get_last_error(ctx);
   cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");

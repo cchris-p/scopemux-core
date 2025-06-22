@@ -95,18 +95,72 @@ static PyObject *ParserContext_parse_string(PyObject *self_obj, PyObject *args, 
   const char *content;
   Py_ssize_t content_length;
   const char *filename = NULL;
-  int language = LANG_UNKNOWN;
+  PyObject *language_obj = NULL;
   static char *kwlist[] = {"content", "filename", "language", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#|si", kwlist, &content, &content_length,
-                                   &filename, &language)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#|sO", kwlist, &content, &content_length,
+                                   &filename, &language_obj)) {
     return NULL;
   }
 
-  bool success =
-      parser_parse_string(self->context, content, content_length, filename, (LanguageType)language);
+  LanguageType language = LANG_UNKNOWN;
+
+  // Handle language parameter - can be string or integer
+  if (language_obj != NULL) {
+    if (PyUnicode_Check(language_obj)) {
+      const char *lang_str = PyUnicode_AsUTF8(language_obj);
+      if (lang_str) {
+        if (strcmp(lang_str, "c") == 0) {
+          language = LANG_C;
+        } else if (strcmp(lang_str, "cpp") == 0 || strcmp(lang_str, "c++") == 0) {
+          language = LANG_CPP;
+        } else if (strcmp(lang_str, "python") == 0 || strcmp(lang_str, "py") == 0) {
+          language = LANG_PYTHON;
+        } else if (strcmp(lang_str, "javascript") == 0 || strcmp(lang_str, "js") == 0) {
+          language = LANG_JAVASCRIPT;
+        } else if (strcmp(lang_str, "typescript") == 0 || strcmp(lang_str, "ts") == 0) {
+          language = LANG_TYPESCRIPT;
+        } else {
+          PyErr_SetString(PyExc_ValueError, "Unsupported language string");
+          return NULL;
+        }
+      }
+    } else if (PyLong_Check(language_obj)) {
+      long lang_int = PyLong_AsLong(language_obj);
+      if (lang_int >= LANG_UNKNOWN && lang_int <= LANG_TYPESCRIPT) {
+        language = (LanguageType)lang_int;
+      } else {
+        PyErr_SetString(PyExc_ValueError, "Invalid language integer value");
+        return NULL;
+      }
+    } else {
+      PyErr_SetString(PyExc_TypeError, "Language must be a string or integer");
+      return NULL;
+    }
+  }
+
+  // If language is still unknown, try to detect from filename
+  if (language == LANG_UNKNOWN && filename) {
+    language = parser_detect_language(filename, content, content_length);
+  }
+
+  bool success = parser_parse_string(self->context, content, content_length, filename, language);
   if (!success) {
-    PyErr_SetString(PyExc_RuntimeError, parser_get_last_error(self->context));
+    // Make sure we have a valid error message in case of failure
+    const char *safe_error_msg = "Unknown parser error";
+    const char *error_msg = parser_get_last_error(self->context);
+    if (error_msg != NULL) {
+      safe_error_msg = error_msg;
+    }
+    PyErr_SetString(PyExc_RuntimeError, safe_error_msg);
+
+    // If we have a parser that failed, make sure it's properly cleaned up
+    // This prevents potential double-free or use-after-free issues
+    if (self->context && self->context->ts_parser) {
+      ts_parser_delete(self->context->ts_parser);
+      self->context->ts_parser = NULL;
+    }
+
     return NULL;
   }
 
@@ -143,18 +197,16 @@ static PyMethodDef ParserContext_methods[] = {
 /**
  * @brief Type definition for ParserContext
  */
-static PyTypeObject ParserContextType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "scopemux_core.ParserContext",
-    .tp_basicsize = sizeof(ParserContextObject),
-    .tp_itemsize = 0,
-    .tp_dealloc = (destructor)ParserContext_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_doc = "Parser context object",
-    .tp_methods = ParserContext_methods,
-    .tp_init = (initproc)ParserContext_init,
-    .tp_new = ParserContext_new
-};
+static PyTypeObject ParserContextType = {PyVarObject_HEAD_INIT(NULL, 0).tp_name =
+                                             "scopemux_core.ParserContext",
+                                         .tp_basicsize = sizeof(ParserContextObject),
+                                         .tp_itemsize = 0,
+                                         .tp_dealloc = (destructor)ParserContext_dealloc,
+                                         .tp_flags = Py_TPFLAGS_DEFAULT,
+                                         .tp_doc = "Parser context object",
+                                         .tp_methods = ParserContext_methods,
+                                         .tp_init = (initproc)ParserContext_init,
+                                         .tp_new = ParserContext_new};
 
 /**
  * @brief Deallocation function for ASTNodeObject
@@ -260,18 +312,16 @@ static PyGetSetDef ASTNode_getsetters[] = {
 /**
  * @brief Type definition for ASTNode
  */
-static PyTypeObject ASTNodePyType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "scopemux_core.ASTNode",
-    .tp_basicsize = sizeof(ASTNodeObject),
-    .tp_itemsize = 0,
-    .tp_dealloc = (destructor)ASTNode_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_doc = "AST node representing a parsed semantic entity",
-    .tp_getset = ASTNode_getsetters,
-    .tp_init = (initproc)ASTNode_init,
-    .tp_new = ASTNode_new
-};
+static PyTypeObject ASTNodePyType = {PyVarObject_HEAD_INIT(NULL, 0).tp_name =
+                                         "scopemux_core.ASTNode",
+                                     .tp_basicsize = sizeof(ASTNodeObject),
+                                     .tp_itemsize = 0,
+                                     .tp_dealloc = (destructor)ASTNode_dealloc,
+                                     .tp_flags = Py_TPFLAGS_DEFAULT,
+                                     .tp_doc = "AST node representing a parsed semantic entity",
+                                     .tp_getset = ASTNode_getsetters,
+                                     .tp_init = (initproc)ASTNode_init,
+                                     .tp_new = ASTNode_new};
 
 /**
  * @brief Detect language from filename

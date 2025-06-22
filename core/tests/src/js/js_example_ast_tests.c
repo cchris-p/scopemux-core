@@ -82,7 +82,8 @@ static void test_js_example(const char *category, const char *filename) {
   cr_assert(ctx != NULL, "Failed to create parser context");
 
   // Parse the JavaScript code into an AST
-  bool parse_success = parser_parse_string(ctx, source, strlen(source), "example.js", LANG_JS);
+  bool parse_success =
+      parser_parse_string(ctx, source, strlen(source), "example.js", LANG_JAVASCRIPT);
   cr_assert(parse_success, "Failed to parse JavaScript code");
 
   // Get the root node of the AST directly from the parser context

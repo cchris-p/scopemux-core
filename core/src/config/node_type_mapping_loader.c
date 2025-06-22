@@ -1,3 +1,6 @@
+// Define _POSIX_C_SOURCE to make strdup available
+#define _POSIX_C_SOURCE 200809L
+
 #include "../../include/scopemux/config/node_type_mapping_loader.h"
 #include "../../include/scopemux/parser.h"
 #include <ctype.h>
@@ -73,38 +76,77 @@ void load_node_type_mapping(const char *config_path) {
   // Does NOT support nested objects or arrays. Only works for flat string:string mappings.
   while (*p) {
     // Skip whitespace and delimiters
-    while (*p && (isspace((unsigned char)*p) || *p == '{' || *p == ',')) p++;
+    while (*p && (isspace((unsigned char)*p) || *p == '{' || *p == ','))
+      p++;
     if (*p == '"') {
       // Parse key
       char *key_start = ++p;
-      while (*p && *p != '"') p++;
-      if (!*p) break;
+      while (*p && *p != '"')
+        p++;
+      if (!*p)
+        break;
       size_t klen = p - key_start;
       char key[64];
       strncpy(key, key_start, klen);
       key[klen] = '\0';
       p++; // skip closing quote
-      while (*p && (isspace((unsigned char)*p) || *p == ':')) p++;
+      while (*p && (isspace((unsigned char)*p) || *p == ':'))
+        p++;
       if (*p != '"') {
         // Malformed JSON, skip to next
-        while (*p && *p != ',') p++;
+        while (*p && *p != ',')
+          p++;
         continue;
       }
       // Parse value
       char *val_start = ++p;
-      while (*p && *p != '"') p++;
-      if (!*p) break;
+      while (*p && *p != '"')
+        p++;
+      if (!*p)
+        break;
       size_t vlen = p - val_start;
       char val[64];
       strncpy(val, val_start, vlen);
       val[vlen] = '\0';
       p++; // skip closing quote
-      // Store mapping
+      // Store mapping with comprehensive memory safety
       if (mapping_count < MAX_MAPPINGS) {
-        mappings[mapping_count].query_type = strdup(key);
-        mappings[mapping_count].node_type = parse_node_type(val);
+        // **CRITICAL FIX**: Add bounds checking for key length
+        if (klen >= sizeof(key)) {
+          fprintf(stderr, "[scopemux] ERROR: Key too long (truncated): %.*s\n", (int)klen,
+                  key_start);
+          continue;
+        }
+
+        // **CRITICAL FIX**: Add bounds checking for value length
+        if (vlen >= sizeof(val)) {
+          fprintf(stderr, "[scopemux] ERROR: Value too long (truncated): %.*s\n", (int)vlen,
+                  val_start);
+          continue;
+        }
+
+        // **CRITICAL FIX**: Safe string duplication with error checking
+        char *query_type_copy = strdup(key);
+        if (!query_type_copy) {
+          fprintf(stderr, "[scopemux] ERROR: Failed to allocate memory for query type: %s\n", key);
+          continue;
+        }
+
+        // **CRITICAL FIX**: Validate the mapping before storing
+        ASTNodeType node_type = parse_node_type(val);
+        if (node_type == NODE_UNKNOWN && strcmp(val, "NODE_UNKNOWN") != 0) {
+          fprintf(stderr, "[scopemux] WARNING: Unknown node type: %s, defaulting to NODE_UNKNOWN\n",
+                  val);
+        }
+
+        // Store the mapping
+        mappings[mapping_count].query_type = query_type_copy;
+        mappings[mapping_count].node_type = node_type;
         printf("  %s -> %s\n", key, val);
         mapping_count++;
+      } else {
+        fprintf(stderr, "[scopemux] ERROR: Maximum mappings (%d) exceeded, ignoring: %s\n",
+                MAX_MAPPINGS, key);
       }
     } else {
       p++;
@@ -120,11 +162,41 @@ void load_node_type_mapping(const char *config_path) {
  * Logs a warning if the mapping is missing.
  */
 ASTNodeType get_node_type_for_query(const char *query_type) {
+  // **CRITICAL SAFETY CHECK**: Validate input parameter
+  if (!query_type) {
+    fprintf(stderr, "[scopemux] ERROR: NULL query_type passed to get_node_type_for_query\n");
+    return NODE_UNKNOWN;
+  }
+
+  // **CRITICAL SAFETY CHECK**: Validate mapping state
+  if (mapping_count < 0 || mapping_count > MAX_MAPPINGS) {
+    fprintf(stderr, "[scopemux] ERROR: Corrupted mapping_count: %d (max: %d)\n", mapping_count,
+            MAX_MAPPINGS);
+    return NODE_UNKNOWN;
+  }
+
+  // **CRITICAL SAFETY CHECK**: Validate each mapping before string comparison
   for (int i = 0; i < mapping_count; ++i) {
+    // Check for corrupted mapping entry
+    if (!mappings[i].query_type) {
+      fprintf(stderr, "[scopemux] ERROR: NULL query_type in mapping[%d], skipping\n", i);
+      continue;
+    }
+
+    // **SAFE STRING COMPARISON** with additional validation
     if (strcmp(mappings[i].query_type, query_type) == 0) {
-      return mappings[i].node_type;
+      // Validate the node type before returning
+      if (mappings[i].node_type >= 0 && mappings[i].node_type < 256) { // Reasonable bounds
+        return mappings[i].node_type;
+      } else {
+        fprintf(stderr, "[scopemux] ERROR: Invalid node_type %d for query '%s'\n",
+                mappings[i].node_type, query_type);
+        return NODE_UNKNOWN;
+      }
     }
   }
+
+  // Log missing mapping (this is expected for some query types)
   fprintf(stderr, "[scopemux] WARNING: No AST node type mapping for query type: '%s'\n",
           query_type);
   return NODE_UNKNOWN;

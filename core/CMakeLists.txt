@@ -1,9 +1,19 @@
 # Set compiler flags for this directory
 # Note: C/C++ standards are already set in the root CMakeLists.txt
 
-# Set compiler flags
+# Enhanced compiler flags for memory safety and early error detection
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Wmissing-prototypes")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit-function-declaration -Wformat-security")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpointer-arith -Wunused-variable")
+
+    # Memory safety flags (enable in debug builds)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=undefined")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -g")
+        message(STATUS "Memory sanitizers enabled for debug build")
+    endif()
 endif()
 
 # Find Python packages needed for the project
@@ -37,7 +47,6 @@ include_directories(
 # Add preprocessor defines for proper compilation
 add_compile_definitions(
     SCOPEMUX_BUILDING=1
-    Py_LIMITED_API=0x03070000
     PY_SSIZE_T_CLEAN
 )
 
@@ -82,6 +91,7 @@ add_library(parser_core STATIC
     src/common/error_handling.c
     src/common/logging.c
 )
+set_target_properties(parser_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Create a separate object library for test_processor.c to ensure it gets linked properly
 add_library(test_processor_lib OBJECT
@@ -101,7 +111,6 @@ set(COMMON_SOURCES
 )
 
 # Add library targets
-add_library(parser_core STATIC ${PARSER_SOURCES} ${COMMON_SOURCES})
 add_library(context_engine STATIC ${CONTEXT_ENGINE_SOURCES} ${COMMON_SOURCES})
 
 # Set include directories for each target
@@ -125,10 +134,10 @@ pybind11_add_module(scopemux_core
     src/bindings/parser_bindings.c
     src/bindings/context_engine_bindings.c
     src/bindings/test_processor_bindings.c
-    
+
     # Direct implementation of test_processor.c to ensure symbols are linked
     src/processors/test_processor.c
-    
+
     # Additional needed files
     src/context_engine/context_engine.c
     src/common/memory_management.c

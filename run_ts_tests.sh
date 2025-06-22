@@ -1,92 +1,159 @@
 #!/bin/bash
 
-# Clean build directory before running tests
-rm -rf build
-mkdir -p build
+# ScopeMux TypeScript Tests Runner Script
+# Uses the shared test runner library for standardized test execution
+
+# Source the shared test runner library
+source scripts/test_runner_lib.sh
+
+# Exit on any error (disabled during test loop to allow all tests to run)
+# set -e
+
+# Initialize global counters
+TEST_FAILURES=0
 
 # TypeScript Language Test Toggles
-RUN_TS_BASIC_AST_TESTS=false
-RUN_TS_EXAMPLE_AST_TESTS=false
-RUN_TS_CST_TESTS=false
+RUN_TS_BASIC_AST_TESTS=true
+RUN_TS_EXAMPLE_AST_TESTS=true
+RUN_TS_CST_TESTS=true
+
+# TypeScript example test directory toggles
+RUN_TS_BASIC_SYNTAX_TESTS=true
+RUN_TS_INTERFACES_TESTS=false
+RUN_TS_GENERICS_TESTS=false
+RUN_TS_CLASSES_TESTS=false
 
 # Project root directory (assuming this script is in the root)
 PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
+
+# Set parallel jobs for test execution
+PARALLEL_JOBS=4
 
 # TypeScript language test executables
 TS_BASIC_AST_EXECUTABLE_RELPATH="core/tests/ts_basic_ast_tests"
 TS_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/ts_example_ast_tests"
 TS_CST_EXECUTABLE_RELPATH="core/tests/ts_cst_tests"
 
-# Function to build a test
-build_test() {
-    local target_name="$1"
-    local display_name="$2"
+# Command-line flag parsing for advanced options
+CLEAN_BUILD=true
 
-    echo "Building test target: ${display_name}..."
-    make "${target_name}"
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to build test target '${display_name}'."
-        exit 1
-    fi
-    echo "Successfully built: ${display_name}"
-}
+# Process command line arguments
+for arg in "$@"; do
+    case $arg in
+    --no-clean)
+        CLEAN_BUILD=false
+        echo "[run_ts_tests.sh] Skipping clean build"
+        ;;
+    --help)
+        echo "Usage: ./run_ts_tests.sh [options]"
+        echo "Options:"
+        echo "  --no-clean      : Skip cleaning build directory"
+        echo "  --help          : Show this help message"
+        exit 0
+        ;;
+    esac
+done
 
-# Function to run a test
-run_test() {
-    local test_suite_name="$1"
-    local executable_path="$2"
+# Prepare build directory (clean or not, depending on flag)
+prepare_clean_build_dir "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
 
-    echo "Running Test Suite: ${test_suite_name}"
+# Setup CMake configuration using the shared library
+setup_cmake_config "$PROJECT_ROOT_DIR"
 
-    if [ ! -f "${executable_path}" ]; then
-        echo "FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
-        return 1
-    fi
+# Run standard TypeScript language tests
+echo "[run_ts_tests.sh] Running TypeScript language test suite"
 
-    pushd "$(dirname "${executable_path}")" >/dev/null
-    "./$(basename "${executable_path}")" 2>&1 | tee "$tmp_output"
-    local test_exit_code=${PIPESTATUS[0]}
-    popd >/dev/null
-
-    # Remove misleading Criterion summary line from output (both stdout and stderr)
-    grep -v "FAIL: .* (One or more tests failed)" "$tmp_output"
-
-    # Check for the summary line indicating all tests passed
-    if grep -q "Failing: 0 | Crashing: 0" "$tmp_output"; then
-        echo "PASS: ${test_suite_name} (All tests passed)"
-        rm "$tmp_output"
-        return 0
-    else
-        echo "FAIL: ${test_suite_name} (One or more tests failed)"
-        rm "$tmp_output"
-        return ${test_exit_code}
-    fi
-}
-
-# Build and run TypeScript language tests
-cd "${CMAKE_PROJECT_BUILD_DIR}"
-
-# Configure project with CMake
-echo "Configuring project with CMake..."
-cmake "${PROJECT_ROOT_DIR}"
-if [ $? -ne 0 ]; then
-    echo "ERROR: CMake configuration failed."
-    exit 1
-fi
-
-# TypeScript language tests
+# Run basic TypeScript tests if enabled
 if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
-    build_test "ts_basic_ast_tests" "TypeScript Basic AST Tests"
-    run_test "TypeScript Basic AST Tests" "${CMAKE_PROJECT_BUILD_DIR}/${TS_BASIC_AST_EXECUTABLE_RELPATH}"
+    build_test_target "ts_basic_ast_tests" "TypeScript Basic AST Tests"
+    build_result=$?
+    
+    if [ $build_result -ne 0 ]; then
+        echo "[run_ts_tests.sh] ERROR: Failed to build ts_basic_ast_tests"
+        ((TEST_FAILURES++))
+    else
+        # Change to build directory and get absolute path to executable
+        cd "$CMAKE_PROJECT_BUILD_DIR"
+        make "ts_basic_ast_tests"
+        
+        # Verify that the executable was built
+        if [ ! -f "core/tests/ts_basic_ast_tests" ]; then
+            echo "[run_ts_tests.sh] ERROR: Executable not found at core/tests/ts_basic_ast_tests"
+            ((TEST_FAILURES++))
+        else
+            # Get the absolute path to the executable
+            executable_path="$(pwd)/core/tests/ts_basic_ast_tests"
+            
+            # Run the test
+            run_test_suite "TypeScript Basic AST Tests" "$executable_path"
+            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+        fi
+    fi
 fi
 
-if [ "${RUN_TS_EXAMPLE_AST_TESTS}" = true ]; then
-    build_test "ts_example_ast_tests" "TypeScript Example AST Tests"
-    run_test "TypeScript Example AST Tests" "${CMAKE_PROJECT_BUILD_DIR}/${TS_EXAMPLE_AST_EXECUTABLE_RELPATH}"
+# Define the TypeScript test categories array for example tests
+TS_TEST_CATEGORIES=()
+if [ "${RUN_TS_BASIC_SYNTAX_TESTS}" = true ]; then
+    TS_TEST_CATEGORIES+=("basic_syntax")
+fi
+if [ "${RUN_TS_INTERFACES_TESTS}" = true ]; then
+    TS_TEST_CATEGORIES+=("interfaces")
+fi
+if [ "${RUN_TS_GENERICS_TESTS}" = true ]; then
+    TS_TEST_CATEGORIES+=("generics")
+fi
+if [ "${RUN_TS_CLASSES_TESTS}" = true ]; then
+    TS_TEST_CATEGORIES+=("classes")
 fi
 
+# Process all TypeScript example tests using the shared library
+echo "[run_ts_tests.sh] Processing TypeScript example test directories (with recursive scanning)"
+if [ ${#TS_TEST_CATEGORIES[@]} -gt 0 ]; then
+    # Build the example test executable if we have any categories to run
+    build_test_target "ts_example_ast_tests" "TypeScript Example AST Tests"
+    
+    # Run all the TypeScript example tests from the categories
+    process_language_tests \
+        "typescript" \
+        TS_TEST_CATEGORIES \
+        "${CMAKE_PROJECT_BUILD_DIR}/core/tests/ts_example_ast_tests" \
+        "${PARALLEL_JOBS}" \
+        ".ts"
+    
+    # Track failures from the language test processor
+    if [ $? -gt 0 ]; then 
+        TEST_FAILURES=$((TEST_FAILURES + 1))
+    fi
+fi
+
+# Run CST tests if enabled
 if [ "${RUN_TS_CST_TESTS}" = true ]; then
-    build_test "ts_cst_tests" "TypeScript CST Tests"
-    run_test "TypeScript CST Tests" "${CMAKE_PROJECT_BUILD_DIR}/${TS_CST_EXECUTABLE_RELPATH}"
+    build_test_target "ts_cst_tests" "TypeScript CST Tests"
+    build_result=$?
+    
+    if [ $build_result -ne 0 ]; then
+        echo "[run_ts_tests.sh] ERROR: Failed to build ts_cst_tests"
+        ((TEST_FAILURES++))
+    else
+        # Change to build directory and get absolute path to executable
+        cd "$CMAKE_PROJECT_BUILD_DIR"
+        make "ts_cst_tests"
+        
+        # Verify that the executable was built
+        if [ ! -f "core/tests/ts_cst_tests" ]; then
+            echo "[run_ts_tests.sh] ERROR: Executable not found at core/tests/ts_cst_tests"
+            ((TEST_FAILURES++))
+        else
+            # Get the absolute path to the executable
+            executable_path="$(pwd)/core/tests/ts_cst_tests"
+            
+            # Run the test
+            run_test_suite "TypeScript CST Tests" "$executable_path"
+            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+        fi
+    fi
 fi
+
+# Let the shared library handle the final test summary and exit code
+print_test_summary

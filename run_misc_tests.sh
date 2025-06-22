@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# Clean build directory before running tests
-rm -rf build
+# ScopeMux Miscellaneous Tests Runner Script
+# Uses the shared test runner library for standardized test execution
 
-# set -x # Enable debug output
+# Source the shared test runner library
+source scripts/test_runner_lib.sh
 
-# ================ IMPORTANT NOTE ================
-# Test Case Toggles control BOTH building AND running of tests
-# When a toggle is set to true, the test will be built AND run
-# When a toggle is set to false, the test will NOT be built and NOT run
-# ===============================================
+# Exit on any error
+set -e
+
+# Initialize global counters
+TEST_FAILURES=0
 
 # -------- Miscellaneous Test Toggles --------
 # Only enable tests that are not covered by language-specific scripts
@@ -30,127 +31,92 @@ INIT_PARSER_EXECUTABLE_RELPATH="core/tests/init_parser_tests"
 EDGE_CASE_EXECUTABLE_RELPATH="core/tests/edge_case_tests"
 # Add additional misc test executable paths here as needed
 
+# Set parallel jobs for test execution
+PARALLEL_JOBS=4
 
-# --- Helper Functions ---
+# Command-line flag parsing for advanced options
+CLEAN_BUILD=true
 
-# Function to run a single Criterion test executable
-# Expects: test_suite_name executable_path
-run_criterion_test_executable() {
-    local test_suite_name="$1"
-    local executable_path="$2"
+# Process command line arguments
+for arg in "$@"; do
+    case $arg in
+    --no-clean)
+        CLEAN_BUILD=false
+        echo "[run_misc_tests.sh] Skipping clean build"
+        ;;
+    --debug)
+        DEBUG_MODE=true
+        echo "[run_misc_tests.sh] Running in debug mode"
+        ;;
+    --help)
+        echo "Usage: ./run_misc_tests.sh [options]"
+        echo "Options:"
+        echo "  --no-clean      : Skip cleaning build directory"
+        echo "  --debug         : Run in debug mode with verbose output"
+        echo "  --help          : Show this help message"
+        exit 0
+        ;;
+    esac
+done
 
-    echo "--------------------------------------------------"
-    echo "Running Test Suite: ${test_suite_name}"
+# Prepare build directory (clean or not, depending on flag)
+prepare_clean_build_dir "${CMAKE_PROJECT_BUILD_DIR}" "${CLEAN_BUILD}"
 
-    if [ ! -f "${executable_path}" ]; then
-        echo "FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
-        echo "Please build the tests first."
-        return 1
-    fi
+# Setup CMake configuration properly
+cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
 
-    # Criterion executables run all tests within them and handle output.
-    # They return 0 if all tests pass, non-zero if any fail.
-    # Running from the build directory where the executable is located can help with relative paths in tests.
-    local executable_dir=$(dirname "${executable_path}")
-    local executable_name=$(basename "${executable_path}")
+# Execute CMake with explicit source and build directory specification
+echo "[run_misc_tests.sh] Configuring CMake in build directory: ${CMAKE_PROJECT_BUILD_DIR}"
+cmake -S "${PROJECT_ROOT_DIR}" -B "${CMAKE_PROJECT_BUILD_DIR}" -G "Unix Makefiles" > "${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log" 2>&1
 
-    # Set PROJECT_ROOT_DIR to the project root to help tests find expected JSON files
-    local project_root="$(cd "$(dirname "$0")" && pwd)"
-    export PROJECT_ROOT_DIR="${project_root}"
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: CMake configuration failed. See log for details:"
+    cat "${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log"
+    exit 1
+fi
+
+# Verify that Makefiles were created
+if [ ! -f "${CMAKE_PROJECT_BUILD_DIR}/Makefile" ]; then
+    echo "❌ ERROR: CMake did not generate Makefiles in the build directory."
+    echo "Contents of build directory:"
+    ls -la "${CMAKE_PROJECT_BUILD_DIR}"
+    exit 1
+fi
+
+# Run miscellaneous tests
+echo "[run_misc_tests.sh] Running miscellaneous test suite"
+
+# Build and run Init Parser Tests
+if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
+    # Make sure we're in the build directory before running make
+    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
     
-    pushd "${executable_dir}" >/dev/null
-    echo "Running: ./${executable_name} with PROJECT_ROOT_DIR=${PROJECT_ROOT_DIR}"
-    local tmp_output=$(mktemp)
-    "./${executable_name}" 2>&1 | tee "$tmp_output"
-    local test_exit_code=${PIPESTATUS[0]}
-
-    # NOTE: All tests MUST have matching expected JSON files to pass validation.
-    # No shortcuts or exceptions allowed - proper validation ensures code correctness.
-
-    popd >/dev/null
-
-    # Remove misleading Criterion summary line from output (both stdout and stderr)
-    grep -v "FAIL: .* (One or more tests failed)" "$tmp_output"
-
-    # Check for the summary line indicating all tests passed
-    if grep -q "Failing: 0 | Crashing: 0" "$tmp_output"; then
-        echo "PASS: ${test_suite_name} (All tests passed)"
-        rm "$tmp_output"
-        return 0
+    # Try to build directly for better error visibility
+    echo "[run_misc_tests.sh] Building init_parser_tests directly (for debugging)..."
+    make "init_parser_tests" VERBOSE=1
+    build_result=$?
+    
+    if [ $build_result -eq 0 ]; then
+        echo "[run_misc_tests.sh] Successfully built init_parser_tests, running tests..."
+        run_test_suite "Init Parser Tests" "${CMAKE_PROJECT_BUILD_DIR}/${INIT_PARSER_EXECUTABLE_RELPATH}"
+        if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
     else
-        echo "FAIL: ${test_suite_name} (One or more tests failed)"
-        rm "$tmp_output"
-        return ${test_exit_code}
+        echo "❌ ERROR: Failed to build init_parser_tests"
+        TEST_FAILURES=$((TEST_FAILURES + 1))
     fi
-    echo "--------------------------------------------------"
-}
-
-# --- Main Test Execution ---
-
-echo "Starting Miscellaneous Test Suite..."
-
-echo "DEBUG: PROJECT_ROOT_DIR is '${PROJECT_ROOT_DIR}'"
-echo "DEBUG: CMAKE_PROJECT_BUILD_DIR is '${CMAKE_PROJECT_BUILD_DIR}'"
-
-mkdir -p "${CMAKE_PROJECT_BUILD_DIR}"
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not create build directory: ${CMAKE_PROJECT_BUILD_DIR}"
-    exit 1
 fi
 
-cd "${CMAKE_PROJECT_BUILD_DIR}"
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not navigate to build directory: ${CMAKE_PROJECT_BUILD_DIR}"
-    exit 1
-fi
-
-echo "Configuring project with CMake... (from ${PWD})"
-cmake "${PROJECT_ROOT_DIR}"
-if [ $? -ne 0 ]; then
-    echo "ERROR: CMake configuration failed."
-    exit 1
-fi
-
-# Build misc tests based on toggle settings
-build_test() {
-    local target_name="$1"
-    local display_name="$2"
-
-    echo "Building test target: ${display_name}..."
-    make "${target_name}"
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to build test target '${display_name}'."
-        cd "${PROJECT_ROOT_DIR}"
-        exit 1
-    fi
-    echo "Successfully built: ${display_name}"
-}
-
-# Only build misc/common tests
-if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
-    build_test "init_parser_tests" "Init Parser Tests"
-fi
-
+# Build and run Edge Case Tests
 if [ "${RUN_EDGE_CASE_TESTS}" = true ]; then
-    build_test "edge_case_tests" "Edge Case Tests"
+    # Make sure we're in the build directory before running make
+    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
+    build_test_target "edge_case_tests" "Edge Case Tests"
+    run_test_suite "Edge Case Tests" "${CMAKE_PROJECT_BUILD_DIR}/${EDGE_CASE_EXECUTABLE_RELPATH}"
+    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
 fi
 
-cd "${PROJECT_ROOT_DIR}"
-echo "Miscellaneous tests build process finished."
+# Return to project root before printing summary
+cd "${PROJECT_ROOT_DIR}" || exit 1
 
-# --- Run Tests ---
-echo "Running enabled misc tests..."
-
-if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
-    run_criterion_test_executable "Init Parser Tests" \
-        "${CMAKE_PROJECT_BUILD_DIR}/${INIT_PARSER_EXECUTABLE_RELPATH}"
-fi
-
-if [ "${RUN_EDGE_CASE_TESTS}" = true ]; then
-    run_criterion_test_executable "Edge Case Tests" \
-        "${CMAKE_PROJECT_BUILD_DIR}/${EDGE_CASE_EXECUTABLE_RELPATH}"
-fi
-
-echo "Note: This script only runs tests not covered by dedicated language scripts."
-
-exit 0
+# Let the shared library handle the final test summary and exit code
+print_test_summary

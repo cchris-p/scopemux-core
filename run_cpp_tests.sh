@@ -66,8 +66,29 @@ echo "[run_cpp_tests.sh] Running C++ language test suite"
 # Run basic C++ tests if enabled
 if [ "${RUN_CPP_BASIC_AST_TESTS}" = true ]; then
     build_test_target "cpp_basic_ast_tests" "C++ Basic AST Tests"
-    run_test_suite "C++ Basic AST Tests" "${CMAKE_PROJECT_BUILD_DIR}/${CPP_BASIC_AST_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_result=$?
+    
+    if [ $build_result -ne 0 ]; then
+        echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_basic_ast_tests"
+        ((TEST_FAILURES++))
+    else
+        # Change to build directory and get absolute path to executable
+        cd "$CMAKE_PROJECT_BUILD_DIR"
+        make "cpp_basic_ast_tests"
+        
+        # Verify that the executable was built
+        if [ ! -f "core/tests/cpp_basic_ast_tests" ]; then
+            echo "[run_cpp_tests.sh] ERROR: Executable not found at core/tests/cpp_basic_ast_tests"
+            ((TEST_FAILURES++))
+        else
+            # Get the absolute path to the executable
+            executable_path="$(pwd)/core/tests/cpp_basic_ast_tests"
+            
+            # Run the test
+            run_test_suite "C++ Basic AST Tests" "$executable_path"
+            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+        fi
+    fi
 fi
 
 # Define the C++ test categories array for example tests
@@ -108,8 +129,29 @@ fi
 # Run CST tests if enabled
 if [ "${RUN_CPP_CST_TESTS}" = true ]; then
     build_test_target "cpp_cst_tests" "C++ CST Tests"
-    run_test_suite "C++ CST Tests" "${CMAKE_PROJECT_BUILD_DIR}/${CPP_CST_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_result=$?
+    
+    if [ $build_result -ne 0 ]; then
+        echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_cst_tests"
+        ((TEST_FAILURES++))
+    else
+        # Change to build directory and get absolute path to executable
+        cd "$CMAKE_PROJECT_BUILD_DIR"
+        make "cpp_cst_tests"
+        
+        # Verify that the executable was built
+        if [ ! -f "core/tests/cpp_cst_tests" ]; then
+            echo "[run_cpp_tests.sh] ERROR: Executable not found at core/tests/cpp_cst_tests"
+            ((TEST_FAILURES++))
+        else
+            # Get the absolute path to the executable
+            executable_path="$(pwd)/core/tests/cpp_cst_tests"
+            
+            # Run the test
+            run_test_suite "C++ CST Tests" "$executable_path"
+            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+        fi
+    fi
 fi
 
 # Let the shared library handle the final test summary and exit code

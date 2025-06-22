@@ -1,3 +1,6 @@
+// Define _POSIX_C_SOURCE to make strdup available
+#define _POSIX_C_SOURCE 200809L
+
 #include "scopemux/adapters/language_adapter.h"
 #include "scopemux/logging.h"
 #include "scopemux/parser.h"

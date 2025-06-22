@@ -82,7 +82,8 @@ static void test_ts_example(const char *category, const char *filename) {
   cr_assert(ctx != NULL, "Failed to create parser context");
 
   // Parse the TypeScript code into an AST
-  bool parse_success = parser_parse_string(ctx, source, strlen(source), "example.ts", LANG_TS);
+  bool parse_success =
+      parser_parse_string(ctx, source, strlen(source), "example.ts", LANG_TYPESCRIPT);
   cr_assert(parse_success, "Failed to parse TypeScript code");
 
   // Get the root node of the AST directly from the parser context

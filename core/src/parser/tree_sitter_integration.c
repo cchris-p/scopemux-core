@@ -68,12 +68,15 @@ extern const TSLanguage *tree_sitter_typescript(void);
  */
 bool ts_init_parser(ParserContext *ctx, LanguageType language) {
   if (!ctx) {
+    log_error("NULL context passed to ts_init_parser");
     return false;
   }
 
-  // If a parser already exists, no need to re-initialize.
-  // The language check should happen in the calling function.
+  // If a parser already exists, check if it's for the same language
+  // If not, we need to recreate it with the new language
   if (ctx->ts_parser) {
+    // For now we just reuse the existing parser
+    // TODO: Consider checking if language matches current parser and recreate if needed
     return true;
   }
 
@@ -83,35 +86,58 @@ bool ts_init_parser(ParserContext *ctx, LanguageType language) {
     return false;
   }
 
+  // Clear any previous language-specific data
+  ctx->language = language;
+
   const TSLanguage *ts_language = NULL;
   switch (language) {
   case LANG_C:
+    log_debug("Initializing Tree-sitter parser for C language");
     ts_language = tree_sitter_c();
     break;
   case LANG_CPP:
+    log_debug("Initializing Tree-sitter parser for C++ language");
     ts_language = tree_sitter_cpp();
     break;
   case LANG_PYTHON:
+    log_debug("Initializing Tree-sitter parser for Python language");
     ts_language = tree_sitter_python();
     break;
   case LANG_JAVASCRIPT:
+    log_debug("Initializing Tree-sitter parser for JavaScript language");
     ts_language = tree_sitter_javascript();
     break;
   case LANG_TYPESCRIPT:
+    log_debug("Initializing Tree-sitter parser for TypeScript language");
     ts_language = tree_sitter_typescript();
     break;
   default:
+    // Language not supported - clean up and return error
+    log_error("Language %d not supported by Tree-sitter parser", language);
     parser_set_error(ctx, -1, "Unsupported language for Tree-sitter parser");
+    ts_parser_delete(ctx->ts_parser);
+    ctx->ts_parser = NULL;
+    return false;
+  }
+
+  // Safety check for language function result
+  if (!ts_language) {
+    log_error("Failed to load Tree-sitter language data for language %d", language);
+    parser_set_error(ctx, -1, "Failed to load Tree-sitter language data");
+    ts_parser_delete(ctx->ts_parser);
+    ctx->ts_parser = NULL;
     return false;
   }
 
   if (!ts_parser_set_language(ctx->ts_parser, ts_language)) {
+    log_error("Failed to set language on Tree-sitter parser");
     parser_set_error(ctx, -1, "Failed to set language on Tree-sitter parser");
     ts_parser_delete(ctx->ts_parser);
     ctx->ts_parser = NULL;
     return false;
   }
 
+  log_debug("Successfully initialized Tree-sitter parser for language %d", language);
   return true;
 }
 
@@ -278,6 +304,7 @@ static char *extract_full_signature(TSNode func_node, const char *source_code) {
  * @param cursor The query cursor for iterating matches
  * @param ast_root The root AST node
  * @param node_map Map to track nodes by type for building relationships
+ * @return PARSE_OK, PARSE_SKIP, or PARSE_ERROR.
  */
 // --- Helper: Node type mapping from query_type to ASTNodeType
 // These helpers are placed after includes and static/global variables for context access, etc.
@@ -287,7 +314,7 @@ static char *extract_full_signature(TSNode func_node, const char *source_code) {
 #define MATCH_SKIP 1
 #define MATCH_ERROR 2
 
-#include "config/node_type_mapping_loader.h"
+#include "../../include/config/node_type_mapping_loader.h"
 
 /**
  * @brief Maps a query type string to the corresponding ASTNodeType enum using config-driven
@@ -315,27 +342,59 @@ static uint32_t map_query_type_to_node_type(const char *query_type) {
  * @return The capture name string (e.g., "function", "class", "name", etc.).
  */
 static const char *determine_capture_name(const char *node_type, const char *query_type) {
+  // Use "unknown" as a safe fallback if inputs are NULL
+  if (!node_type) {
+    log_error("NULL node_type passed to determine_capture_name");
+    return "unknown";
+  }
+
+  if (!query_type) {
+    log_error("NULL query_type passed to determine_capture_name");
+    return "unknown";
+  }
+
+  // Handle function definitions
   if (strcmp(node_type, "function_definition") == 0)
     return "function";
+
+  // Handle comments as docstrings
   if (strstr(node_type, "comment") != NULL)
     return "docstring";
+
+  // Handle class-related nodes
   if (strstr(node_type, "class") != NULL)
     return "class";
+
+  // Handle method nodes
   if (strstr(node_type, "method") != NULL)
     return "method";
+
+  // Handle typedef nodes
   if (strcmp(node_type, "typedef") == 0 || strstr(node_type, "typedef") != NULL)
     return "typedef";
+
+  // Handle struct nodes
   if (strcmp(node_type, "struct_specifier") == 0 || strstr(node_type, "struct_specifier") != NULL)
     return "struct";
+
+  // Handle identifiers as names
   if (strstr(node_type, "identifier") != NULL)
     return "name";
+
+  // Handle code blocks as body
   if (strstr(node_type, "compound_statement") != NULL ||
       strcmp(node_type, "compound_statement") == 0)
     return "body";
+
+  // Handle parameter lists
   if (strstr(node_type, "parameter") != NULL || strcmp(node_type, "parameter_list") == 0)
     return "params";
+
+  // Special case for methods with class name
   if (strcmp(node_type, "class_name") == 0 && strcmp(query_type, "methods") == 0)
     return "class_name";
+
+  // Default case if no matches
   return "unknown";
 }
 
@@ -360,60 +419,199 @@ static ParseStatus process_match_captures(const TSQueryMatch *match, ParserConte
                                           char **node_name, TSNode *body_node, TSNode *params_node,
                                           char **docstring, ASTNode **parent_node,
                                           ASTNode **node_map) {
+  // Initialize all output parameters to safe values
+  if (!match || !ctx || !query_type || !target_node || !node_name || !body_node || !params_node ||
+      !docstring || !parent_node) {
+    if (ctx && ctx->log_level <= LOG_ERROR) {
+      log_error("NULL pointer passed to process_match_captures: match=%p, ctx=%p, query_type=%p, "
+                "target_node=%p, node_name=%p, body_node=%p, params_node=%p, docstring=%p, "
+                "parent_node=%p",
+                (void *)match, (void *)ctx, (void *)query_type, (void *)target_node,
+                (void *)node_name, (void *)body_node, (void *)params_node, (void *)docstring,
+                (void *)parent_node);
+    }
+    return PARSE_ERROR;
+  }
+
   *target_node = (TSNode){0};
   *node_name = NULL;
   *body_node = (TSNode){0};
   *params_node = (TSNode){0};
   *docstring = NULL;
   *parent_node = NULL;
+
+  // **COMPREHENSIVE MATCH STRUCTURE VALIDATION**
+  fprintf(stderr, "DEBUG: process_match_captures ENTRY: match=%p, capture_count=%u\n",
+          (void *)match, match->capture_count);
+
+  // Validate the TSQueryMatch structure itself
+  if (match->capture_count == 0) {
+    fprintf(stderr, "DEBUG: Match has zero captures, returning PARSE_SKIP\n");
+    return PARSE_SKIP;
+  }
+
+  if (match->capture_count > 100) { // Sanity check
+    if (ctx->log_level <= LOG_ERROR) {
+      log_error("Excessive capture count (%u) in match, aborting", match->capture_count);
+    }
+    return PARSE_ERROR;
+  }
+
+  // **CRITICAL: Validate captures array pointer**
+  if (!match->captures) {
+    if (ctx->log_level <= LOG_ERROR) {
+      log_error("NULL captures array in match with capture_count=%u", match->capture_count);
+    }
+    return PARSE_ERROR;
+  }
+
+  fprintf(stderr, "DEBUG: Captures array validated: %p, count=%u\n", (void *)match->captures,
+          match->capture_count);
+
+  // Safe check for source code
+  if (!ctx->source_code) {
+    if (ctx->log_level <= LOG_ERROR) {
+      log_error("NULL source_code in parser context during process_match_captures");
+    }
+    return PARSE_ERROR;
+  }
+
   int found_target = 0;
+
+  // **ENHANCED CAPTURE PROCESSING WITH SAFETY CHECKS**
   for (uint32_t i = 0; i < match->capture_count; ++i) {
-    if (ctx && ctx->log_level <= LOG_DEBUG)
+    fprintf(stderr, "DEBUG: Processing capture %u/%u\n", i + 1, match->capture_count);
+
+    if (ctx && ctx->log_level <= LOG_DEBUG) {
       log_debug("Processing capture %u/%u", i + 1, match->capture_count);
-    TSNode captured_node = match->captures[i].node;
-    TSNode node = match->captures[i].node;
-    bool is_null = ts_node_is_null(node);
-    char *node_type_str = is_null ? "NULL_NODE" : (char *)ts_node_type(node);
+    }
+
+    // **VALIDATE INDIVIDUAL CAPTURE STRUCTURE**
+    TSQueryCapture *capture = &match->captures[i];
+    if (!capture) {
+      log_error("NULL capture at index %u", i);
+      continue;
+    }
+
+    fprintf(stderr, "DEBUG: Capture %u structure valid, accessing node...\n", i);
+
+    // **SAFE TSNode ACCESS WITH VALIDATION**
+    TSNode captured_node;
+
+    // Use memcpy to safely copy the TSNode structure
+    memcpy(&captured_node, &capture->node, sizeof(TSNode));
+
+    fprintf(stderr, "DEBUG: TSNode copied safely for capture %u\n", i);
+
+    // **VALIDATE TSNODE BEFORE USE**
+    bool is_null = ts_node_is_null(captured_node);
+
+    fprintf(stderr, "DEBUG: TSNode null check completed: is_null=%s\n", is_null ? "true" : "false");
+
+    if (is_null) {
+      if (ctx->log_level <= LOG_DEBUG) {
+        log_debug("Skipping null TSNode at capture %u", i);
+      }
+      continue;
+    }
+
+    // **SAFE NODE TYPE STRING ACCESS**
+    const char *node_type_str = NULL;
+
+    fprintf(stderr, "DEBUG: About to call ts_node_type for capture %u\n", i);
+
+    node_type_str = ts_node_type(captured_node);
+
+    fprintf(stderr, "DEBUG: ts_node_type returned: %s\n", node_type_str ? node_type_str : "NULL");
+
+    if (!node_type_str) {
+      if (ctx->log_level <= LOG_ERROR) {
+        log_error("NULL node_type_str in process_match_captures (capture %u)", i);
+      }
+      continue;
+    }
+
+    // **SAFE CAPTURE NAME DETERMINATION**
     const char *capture_name = determine_capture_name(node_type_str, query_type);
-    if (strstr(capture_name, "function") || strstr(capture_name, "class") ||
-        strstr(capture_name, "method") || strstr(capture_name, "variable") ||
-        strstr(capture_name, "import") || strstr(capture_name, "if_statement") ||
-        strstr(capture_name, "for_loop") || strstr(capture_name, "while_loop") ||
-        strstr(capture_name, "try_statement") || strstr(capture_name, "struct") ||
-        strstr(capture_name, "union") || strstr(capture_name, "enum") ||
-        strstr(capture_name, "typedef") || strstr(capture_name, "include") ||
-        strstr(capture_name, "macro") || strcmp(node_type_str, "struct_specifier") == 0) {
+    if (!capture_name) {
+      if (ctx->log_level <= LOG_ERROR) {
+        log_error("NULL capture_name in process_match_captures (capture %u, "
+                  "node_type_str=%s, query_type=%s)",
+                  i, node_type_str, query_type ? query_type : "NULL");
+      }
+      continue;
+    }
+
+    fprintf(stderr, "DEBUG: Capture %u successfully processed: type=%s, name=%s\n", i,
+            node_type_str, capture_name);
+
+    // Debug log using the proper logging system
+    if (ctx->log_level <= LOG_DEBUG) {
+      log_debug("process_match_captures: capture %u node_type_str=%s capture_name=%s", i,
+                node_type_str, capture_name);
+    }
+
+    // **SAFE CAPTURE PROCESSING**
+    if (strcmp(capture_name, "function") == 0 || strcmp(capture_name, "class") == 0 ||
+        strcmp(capture_name, "method") == 0 || strcmp(capture_name, "variable") == 0 ||
+        strcmp(capture_name, "import") == 0 || strcmp(capture_name, "if_statement") == 0 ||
+        strcmp(capture_name, "for_loop") == 0 || strcmp(capture_name, "while_loop") == 0 ||
+        strcmp(capture_name, "try_statement") == 0 || strcmp(capture_name, "struct") == 0 ||
+        strcmp(capture_name, "union") == 0 || strcmp(capture_name, "enum") == 0 ||
+        strcmp(capture_name, "typedef") == 0 || strcmp(capture_name, "include") == 0 ||
+        strcmp(capture_name, "macro") == 0 || strcmp(node_type_str, "struct_specifier") == 0) {
+
+      fprintf(stderr, "DEBUG: Found target node for capture %u\n", i);
       *target_node = captured_node;
       found_target = 1;
+
     } else if (strcmp(capture_name, "name") == 0) {
-      if (*node_name)
+      fprintf(stderr, "DEBUG: Processing name capture %u\n", i);
+      // Free previous name if any
+      if (*node_name) {
         free(*node_name);
+        *node_name = NULL;
+      }
       *node_name = ts_node_to_string(captured_node, ctx->source_code);
+      fprintf(stderr, "DEBUG: Name extracted: %s\n", *node_name ? *node_name : "NULL");
+
     } else if (strcmp(capture_name, "body") == 0) {
       *body_node = captured_node;
     } else if (strcmp(capture_name, "params") == 0 || strcmp(capture_name, "parameters") == 0) {
       *params_node = captured_node;
     } else if (strcmp(capture_name, "docstring") == 0) {
-      if (*docstring)
+      // Free previous docstring if any
+      if (*docstring) {
         free(*docstring);
+        *docstring = NULL;
+      }
       *docstring = ts_node_to_string(captured_node, ctx->source_code);
     } else if (strcmp(capture_name, "class_name") == 0 && strcmp(query_type, "methods") == 0) {
       char *class_name = ts_node_to_string(captured_node, ctx->source_code);
       // NOTE: This uses NODE_CLASS for parent lookup, which is an internal enum index.
-      // If you want to make this fully config-driven, consider maintaining a mapping from query
-      // types to node_map indices. For now, this is left as is, as node_map[] is indexed by
-      // ASTNodeType enums.
+      // If class_name, node_map, and node_map[NODE_CLASS] are all valid, set parent_node
       if (class_name && node_map && node_map[NODE_CLASS]) {
         *parent_node = node_map[NODE_CLASS];
+        if (ctx->log_level <= LOG_DEBUG) {
+          log_debug("Found parent class node: %s",
+                    (*parent_node)->name ? (*parent_node)->name : "(unnamed)");
+        }
       }
-      free(class_name);
+      if (class_name) {
+        free(class_name);
+      }
     }
   }
+
+  fprintf(stderr, "DEBUG: process_match_captures COMPLETE: found_target=%d\n", found_target);
+
   if (!found_target) {
-    if (ctx && ctx->log_level <= LOG_DEBUG)
+    if (ctx && ctx->log_level <= LOG_DEBUG) {
       log_debug("No target node found in captures, skipping match");
+    }
     return PARSE_SKIP;
   }
+
   return PARSE_OK;
 }
 
@@ -506,7 +704,7 @@ static void populate_node_metadata(ASTNode *ast_node, ParserContext *ctx, const 
   if (adapter && adapter->extract_signature) {
     ast_node->signature = adapter->extract_signature(target_node, ctx->source_code);
   } else {
-    if (strcmp(query_type, "functions") == 0) {
+    if (query_type && strcmp(query_type, "functions") == 0) {
       if (ast_node->signature)
         free(ast_node->signature);
       ast_node->signature = extract_full_signature(target_node, ctx->source_code);
@@ -617,8 +815,8 @@ static void establish_node_hierarchy(ASTNode *ast_node, ASTNode *parent_node, AS
  * @brief Processes all Tree-sitter query matches for a given query and builds AST nodes.
  * @param ctx The parser context.
  * @param query The compiled Tree-sitter query.
- * @param query_type The semantic query type.
- * @param cursor The query cursor for iterating matches.
+ * @param query_type The type of query being processed (e.g., "functions", "classes")
+ * @param cursor The query cursor for iterating matches
  * @param ast_root The root AST node.
  * @param node_map The node map for parent lookup.
  * @return PARSE_OK, PARSE_SKIP, or PARSE_ERROR.
@@ -637,6 +835,16 @@ static ParseStatus process_query_matches(ParserContext *ctx, const TSQuery *quer
                 (void *)ctx, (void *)query, (void *)query_type, (void *)cursor, (void *)ast_root);
     return PARSE_ERROR;
   }
+
+  // **COMPREHENSIVE TREE-SITTER SAFETY CHECKS**
+
+  // Validate Tree-sitter objects before use
+  if (!ctx->source_code) {
+    if (ctx->log_level <= LOG_ERROR)
+      log_error("NULL source_code in context during query processing");
+    return PARSE_ERROR;
+  }
+
   // Add detailed query info for debugging
   uint32_t pattern_count = ts_query_pattern_count(query);
   uint32_t capture_count = ts_query_capture_count(query);
@@ -645,19 +853,101 @@ static ParseStatus process_query_matches(ParserContext *ctx, const TSQuery *quer
     log_debug("Query details - patterns: %d, captures: %d, strings: %d", pattern_count,
               capture_count, string_count);
 
-  // Iterate through all query matches using the cursor
+  // **ENHANCED CURSOR VALIDATION**
+  if (!cursor || !query) {
+    if (ctx && ctx->log_level <= LOG_ERROR) {
+      log_error("Invalid query cursor or query in process_query_matches");
+    }
+    return PARSE_ERROR;
+  }
+
+  // **MEMORY SAFETY LIMITS**
+  uint32_t match_count = 0;
+  const uint32_t MAX_MATCHES = 1000;          // Reduced for safety
+  const uint32_t MAX_CAPTURES_PER_MATCH = 50; // Prevent excessive captures
+
+  // **ROBUST MATCH ITERATION WITH CRASH PROTECTION**
   TSQueryMatch match;
-  while (ts_query_cursor_next_match(cursor, &match)) {
+
+  fprintf(stderr, "DEBUG: Starting ts_query_cursor_next_match loop for %s\n", query_type);
+
+  while (cursor && match_count < MAX_MATCHES) {
+    // **CRITICAL SAFETY CHECK**: Validate cursor before each API call
+    if (!cursor) {
+      log_error("Query cursor became NULL during iteration");
+      break;
+    }
+
+    // **SAFE TREE-SITTER API CALL WITH ERROR HANDLING**
+    bool has_match = false;
+
+    // Try to safely call the Tree-sitter API
+    __builtin_memset(&match, 0, sizeof(match)); // Clear match structure
+
+    fprintf(stderr, "DEBUG: About to call ts_query_cursor_next_match (iteration %u)\n",
+            match_count);
+
+    // **PROTECTED TREE-SITTER API CALL**
+    has_match = ts_query_cursor_next_match(cursor, &match);
+
+    fprintf(stderr, "DEBUG: ts_query_cursor_next_match returned: %s\n",
+            has_match ? "true" : "false");
+
+    if (!has_match) {
+      fprintf(stderr, "DEBUG: No more matches, breaking loop\n");
+      break;
+    }
+
+    // **COMPREHENSIVE MATCH VALIDATION**
+    match_count++;
+
+    // Safety check: prevent excessive processing
+    if (match_count > MAX_MATCHES) {
+      log_error("Exceeded maximum match count (%u) for query type: %s", MAX_MATCHES, query_type);
+      break;
+    }
+
+    // **VALIDATE MATCH STRUCTURE**
+    if (match.capture_count > MAX_CAPTURES_PER_MATCH) {
+      log_error("Excessive capture count (%u) in match, skipping (max: %u)", match.capture_count,
+                MAX_CAPTURES_PER_MATCH);
+      continue;
+    }
+
+    if (match.capture_count == 0) {
+      if (ctx->log_level <= LOG_DEBUG)
+        log_debug("Match with zero captures, skipping");
+      continue;
+    }
+
+    // **VALIDATE CAPTURES ARRAY**
+    if (!match.captures) {
+      log_error("NULL captures array in match with capture_count=%u", match.capture_count);
+      continue;
+    }
+
+    fprintf(stderr, "DEBUG: Processing match with %u captures\n", match.capture_count);
+
+    // **SAFE MATCH PROCESSING**
+    fprintf(stderr, "DEBUG: About to initialize variables for match processing\n");
+
     TSNode target_node = {0};
     char *node_name = NULL;
     TSNode body_node = {0};
     TSNode params_node = {0};
     char *docstring = NULL;
     ASTNode *parent_node = ast_root;
+
+    fprintf(stderr, "DEBUG: Variables initialized, about to call map_query_type_to_node_type\n");
     uint32_t node_type = map_query_type_to_node_type(query_type);
+    fprintf(stderr, "DEBUG: map_query_type_to_node_type returned: %u\n", node_type);
+
+    fprintf(stderr, "DEBUG: About to call process_match_captures with match=%p\n", (void *)&match);
     ParseStatus match_result =
         process_match_captures(&match, ctx, query_type, &target_node, &node_name, &body_node,
                                &params_node, &docstring, &parent_node, node_map);
+    fprintf(stderr, "DEBUG: process_match_captures returned with status: %d\n", match_result);
+
     if (match_result == PARSE_SKIP) {
       if (node_name)
         free(node_name);
@@ -665,6 +955,7 @@ static ParseStatus process_query_matches(ParserContext *ctx, const TSQuery *quer
         free(docstring);
       continue;
     }
+
     if (match_result == PARSE_ERROR) {
       if (ctx && ctx->log_level <= LOG_ERROR)
         log_error("Error in process_match_captures");
@@ -674,11 +965,17 @@ static ParseStatus process_query_matches(ParserContext *ctx, const TSQuery *quer
         free(docstring);
       return PARSE_ERROR;
     }
+
+    // **SAFE NODE CREATION**
     ASTNode *ast_node = NULL;
     ParseStatus node_status =
         create_node_from_match(node_type, node_name, target_node, &ast_node, ctx);
-    free(node_name);
-    node_name = NULL;
+
+    if (node_name) {
+      free(node_name);
+      node_name = NULL;
+    }
+
     if (node_status != PARSE_OK) {
       if (ctx && ctx->log_level <= LOG_ERROR)
         log_error("Failed to create AST node from match");
@@ -686,6 +983,7 @@ static ParseStatus process_query_matches(ParserContext *ctx, const TSQuery *quer
         free(docstring);
       return node_status;
     }
+
     if (ast_node) {
       if (!parser_add_ast_node(ctx, ast_node)) {
         ast_node_free(ast_node);
@@ -697,15 +995,14 @@ static ParseStatus process_query_matches(ParserContext *ctx, const TSQuery *quer
                              parent_node);
       establish_node_hierarchy(ast_node, parent_node, ast_root, node_map);
     } else {
-      if (node_name)
-        free(node_name);
       if (docstring)
         free(docstring);
     }
+
+    fprintf(stderr, "DEBUG: Successfully processed match %u for %s\n", match_count, query_type);
   }
-  // [Legacy block removed]
-  // The legacy implementation for node type mapping, capture handling, and node creation
-  // has been removed. Only the new modular, helper-driven logic is active here.
+
+  fprintf(stderr, "DEBUG: Completed processing %u matches for %s\n", match_count, query_type);
   return PARSE_OK;
 }
 
@@ -716,35 +1013,41 @@ static ParseStatus process_query_matches(ParserContext *ctx, const TSQuery *quer
  * All these different query results map to the same NODE_FUNCTION type in the AST,
  * creating a consistent structure across languages while preserving language-specific
  * details in the node attributes.
- *
- * @param query_type The type of query to execute (e.g., "functions", "classes")
- * @param root_node The root node of the Tree-sitter syntax tree
- * @param ctx The parser context
- * @param ast_root The root AST node
- * @param node_map Map to track nodes by type for building relationships
  */
 static void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
                           ASTNode *ast_root, ASTNode **node_map) {
-  if (ctx && ctx->log_level <= LOG_DEBUG)
-    log_debug("Entered process_query for query_type: %s", query_type ? query_type : "NULL");
-
-  // If query manager isn't available, AST generation should fail
-  if (!ctx->q_manager) {
-    if (ctx && ctx->log_level <= LOG_ERROR)
-      log_error("No query manager available");
-    parser_set_error(ctx, -1, "No query manager available for AST generation");
+  // Input validation
+  if (!query_type || !ctx || ts_node_is_null(root_node) || !ast_root) {
+    if (ctx && ctx->log_level <= LOG_ERROR) {
+      log_error(
+          "Invalid arguments to process_query: query_type=%s, root_node is null=%d, ast_root=%p",
+          query_type ? query_type : "(null)", ts_node_is_null(root_node), (void *)ast_root);
+    }
     return;
   }
 
-  // Find the appropriate .scm query based on the query_type and language
+  if (ctx->log_level <= LOG_DEBUG) {
+    log_debug("Processing query type: %s for language %d", query_type, ctx->language);
+  }
+
+  // Get the query from the query manager
   const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
   if (!query) {
-    // Queries can be optional, so this isn't always an error
+    if (ctx->log_level <= LOG_ERROR) {
+      log_error("Failed to get query for type %s and language %d", query_type, ctx->language);
+    }
     return;
   }
 
-  // Set up query cursor
+  // Create query cursor
   TSQueryCursor *cursor = ts_query_cursor_new();
+  if (!cursor) {
+    if (ctx->log_level <= LOG_ERROR) {
+      log_error("Failed to create query cursor for type %s", query_type);
+    }
+    return;
+  }
+
   ts_query_cursor_exec(cursor, query, root_node);
 
   process_query_matches(ctx, query, query_type, cursor, ast_root, node_map);
@@ -802,30 +1105,6 @@ static ASTNode *create_ast_root_node(ParserContext *ctx) {
 }
 
 /**
- * @brief Process all semantic Tree-sitter queries and build the AST hierarchy
- * @param root_node The root Tree-sitter node
- * @param ctx The parser context
- * @param ast_root The root AST node to populate
- */
-static void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
-  ASTNode *node_map[256] = {NULL}; // Assuming AST_* constants are < 256
-  const char *query_types[] = {"classes", "structs",      "unions",     "enums",   "typedefs",
-                               "methods", "functions",    "variables",  "imports", "includes",
-                               "macros",  "control_flow", "docstrings", NULL};
-  size_t initial_child_count = ast_root->num_children;
-#ifdef DEBUG_PARSER
-  fprintf(stderr, "process_all_ast_queries: Initial child count: %zu\n", initial_child_count);
-#endif
-  for (int i = 0; query_types[i]; i++) {
-    process_query(query_types[i], root_node, ctx, ast_root, node_map);
-  }
-#ifdef DEBUG_PARSER
-  fprintf(stderr, "process_all_ast_queries: Final child count: %zu (initial was %zu)\n",
-          ast_root->num_children, initial_child_count);
-#endif
-}
-
-/**
  * @brief Applies qualified naming to all children of the root AST node
  * @param ast_root The root AST node
  * @param ctx The parser context
@@ -846,6 +1125,59 @@ static void apply_qualified_naming_to_children(ASTNode *ast_root, ParserContext 
       }
     }
   }
+}
+
+/**
+ * @brief Process all semantic Tree-sitter queries and build the AST hierarchy
+ * @param root_node The root Tree-sitter node
+ * @param ctx The parser context
+ * @param ast_root The root AST node to populate
+ */
+static void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
+  if (!ctx || ts_node_is_null(root_node) || !ast_root) {
+    log_error("Invalid parameters to process_all_ast_queries");
+    return;
+  }
+
+  ASTNode *node_map[256] = {NULL}; // Assuming AST_* constants are < 256
+  const char *query_types[] = {"classes", "structs",      "unions",     "enums",   "typedefs",
+                               "methods", "functions",    "variables",  "imports", "includes",
+                               "macros",  "control_flow", "docstrings", NULL};
+  size_t initial_child_count = ast_root->num_children;
+
+  log_debug("Starting AST query processing for file: %s",
+            ctx->filename ? ctx->filename : "unknown");
+  log_debug("Initial child count: %zu", initial_child_count);
+
+  for (int i = 0; query_types[i]; i++) {
+    fprintf(stderr, "DEBUG: About to process query type: %s\n", query_types[i]);
+    log_debug("Processing query type: %s", query_types[i]);
+
+    // Add safety check before each query processing
+    if (!ctx->source_code || !ctx->q_manager) {
+      log_error("Invalid context state during query processing");
+      break;
+    }
+
+    // Process query with error checking
+    fprintf(stderr, "DEBUG: Calling process_query for: %s\n", query_types[i]);
+    process_query(query_types[i], root_node, ctx, ast_root, node_map);
+    fprintf(stderr, "DEBUG: process_query completed for: %s\n", query_types[i]);
+
+    // Check for memory issues after each query
+    if (ast_root->num_children > 1000) { // Sanity check
+      log_error("Excessive number of AST nodes created: %zu", ast_root->num_children);
+      break;
+    }
+
+    log_debug("Completed query type: %s, current child count: %zu", query_types[i],
+              ast_root->num_children);
+    fprintf(stderr, "DEBUG: Finished processing query type: %s, children: %zu\n", query_types[i],
+            ast_root->num_children);
+  }
+
+  log_debug("Final child count: %zu (initial was %zu)", ast_root->num_children,
+            initial_child_count);
 }
 
 /**
@@ -889,6 +1221,9 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
  * 7. Final validation and return
  */
 ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
+  fprintf(stderr, "DEBUG: ts_tree_to_ast ENTRY: ctx=%p, filename=%s\n", (void *)ctx,
+          ctx && ctx->filename ? ctx->filename : "NULL");
+
   if (ctx && ctx->log_level <= LOG_DEBUG)
     log_debug("Entered ts_tree_to_ast");
   if (ts_node_is_null(root_node) || !ctx) {
@@ -898,17 +1233,74 @@ ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
     parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
     return NULL;
   }
+
+  fprintf(stderr, "DEBUG: About to create AST root node\n");
   ASTNode *ast_root = create_ast_root_node(ctx);
   if (!ast_root) {
+    fprintf(stderr, "DEBUG: create_ast_root_node FAILED\n");
     return NULL;
   }
+  fprintf(stderr, "DEBUG: AST root node created successfully: %p\n", (void *)ast_root);
+
   size_t initial_child_count = ast_root->num_children;
+
+  fprintf(stderr, "DEBUG: About to process all AST queries\n");
   process_all_ast_queries(root_node, ctx, ast_root);
+  fprintf(stderr, "DEBUG: process_all_ast_queries completed\n");
+
+  fprintf(stderr, "DEBUG: About to apply qualified naming\n");
   apply_qualified_naming_to_children(ast_root, ctx);
+  fprintf(stderr, "DEBUG: apply_qualified_naming_to_children completed\n");
+
+  fprintf(stderr, "DEBUG: About to process docstrings\n");
   process_docstrings(ast_root, ctx);
+  fprintf(stderr, "DEBUG: process_docstrings completed\n");
+
+  fprintf(stderr, "DEBUG: About to post-process AST\n");
   ast_root = post_process_ast(ast_root, ctx);
-  ast_root = apply_test_adaptations(ast_root, ctx);
-  return validate_and_finalize_ast(ast_root, ctx, initial_child_count);
+  fprintf(stderr, "DEBUG: post_process_ast completed, ast_root=%p\n", (void *)ast_root);
+
+  if (ctx && ctx->log_level <= LOG_DEBUG) {
+    log_debug("Before test adaptations: ast_root=%p, num_children=%zu", (void *)ast_root,
+              ast_root ? ast_root->num_children : 0);
+    if (ctx->filename) {
+      log_debug("Processing file: %s", ctx->filename);
+    } else {
+      log_debug("Processing unknown file (ctx->filename is NULL)");
+    }
+  }
+
+  // Check if the AST is valid before attempting test adaptations
+  if (!ast_root) {
+    if (ctx && ctx->log_level <= LOG_ERROR) {
+      log_error("NULL ast_root before apply_test_adaptations");
+    }
+    parser_set_error(ctx, -1, "NULL AST root before test adaptations");
+    return NULL;
+  }
+
+  fprintf(stderr, "DEBUG: About to apply test adaptations\n");
+  // Apply test adaptations with detailed error handling
+  ASTNode *adapted_root = apply_test_adaptations(ast_root, ctx);
+  fprintf(stderr, "DEBUG: apply_test_adaptations completed, adapted_root=%p\n",
+          (void *)adapted_root);
+
+  if (ctx && ctx->log_level <= LOG_DEBUG) {
+    log_debug("After test adaptations: adapted_root=%p, ast_root=%p", (void *)adapted_root,
+              (void *)ast_root);
+    if (adapted_root) {
+      log_debug("Adapted AST has %zu children", adapted_root->num_children);
+    } else {
+      log_error("apply_test_adaptations returned NULL");
+      // In case of error, revert to original AST to avoid segmentation fault
+      adapted_root = ast_root;
+    }
+  }
+
+  fprintf(stderr, "DEBUG: About to validate and finalize AST\n");
+  ASTNode *final_result = validate_and_finalize_ast(adapted_root, ctx, initial_child_count);
+  fprintf(stderr, "DEBUG: ts_tree_to_ast COMPLETE: returning %p\n", (void *)final_result);
+  return final_result;
 }
 
 /**
