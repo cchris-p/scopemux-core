@@ -1,3 +1,4 @@
+tree_sitter_*/*
 
 # Python
 __pycache__/

@@ -25,6 +25,7 @@ int logging_enabled = 0;
 // Include forward declarations for binding initialization functions
 extern void init_parser_bindings(void *m);
 extern void init_context_engine_bindings(void *m);
+extern void register_test_processor(PyObject *module);
 
 /**
  * @brief Module documentation string
@@ -54,6 +55,9 @@ void init_scopemux_module(void *m) {
 
   // Initialize the context engine bindings
   init_context_engine_bindings(m);
+
+  // Register test processor bindings to ensure proper symbol linkage
+  register_test_processor(module);
 
   // Add version information
   PyModule_AddStringConstant(module, "__version__", "0.1.0");

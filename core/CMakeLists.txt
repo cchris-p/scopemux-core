@@ -72,15 +72,20 @@ message(STATUS "Python libraries: ${Python_LIBRARIES}")
 
 # pybind11 is already loaded above
 
-# Define source files
-set(PARSER_SOURCES
+# Build parser core static library
+add_library(parser_core STATIC
     src/parser/parser.c
     src/parser/tree_sitter_integration.c
-    # src/parser/ir_generator.c  # Commented out missing file
+    src/parser/query_manager.c
+    # Common files
+    src/common/memory_management.c
+    src/common/error_handling.c
+    src/common/logging.c
+)
+
+# Create a separate object library for test_processor.c to ensure it gets linked properly
+add_library(test_processor_lib OBJECT
     src/processors/test_processor.c
-    src/processors/ast_post_processor.c
-    src/processors/docstring_processor.c
-    src/config/node_type_mapping_loader.c
 )
 
 set(CONTEXT_ENGINE_SOURCES
@@ -113,16 +118,47 @@ target_link_libraries(parser_core PRIVATE
     ts_typescript
 )
 
-# Python bindings module
+# Python bindings module with test_processor bindings and implementation
 pybind11_add_module(scopemux_core
+    # Binding files
     src/bindings/module.c
     src/bindings/parser_bindings.c
     src/bindings/context_engine_bindings.c
+    src/bindings/test_processor_bindings.c
+    
+    # Direct implementation of test_processor.c to ensure symbols are linked
+    src/processors/test_processor.c
+    
+    # Additional needed files
     src/context_engine/context_engine.c
+    src/common/memory_management.c
+    src/common/error_handling.c
+    src/common/logging.c
+)
+
+# Ensure all symbols from our implementation are accessible
+set_target_properties(scopemux_core PROPERTIES
+    ENABLE_EXPORTS TRUE
+    LINK_FLAGS "-rdynamic"
 )
 
 # Link libraries to the Python module
-target_link_libraries(scopemux_core PRIVATE parser_core context_engine)
+target_link_libraries(scopemux_core PRIVATE
+    parser_core
+    context_engine
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+
+# Set compiler flags to export all symbols
+target_compile_options(scopemux_core PRIVATE "-rdynamic")
+set_target_properties(scopemux_core PROPERTIES ENABLE_EXPORTS ON)
+set_target_properties(scopemux_core PROPERTIES LINK_FLAGS "-Wl,--export-dynamic")
+
 
 # Set include directories for the Python module
 target_include_directories(scopemux_core PRIVATE

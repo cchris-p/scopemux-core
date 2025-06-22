@@ -26,12 +26,13 @@ except ImportError:
 ext_modules = [
     Extension(
         "scopemux_core",  # Output module name: import scopemux_core
-        sources=[
+        sources=[  # All source files needed for the extension
             # Binding files
             "src/bindings/module.c",
-            "src/bindings/parser_bindings.c",
+            "src/bindings/parser_bindings.c", 
             "src/bindings/context_engine_bindings.c",
-            # Parser core files
+            "src/bindings/test_processor_bindings.c",
+            # Parser files
             "src/parser/parser.c",
             "src/parser/tree_sitter_integration.c",
             "src/parser/query_manager.c",
@@ -44,6 +45,15 @@ ext_modules = [
             "src/common/error_handling.c",
             "src/common/memory_management.c",
             "src/common/logging.c",
+            # Processor files
+            "src/processors/test_processor.c",
+            "src/processors/ast_post_processor.c",
+            "src/processors/docstring_processor.c",
+            # Config files
+            "src/config/node_type_mapping_loader.c",
+            # Adapter files
+            "src/adapters/adapter_registry.c",
+            "src/adapters/language_adapter.c",
         ],
         include_dirs=[
             "include",  # Relative to this setup.py file
