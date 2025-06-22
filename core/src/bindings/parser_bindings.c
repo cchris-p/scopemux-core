@@ -23,6 +23,10 @@
 #include "../../include/scopemux/python_bindings.h"
 #include "../../include/scopemux/python_utils.h"
 
+/* Forward declarations of PyTypeObject for nodes */
+PyTypeObject ASTNodePyType;
+PyTypeObject CSTNodePyType;
+
 // These type definitions are now in python_utils.h
 // ParserContextObject - Python wrapper for ParserContext
 
@@ -168,9 +172,6 @@ static PyObject *ParserContext_parse_string(PyObject *self_obj, PyObject *args, 
 }
 
 /**
- * @brief Method definitions for ParserContext
- */
-/**
  * @brief Get the last error message from the parser context
  */
 static PyObject *ParserContext_get_last_error(PyObject *self_obj, PyObject *Py_UNUSED(args)) {
@@ -184,14 +185,91 @@ static PyObject *ParserContext_get_last_error(PyObject *self_obj, PyObject *Py_U
   return PyUnicode_FromString(error);
 }
 
+/**
+ * @brief Get the AST root node from the parsed file
+ */
+static PyObject *ParserContext_get_ast_root(PyObject *self_obj, PyObject *Py_UNUSED(args)) {
+  ParserContextObject *self = (ParserContextObject *)self_obj;
+  if (!self->context) {
+    PyErr_SetString(PyExc_RuntimeError, "Parser context is not initialized");
+    return NULL;
+  }
+
+  const ASTNode *ast_root_const = parser_get_ast_root(self->context);
+  ASTNode *ast_root = (ASTNode *)ast_root_const; // Safe cast to remove const qualifier
+  if (!ast_root) {
+    PyErr_SetString(PyExc_RuntimeError,
+                    "Failed to get AST root node. Make sure the file is parsed successfully.");
+    return NULL;
+  }
+
+  // Create a Python AST node object
+  PyTypeObject *type = &ASTNodePyType;
+  ASTNodeObject *py_node = (ASTNodeObject *)type->tp_alloc(type, 0);
+  if (!py_node) {
+    PyErr_NoMemory();
+    return NULL;
+  }
+
+  // We don't need to copy the node since the Python object will take ownership
+  // of the AST node. The node will be freed when the Python object is deallocated.
+  py_node->node = (ASTNode *)ast_root;
+  py_node->owned = true; // Set ownership flag
+
+  return (PyObject *)py_node;
+}
+
+/**
+ * @brief Get the CST root node from the parsed file
+ */
+static PyObject *ParserContext_get_cst_root(PyObject *self_obj, PyObject *Py_UNUSED(args)) {
+  ParserContextObject *self = (ParserContextObject *)self_obj;
+  if (!self->context) {
+    PyErr_SetString(PyExc_RuntimeError, "Parser context is not initialized");
+    return NULL;
+  }
+
+  const CSTNode *cst_root_const = parser_get_cst_root(self->context);
+  if (!cst_root_const) {
+    PyErr_SetString(PyExc_RuntimeError,
+                    "Failed to get CST root node. Make sure the file is parsed successfully.");
+    return NULL;
+  }
+
+  // Create a deep copy of the CST node to avoid ownership issues
+  CSTNode *cst_root_copy = cst_node_copy_deep((CSTNode *)cst_root_const);
+  if (!cst_root_copy) {
+    PyErr_SetString(PyExc_MemoryError, "Failed to copy CST node");
+    return NULL;
+  }
+
+  // Create a Python CST node object
+  PyTypeObject *type = &CSTNodePyType;
+  CSTNodeObject *py_node = (CSTNodeObject *)type->tp_alloc(type, 0);
+  if (!py_node) {
+    // Free our copy if we couldn't allocate the Python object
+    cst_node_free(cst_root_copy);
+    PyErr_NoMemory();
+    return NULL;
+  }
+
+  // Set the node and ownership flag
+  py_node->node = cst_root_copy;
+  py_node->owned = true; // We own this copy, so it should be freed when Python object is deallocated
+
+  return (PyObject *)py_node;
+}
+
 static PyMethodDef ParserContext_methods[] = {
     {"parse_file", (PyCFunction)ParserContext_parse_file, METH_VARARGS | METH_KEYWORDS,
      "Parse a file"},
     {"parse_string", (PyCFunction)ParserContext_parse_string, METH_VARARGS | METH_KEYWORDS,
-     "Parse a string of code"},
+     "Parse a string"},
     {"get_last_error", (PyCFunction)ParserContext_get_last_error, METH_NOARGS,
-     "Get the last error message from the parser"},
-    {NULL} /* Sentinel */
+     "Get the last error message"},
+    {"get_ast_root", (PyCFunction)ParserContext_get_ast_root, METH_NOARGS, "Get the AST root node"},
+    {"get_cst_root", (PyCFunction)ParserContext_get_cst_root, METH_NOARGS, "Get the CST root node"},
+    {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
 /**
@@ -296,6 +374,260 @@ static PyObject *ASTNode_get_type(ASTNodeObject *self, void *closure) {
 }
 
 /**
+ * Method-style getters for ASTNode (for compatibility with generate_expected_json.py)
+ */
+static PyObject *ASTNode_method_get_type(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  if (!self->node) {
+    Py_RETURN_NONE;
+  }
+  return PyLong_FromLong(self->node->type);
+}
+
+static PyObject *ASTNode_method_get_name(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  if (!self->node || !self->node->name) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->name);
+}
+
+static PyObject *ASTNode_method_get_qualified_name(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  if (!self->node || !self->node->qualified_name) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->qualified_name);
+}
+
+static PyObject *ASTNode_method_get_signature(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  if (!self->node || !self->node->signature) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->signature);
+}
+
+static PyObject *ASTNode_method_get_docstring(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  if (!self->node || !self->node->docstring) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->docstring);
+}
+
+static PyObject *ASTNode_method_get_path(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  (void)self; // ASTNode doesn't have a path field
+  // Path information is not available in the ASTNode structure
+  Py_RETURN_NONE;
+}
+
+static PyObject *ASTNode_method_is_system(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  (void)self; // ASTNode doesn't have an is_system field
+  // System flag is not available in the ASTNode structure
+  Py_RETURN_FALSE;
+}
+
+static PyObject *ASTNode_method_get_parameters(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  (void)self; // Parameters not implemented yet
+  // Return an empty list as parameters are not yet implemented
+  return PyList_New(0);
+}
+
+static PyObject *ASTNode_method_get_return_type(ASTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  // Return type is not yet implemented in the ASTNode structure
+  Py_RETURN_NONE;
+}
+
+/**
+ * Method definitions for ASTNode
+ */
+static PyMethodDef ASTNode_methods[] = {
+    {"get_type", (PyCFunction)ASTNode_method_get_type, METH_NOARGS, "Get the node type"},
+    {"get_name", (PyCFunction)ASTNode_method_get_name, METH_NOARGS, "Get the node name"},
+    {"get_qualified_name", (PyCFunction)ASTNode_method_get_qualified_name, METH_NOARGS,
+     "Get the node qualified name"},
+    {"get_signature", (PyCFunction)ASTNode_method_get_signature, METH_NOARGS,
+     "Get the node signature"},
+    {"get_docstring", (PyCFunction)ASTNode_method_get_docstring, METH_NOARGS,
+     "Get the node docstring"},
+    {"get_path", (PyCFunction)ASTNode_method_get_path, METH_NOARGS, "Get the node path"},
+    {"is_system", (PyCFunction)ASTNode_method_is_system, METH_NOARGS,
+     "Check if the node is a system node"},
+    {"get_parameters", (PyCFunction)ASTNode_method_get_parameters, METH_NOARGS,
+     "Get the node parameters"},
+    {"get_return_type", (PyCFunction)ASTNode_method_get_return_type, METH_NOARGS,
+     "Get the node return type"},
+    {NULL, NULL, 0, NULL} /* Sentinel */
+};
+
+/*************************
+ * CSTNode Implementation *
+ *************************/
+
+/**
+ * @brief Deallocation function for CSTNodeObject
+ */
+static void CSTNode_dealloc(CSTNodeObject *self) {
+  if (self->node && self->owned) {
+    // Only free the node if we own it
+    cst_node_free(self->node);
+    self->node = NULL;
+  }
+  Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+/**
+ * @brief Create a new CSTNodeObject
+ */
+static PyObject *CSTNode_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+  (void)args;   // Silence unused parameter warning
+  (void)kwds;   // Silence unused parameter warning
+  
+  CSTNodeObject *self = (CSTNodeObject *)type->tp_alloc(type, 0);
+  if (self != NULL) {
+    self->node = NULL;
+    self->owned = false;
+  }
+  return (PyObject *)self;
+}
+
+/**
+ * @brief Initialize a CSTNodeObject
+ */
+static int CSTNode_init(CSTNodeObject *self, PyObject *args, PyObject *kwds) {
+  (void)args;   // Silence unused parameter warning
+  (void)kwds;   // Silence unused parameter warning
+  
+  // The CSTNode will be set externally, nothing to initialize
+  // Just make sure we start with no ownership
+  self->owned = false;
+  return 0;
+}
+
+/* Getters for CSTNode properties */
+
+static PyObject *CSTNode_get_type(CSTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
+  
+  if (!self->node || !self->node->type) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->type);
+}
+
+static PyObject *CSTNode_get_content(CSTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
+  
+  if (!self->node || !self->node->content) {
+    Py_RETURN_NONE;
+  }
+  return PyUnicode_FromString(self->node->content);
+}
+
+static PyObject *CSTNode_get_range(CSTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
+  
+  if (!self->node) {
+    Py_RETURN_NONE;
+  }
+  
+  // Create range dictionary with start and end positions
+  PyObject *range_dict = PyDict_New();
+  PyObject *start_dict = PyDict_New();
+  PyObject *end_dict = PyDict_New();
+  
+  PyDict_SetItemString(start_dict, "line", PyLong_FromLong(self->node->range.start.line));
+  PyDict_SetItemString(start_dict, "column", PyLong_FromLong(self->node->range.start.column));
+  
+  PyDict_SetItemString(end_dict, "line", PyLong_FromLong(self->node->range.end.line));
+  PyDict_SetItemString(end_dict, "column", PyLong_FromLong(self->node->range.end.column));
+  
+  PyDict_SetItemString(range_dict, "start", start_dict);
+  PyDict_SetItemString(range_dict, "end", end_dict);
+  
+  // Clean up references
+  Py_DECREF(start_dict);
+  Py_DECREF(end_dict);
+  
+  return range_dict;
+}
+
+static PyObject *CSTNode_get_children(CSTNodeObject *self, void *closure) {
+  (void)closure; // Silence the unused parameter warning
+  
+  if (!self->node) {
+    return PyList_New(0);
+  }
+  
+  PyObject *children_list = PyList_New(0);
+  if (!children_list) {
+    return NULL; // Memory error
+  }
+  
+  for (size_t i = 0; i < self->node->children_count; i++) {
+    CSTNode *child = self->node->children[i];
+    if (!child) {
+      continue;
+    }
+    
+    // Create a new Python wrapper for this child
+    PyTypeObject *type = &CSTNodePyType;
+    CSTNodeObject *py_child = (CSTNodeObject *)type->tp_alloc(type, 0);
+    if (!py_child) {
+      Py_DECREF(children_list);
+      PyErr_NoMemory();
+      return NULL;
+    }
+    
+    // We don't take ownership of the child nodes since they're owned by the parent
+    py_child->node = child;
+    py_child->owned = false;
+    
+    // Add to the list
+    PyList_Append(children_list, (PyObject *)py_child);
+    Py_DECREF(py_child); // PyList_Append increases refcount, so we can decref
+  }
+  
+  return children_list;
+}
+
+/* Method-style getters for CSTNode (for compatibility with generate_expected_json.py) */
+
+static PyObject *CSTNode_method_get_type(CSTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  return CSTNode_get_type(self, NULL);
+}
+
+static PyObject *CSTNode_method_get_content(CSTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  return CSTNode_get_content(self, NULL);
+}
+
+static PyObject *CSTNode_method_get_range(CSTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  return CSTNode_get_range(self, NULL);
+}
+
+static PyObject *CSTNode_method_get_children(CSTNodeObject *self, PyObject *args) {
+  (void)args; // Silence unused parameter warning
+  return CSTNode_get_children(self, NULL);
+}
+
+/* Method definitions for CSTNode */
+static PyMethodDef CSTNode_methods[] = {
+    {"get_type", (PyCFunction)CSTNode_method_get_type, METH_NOARGS, "Get the node type"},
+    {"get_content", (PyCFunction)CSTNode_method_get_content, METH_NOARGS, "Get the node content"},
+    {"get_range", (PyCFunction)CSTNode_method_get_range, METH_NOARGS, "Get the node range"},
+    {"get_children", (PyCFunction)CSTNode_method_get_children, METH_NOARGS, "Get the node children"},
+    {NULL, NULL, 0, NULL} /* Sentinel */
+};
+
+/**
  * @brief Property getters for ASTNode
  */
 static PyGetSetDef ASTNode_getsetters[] = {
@@ -309,19 +641,41 @@ static PyGetSetDef ASTNode_getsetters[] = {
     {NULL} /* Sentinel */
 };
 
+static PyGetSetDef CSTNode_getsetters[] = {
+    {"type", (getter)CSTNode_get_type, NULL, "Node type", NULL},
+    {"content", (getter)CSTNode_get_content, NULL, "Node content", NULL},
+    {"range", (getter)CSTNode_get_range, NULL, "Node source range", NULL},
+    {"children", (getter)CSTNode_get_children, NULL, "Child nodes", NULL},
+    {NULL} /* Sentinel */
+};
+
 /**
  * @brief Type definition for ASTNode
  */
-static PyTypeObject ASTNodePyType = {PyVarObject_HEAD_INIT(NULL, 0).tp_name =
-                                         "scopemux_core.ASTNode",
-                                     .tp_basicsize = sizeof(ASTNodeObject),
-                                     .tp_itemsize = 0,
-                                     .tp_dealloc = (destructor)ASTNode_dealloc,
-                                     .tp_flags = Py_TPFLAGS_DEFAULT,
-                                     .tp_doc = "AST node representing a parsed semantic entity",
-                                     .tp_getset = ASTNode_getsetters,
-                                     .tp_init = (initproc)ASTNode_init,
-                                     .tp_new = ASTNode_new};
+PyTypeObject ASTNodePyType = {PyVarObject_HEAD_INIT(NULL, 0).tp_name = "scopemux_core.ASTNode",
+                              .tp_basicsize = sizeof(ASTNodeObject),
+                              .tp_itemsize = 0,
+                              .tp_dealloc = (destructor)ASTNode_dealloc,
+                              .tp_flags = Py_TPFLAGS_DEFAULT,
+                              .tp_doc = "AST node representing a parsed semantic entity",
+                              .tp_methods = ASTNode_methods,
+                              .tp_getset = ASTNode_getsetters,
+                              .tp_init = (initproc)ASTNode_init,
+                              .tp_new = ASTNode_new};
+
+/**
+ * @brief Type definition for CSTNode
+ */
+PyTypeObject CSTNodePyType = {PyVarObject_HEAD_INIT(NULL, 0).tp_name = "scopemux_core.CSTNode",
+                               .tp_basicsize = sizeof(CSTNodeObject),
+                               .tp_itemsize = 0,
+                               .tp_dealloc = (destructor)CSTNode_dealloc,
+                               .tp_flags = Py_TPFLAGS_DEFAULT,
+                               .tp_doc = "CST node representing a parsed concrete syntax entity",
+                               .tp_methods = CSTNode_methods,
+                               .tp_getset = CSTNode_getsetters,
+                               .tp_init = (initproc)CSTNode_init,
+                               .tp_new = CSTNode_new};
 
 /**
  * @brief Detect language from filename
@@ -368,12 +722,19 @@ void init_parser_bindings(void *m) {
     return;
   }
 
+  if (PyType_Ready(&CSTNodePyType) < 0) {
+    return;
+  }
+
   // Add the types to the module
   Py_INCREF(&ParserContextType);
   PyModule_AddObject(module, "ParserContext", (PyObject *)&ParserContextType);
 
   Py_INCREF(&ASTNodePyType);
   PyModule_AddObject(module, "ASTNode", (PyObject *)&ASTNodePyType);
+
+  Py_INCREF(&CSTNodePyType);
+  PyModule_AddObject(module, "CSTNode", (PyObject *)&CSTNodePyType);
 
   // Add module methods
   PyModule_AddFunctions(module, module_methods);

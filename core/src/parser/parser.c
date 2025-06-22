@@ -231,6 +231,67 @@ CSTNode *cst_node_new(const char *type, char *content) {
   return node;
 }
 
+/**
+ * @brief Creates a deep copy of a CST node and all its children
+ *
+ * @param node The node to copy
+ * @return CSTNode* A new allocated copy or NULL on failure
+ */
+CSTNode *cst_node_copy_deep(const CSTNode *node) {
+  if (!node) {
+    return NULL;
+  }
+  
+  // Allocate new node
+  CSTNode *copy = (CSTNode *)calloc(1, sizeof(CSTNode));
+  if (!copy) {
+    return NULL;
+  }
+  
+  // Copy type pointer (const char* pointing to a static string from tree-sitter)
+  copy->type = node->type;
+  
+  // Deep copy content if it exists
+  if (node->content) {
+    copy->content = strdup(node->content);
+    if (!copy->content) {
+      free(copy);
+      return NULL;
+    }
+  }
+  
+  // Copy source range
+  copy->range = node->range;
+  
+  // Copy children recursively
+  if (node->children_count > 0 && node->children) {
+    copy->children = (CSTNode **)calloc(node->children_count, sizeof(CSTNode*));
+    if (!copy->children) {
+      if (copy->content) free(copy->content);
+      free(copy);
+      return NULL;
+    }
+    
+    // Copy each child recursively
+    for (unsigned int i = 0; i < node->children_count; i++) {
+      copy->children[i] = cst_node_copy_deep(node->children[i]);
+      if (!copy->children[i]) {
+        // If any child copy fails, free everything we've allocated so far
+        for (unsigned int j = 0; j < i; j++) {
+          cst_node_free(copy->children[j]);
+        }
+        free(copy->children);
+        if (copy->content) free(copy->content);
+        free(copy);
+        return NULL;
+      }
+      copy->children_count++;
+    }
+  }
+  
+  return copy;
+}
+
 void cst_node_free(CSTNode *node) {
   if (!node)
     return;
@@ -266,7 +327,7 @@ ParserContext *parser_init(void) {
   // Load config-driven node type mapping
   load_node_type_mapping("/home/matrillo/apps/scopemux/core/config/node_type_mapping.json");
 
-  ctx->mode = PARSE_AST; // Default mode
+  ctx->mode = PARSE_BOTH; // Default mode - generate both AST and CST
   return ctx;
 }
 
@@ -626,24 +687,43 @@ bool parser_parse_string(ParserContext *ctx, const char *const content, size_t c
 
   // Set up crash recovery point
   if (setjmp(parse_crash_recovery) == 0) {
-    // Based on the selected mode, generate either an AST or a CST
-    if (ctx->mode == PARSE_AST) {
+    // Based on the selected mode, generate AST, CST, or both
+    if (ctx->mode == PARSE_AST || ctx->mode == PARSE_BOTH) {
       fprintf(stderr, "DEBUG: About to call ts_tree_to_ast for file: %s\n",
               filename ? filename : "unknown");
       ctx->ast_root = ts_tree_to_ast(root_node, ctx);
       fprintf(stderr, "DEBUG: ts_tree_to_ast completed, ast_root=%p\n", (void *)ctx->ast_root);
       if (ctx->ast_root) {
         success = true;
+      } else if (ctx->mode == PARSE_AST) {
+        // Only considered a failure in AST-only mode
+        // ts_tree_to_ast will set the error on failure
+        success = false;
       }
-      // ts_tree_to_ast will set the error on failure
-    } else if (ctx->mode == PARSE_CST) {
+    }
+
+    if (ctx->mode == PARSE_CST || ctx->mode == PARSE_BOTH) {
       ctx->cst_root = ts_tree_to_cst(root_node, ctx);
       if (ctx->cst_root) {
         success = true;
+      } else if (ctx->mode == PARSE_CST) {
+        // Only considered a failure in CST-only mode
+        // ts_tree_to_cst will set the error on failure
+        success = false;
       }
-      // ts_tree_to_cst will set the error on failure
-    } else {
+    }
+
+    if (ctx->mode == PARSE_BOTH && (!ctx->ast_root || !ctx->cst_root)) {
+      // In PARSE_BOTH mode, we need both AST and CST to consider it a success
+      if (!ctx->ast_root) {
+        parser_set_error(ctx, -1, "Failed to generate AST in PARSE_BOTH mode");
+      } else if (!ctx->cst_root) {
+        parser_set_error(ctx, -1, "Failed to generate CST in PARSE_BOTH mode");
+      }
+      success = false;
+    } else if (ctx->mode != PARSE_AST && ctx->mode != PARSE_CST && ctx->mode != PARSE_BOTH) {
       parser_set_error(ctx, -1, "Unknown or unsupported parse mode selected");
+      success = false;
     }
   } else {
     // We caught a crash
@@ -855,4 +935,36 @@ bool ast_node_add_reference(ASTNode *from, ASTNode *to) {
   assert(from->num_references <= from->references_capacity);
 #endif
   return true;
+}
+
+/* Get the root node of the Abstract Syntax Tree (AST) */
+const ASTNode *parser_get_ast_root(const ParserContext *ctx) {
+  if (!ctx) {
+    return NULL;
+  }
+
+  // Find the root node by checking for NODE_ROOT type or parent == NULL
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    if (ctx->all_ast_nodes[i] && ctx->all_ast_nodes[i]->type == NODE_ROOT) {
+      return ctx->all_ast_nodes[i];
+    }
+  }
+
+  // Fallback to find a node without a parent
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    if (ctx->all_ast_nodes[i] && ctx->all_ast_nodes[i]->parent == NULL) {
+      return ctx->all_ast_nodes[i];
+    }
+  }
+
+  return NULL; // No root node found
+}
+
+/* Get the root node of the Concrete Syntax Tree (CST) */
+const CSTNode *parser_get_cst_root(const ParserContext *ctx) {
+  if (!ctx) {
+    return NULL;
+  }
+
+  return ctx->cst_root;
 }

@@ -2,7 +2,7 @@
 
 * Do not write "you" or "your" in the code. Write comments with a standard documentation tone. In the comments, note useful information, caveats, and todo/action items. If you see commented code that do not follow this best practice, update them at the spot. Also clarify vague messages whenever possible.
 
-* Build the python bindings with this command ran from the project root directory: `cd core/ && pybind`
+* Build the python bindings with this shell script ran from the project root directory: `build_all_and_pybind.sh `
 
 * I am going to suggest you to fix errors in the test suite at times. Do not manually execute command strings to run the test suite unless if you are targeting a single test, even though that is not preferred. Run the tests via the shell scripts in the project root directory.
 

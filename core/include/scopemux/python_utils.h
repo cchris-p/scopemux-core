@@ -54,6 +54,17 @@ typedef struct {
 } ASTNodeObject;
 
 /**
+ * @brief Python wrapper object for CSTNode
+ */
+typedef struct {
+  PyObject_HEAD
+  /* The C CSTNode instance */
+  struct CSTNode *node;
+  /* Flag to indicate if we own the CSTNode memory */
+  int owned;
+} CSTNodeObject;
+
+/**
  * @brief Python wrapper object for ParserContext
  */
 typedef struct {

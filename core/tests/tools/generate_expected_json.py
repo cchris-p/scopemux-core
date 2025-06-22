@@ -177,16 +177,34 @@ def cst_node_to_dict(node) -> Dict[str, Any]:
     if hasattr(node, "get_range"):
         range_data = node.get_range()
         if range_data:
-            result["range"] = {
-                "start": {
-                    "line": getattr(range_data, "start_line", None),
-                    "column": getattr(range_data, "start_column", None),
-                },
-                "end": {
-                    "line": getattr(range_data, "end_line", None),
-                    "column": getattr(range_data, "end_column", None),
-                },
-            }
+            # Handle different range structures:
+            # 1. Dictionary with nested start/end dicts (from our CSTNode)
+            if isinstance(range_data, dict) and 'start' in range_data and 'end' in range_data:
+                start = range_data['start']
+                end = range_data['end']
+                
+                result["range"] = {
+                    "start": {
+                        "line": start.get('line', 0),
+                        "column": start.get('column', 0),
+                    },
+                    "end": {
+                        "line": end.get('line', 0),
+                        "column": end.get('column', 0),
+                    },
+                }
+            # 2. Object with start_line/end_line attributes (older style)
+            else:
+                result["range"] = {
+                    "start": {
+                        "line": getattr(range_data, "start_line", 0),
+                        "column": getattr(range_data, "start_column", 0),
+                    },
+                    "end": {
+                        "line": getattr(range_data, "end_line", 0),
+                        "column": getattr(range_data, "end_column", 0),
+                    },
+                }
 
     # Recursively add children
     if hasattr(node, "get_children"):
@@ -202,6 +220,61 @@ def cst_node_to_dict(node) -> Dict[str, Any]:
 
     return result
 
+
+# Global variable to track nodes already processed to avoid circular references during serialization
+_processed_nodes = set()
+
+def cleanup_cst_tree(root_node):
+    """
+    Make a clean copy of the CST data as dictionaries before the CSTNode objects are deallocated.
+    This prevents segmentation faults during cleanup.
+    """
+    global _processed_nodes
+    _processed_nodes.clear()
+    
+    return cleanup_cst_node(root_node)
+
+def cleanup_cst_node(node):
+    """
+    Helper function to recursively clean up CST nodes by creating a pure dictionary representation.
+    Avoids processing the same node twice.
+    """
+    if not node:
+        return None
+    
+    # Use node's memory address as identifier
+    node_id = id(node)
+    if node_id in _processed_nodes:
+        return {"type": "reference", "content": str(node_id)}
+    
+    _processed_nodes.add(node_id)
+    
+    # Create a clean dictionary
+    result = {
+        "type": node.get_type() if hasattr(node, "get_type") else "UNKNOWN",
+        "content": node.get_content() if hasattr(node, "get_content") else "",
+    }
+    
+    # Add range if available
+    if hasattr(node, "get_range"):
+        range_data = node.get_range()
+        if isinstance(range_data, dict) and "start" in range_data and "end" in range_data:
+            result["range"] = {
+                "start": dict(range_data["start"]),
+                "end": dict(range_data["end"]),
+            }
+    
+    # Add children if available
+    result["children"] = []
+    if hasattr(node, "get_children"):
+        children = node.get_children()
+        if children:
+            for child in children:
+                child_dict = cleanup_cst_node(child)
+                if child_dict:
+                    result["children"].append(child_dict)
+    
+    return result
 
 def parse_file(
     file_path: str, mode: str = "both"
@@ -226,6 +299,7 @@ def parse_file(
 
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
+            lines = content.splitlines()
 
         if hasattr(parser, "parse_string"):
             success = parser.parse_string(content, file_path, detected_lang)
@@ -254,11 +328,22 @@ def parse_file(
             cst_root = parser.get_cst_root()
             if not cst_root:
                 raise RuntimeError(f"Parser did not return CST for {file_path}")
-            cst_dict = cst_node_to_dict(cst_root)
-            if main_node and main_node["docstring"]:
-                doc_start = main_node["range"]["start_line"] - 4
-                doc_end = main_node["range"]["start_line"] - 1
-                cst_children.append({
+            # Use cleanup function to create a safe copy before the CST nodes are deallocated
+            cst_dict_safe = cleanup_cst_tree(cst_root)
+            cst_dict = cst_dict_safe  # Use our safe dictionary directly
+            # Extract main node from AST if available for docstring processing
+            main_node = None
+            if 'ast_dict' in locals() and ast_dict:
+                # Find the main function in the ast_dict
+                for node in ast_dict.get("children", []):
+                    if node.get("name") == "main":
+                        main_node = node
+                        break
+                        
+            if main_node and main_node.get("docstring"):
+                doc_start = main_node["range"]["start"]["line"] - 4
+                doc_end = main_node["range"]["start"]["line"] - 1
+                cst_dict.get("children", []).append({
                     "type": "comment",
                     "content": main_node["docstring"],
                     "range": {
@@ -267,26 +352,31 @@ def parse_file(
                     },
                     "children": []
                 })
-            # Function definition
-            if main_node:
-                cst_children.append({
-                    "type": "function_definition",
-                    "content": main_node["raw_content"],
-                    "range": {
-                        "start": {"line": main_node["range"]["start_line"], "column": 0},
-                        "end": {"line": main_node["range"]["end_line"], "column": main_node["range"]["end_column"]}
-                    },
-                    "children": []
-                })
-            cst_dict = {
-                "type": "translation_unit",
-                "content": None,
-                "range": {
-                    "start": {"line": 0, "column": 0},
-                    "end": {"line": len(lines), "column": 1}
-                },
-                "children": cst_children
-            }
+            
+            # The following code is commented out because it's a partial implementation
+            # and causing errors. The CST nodes should come from the parsed tree already.
+            # We don't need to manually construct a CST dictionary here.
+            
+            # # Function definition
+            # if main_node:
+            #     # Create a proper range object
+            #     main_node_range = main_node.get("range", {})
+            #     start = main_node_range.get("start", {"line": 0, "column": 0})
+            #     end = main_node_range.get("end", {"line": 0, "column": 0})
+            #     
+            #     # Use proper children list
+            #     cst_dict.get("children", []).append({
+            #         "type": "function_definition",
+            #         "content": main_node.get("raw_content", ""),
+            #         "range": {
+            #             "start": {"line": start.get("line", 0), "column": start.get("column", 0)},
+            #             "end": {"line": end.get("line", 0), "column": end.get("column", 0)}
+            #         },
+            #         "children": []
+            #     })
+            
+            # The CST root already has the correct structure from our parser
+            # so we don't need to recreate it here
 
         print(f"Successfully processed {file_path}")
         return ast_dict, cst_dict
@@ -380,8 +470,23 @@ def process_file(
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, output_file_name)
     else:
-        output_path = os.path.join(
-            os.path.dirname(file_path), output_file_name)
+        # Ensure we're saving in the examples directory, not the tests directory
+        dir_path = os.path.dirname(file_path)
+        
+        # Check if we're already in examples directory
+        if "/examples/" in dir_path or dir_path.endswith("/examples"):
+            # Already in examples directory, keep as is
+            output_dir = dir_path
+        # Handle files in core/tests/c that should go to core/tests/examples/c
+        elif "/core/tests/c/" in dir_path or dir_path.endswith("/core/tests/c"):
+            # Convert path from core/tests/c to core/tests/examples/c
+            output_dir = dir_path.replace("/core/tests/c", "/core/tests/examples/c")
+            os.makedirs(output_dir, exist_ok=True)
+        else:
+            # Default case - use current directory
+            output_dir = dir_path
+            
+        output_path = os.path.join(output_dir, output_file_name)
 
     # Check if output file exists
     file_exists = os.path.exists(output_path)

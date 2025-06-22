@@ -105,7 +105,7 @@ typedef enum {
    */
 } ASTNodeType;
 
-typedef enum { PARSE_AST, PARSE_CST } ParseMode;
+typedef enum { PARSE_AST, PARSE_CST, PARSE_BOTH } ParseMode;
 
 /**
  * @brief Represents a generic node in the Concrete Syntax Tree (CST).
@@ -122,6 +122,14 @@ typedef struct CSTNode {
 CSTNode *cst_node_new(const char *type, char *content);
 void cst_node_free(CSTNode *node);
 bool cst_node_add_child(CSTNode *parent, CSTNode *child);
+
+/**
+ * @brief Creates a deep copy of a CST node and all its children
+ *
+ * @param node The node to copy
+ * @return CSTNode* A new allocated copy or NULL on failure
+ */
+CSTNode *cst_node_copy_deep(const CSTNode *node);
 
 /**
  * @brief AST node representing a parsed semantic entity in a language-agnostic way.
@@ -318,6 +326,16 @@ void parser_set_error(ParserContext *ctx, int code, const char *message);
  * @return const ASTNode* Found node or NULL if not found
  */
 const ASTNode *parser_get_ast_node(const ParserContext *ctx, const char *qualified_name);
+
+/**
+ * @brief Get the root of the Abstract Syntax Tree (AST).
+ *
+ * This function should only be called after a successful parse in PARSE_AST mode.
+ *
+ * @param ctx Parser context.
+ * @return const ASTNode* Root of the AST or NULL if not available.
+ */
+const ASTNode *parser_get_ast_root(const ParserContext *ctx);
 
 /**
  * @brief Get the root of the Concrete Syntax Tree (CST).
