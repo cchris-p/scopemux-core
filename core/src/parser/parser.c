@@ -272,6 +272,9 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
       return NULL;
     }
     
+    // Set the children count upfront
+    copy->children_count = node->children_count;
+    
     // Copy each child recursively
     for (unsigned int i = 0; i < node->children_count; i++) {
       copy->children[i] = cst_node_copy_deep(node->children[i]);
@@ -285,7 +288,7 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
         free(copy);
         return NULL;
       }
-      copy->children_count++;
+      // Do not increment children_count here since we set it above
     }
   }
   

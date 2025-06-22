@@ -220,6 +220,172 @@ static PyObject *ParserContext_get_ast_root(PyObject *self_obj, PyObject *Py_UNU
 }
 
 /**
+ * @brief Convert a CSTNode to a Python dictionary directly
+ * This avoids memory management issues with CSTNode Python objects
+ */
+static PyObject *cst_node_to_py_dict(const CSTNode *node) {
+  if (!node) {
+    Py_RETURN_NONE;
+  }
+  
+  // Create the main node dictionary
+  PyObject *dict = PyDict_New();
+  if (!dict) {
+    return NULL;
+  }
+  
+  // Add type
+  if (node->type) {
+    PyObject *type = PyUnicode_FromString(node->type);
+    if (!type) {
+      Py_DECREF(dict);
+      return NULL;
+    }
+    if (PyDict_SetItemString(dict, "type", type) < 0) {
+      Py_DECREF(type);
+      Py_DECREF(dict);
+      return NULL;
+    }
+    Py_DECREF(type);
+  } else {
+    PyObject *type = PyUnicode_FromString("UNKNOWN");
+    if (PyDict_SetItemString(dict, "type", type) < 0) {
+      Py_DECREF(type);
+      Py_DECREF(dict);
+      return NULL;
+    }
+    Py_DECREF(type);
+  }
+  
+  // Add content if it exists
+  if (node->content) {
+    PyObject *content = PyUnicode_FromString(node->content);
+    if (!content) {
+      Py_DECREF(dict);
+      return NULL;
+    }
+    if (PyDict_SetItemString(dict, "content", content) < 0) {
+      Py_DECREF(content);
+      Py_DECREF(dict);
+      return NULL;
+    }
+    Py_DECREF(content);
+  } else {
+    PyObject *content = PyUnicode_FromString("");
+    if (PyDict_SetItemString(dict, "content", content) < 0) {
+      Py_DECREF(content);
+      Py_DECREF(dict);
+      return NULL;
+    }
+    Py_DECREF(content);
+  }
+  
+  // Add range information
+  PyObject *range_dict = PyDict_New();
+  if (!range_dict) {
+    Py_DECREF(dict);
+    return NULL;
+  }
+  
+  // Start position
+  PyObject *start_dict = PyDict_New();
+  if (!start_dict) {
+    Py_DECREF(range_dict);
+    Py_DECREF(dict);
+    return NULL;
+  }
+  PyObject *start_line = PyLong_FromLong(node->range.start.line);
+  PyObject *start_column = PyLong_FromLong(node->range.start.column);
+  if (PyDict_SetItemString(start_dict, "line", start_line) < 0 ||
+      PyDict_SetItemString(start_dict, "column", start_column) < 0) {
+    Py_DECREF(start_line);
+    Py_DECREF(start_column);
+    Py_DECREF(start_dict);
+    Py_DECREF(range_dict);
+    Py_DECREF(dict);
+    return NULL;
+  }
+  Py_DECREF(start_line);
+  Py_DECREF(start_column);
+  
+  // End position
+  PyObject *end_dict = PyDict_New();
+  if (!end_dict) {
+    Py_DECREF(start_dict);
+    Py_DECREF(range_dict);
+    Py_DECREF(dict);
+    return NULL;
+  }
+  PyObject *end_line = PyLong_FromLong(node->range.end.line);
+  PyObject *end_column = PyLong_FromLong(node->range.end.column);
+  if (PyDict_SetItemString(end_dict, "line", end_line) < 0 ||
+      PyDict_SetItemString(end_dict, "column", end_column) < 0) {
+    Py_DECREF(end_line);
+    Py_DECREF(end_column);
+    Py_DECREF(end_dict);
+    Py_DECREF(start_dict);
+    Py_DECREF(range_dict);
+    Py_DECREF(dict);
+    return NULL;
+  }
+  Py_DECREF(end_line);
+  Py_DECREF(end_column);
+  
+  // Set start and end in range_dict
+  if (PyDict_SetItemString(range_dict, "start", start_dict) < 0 ||
+      PyDict_SetItemString(range_dict, "end", end_dict) < 0) {
+    Py_DECREF(end_dict);
+    Py_DECREF(start_dict);
+    Py_DECREF(range_dict);
+    Py_DECREF(dict);
+    return NULL;
+  }
+  Py_DECREF(start_dict);
+  Py_DECREF(end_dict);
+  
+  // Add range to main dict
+  if (PyDict_SetItemString(dict, "range", range_dict) < 0) {
+    Py_DECREF(range_dict);
+    Py_DECREF(dict);
+    return NULL;
+  }
+  Py_DECREF(range_dict);
+  
+  // Add children if any
+  PyObject *children = PyList_New(0);
+  if (!children) {
+    Py_DECREF(dict);
+    return NULL;
+  }
+  
+  for (unsigned int i = 0; i < node->children_count; i++) {
+    PyObject *child_dict = cst_node_to_py_dict(node->children[i]);
+    if (!child_dict) {
+      Py_DECREF(children);
+      Py_DECREF(dict);
+      return NULL;
+    }
+    
+    if (PyList_Append(children, child_dict) < 0) {
+      Py_DECREF(child_dict);
+      Py_DECREF(children);
+      Py_DECREF(dict);
+      return NULL;
+    }
+    Py_DECREF(child_dict);
+  }
+  
+  if (PyDict_SetItemString(dict, "children", children) < 0) {
+    Py_DECREF(children);
+    Py_DECREF(dict);
+    return NULL;
+  }
+  Py_DECREF(children);
+  
+  return dict;
+}
+
+/**
  * @brief Get the CST root node from the parsed file
  */
 static PyObject *ParserContext_get_cst_root(PyObject *self_obj, PyObject *Py_UNUSED(args)) {
@@ -236,28 +402,183 @@ static PyObject *ParserContext_get_cst_root(PyObject *self_obj, PyObject *Py_UNU
     return NULL;
   }
 
-  // Create a deep copy of the CST node to avoid ownership issues
-  CSTNode *cst_root_copy = cst_node_copy_deep((CSTNode *)cst_root_const);
-  if (!cst_root_copy) {
-    PyErr_SetString(PyExc_MemoryError, "Failed to copy CST node");
+  // Create a pure Python dictionary directly from the CST node
+  // This avoids memory management issues with CSTNodeObject
+  PyObject *py_dict = cst_node_to_py_dict(cst_root_const);
+  if (!py_dict) {
+    PyErr_SetString(PyExc_MemoryError, "Failed to convert CST node to Python dictionary");
+    return NULL;
+  }
+  
+  // Import builtins to access necessary Python functions
+  PyObject *builtins = PyImport_ImportModule("builtins");
+  if (!builtins) {
+    Py_DECREF(py_dict);
     return NULL;
   }
 
-  // Create a Python CST node object
-  PyTypeObject *type = &CSTNodePyType;
-  CSTNodeObject *py_node = (CSTNodeObject *)type->tp_alloc(type, 0);
-  if (!py_node) {
-    // Free our copy if we couldn't allocate the Python object
-    cst_node_free(cst_root_copy);
-    PyErr_NoMemory();
+  // Get the Python code module to compile our lambda functions
+  PyObject *code_module = PyImport_ImportModule("code");
+  if (!code_module) {
+    Py_DECREF(builtins);
+    Py_DECREF(py_dict);
     return NULL;
   }
 
-  // Set the node and ownership flag
-  py_node->node = cst_root_copy;
-  py_node->owned = true; // We own this copy, so it should be freed when Python object is deallocated
+  // Create and attach compatibility methods
+  PyObject *locals = PyDict_New();
+  PyObject *globals = PyDict_New();
+  if (!locals || !globals) {
+    Py_XDECREF(locals);
+    Py_XDECREF(globals);
+    Py_DECREF(code_module);
+    Py_DECREF(builtins);
+    Py_DECREF(py_dict);
+    return NULL;
+  }
 
-  return (PyObject *)py_node;
+  // Add dict itself to the globals
+  if (PyDict_SetItemString(globals, "_dict", py_dict) < 0) {
+    Py_DECREF(locals);
+    Py_DECREF(globals);
+    Py_DECREF(code_module);
+    Py_DECREF(builtins);
+    Py_DECREF(py_dict);
+    return NULL;
+  }
+
+  // Add builtins to globals
+  if (PyDict_SetItemString(globals, "__builtins__", builtins) < 0) {
+    Py_DECREF(locals);
+    Py_DECREF(globals);
+    Py_DECREF(code_module);
+    Py_DECREF(builtins);
+    Py_DECREF(py_dict);
+    return NULL;
+  }
+
+  // We need to modify the returned dictionary to make it dict-like but also support
+  // method-style access for compatibility with the Python script
+  
+  // Create a Python dict subclass that adds required methods
+  PyObject *types_module = PyImport_ImportModule("types");
+  if (!types_module) {
+    Py_DECREF(locals);
+    Py_DECREF(globals);
+    Py_DECREF(code_module);
+    Py_DECREF(builtins);
+    Py_DECREF(py_dict);
+    return NULL;
+  }
+  
+  // Compile Python code to create methods for our dictionary
+  // The Python code recursively processes all children dictionaries
+  const char* method_code = 
+    "def enhance_recursive(d):\n"
+    "    if not isinstance(d, dict):\n"
+    "        return d\n"
+    "    # Add method accessors\n"
+    "    d['get_type'] = lambda: d.get('type', 'UNKNOWN')\n"
+    "    d['get_content'] = lambda: d.get('content', '')\n"
+    "    d['get_range'] = lambda: d.get('range', {'start': {'line': 0, 'column': 0}, 'end': {'line': 0, 'column': 0}})\n"
+    "    # Process children recursively\n"
+    "    if 'children' in d:\n"
+    "        children = d['children']\n"
+    "        if isinstance(children, list):\n"
+    "            for i, child in enumerate(children):\n"
+    "                children[i] = enhance_recursive(child)\n"
+    "        d['get_children'] = lambda: d.get('children', [])\n"
+    "    else:\n"
+    "        d['get_children'] = lambda: []\n"
+    "    return d\n"
+    "\n"
+    "def create_methods(d):\n"
+    "    return enhance_recursive(d)\n";
+
+  PyObject *code_obj = Py_CompileString(method_code, "<cst_methods>", Py_file_input);
+  if (!code_obj) {
+    Py_DECREF(types_module);
+    Py_DECREF(locals);
+    Py_DECREF(globals);
+    Py_DECREF(code_module);
+    Py_DECREF(builtins);
+    Py_DECREF(py_dict);
+    return NULL;
+  }
+  
+  // Execute the compiled code in our globals dict
+  PyObject *module = PyImport_ExecCodeModule("<cst_methods>", code_obj);
+  Py_DECREF(code_obj);
+  if (!module) {
+    Py_DECREF(types_module);
+    Py_DECREF(locals);
+    Py_DECREF(globals);
+    Py_DECREF(code_module);
+    Py_DECREF(builtins);
+    Py_DECREF(py_dict);
+    return NULL;
+  }
+  
+  // Get the create_methods function we defined
+  PyObject *create_methods_func = PyObject_GetAttrString(module, "create_methods");
+  Py_DECREF(module);
+  if (!create_methods_func) {
+    Py_DECREF(types_module);
+    Py_DECREF(locals);
+    Py_DECREF(globals);
+    Py_DECREF(code_module);
+    Py_DECREF(builtins);
+    Py_DECREF(py_dict);
+    return NULL;
+  }
+  
+  // Call create_methods with our dictionary
+  PyObject *args = PyTuple_New(1);
+  PyTuple_SetItem(args, 0, py_dict); // This steals a reference to py_dict
+  PyObject *enhanced_dict = PyObject_CallObject(create_methods_func, args);
+  Py_DECREF(args); // This decrements our reference to py_dict
+  Py_DECREF(create_methods_func);
+  
+  if (!enhanced_dict) {
+    // py_dict already decremented by PyTuple_SetItem, so don't decref again
+    Py_DECREF(types_module);
+    Py_DECREF(locals);
+    Py_DECREF(globals);
+    Py_DECREF(code_module);
+    Py_DECREF(builtins);
+    return NULL;
+  }
+  
+  // Apply any recursive transformations to children
+  PyObject *children = PyDict_GetItemString(enhanced_dict, "children");
+  if (children && PyList_Check(children)) {
+    Py_ssize_t num_children = PyList_Size(children);
+    for (Py_ssize_t i = 0; i < num_children; i++) {
+      PyObject *child = PyList_GetItem(children, i); // Borrowed reference
+      if (PyDict_Check(child)) {
+        // Add method support to child dict recursively
+        PyObject *child_args = PyTuple_New(1);
+        Py_INCREF(child); // Need to increase ref before giving to PyTuple_SetItem
+        PyTuple_SetItem(child_args, 0, child);
+        PyObject *enhanced_child = PyObject_CallObject(create_methods_func, child_args);
+        Py_DECREF(child_args);
+        
+        if (enhanced_child) {
+          PyList_SetItem(children, i, enhanced_child); // This steals our reference
+        }
+      }
+    }
+  }
+
+  // Cleanup temporary objects
+  Py_DECREF(locals);
+  Py_DECREF(globals);
+  Py_DECREF(code_module);
+  Py_DECREF(builtins);
+  
+  // Return the enhanced dictionary which we got from PyObject_CallObject
+  // py_dict's reference has already been consumed by PyTuple_SetItem
+  return enhanced_dict;
 }
 
 static PyMethodDef ParserContext_methods[] = {
@@ -473,11 +794,23 @@ static PyMethodDef ASTNode_methods[] = {
  * @brief Deallocation function for CSTNodeObject
  */
 static void CSTNode_dealloc(CSTNodeObject *self) {
-  if (self->node && self->owned) {
-    // Only free the node if we own it
-    cst_node_free(self->node);
-    self->node = NULL;
+  // Add safety check - make sure we have a valid self pointer
+  if (!self) {
+    return;
   }
+  
+  // Use a local variable to avoid potential use-after-free
+  CSTNode *node_to_free = self->node;
+  
+  // Clear the pointer first to prevent potential double-free issues
+  self->node = NULL;
+  
+  // Only free if we owned it and it's not NULL
+  if (node_to_free && self->owned) {
+    cst_node_free(node_to_free);
+  }
+  
+  // Let Python free the actual object
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 

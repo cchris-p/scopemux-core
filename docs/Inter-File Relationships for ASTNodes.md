@@ -1,8 +1,19 @@
 # Inter-File Relationships for ASTNodes in ScopeMux
+## 🚧 **DESIGN SPECIFICATION & IMPLEMENTATION ROADMAP** 🚧
 
 ## Overview
 
-This document outlines the design and implementation strategy for enabling robust inter-file relationship tracking in ScopeMux. Currently, the system parses individual files into `ASTNode` structures but lacks the ability to resolve and link relationships that span multiple files. This capability is essential for building comprehensive IRs, InfoBlocks, and TieredContexts that accurately represent real-world code dependencies.
+This document serves as a **design specification and implementation roadmap** for enabling robust inter-file relationship tracking in ScopeMux. 
+
+**Current State (✅ Implemented)**: The system successfully parses individual files into `ASTNode` structures with local relationships and basic cross-file infrastructure in place.
+
+**Target State (📋 Planned)**: A comprehensive multi-file analysis system that resolves and links relationships spanning multiple files, enabling complete project-wide understanding for IRs, InfoBlocks, and TieredContexts.
+
+## Implementation Status Legend
+- ✅ **Implemented**: Feature is complete and working
+- 🔄 **In Progress**: Feature is partially implemented or under active development  
+- 📋 **Planned**: Feature is designed but not yet implemented
+- ⚠️ **Needs Design**: Feature concept exists but requires detailed design work
 
 ## Current Architecture Foundation
 
@@ -35,25 +46,98 @@ typedef struct ASTNode {
 } ASTNode;
 ```
 
-**Key Fields for Inter-File Relationships:**
+**Key Fields for Inter-File Relationships (✅ Implemented):**
 - `qualified_name`: Enables cross-file symbol lookup (e.g., `"utils.config.parse_settings"`)
 - `references`: Array of pointers to `ASTNode`s in other files
 - `ast_node_add_reference()`: Function to establish cross-file links
 
-### Current Single-File Processing
+### Current Single-File Processing (✅ Implemented)
 
 The existing `tree_sitter_integration.c` handles single-file parsing effectively:
 
-1. **Parse individual file** → `ParserContext` with local `ASTNode` tree
-2. **Extract semantic entities** using Tree-sitter queries (`.scm` files)
-3. **Build local relationships** within the file (parent-child, local references)
-4. **Generate qualified names** based on local scope
+1. **Parse individual file** → `ParserContext` with local `ASTNode` tree ✅
+2. **Extract semantic entities** using Tree-sitter queries (`.scm` files) ✅
+3. **Build local relationships** within the file (parent-child, local references) ✅
+4. **Generate qualified names** based on local scope ✅
 
-**Gap**: No mechanism to resolve references that point to entities in other files.
+**Current Gap (📋 Planned)**: No mechanism to resolve references that point to entities in other files.
 
-## Inter-File Relationship Types
+## 🗺️ IMPLEMENTATION ROADMAP
 
-### Direct Relationships
+### Phase 1: Foundation (✅ Completed)
+**Status**: All basic infrastructure is in place
+- ✅ `ASTNode` structure with cross-file reference fields
+- ✅ Single-file parsing with Tree-sitter integration
+- ✅ Query-based semantic entity extraction (.scm files)
+- ✅ Basic qualified name generation
+- ✅ Language adapter system
+- ✅ Memory management and error handling
+
+### Phase 2: Multi-File Infrastructure (📋 Next Priority)
+**Estimated Timeline**: 2-3 weeks
+**Dependencies**: Phase 1 complete
+
+**2.1 Core Data Structures (📋 Planned)**
+- `ProjectContext` structure and lifecycle management
+- `GlobalSymbolTable` with hash table implementation
+- `ReferenceResolver` framework
+- Project file discovery and management
+
+**2.2 Basic Multi-File Parsing (📋 Planned)**
+- Project-level parsing workflow
+- Symbol registration across files
+- Error handling for multi-file scenarios
+- Memory management for project-wide data
+
+### Phase 3: Reference Resolution Engine (📋 Planned)
+**Estimated Timeline**: 3-4 weeks
+**Dependencies**: Phase 2 complete
+
+**3.1 Language-Agnostic Resolution (📋 Planned)**
+- Core symbol lookup algorithms
+- Scope-aware reference resolution
+- Qualified name matching and normalization
+- Cross-file relationship establishment
+
+**3.2 Language-Specific Handlers (📋 Planned)**
+- C/C++ include and namespace resolution
+- Python import and module resolution
+- JavaScript/TypeScript import resolution
+- Extensible framework for additional languages
+
+### Phase 4: Integration & Enhancement (📋 Planned)
+**Estimated Timeline**: 2-3 weeks
+**Dependencies**: Phase 3 complete
+
+**4.1 Module Integration (📋 Planned)**
+- Enhanced IR generation with cross-file data
+- Multi-file InfoBlock extraction
+- Project-level TieredContext creation
+- Context engine improvements
+
+**4.2 API & Tools (📋 Planned)**
+- Complete API implementation
+- Project statistics and reporting
+- Debugging and visualization tools
+- Performance optimization
+
+### Phase 5: Advanced Features (⚠️ Needs Design)
+**Estimated Timeline**: 4-6 weeks
+**Dependencies**: Phase 4 complete
+
+- Advanced type analysis and inference
+- Dynamic analysis integration
+- Incremental parsing and caching
+- Language server integration
+- Performance optimization for large projects
+
+## 📋 IMPLEMENTATION DETAILS
+
+All sections below describe **planned architecture** unless specifically marked as implemented.
+
+## Inter-File Relationship Types (📋 Planned)
+
+### Direct Relationships (📋 Planned)
 
 **Function/Method Calls Across Files**
 ```python
@@ -114,9 +198,9 @@ function getUser(): User { ... }  // Type usage relationship
 - Template specializations across files
 - Generic type parameter relationships
 
-## Language-Specific Resolution Strategies
+## Language-Specific Resolution Strategies (📋 Planned)
 
-### C/C++
+### C/C++ (📋 Planned)
 **Include Resolution:**
 - Parse `#include` directives to identify file dependencies
 - Handle both `<system>` and `"local"` includes
@@ -183,9 +267,9 @@ const { helper } = require('./utils');
 - Handle aliasing and renaming
 - Resolve scope conflicts
 
-## Proposed Implementation Architecture
+## Proposed Implementation Architecture (📋 Planned)
 
-### Core Data Structures
+### Core Data Structures (📋 Planned)
 
 ```c
 /**
@@ -354,9 +438,9 @@ ASTNode* resolve_symbol_reference(const char *symbol_name,
 }
 ```
 
-## API Design
+## API Design (📋 Planned)
 
-### Project-Level Operations
+### Project-Level Operations (📋 Planned)
 
 ```c
 /**
@@ -445,9 +529,9 @@ size_t get_referenced_nodes(const ASTNode* source_node, ASTNode** results,
                            size_t max_results);
 ```
 
-## Integration with Existing ScopeMux Modules
+## Integration with Existing ScopeMux Modules (📋 Planned)
 
-### Enhanced IR Generation
+### Enhanced IR Generation (📋 Planned)
 
 **Call Graph IR Enhancement:**
 ```c
@@ -687,6 +771,194 @@ const formatted = formatDate(new Date()); // Cross-file function call
 
 - **Incremental Parsing**: This is not covered in the current document but could be considered for future performance optimizations.
 
+## 📊 COMPLETION MEASUREMENT GUIDELINES
+
+### Overall Progress Calculation
+**Current Status: 20% Complete** (Phase 1 Foundation Complete)
+
+### Phase-by-Phase Completion Metrics
+
+#### Phase 1: Foundation (✅ 100% Complete - 20% of Total)
+**Completion Criteria Met:**
+- ✅ ASTNode structure with reference fields exists
+- ✅ Single-file parsing works correctly
+- ✅ Tree-sitter integration functional
+- ✅ Basic qualified name generation working
+- ✅ Memory management and error handling in place
+
+**Verification Tests:**
+- ✅ Parse individual C/Python/JS files successfully
+- ✅ Generate AST with qualified names for all major node types
+- ✅ Verify ASTNode structure has `references` and `qualified_name` fields
+- ✅ Memory leak tests pass for single-file parsing
+
+#### Phase 2: Multi-File Infrastructure (📋 0% Complete - 25% of Total)
+**Target Completion: 45% of Total Feature (20% + 25%)**
+
+**Sub-Phase 2.1: Core Data Structures (12.5% of Total)**
+- [ ] ProjectContext structure implemented (2.5%)
+- [ ] GlobalSymbolTable with hash table (5%)
+- [ ] ReferenceResolver framework (2.5%)
+- [ ] Project file discovery system (2.5%)
+
+**Sub-Phase 2.2: Basic Multi-File Parsing (12.5% of Total)**
+- [ ] Project-level parsing workflow (5%)
+- [ ] Symbol registration across files (5%)
+- [ ] Multi-file error handling (1.25%)
+- [ ] Project-wide memory management (1.25%)
+
+**Verification Tests for Phase 2:**
+- [ ] Parse multiple files in a test project (C, Python, JS)
+- [ ] Verify GlobalSymbolTable correctly stores symbols from all files
+- [ ] Test ProjectContext lifecycle (init, parse, cleanup)
+- [ ] Verify no memory leaks with multi-file parsing
+- [ ] Test error handling when files are missing/corrupted
+
+#### Phase 3: Reference Resolution Engine (📋 0% Complete - 30% of Total)
+**Target Completion: 75% of Total Feature (45% + 30%)**
+
+**Sub-Phase 3.1: Language-Agnostic Resolution (15% of Total)**
+- [ ] Core symbol lookup algorithms (5%)
+- [ ] Scope-aware reference resolution (5%)
+- [ ] Qualified name matching/normalization (2.5%)
+- [ ] Cross-file relationship establishment (2.5%)
+
+**Sub-Phase 3.2: Language-Specific Handlers (15% of Total)**
+- [ ] C/C++ include and namespace resolution (5%)
+- [ ] Python import and module resolution (5%)
+- [ ] JavaScript/TypeScript import resolution (3%)
+- [ ] Framework for additional languages (2%)
+
+**Verification Tests for Phase 3:**
+- [ ] Resolve simple function calls across files (C, Python, JS)
+- [ ] Handle class inheritance across files
+- [ ] Test import/include statement resolution
+- [ ] Verify circular dependency detection
+- [ ] Test qualified name collision resolution
+- [ ] Benchmark resolution performance on medium projects (100+ files)
+
+#### Phase 4: Integration & Enhancement (📋 0% Complete - 20% of Total)
+**Target Completion: 95% of Total Feature (75% + 20%)**
+
+**Sub-Phase 4.1: Module Integration (10% of Total)**
+- [ ] Enhanced IR generation with cross-file data (3%)
+- [ ] Multi-file InfoBlock extraction (3%)
+- [ ] Project-level TieredContext creation (2%)
+- [ ] Context engine improvements (2%)
+
+**Sub-Phase 4.2: API & Tools (10% of Total)**
+- [ ] Complete API implementation (4%)
+- [ ] Project statistics and reporting (2%)
+- [ ] Debugging and visualization tools (2%)
+- [ ] Performance optimization (2%)
+
+**Verification Tests for Phase 4:**
+- [ ] Generate call graphs spanning multiple files
+- [ ] Extract InfoBlocks that include cross-file dependencies
+- [ ] Create TieredContexts with multi-file awareness
+- [ ] Verify all APIs work correctly with real projects
+- [ ] Performance tests on large codebases (1000+ files)
+
+#### Phase 5: Advanced Features (⚠️ 0% Complete - 5% of Total)
+**Target Completion: 100% of Total Feature (95% + 5%)**
+
+**Advanced Capabilities (5% of Total)**
+- [ ] Advanced type analysis and inference (2%)
+- [ ] Dynamic analysis integration (1%)
+- [ ] Incremental parsing and caching (1%)
+- [ ] Language server integration (1%)
+
+### Quantitative Success Metrics
+
+#### Functional Metrics
+1. **Symbol Resolution Rate**: % of cross-file references successfully resolved
+   - Target: >95% for well-formed projects
+   - Current: 0% (no cross-file resolution yet)
+
+2. **Language Coverage**: Number of languages with full cross-file support
+   - Target: C/C++, Python, JavaScript/TypeScript
+   - Current: 0 languages (single-file only)
+
+3. **Performance Benchmarks**:
+   - Parse 100 files: <10 seconds
+   - Resolve references in 1000-file project: <30 seconds
+   - Memory usage: <500MB for 1000-file project
+
+#### Integration Metrics
+1. **API Coverage**: % of planned APIs implemented and tested
+   - Target: 100% of core APIs functional
+   - Current: 0% (APIs not implemented)
+
+2. **Module Integration**: Number of ScopeMux modules enhanced
+   - Target: IR generation, InfoBlocks, TieredContexts, Context engine
+   - Current: 0 modules enhanced
+
+3. **Test Coverage**: % of cross-file functionality covered by tests
+   - Target: >90% test coverage
+   - Current: 0% (no cross-file tests exist)
+
+### Developer Assessment Checklist
+
+**To Calculate Current % Completion:**
+
+1. **Count completed items** from each phase checklist
+2. **Apply phase weightings**: 
+   - Phase 1: 20% × (completed_items / total_items)
+   - Phase 2: 25% × (completed_items / total_items)
+   - Phase 3: 30% × (completed_items / total_items)
+   - Phase 4: 20% × (completed_items / total_items)  
+   - Phase 5: 5% × (completed_items / total_items)
+3. **Sum all weighted percentages** for total completion
+
+**Example Calculation:**
+- Phase 1: 20% × (5/5) = 20% ✅
+- Phase 2: 25% × (2/8) = 6.25% (if 2 items completed)
+- Phase 3: 30% × (0/8) = 0%
+- Phase 4: 20% × (0/8) = 0%
+- Phase 5: 5% × (0/4) = 0%
+- **Total: 26.25% Complete**
+
+### Milestone Definitions
+
+#### 25% Milestone (Phase 1 Complete)
+✅ **ACHIEVED**: Single-file parsing infrastructure complete
+
+#### 45% Milestone (Phase 2 Complete)
+📋 **Multi-file infrastructure ready for reference resolution**
+- ProjectContext manages multiple files
+- GlobalSymbolTable stores all project symbols
+- Ready to implement actual cross-file linking
+
+#### 75% Milestone (Phase 3 Complete)  
+📋 **Cross-file reference resolution working**
+- Function calls resolved across files
+- Import/include statements processed
+- Basic cross-file relationships established
+
+#### 95% Milestone (Phase 4 Complete)
+📋 **Full integration with existing ScopeMux modules**
+- All IRs enhanced with cross-file data
+- InfoBlocks and TieredContexts work cross-file
+- Production-ready for real projects
+
+#### 100% Milestone (Phase 5 Complete)
+📋 **Advanced features and optimizations complete**
+- Type inference across files
+- Performance optimized for large projects
+- Language server integration available
+
+### Quick Status Assessment Commands
+
+**For Developers/LLM Agents:**
+
+```bash
+# Run these commands to assess current progress
+./run_misc_tests.sh  # Test basic parsing (Phase 1)
+# TODO: Add multi-file test suite (Phase 2)
+# TODO: Add cross-file resolution tests (Phase 3)
+# TODO: Add integration tests (Phase 4)
+```
+
 ## Conclusion
 
 The inter-file relationship system represents a foundational enhancement to ScopeMux that will significantly improve the accuracy and completeness of all downstream analysis. By building on the existing `ASTNode` architecture and integrating seamlessly with current modules, this system provides:
@@ -698,3 +970,5 @@ The inter-file relationship system represents a foundational enhancement to Scop
 5. **Performance Optimization**: Shared infrastructure reduces redundant analysis
 
 The implementation prioritizes simplicity and integration with existing systems while providing a robust foundation for future enhancements. This approach ensures that ScopeMux can accurately represent and analyze real-world codebases where meaningful relationships span multiple files and modules.
+
+**Current Progress: 20% Complete** - Ready to begin Phase 2 implementation.

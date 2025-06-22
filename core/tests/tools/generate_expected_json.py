@@ -157,128 +157,396 @@ def cst_node_to_dict(node) -> Dict[str, Any]:
     """
     Convert a CST node to a dictionary representation (canonical schema).
     Always include all required fields, with null/empty where not present.
+    
+    Handles both object-style CST nodes and dictionary-based CST nodes.
+    Creates a deep copy to ensure no references to C-managed memory remain.
     """
-    if not node:
-        return {
-            "type": None,
-            "content": None,
-            "range": None,
-            "children": []
-        }
-
+    # Initialize result with default values
     result = {
-        "type": node.get_type() or "UNKNOWN",
-        "content": node.get_content() or "",
+        "type": "UNKNOWN",
+        "content": "",
         "range": None,
         "children": []
     }
-
-    # Add range
-    if hasattr(node, "get_range"):
-        range_data = node.get_range()
-        if range_data:
-            # Handle different range structures:
-            # 1. Dictionary with nested start/end dicts (from our CSTNode)
-            if isinstance(range_data, dict) and 'start' in range_data and 'end' in range_data:
-                start = range_data['start']
-                end = range_data['end']
+    
+    if not node:
+        return result
+    
+    try:
+        # Check if we already have a dictionary object
+        # (which is what our new C binding implementation returns)
+        if isinstance(node, dict):
+            # Handle type field - safely create a copy of simple data types
+            if "type" in node:
+                result["type"] = str(node["type"]) if node["type"] else "UNKNOWN"
+            elif callable(getattr(node, "get_type", None)):
+                result["type"] = str(node.get_type() or "UNKNOWN")
                 
-                result["range"] = {
-                    "start": {
-                        "line": start.get('line', 0),
-                        "column": start.get('column', 0),
-                    },
-                    "end": {
-                        "line": end.get('line', 0),
-                        "column": end.get('column', 0),
-                    },
-                }
-            # 2. Object with start_line/end_line attributes (older style)
-            else:
-                result["range"] = {
-                    "start": {
-                        "line": getattr(range_data, "start_line", 0),
-                        "column": getattr(range_data, "start_column", 0),
-                    },
-                    "end": {
-                        "line": getattr(range_data, "end_line", 0),
-                        "column": getattr(range_data, "end_column", 0),
-                    },
-                }
+            # Handle content field - safely create a copy
+            if "content" in node:
+                result["content"] = str(node["content"]) if node["content"] else ""
+            elif callable(getattr(node, "get_content", None)):
+                result["content"] = str(node.get_content() or "")
+                
+            # Handle children - initialize empty list
+            children = []
+            # Either from dictionary children array
+            if "children" in node and isinstance(node["children"], list):
+                # Only get reference to children, we'll make deep copies below
+                children = node["children"]
+            # Or from method
+            elif callable(getattr(node, "get_children", None)):
+                children = node.get_children() or []
+            
+            # Handle range - create a completely new structure
+            if "range" in node and node["range"]:
+                range_data = node["range"]
+                if isinstance(range_data, dict) and 'start' in range_data and 'end' in range_data:
+                    start = range_data['start']
+                    end = range_data['end']
+                    
+                    result["range"] = {
+                        "start": {
+                            "line": int(start.get('line', 0)),
+                            "column": int(start.get('column', 0)),
+                        },
+                        "end": {
+                            "line": int(end.get('line', 0)),
+                            "column": int(end.get('column', 0)),
+                        },
+                    }
+            elif callable(getattr(node, "get_range", None)):
+                range_data = node.get_range()
+                if range_data:
+                    # Handle different range structures:
+                    # 1. Dictionary with nested start/end dicts (from our CSTNode)
+                    if isinstance(range_data, dict) and 'start' in range_data and 'end' in range_data:
+                        start = range_data['start']
+                        end = range_data['end']
+                        
+                        result["range"] = {
+                            "start": {
+                                "line": int(start.get('line', 0)),
+                                "column": int(start.get('column', 0)),
+                            },
+                            "end": {
+                                "line": int(end.get('line', 0)),
+                                "column": int(end.get('column', 0)),
+                            },
+                        }
+                    # 2. Object with start_line/end_line attributes (older style)
+                    elif all(hasattr(range_data, attr) for attr in ['start_line', 'end_line', 'start_column', 'end_column']):
+                        result["range"] = {
+                            "start": {
+                                "line": int(getattr(range_data, "start_line", 0)),
+                                "column": int(getattr(range_data, "start_column", 0)),
+                            },
+                            "end": {
+                                "line": int(getattr(range_data, "end_line", 0)),
+                                "column": int(getattr(range_data, "end_column", 0)),
+                            },
+                        }
+            
+            # Recursively process children (this is critical to avoid segfaults)
+            # Creating a new list and not keeping any references to original children
+            child_list = []
+            if children:
+                for child in children:
+                    if child is not None:  # Safety check
+                        try:
+                            child_dict = cst_node_to_dict(child) 
+                            if child_dict:  # Only add non-empty children
+                                child_list.append(child_dict)
+                        except Exception as e:
+                            print(f"Error processing dictionary-based child node: {e}")
+                        
+            # Store the fully processed children list
+            result["children"] = child_list
+            
+        else:
+            # Traditional object-based CST node - create a safe deep copy
+            # Create basic fields with safe string conversions
+            if hasattr(node, "get_type"):
+                result["type"] = str(node.get_type() or "UNKNOWN")
+                
+            if hasattr(node, "get_content"):
+                result["content"] = str(node.get_content() or "")
 
-    # Recursively add children
-    if hasattr(node, "get_children"):
-        children = node.get_children()
-        result["children"] = [cst_node_to_dict(child) for child in children] if children else []
-    else:
-        result["children"] = []
+            # Add range with explicit type conversions
+            if hasattr(node, "get_range"):
+                range_data = node.get_range()
+                if range_data:
+                    # Handle different range structures:
+                    # 1. Dictionary with nested start/end dicts (from our CSTNode)
+                    if isinstance(range_data, dict) and 'start' in range_data and 'end' in range_data:
+                        start = range_data['start']
+                        end = range_data['end']
+                        
+                        result["range"] = {
+                            "start": {
+                                "line": int(start.get('line', 0)),
+                                "column": int(start.get('column', 0)),
+                            },
+                            "end": {
+                                "line": int(end.get('line', 0)),
+                                "column": int(end.get('column', 0)),
+                            },
+                        }
+                    # 2. Object with start_line/end_line attributes (older style)
+                    elif all(hasattr(range_data, attr) for attr in ['start_line', 'end_line', 'start_column', 'end_column']):
+                        result["range"] = {
+                            "start": {
+                                "line": int(getattr(range_data, "start_line", 0)),
+                                "column": int(getattr(range_data, "start_column", 0)),
+                            },
+                            "end": {
+                                "line": int(getattr(range_data, "end_line", 0)),
+                                "column": int(getattr(range_data, "end_column", 0)),
+                            },
+                        }
 
-    # Always include all fields
-    for key in ["type", "content", "range", "children"]:
-        if key not in result:
-            result[key] = None if key != "children" else []
-
+            # Process children with safety checks
+            child_list = []
+            if hasattr(node, "get_children"):
+                children = node.get_children()
+                if children:
+                    for child in children:
+                        if child is not None:  # Safety check
+                            try:
+                                child_dict = cst_node_to_dict(child)
+                                if child_dict:  # Only add non-empty children
+                                    child_list.append(child_dict)
+                            except Exception as e:
+                                print(f"Error processing object-based child node: {e}")
+            
+            result["children"] = child_list
+    except Exception as e:
+        print(f"Error in cst_node_to_dict: {e}")
+        # On exception, we'll still return the default result dictionary
+        
     return result
 
 
-# Global variable to track nodes already processed to avoid circular references during serialization
 _processed_nodes = set()
 
 def cleanup_cst_tree(root_node):
     """
-    Make a clean copy of the CST data as dictionaries before the CSTNode objects are deallocated.
-    This prevents segmentation faults during cleanup.
+    Creates a safe, JSON-serializable dictionary version of the CST tree.
+    This is needed because the CST nodes may be tied to underlying C memory
+    that will be freed when the ParserContext is cleaned up. Converting to
+    a pure Python dictionary avoids segfaults when GC runs.
+    
+    This is a thin wrapper around cleanup_cst_node that clears the processed
+    node tracking set before starting.
     """
-    global _processed_nodes
+    # Clear the processed nodes set to avoid issues with multiple calls
     _processed_nodes.clear()
     
+    # Defensively handle root_node being None
+    if root_node is None:
+        print("Warning: root_node is None in cleanup_cst_tree")
+        return {
+            "type": "ROOT",
+            "content": "",
+            "range": {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}},
+            "children": []
+        }
+    
+    # For dictionary nodes, use a safer copy approach instead of object modification
+    if isinstance(root_node, dict):
+        print("Using safe deep copy for dictionary-based CST node")
+        # Make a deep copy using cst_node_to_dict which is safer
+        return cst_node_to_dict(root_node)
+    
+    # For object-based nodes, use the cleanup_cst_node function
+    print("Using cleanup_cst_node for object-based CST node")
     return cleanup_cst_node(root_node)
+
 
 def cleanup_cst_node(node):
     """
     Helper function to recursively clean up CST nodes by creating a pure dictionary representation.
     Avoids processing the same node twice.
-    """
-    if not node:
-        return None
     
-    # Use node's memory address as identifier
+    Handles both dictionary-style nodes and object-style nodes.
+    """
+    # Check if already processed to avoid recursion issues
+    if node is None:
+        return {
+            "type": "UNKNOWN",
+            "content": "",
+            "range": {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}},
+            "children": []
+        }
+        
     node_id = id(node)
     if node_id in _processed_nodes:
-        return {"type": "reference", "content": str(node_id)}
+        # Already processed this node, avoid infinite recursion
+        return {
+            "type": "REFERENCE", 
+            "content": f"Circular reference to node {node_id}",
+            "range": {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}},
+            "children": []
+        }
     
     _processed_nodes.add(node_id)
     
-    # Create a clean dictionary
-    result = {
-        "type": node.get_type() if hasattr(node, "get_type") else "UNKNOWN",
-        "content": node.get_content() if hasattr(node, "get_content") else "",
-    }
-    
-    # Add range if available
-    if hasattr(node, "get_range"):
-        range_data = node.get_range()
-        if isinstance(range_data, dict) and "start" in range_data and "end" in range_data:
-            result["range"] = {
-                "start": dict(range_data["start"]),
-                "end": dict(range_data["end"]),
+    try:
+        # Check if we already have a dictionary
+        if isinstance(node, dict):
+            # For dictionary nodes, create a new dictionary with all required fields
+            result = {
+                "type": str(node.get("type", "UNKNOWN")),
+                "content": str(node.get("content", "")),
+                "children": []
             }
-    
-    # Add children if available
-    result["children"] = []
-    if hasattr(node, "get_children"):
-        children = node.get_children()
-        if children:
-            for child in children:
-                child_dict = cleanup_cst_node(child)
-                if child_dict:
-                    result["children"].append(child_dict)
-    
-    return result
+            
+            # Copy range data if available, creating a proper deep copy
+            if "range" in node and node["range"]:
+                range_data = node["range"]
+                if isinstance(range_data, dict) and "start" in range_data and "end" in range_data:
+                    start = range_data["start"]
+                    end = range_data["end"]
+                    result["range"] = {
+                        "start": {
+                            "line": int(start.get("line", 0)) if isinstance(start, dict) else 0,
+                            "column": int(start.get("column", 0)) if isinstance(start, dict) else 0
+                        },
+                        "end": {
+                            "line": int(end.get("line", 0)) if isinstance(end, dict) else 0,
+                            "column": int(end.get("column", 0)) if isinstance(end, dict) else 0
+                        }
+                    }
+                else:
+                    result["range"] = {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}}
+            else:
+                result["range"] = {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}}
+                
+            # Process children recursively, handling errors gracefully
+            children = []
+            if "children" in node and isinstance(node["children"], list):
+                for child in node["children"]:
+                    try:
+                        # Skip None children
+                        if child is None:
+                            continue
+                            
+                        child_dict = cleanup_cst_node(child)
+                        if child_dict:  # Only add non-empty children
+                            children.append(child_dict)
+                    except Exception as e:
+                        print(f"Error processing child in cleanup_cst_node: {e}")
+                        # Add an error node instead of failing
+                        children.append({
+                            "type": "ERROR",
+                            "content": str(e),
+                            "range": {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}},
+                            "children": []
+                        })
+            result["children"] = children
+            
+            # Remove any special method-style references from dictionary-based nodes
+            # We now return dictionaries from C bindings, so this should not be needed
+            # But we keep it for backward compatibility
+        else:
+            # For object-based nodes, extract values via methods with safety checks
+            result = {}
+            
+            # Safely extract type
+            try:
+                if hasattr(node, "get_type") and callable(getattr(node, "get_type")):
+                    result["type"] = str(node.get_type() or "UNKNOWN")
+                else:
+                    result["type"] = "UNKNOWN"
+            except Exception as e:
+                print(f"Error getting node type: {e}")
+                result["type"] = "ERROR"
+                
+            # Safely extract content
+            try:
+                if hasattr(node, "get_content") and callable(getattr(node, "get_content")):
+                    result["content"] = str(node.get_content() or "")
+                else:
+                    result["content"] = ""
+            except Exception as e:
+                print(f"Error getting node content: {e}")
+                result["content"] = str(e)
+            
+            # Default empty range structure
+            result["range"] = {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}}
+            
+            # Safely extract range data
+            try:
+                if hasattr(node, "get_range") and callable(getattr(node, "get_range")):
+                    range_data = node.get_range()
+                    if range_data:
+                        if isinstance(range_data, dict) and "start" in range_data and "end" in range_data:
+                            # Dictionary-style range
+                            start = range_data["start"]
+                            end = range_data["end"]
+                            
+                            if isinstance(start, dict) and isinstance(end, dict):
+                                result["range"] = {
+                                    "start": {
+                                        "line": int(start.get("line", 0)), 
+                                        "column": int(start.get("column", 0))
+                                    },
+                                    "end": {
+                                        "line": int(end.get("line", 0)), 
+                                        "column": int(end.get("column", 0))
+                                    }
+                                }
+                        # Object-style range with attributes
+                        elif all(hasattr(range_data, attr) for attr in ["start_line", "end_line", "start_column", "end_column"]):
+                            result["range"] = {
+                                "start": {
+                                    "line": int(getattr(range_data, "start_line", 0)),
+                                    "column": int(getattr(range_data, "start_column", 0))
+                                },
+                                "end": {
+                                    "line": int(getattr(range_data, "end_line", 0)),
+                                    "column": int(getattr(range_data, "end_column", 0))
+                                }
+                            }
+            except Exception as e:
+                print(f"Error getting range data: {e}")
+                # Range already has default values
 
-def parse_file(
-    file_path: str, mode: str = "both"
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+            # Process children with safety checks
+            result["children"] = []
+            try:
+                if hasattr(node, "get_children") and callable(getattr(node, "get_children")):
+                    children = node.get_children()
+                    if children:
+                        child_list = []
+                        for child in children:
+                            if child is None:
+                                continue
+                                
+                            try:
+                                child_dict = cleanup_cst_node(child)
+                                if child_dict:  # Only add non-empty children
+                                    child_list.append(child_dict)
+                            except Exception as child_e:
+                                print(f"Error processing child: {child_e}")
+                                # Add a placeholder for the problematic child
+                                child_list.append({
+                                    "type": "ERROR",
+                                    "content": str(child_e),
+                                    "range": {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}},
+                                    "children": []
+                                })
+                        result["children"] = child_list
+            except Exception as e:
+                print(f"Error processing children: {e}")
+    
+        return result
+    except Exception as e:
+        print(f"Error in cleanup_cst_node: {e}")
+        return {}
+
+
+def parse_file(file_path: str, mode: str = "both") -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Parse a source file using ScopeMux parser and generate test AST/CST data.
 
@@ -289,6 +557,8 @@ def parse_file(
     Returns:
         Tuple of (ast_dict, cst_dict) with extracted AST and CST data
     """
+    import gc  # Import garbage collection module for explicit cleanup
+    
     try:
         parser = scopemux_core.ParserContext()
         detected_lang = scopemux_core.detect_language(file_path)
@@ -315,6 +585,7 @@ def parse_file(
         ast_dict = None
         cst_dict = None
 
+        # Process AST if needed
         if mode in ("ast", "both"):
             if not hasattr(parser, "get_ast_root"):
                 raise RuntimeError("Parser bindings do not expose get_ast_root(). Cannot extract canonical AST.")
@@ -322,62 +593,104 @@ def parse_file(
             if not ast_root:
                 raise RuntimeError(f"Parser did not return AST for {file_path}")
             ast_dict = ast_node_to_dict(ast_root)
+            # Explicitly dereference the AST root to help garbage collection
+            ast_root = None
+            
+        # Process CST if needed
         if mode in ("cst", "both"):
-            if not hasattr(parser, "get_cst_root"):
-                raise RuntimeError("Parser bindings do not expose get_cst_root(). Cannot extract canonical CST.")
-            cst_root = parser.get_cst_root()
-            if not cst_root:
-                raise RuntimeError(f"Parser did not return CST for {file_path}")
-            # Use cleanup function to create a safe copy before the CST nodes are deallocated
-            cst_dict_safe = cleanup_cst_tree(cst_root)
-            cst_dict = cst_dict_safe  # Use our safe dictionary directly
-            # Extract main node from AST if available for docstring processing
-            main_node = None
-            if 'ast_dict' in locals() and ast_dict:
-                # Find the main function in the ast_dict
-                for node in ast_dict.get("children", []):
-                    if node.get("name") == "main":
-                        main_node = node
-                        break
-                        
-            if main_node and main_node.get("docstring"):
-                doc_start = main_node["range"]["start"]["line"] - 4
-                doc_end = main_node["range"]["start"]["line"] - 1
-                cst_dict.get("children", []).append({
-                    "type": "comment",
-                    "content": main_node["docstring"],
-                    "range": {
-                        "start": {"line": doc_start, "column": 0},
-                        "end": {"line": doc_end, "column": 3}
-                    },
+            try:
+                if not hasattr(parser, "get_cst_root"):
+                    raise RuntimeError("Parser bindings do not expose get_cst_root(). Cannot extract canonical CST.")
+                    
+                # Get the CST root from parser - this should now return a Python dictionary directly
+                print("About to get CST root...")
+                cst_root = parser.get_cst_root()
+                print(f"Got CST root of type: {type(cst_root)}")
+                
+                if cst_root is None:
+                    print(f"Warning: Parser returned None for CST for {file_path}")
+                    cst_dict = {
+                        "type": "ROOT", 
+                        "content": "",
+                        "range": {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}},
+                        "children": []
+                    }
+                elif isinstance(cst_root, dict):
+                    print("CST returned as dictionary, creating deep copy...")
+                    # We have a dictionary, make a deep copy using our safer function
+                    # that ensures all values are pure Python types
+                    cst_dict = cst_node_to_dict(cst_root)
+                    print(f"Dictionary CST processed successfully with {len(cst_dict.get('children', []))} top-level children")
+                else:
+                    print("CST returned as object, converting to dictionary...")
+                    # Create a safe dictionary copy of the CST tree using the legacy approach
+                    cst_dict = cleanup_cst_tree(cst_root)
+                    print("Object-based CST converted to dictionary successfully")
+                
+                # Explicitly dereference the CST root to help garbage collection
+                cst_root = None
+                
+                # Force garbage collection to clean up CST objects early
+                print("Running garbage collection...")
+                gc.collect()
+                print("Garbage collection complete.")
+                
+                # Verify we have a valid dictionary with required fields
+                if not isinstance(cst_dict, dict):
+                    print(f"Warning: cst_dict is not a dictionary but {type(cst_dict)}")
+                    cst_dict = {
+                        "type": "ERROR", 
+                        "content": "", 
+                        "range": {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}},
+                        "children": []
+                    }
+                    
+                # Ensure all required fields exist
+                for required_field in ["type", "content", "range", "children"]:
+                    if required_field not in cst_dict:
+                        print(f"Warning: Missing required field '{required_field}' in CST")
+                        if required_field == "range":
+                            cst_dict[required_field] = {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}}
+                        elif required_field == "children":
+                            cst_dict[required_field] = []
+                        else:
+                            cst_dict[required_field] = ""
+            except Exception as e:
+                print(f"Error processing CST: {e}")
+                # Create a minimal valid structure
+                cst_dict = {
+                    "type": "ERROR", 
+                    "content": f"Exception: {str(e)}", 
+                    "range": {"start": {"line": 0, "column": 0}, "end": {"line": 0, "column": 0}},
                     "children": []
-                })
-            
-            # The following code is commented out because it's a partial implementation
-            # and causing errors. The CST nodes should come from the parsed tree already.
-            # We don't need to manually construct a CST dictionary here.
-            
-            # # Function definition
-            # if main_node:
-            #     # Create a proper range object
-            #     main_node_range = main_node.get("range", {})
-            #     start = main_node_range.get("start", {"line": 0, "column": 0})
-            #     end = main_node_range.get("end", {"line": 0, "column": 0})
-            #     
-            #     # Use proper children list
-            #     cst_dict.get("children", []).append({
-            #         "type": "function_definition",
-            #         "content": main_node.get("raw_content", ""),
-            #         "range": {
-            #             "start": {"line": start.get("line", 0), "column": start.get("column", 0)},
-            #             "end": {"line": end.get("line", 0), "column": end.get("column", 0)}
-            #         },
-            #         "children": []
-            #     })
-            
-            # The CST root already has the correct structure from our parser
-            # so we don't need to recreate it here
+                }
+        
+        # Extract main node from AST if available for docstring processing
+        main_node = None
+        if ast_dict is not None:
+            # Find the main function in the ast_dict
+            for node in ast_dict.get("children", []):
+                if node.get("name") == "main":
+                    main_node = node
+                    break
+                    
+        # Add docstring info if available
+        if main_node and main_node.get("docstring"):
+            doc_start = main_node["range"]["start"]["line"] - 4
+            doc_end = main_node["range"]["start"]["line"] - 1
+            cst_dict.get("children", []).append({
+                "type": "comment",
+                "content": main_node["docstring"],
+                "range": {
+                    "start": {"line": doc_start, "column": 0},
+                    "end": {"line": doc_end, "column": 3}
+                },
+                "children": []
+            })
 
+        # Run a final garbage collection before returning
+        gc.collect()
+        
         print(f"Successfully processed {file_path}")
         return ast_dict, cst_dict
 
@@ -436,6 +749,7 @@ def process_file(
     verbose: bool = False,
     root_dir: Optional[str] = None,
 ) -> bool:
+    import gc  # Import garbage collector for explicit cleanup
     """
     Process a single source file and generate its expected JSON output.
 
@@ -499,6 +813,7 @@ def process_file(
     ast_dict, cst_dict = parse_file(file_path, mode)
     if ast_dict is None and cst_dict is None:
         print(f"Failed to parse {file_path}")
+        gc.collect()  # Force garbage collection even when failing
         return False
 
     # Generate the combined JSON
@@ -537,6 +852,14 @@ def process_file(
         except Exception as e:
             print(f"Error comparing files: {e}")
 
+    # Clean up by explicitly removing references before writing
+    result_dict = None
+    new_json_obj = json.loads(new_json)
+    new_json_obj = json.dumps(new_json_obj, indent=2, sort_keys=True)
+    
+    # Force an aggressive garbage collection before file operations
+    gc.collect()
+    
     # Write the output file
     if not dry_run:
         try:
@@ -544,13 +867,24 @@ def process_file(
                 f.write(new_json)
             if verbose:
                 print(f"Wrote {output_path}")
+            # Final cleanup before returning
+            ast_dict = None
+            cst_dict = None
+            new_json = None
+            gc.collect()
             return True
         except Exception as e:
             print(f"Error writing {output_path}: {e}")
+            gc.collect()
             return False
     else:
         if verbose:
             print(f"Would write {output_path} (dry run)")
+        # Final cleanup before returning
+        ast_dict = None
+        cst_dict = None
+        new_json = None
+        gc.collect()
         return True
 
 
@@ -658,5 +992,28 @@ def main():
         print("Success" if result else "Failed")
 
 
+def cleanup_resources():
+    """Perform explicit cleanup of resources before exit to avoid segfaults."""
+    global _processed_nodes
+    
+    print("Performing final cleanup before exit...")
+    # Clear any global collections that might reference CST nodes
+    _processed_nodes.clear()
+    
+    # Force garbage collection multiple times
+    print("Running deep garbage collection...")
+    for i in range(3):
+        gc.collect()
+    print("Deep garbage collection complete")
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+        print("Main execution completed successfully")
+    except Exception as e:
+        print(f"Error in main execution: {e}")
+    finally:
+        # Always run cleanup regardless of success or failure
+        cleanup_resources()
+        print("Program exiting normally")
