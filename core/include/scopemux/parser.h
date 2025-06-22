@@ -348,6 +348,17 @@ const ASTNode *parser_get_ast_root(const ParserContext *ctx);
 const CSTNode *parser_get_cst_root(const ParserContext *ctx);
 
 /**
+ * @brief Set the root of the Concrete Syntax Tree (CST).
+ *
+ * This function allows explicitly setting the CST root, primarily used
+ * for memory management when freeing CST nodes.
+ *
+ * @param ctx Parser context.
+ * @param root The new CST root node (can be NULL to clear).
+ */
+void parser_set_cst_root(ParserContext *ctx, CSTNode *root);
+
+/**
  * @brief Get all AST nodes of a specific type
  *
  * @param ctx Parser context

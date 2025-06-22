@@ -504,5 +504,12 @@ foreach(EXPECTED_JSON ${C_EXPECTED_JSON})
     configure_file(${EXPECTED_JSON} ${CMAKE_CURRENT_BINARY_DIR}/c/${CATEGORY}/${DEST_NAME} COPYONLY)
 endforeach()
 
+# --- Memory Debug/Crash Handler Diagnostic Test ---
+add_executable(test_memory_debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_memory_debug.c
+)
+target_link_libraries(test_memory_debug PRIVATE parser_core m dl)
+add_test(NAME MemoryDebugTest COMMAND test_memory_debug)
+
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
 message(STATUS "Copied example files and expected JSON to build directory for validation.")

@@ -36,7 +36,6 @@
 struct ParserContext;
 #endif
 
-
 #ifndef CONTEXT_ENGINE_H_INCLUDED
 struct ContextEngine;
 struct InfoBlock;
@@ -47,8 +46,8 @@ struct InfoBlock;
  */
 typedef struct {
   PyObject_HEAD
-  /* The C ASTNode instance */
-  struct ASTNode *node;
+      /* The C ASTNode instance */
+      struct ASTNode *node;
   /* Flag to indicate if we own the ASTNode memory */
   int owned;
 } ASTNodeObject;
@@ -58,8 +57,8 @@ typedef struct {
  */
 typedef struct {
   PyObject_HEAD
-  /* The C CSTNode instance */
-  struct CSTNode *node;
+      /* The C CSTNode instance */
+      struct CSTNode *node;
   /* Flag to indicate if we own the CSTNode memory */
   int owned;
 } CSTNodeObject;
@@ -72,7 +71,6 @@ typedef struct {
       /* The C ParserContext instance */
       struct ParserContext *context;
 } ParserContextObject;
-
 
 /**
  * @brief Python wrapper object for ContextEngine
@@ -95,5 +93,9 @@ typedef struct {
   /* Flag to indicate if we own the InfoBlock memory */
   int owned;
 } InfoBlockObject;
+
+/* Forward declarations of PyTypeObject for nodes */
+extern PyTypeObject ASTNodePyType;
+extern PyTypeObject CSTNodePyType;
 
 #endif /* SCOPEMUX_PYTHON_UTILS_H */

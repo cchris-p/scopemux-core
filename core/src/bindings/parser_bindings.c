@@ -22,8 +22,12 @@
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/python_bindings.h"
 #include "../../include/scopemux/python_utils.h"
+#include "../../include/tree_sitter/api.h"
 
-/* Forward declarations of PyTypeObject for nodes */
+/* Tree-sitter function declarations */
+void ts_parser_delete(TSParser *parser);
+
+/* Type definitions for nodes */
 PyTypeObject ASTNodePyType;
 PyTypeObject CSTNodePyType;
 
@@ -32,13 +36,67 @@ PyTypeObject CSTNodePyType;
 
 /**
  * @brief Deallocation function for ParserContextObject
+ * Ensures proper cleanup of parser context and CST nodes
+ * This function is critical for preventing memory leaks and double free issues
  */
 static void ParserContext_dealloc(ParserContextObject *self) {
-  if (self->context) {
-    parser_free(self->context);
-    self->context = NULL;
+  printf("[PYTHON_DEALLOC] ENTER: self=%p\n", (void *)self);
+  fflush(stdout);
+
+  // Guard against NULL self pointer
+  if (!self) {
+    printf("[PYTHON_DEALLOC] EXIT: self is NULL\n");
+    fflush(stdout);
+    return;
   }
-  Py_TYPE(self)->tp_free((PyObject *)self);
+
+  printf("[PYTHON_DEALLOC] Python object type: %s\n", Py_TYPE(self)->tp_name);
+  fflush(stdout);
+
+  // Check if we have a valid context to clean up
+  if (self->context) {
+    printf("[PYTHON_DEALLOC] Starting cleanup of parser context at %p\n", (void *)self->context);
+    fflush(stdout);
+
+    // CRITICAL: First ensure CST root is cleared before freeing the parser context
+    // This prevents double free issues when the parser context is freed
+    printf("[PYTHON_DEALLOC] Clearing CST root before freeing parser context\n");
+    fflush(stdout);
+
+    // Use parser_set_cst_root with NULL to safely clear the CST root
+    // This function handles proper cleanup of any existing CST root
+    parser_set_cst_root(self->context, NULL);
+
+    // Now that CST root is safely cleared, free the parser context
+    printf("[PYTHON_DEALLOC] Now freeing parser context at %p\n", (void *)self->context);
+    fflush(stdout);
+
+    // parser_free will handle all remaining cleanup including AST nodes
+    parser_free(self->context);
+
+    // Clear the pointer to avoid any potential use-after-free
+    self->context = NULL;
+
+    printf("[PYTHON_DEALLOC] Parser context cleanup complete\n");
+    fflush(stdout);
+  } else {
+    printf("[PYTHON_DEALLOC] No parser context to free (already NULL)\n");
+    fflush(stdout);
+  }
+
+  // Free the Python object
+  printf("[PYTHON_DEALLOC] About to free Python object at %p\n", (void *)self);
+  fflush(stdout);
+
+  PyTypeObject *type = Py_TYPE(self);
+  printf("[PYTHON_DEALLOC] Using tp_free function at %p from type %s\n", (void *)type->tp_free,
+         type->tp_name);
+  fflush(stdout);
+
+  type->tp_free((PyObject *)self);
+
+  printf("[PYTHON_DEALLOC] EXIT: Python object freed successfully\n");
+  fflush(stdout);
 }
 
 /**
@@ -221,367 +279,295 @@ static PyObject *ParserContext_get_ast_root(PyObject *self_obj, PyObject *Py_UNU
 
 /**
  * @brief Convert a CSTNode to a Python dictionary directly
- * This avoids memory management issues with CSTNode Python objects
+ * This creates a complete deep copy of the CST node structure without maintaining
+ * any references to the original C structures, avoiding memory management issues.
  */
 static PyObject *cst_node_to_py_dict(const CSTNode *node) {
   if (!node) {
     Py_RETURN_NONE;
   }
-  
-  // Create the main node dictionary
+
+  printf("[PYTHON] Converting CST node at %p (type=%s) to Python dictionary\n", (void *)node,
+         node->type);
+  fflush(stdout);
+
+  // Create a new dictionary to hold the node data
   PyObject *dict = PyDict_New();
   if (!dict) {
     return NULL;
   }
-  
-  // Add type
-  if (node->type) {
-    PyObject *type = PyUnicode_FromString(node->type);
-    if (!type) {
-      Py_DECREF(dict);
-      return NULL;
-    }
-    if (PyDict_SetItemString(dict, "type", type) < 0) {
-      Py_DECREF(type);
-      Py_DECREF(dict);
-      return NULL;
-    }
-    Py_DECREF(type);
-  } else {
-    PyObject *type = PyUnicode_FromString("UNKNOWN");
-    if (PyDict_SetItemString(dict, "type", type) < 0) {
-      Py_DECREF(type);
-      Py_DECREF(dict);
-      return NULL;
-    }
-    Py_DECREF(type);
+
+  // Create a new dictionary subclass that adds the required methods
+  PyObject *types_module = PyImport_ImportModule("types");
+  if (!types_module) {
+    Py_DECREF(dict);
+    return NULL;
   }
-  
-  // Add content if it exists
-  if (node->content) {
-    PyObject *content = PyUnicode_FromString(node->content);
-    if (!content) {
-      Py_DECREF(dict);
-      return NULL;
-    }
-    if (PyDict_SetItemString(dict, "content", content) < 0) {
-      Py_DECREF(content);
-      Py_DECREF(dict);
-      return NULL;
-    }
-    Py_DECREF(content);
-  } else {
-    PyObject *content = PyUnicode_FromString("");
-    if (PyDict_SetItemString(dict, "content", content) < 0) {
-      Py_DECREF(content);
-      Py_DECREF(dict);
-      return NULL;
-    }
-    Py_DECREF(content);
+
+  // Create a new type with methods
+  PyObject *type_dict = PyDict_New();
+  if (!type_dict) {
+    Py_DECREF(types_module);
+    Py_DECREF(dict);
+    return NULL;
   }
-  
+
+  // Add basic data
+  PyObject *type_str =
+      node->type ? PyUnicode_FromString(node->type) : PyUnicode_FromString("UNKNOWN");
+  PyObject *content_str =
+      node->content ? PyUnicode_FromString(node->content) : PyUnicode_FromString("");
+
+  if (!type_str || !content_str) {
+    Py_XDECREF(type_str);
+    Py_XDECREF(content_str);
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
+    Py_DECREF(dict);
+    return NULL;
+  }
+
+  if (PyDict_SetItemString(dict, "type", type_str) < 0 ||
+      PyDict_SetItemString(dict, "content", content_str) < 0) {
+    Py_DECREF(type_str);
+    Py_DECREF(content_str);
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
+    Py_DECREF(dict);
+    return NULL;
+  }
+  Py_DECREF(type_str);
+  Py_DECREF(content_str);
+
   // Add range information
   PyObject *range_dict = PyDict_New();
   if (!range_dict) {
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
     Py_DECREF(dict);
     return NULL;
   }
-  
-  // Start position
+
   PyObject *start_dict = PyDict_New();
-  if (!start_dict) {
+  PyObject *end_dict = PyDict_New();
+  if (!start_dict || !end_dict) {
+    Py_XDECREF(start_dict);
+    Py_XDECREF(end_dict);
     Py_DECREF(range_dict);
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
     Py_DECREF(dict);
     return NULL;
   }
+
+  // Add start position
   PyObject *start_line = PyLong_FromLong(node->range.start.line);
   PyObject *start_column = PyLong_FromLong(node->range.start.column);
-  if (PyDict_SetItemString(start_dict, "line", start_line) < 0 ||
+  if (!start_line || !start_column || PyDict_SetItemString(start_dict, "line", start_line) < 0 ||
       PyDict_SetItemString(start_dict, "column", start_column) < 0) {
-    Py_DECREF(start_line);
-    Py_DECREF(start_column);
+    Py_XDECREF(start_line);
+    Py_XDECREF(start_column);
     Py_DECREF(start_dict);
+    Py_DECREF(end_dict);
     Py_DECREF(range_dict);
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
     Py_DECREF(dict);
     return NULL;
   }
   Py_DECREF(start_line);
   Py_DECREF(start_column);
-  
-  // End position
-  PyObject *end_dict = PyDict_New();
-  if (!end_dict) {
-    Py_DECREF(start_dict);
-    Py_DECREF(range_dict);
-    Py_DECREF(dict);
-    return NULL;
-  }
+
+  // Add end position
   PyObject *end_line = PyLong_FromLong(node->range.end.line);
   PyObject *end_column = PyLong_FromLong(node->range.end.column);
-  if (PyDict_SetItemString(end_dict, "line", end_line) < 0 ||
+  if (!end_line || !end_column || PyDict_SetItemString(end_dict, "line", end_line) < 0 ||
       PyDict_SetItemString(end_dict, "column", end_column) < 0) {
-    Py_DECREF(end_line);
-    Py_DECREF(end_column);
-    Py_DECREF(end_dict);
+    Py_XDECREF(end_line);
+    Py_XDECREF(end_column);
     Py_DECREF(start_dict);
+    Py_DECREF(end_dict);
     Py_DECREF(range_dict);
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
     Py_DECREF(dict);
     return NULL;
   }
   Py_DECREF(end_line);
   Py_DECREF(end_column);
-  
+
   // Set start and end in range_dict
   if (PyDict_SetItemString(range_dict, "start", start_dict) < 0 ||
       PyDict_SetItemString(range_dict, "end", end_dict) < 0) {
-    Py_DECREF(end_dict);
     Py_DECREF(start_dict);
+    Py_DECREF(end_dict);
     Py_DECREF(range_dict);
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
     Py_DECREF(dict);
     return NULL;
   }
   Py_DECREF(start_dict);
   Py_DECREF(end_dict);
-  
+
   // Add range to main dict
   if (PyDict_SetItemString(dict, "range", range_dict) < 0) {
     Py_DECREF(range_dict);
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
     Py_DECREF(dict);
     return NULL;
   }
   Py_DECREF(range_dict);
-  
-  // Add children if any
+
+  // Add children
   PyObject *children = PyList_New(0);
   if (!children) {
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
     Py_DECREF(dict);
     return NULL;
   }
-  
+
+  // Process children recursively
   for (unsigned int i = 0; i < node->children_count; i++) {
     PyObject *child_dict = cst_node_to_py_dict(node->children[i]);
     if (!child_dict) {
       Py_DECREF(children);
+      Py_DECREF(type_dict);
+      Py_DECREF(types_module);
       Py_DECREF(dict);
       return NULL;
     }
-    
+
     if (PyList_Append(children, child_dict) < 0) {
       Py_DECREF(child_dict);
       Py_DECREF(children);
+      Py_DECREF(type_dict);
+      Py_DECREF(types_module);
       Py_DECREF(dict);
       return NULL;
     }
     Py_DECREF(child_dict);
   }
-  
+
   if (PyDict_SetItemString(dict, "children", children) < 0) {
     Py_DECREF(children);
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
     Py_DECREF(dict);
     return NULL;
   }
   Py_DECREF(children);
-  
+
+  // Add method implementations directly to the dictionary
+  PyObject *methods = PyDict_New();
+  if (!methods) {
+    Py_DECREF(type_dict);
+    Py_DECREF(types_module);
+    Py_DECREF(dict);
+    return NULL;
+  }
+
+  // Add method accessors that don't create circular references
+  PyObject *type_ref = PyDict_GetItemString(dict, "type");
+  PyObject *content_ref = PyDict_GetItemString(dict, "content");
+  PyObject *range_ref = PyDict_GetItemString(dict, "range");
+  PyObject *children_ref = PyDict_GetItemString(dict, "children");
+
+  // PyDict_GetItemString returns borrowed references, don't need to incref/decref
+  // We simply store pointers to existing dictionary values
+  PyDict_SetItemString(dict, "get_type", type_ref);
+  PyDict_SetItemString(dict, "get_content", content_ref);
+  PyDict_SetItemString(dict, "get_range", range_ref);
+  PyDict_SetItemString(dict, "get_children", children_ref);
+
+  // Clean up
+  Py_DECREF(methods);
+  Py_DECREF(type_dict);
+  Py_DECREF(types_module);
+
   return dict;
 }
 
 /**
  * @brief Get the CST root node from the parsed file
+ * This function creates a deep copy of the CST tree as a Python dictionary
+ * and then clears the CST root in the parser context to prevent double free.
  */
 static PyObject *ParserContext_get_cst_root(PyObject *self_obj, PyObject *Py_UNUSED(args)) {
+  printf("[GET_CST_ROOT] ENTER: self_obj=%p\n", (void *)self_obj);
+  fflush(stdout);
+
   ParserContextObject *self = (ParserContextObject *)self_obj;
+  printf("[GET_CST_ROOT] Cast to ParserContextObject: self=%p\n", (void *)self);
+  fflush(stdout);
+
   if (!self->context) {
+    printf("[GET_CST_ROOT] ERROR: Parser context is not initialized\n");
+    fflush(stdout);
     PyErr_SetString(PyExc_RuntimeError, "Parser context is not initialized");
     return NULL;
   }
 
+  printf("[GET_CST_ROOT] Parser context at %p\n", (void *)self->context);
+  fflush(stdout);
+
+  // Get the CST root node from the parser context
   const CSTNode *cst_root_const = parser_get_cst_root(self->context);
   if (!cst_root_const) {
+    printf("[GET_CST_ROOT] ERROR: Failed to get CST root node\n");
+    fflush(stdout);
     PyErr_SetString(PyExc_RuntimeError,
                     "Failed to get CST root node. Make sure the file is parsed successfully.");
     return NULL;
   }
 
+  printf("[GET_CST_ROOT] Retrieved CST root at %p (type=%s)\n", (void *)cst_root_const,
+         cst_root_const->type);
+  fflush(stdout);
+
   // Create a pure Python dictionary directly from the CST node
-  // This avoids memory management issues with CSTNodeObject
+  // This creates a deep copy without maintaining references to C structures
+  printf("[GET_CST_ROOT] Converting CST node to Python dictionary...\n");
+  fflush(stdout);
+
   PyObject *py_dict = cst_node_to_py_dict(cst_root_const);
   if (!py_dict) {
+    printf("[GET_CST_ROOT] ERROR: Failed to convert CST node to Python dictionary\n");
+    fflush(stdout);
     PyErr_SetString(PyExc_MemoryError, "Failed to convert CST node to Python dictionary");
     return NULL;
   }
-  
-  // Import builtins to access necessary Python functions
-  PyObject *builtins = PyImport_ImportModule("builtins");
-  if (!builtins) {
-    Py_DECREF(py_dict);
-    return NULL;
-  }
 
-  // Get the Python code module to compile our lambda functions
-  PyObject *code_module = PyImport_ImportModule("code");
-  if (!code_module) {
-    Py_DECREF(builtins);
-    Py_DECREF(py_dict);
-    return NULL;
-  }
+  printf("[GET_CST_ROOT] Successfully converted CST node to Python dictionary at %p\n",
+         (void *)py_dict);
+  fflush(stdout);
 
-  // Create and attach compatibility methods
-  PyObject *locals = PyDict_New();
-  PyObject *globals = PyDict_New();
-  if (!locals || !globals) {
-    Py_XDECREF(locals);
-    Py_XDECREF(globals);
-    Py_DECREF(code_module);
-    Py_DECREF(builtins);
-    Py_DECREF(py_dict);
-    return NULL;
-  }
+  // CRITICAL FIX: After converting to Python dictionary, set the CST root to NULL
+  // This prevents double-free when the parser context is cleaned up
+  printf("[GET_CST_ROOT] Transferring ownership: Setting CST root to NULL after conversion\n");
+  fflush(stdout);
 
-  // Add dict itself to the globals
-  if (PyDict_SetItemString(globals, "_dict", py_dict) < 0) {
-    Py_DECREF(locals);
-    Py_DECREF(globals);
-    Py_DECREF(code_module);
-    Py_DECREF(builtins);
-    Py_DECREF(py_dict);
-    return NULL;
-  }
+  // Set the CST root to NULL in the parser context to prevent double-free
+  // This transfers ownership of the CST node to Python
+  printf("[GET_CST_ROOT] Before transfer: CST root at %p\n",
+         (void *)parser_get_cst_root(self->context));
+  fflush(stdout);
 
-  // Add builtins to globals
-  if (PyDict_SetItemString(globals, "__builtins__", builtins) < 0) {
-    Py_DECREF(locals);
-    Py_DECREF(globals);
-    Py_DECREF(code_module);
-    Py_DECREF(builtins);
-    Py_DECREF(py_dict);
-    return NULL;
-  }
+  parser_set_cst_root(self->context, NULL);
 
-  // We need to modify the returned dictionary to make it dict-like but also support
-  // method-style access for compatibility with the Python script
-  
-  // Create a Python dict subclass that adds required methods
-  PyObject *types_module = PyImport_ImportModule("types");
-  if (!types_module) {
-    Py_DECREF(locals);
-    Py_DECREF(globals);
-    Py_DECREF(code_module);
-    Py_DECREF(builtins);
-    Py_DECREF(py_dict);
-    return NULL;
-  }
-  
-  // Compile Python code to create methods for our dictionary
-  // The Python code recursively processes all children dictionaries
-  const char* method_code = 
-    "def enhance_recursive(d):\n"
-    "    if not isinstance(d, dict):\n"
-    "        return d\n"
-    "    # Add method accessors\n"
-    "    d['get_type'] = lambda: d.get('type', 'UNKNOWN')\n"
-    "    d['get_content'] = lambda: d.get('content', '')\n"
-    "    d['get_range'] = lambda: d.get('range', {'start': {'line': 0, 'column': 0}, 'end': {'line': 0, 'column': 0}})\n"
-    "    # Process children recursively\n"
-    "    if 'children' in d:\n"
-    "        children = d['children']\n"
-    "        if isinstance(children, list):\n"
-    "            for i, child in enumerate(children):\n"
-    "                children[i] = enhance_recursive(child)\n"
-    "        d['get_children'] = lambda: d.get('children', [])\n"
-    "    else:\n"
-    "        d['get_children'] = lambda: []\n"
-    "    return d\n"
-    "\n"
-    "def create_methods(d):\n"
-    "    return enhance_recursive(d)\n";
+  printf("[GET_CST_ROOT] After transfer: CST root at %p\n",
+         (void *)parser_get_cst_root(self->context));
+  fflush(stdout);
 
-  PyObject *code_obj = Py_CompileString(method_code, "<cst_methods>", Py_file_input);
-  if (!code_obj) {
-    Py_DECREF(types_module);
-    Py_DECREF(locals);
-    Py_DECREF(globals);
-    Py_DECREF(code_module);
-    Py_DECREF(builtins);
-    Py_DECREF(py_dict);
-    return NULL;
-  }
-  
-  // Execute the compiled code in our globals dict
-  PyObject *module = PyImport_ExecCodeModule("<cst_methods>", code_obj);
-  Py_DECREF(code_obj);
-  if (!module) {
-    Py_DECREF(types_module);
-    Py_DECREF(locals);
-    Py_DECREF(globals);
-    Py_DECREF(code_module);
-    Py_DECREF(builtins);
-    Py_DECREF(py_dict);
-    return NULL;
-  }
-  
-  // Get the create_methods function we defined
-  PyObject *create_methods_func = PyObject_GetAttrString(module, "create_methods");
-  Py_DECREF(module);
-  if (!create_methods_func) {
-    Py_DECREF(types_module);
-    Py_DECREF(locals);
-    Py_DECREF(globals);
-    Py_DECREF(code_module);
-    Py_DECREF(builtins);
-    Py_DECREF(py_dict);
-    return NULL;
-  }
-  
-  // Call create_methods with our dictionary
-  PyObject *args = PyTuple_New(1);
-  PyTuple_SetItem(args, 0, py_dict); // This steals a reference to py_dict
-  PyObject *enhanced_dict = PyObject_CallObject(create_methods_func, args);
-  Py_DECREF(args); // This decrements our reference to py_dict
-  Py_DECREF(create_methods_func);
-  
-  if (!enhanced_dict) {
-    // py_dict already decremented by PyTuple_SetItem, so don't decref again
-    Py_DECREF(types_module);
-    Py_DECREF(locals);
-    Py_DECREF(globals);
-    Py_DECREF(code_module);
-    Py_DECREF(builtins);
-    return NULL;
-  }
-  
-  // Apply any recursive transformations to children
-  PyObject *children = PyDict_GetItemString(enhanced_dict, "children");
-  if (children && PyList_Check(children)) {
-    Py_ssize_t num_children = PyList_Size(children);
-    for (Py_ssize_t i = 0; i < num_children; i++) {
-      PyObject *child = PyList_GetItem(children, i); // Borrowed reference
-      if (PyDict_Check(child)) {
-        // Add method support to child dict recursively
-        PyObject *child_args = PyTuple_New(1);
-        Py_INCREF(child); // Need to increase ref before giving to PyTuple_SetItem
-        PyTuple_SetItem(child_args, 0, child);
-        PyObject *enhanced_child = PyObject_CallObject(create_methods_func, child_args);
-        Py_DECREF(child_args);
-        
-        if (enhanced_child) {
-          PyList_SetItem(children, i, enhanced_child); // This steals our reference
-        }
-      }
-    }
-  }
+  printf("[GET_CST_ROOT] EXIT: Returning Python dictionary at %p\n", (void *)py_dict);
+  fflush(stdout);
 
-  // Cleanup temporary objects
-  Py_DECREF(locals);
-  Py_DECREF(globals);
-  Py_DECREF(code_module);
-  Py_DECREF(builtins);
-  
-  // Return the enhanced dictionary which we got from PyObject_CallObject
-  // py_dict's reference has already been consumed by PyTuple_SetItem
-  return enhanced_dict;
+  return py_dict;
 }
 
-static PyMethodDef ParserContext_methods[] = {
+static const PyMethodDef ParserContext_methods[] = {
     {"parse_file", (PyCFunction)ParserContext_parse_file, METH_VARARGS | METH_KEYWORDS,
      "Parse a file"},
     {"parse_string", (PyCFunction)ParserContext_parse_string, METH_VARARGS | METH_KEYWORDS,
@@ -767,7 +753,7 @@ static PyObject *ASTNode_method_get_return_type(ASTNodeObject *self, PyObject *a
 /**
  * Method definitions for ASTNode
  */
-static PyMethodDef ASTNode_methods[] = {
+static const PyMethodDef ASTNode_methods[] = {
     {"get_type", (PyCFunction)ASTNode_method_get_type, METH_NOARGS, "Get the node type"},
     {"get_name", (PyCFunction)ASTNode_method_get_name, METH_NOARGS, "Get the node name"},
     {"get_qualified_name", (PyCFunction)ASTNode_method_get_qualified_name, METH_NOARGS,
@@ -798,18 +784,18 @@ static void CSTNode_dealloc(CSTNodeObject *self) {
   if (!self) {
     return;
   }
-  
+
   // Use a local variable to avoid potential use-after-free
   CSTNode *node_to_free = self->node;
-  
+
   // Clear the pointer first to prevent potential double-free issues
   self->node = NULL;
-  
+
   // Only free if we owned it and it's not NULL
   if (node_to_free && self->owned) {
     cst_node_free(node_to_free);
   }
-  
+
   // Let Python free the actual object
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
@@ -818,9 +804,9 @@ static void CSTNode_dealloc(CSTNodeObject *self) {
  * @brief Create a new CSTNodeObject
  */
 static PyObject *CSTNode_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
-  (void)args;   // Silence unused parameter warning
-  (void)kwds;   // Silence unused parameter warning
-  
+  (void)args; // Silence unused parameter warning
+  (void)kwds; // Silence unused parameter warning
+
   CSTNodeObject *self = (CSTNodeObject *)type->tp_alloc(type, 0);
   if (self != NULL) {
     self->node = NULL;
@@ -833,9 +819,9 @@ static PyObject *CSTNode_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
  * @brief Initialize a CSTNodeObject
  */
 static int CSTNode_init(CSTNodeObject *self, PyObject *args, PyObject *kwds) {
-  (void)args;   // Silence unused parameter warning
-  (void)kwds;   // Silence unused parameter warning
-  
+  (void)args; // Silence unused parameter warning
+  (void)kwds; // Silence unused parameter warning
+
   // The CSTNode will be set externally, nothing to initialize
   // Just make sure we start with no ownership
   self->owned = false;
@@ -846,7 +832,7 @@ static int CSTNode_init(CSTNodeObject *self, PyObject *args, PyObject *kwds) {
 
 static PyObject *CSTNode_get_type(CSTNodeObject *self, void *closure) {
   (void)closure; // Silence the unused parameter warning
-  
+
   if (!self->node || !self->node->type) {
     Py_RETURN_NONE;
   }
@@ -855,7 +841,7 @@ static PyObject *CSTNode_get_type(CSTNodeObject *self, void *closure) {
 
 static PyObject *CSTNode_get_content(CSTNodeObject *self, void *closure) {
   (void)closure; // Silence the unused parameter warning
-  
+
   if (!self->node || !self->node->content) {
     Py_RETURN_NONE;
   }
@@ -864,50 +850,50 @@ static PyObject *CSTNode_get_content(CSTNodeObject *self, void *closure) {
 
 static PyObject *CSTNode_get_range(CSTNodeObject *self, void *closure) {
   (void)closure; // Silence the unused parameter warning
-  
+
   if (!self->node) {
     Py_RETURN_NONE;
   }
-  
+
   // Create range dictionary with start and end positions
   PyObject *range_dict = PyDict_New();
   PyObject *start_dict = PyDict_New();
   PyObject *end_dict = PyDict_New();
-  
+
   PyDict_SetItemString(start_dict, "line", PyLong_FromLong(self->node->range.start.line));
   PyDict_SetItemString(start_dict, "column", PyLong_FromLong(self->node->range.start.column));
-  
+
   PyDict_SetItemString(end_dict, "line", PyLong_FromLong(self->node->range.end.line));
   PyDict_SetItemString(end_dict, "column", PyLong_FromLong(self->node->range.end.column));
-  
+
   PyDict_SetItemString(range_dict, "start", start_dict);
   PyDict_SetItemString(range_dict, "end", end_dict);
-  
+
   // Clean up references
   Py_DECREF(start_dict);
   Py_DECREF(end_dict);
-  
+
   return range_dict;
 }
 
 static PyObject *CSTNode_get_children(CSTNodeObject *self, void *closure) {
   (void)closure; // Silence the unused parameter warning
-  
+
   if (!self->node) {
     return PyList_New(0);
   }
-  
+
   PyObject *children_list = PyList_New(0);
   if (!children_list) {
     return NULL; // Memory error
   }
-  
+
   for (size_t i = 0; i < self->node->children_count; i++) {
     CSTNode *child = self->node->children[i];
     if (!child) {
       continue;
     }
-    
+
     // Create a new Python wrapper for this child
     PyTypeObject *type = &CSTNodePyType;
     CSTNodeObject *py_child = (CSTNodeObject *)type->tp_alloc(type, 0);
@@ -916,16 +902,16 @@ static PyObject *CSTNode_get_children(CSTNodeObject *self, void *closure) {
       PyErr_NoMemory();
       return NULL;
     }
-    
+
     // We don't take ownership of the child nodes since they're owned by the parent
     py_child->node = child;
     py_child->owned = false;
-    
+
     // Add to the list
     PyList_Append(children_list, (PyObject *)py_child);
     Py_DECREF(py_child); // PyList_Append increases refcount, so we can decref
   }
-  
+
   return children_list;
 }
 
@@ -952,18 +938,19 @@ static PyObject *CSTNode_method_get_children(CSTNodeObject *self, PyObject *args
 }
 
 /* Method definitions for CSTNode */
-static PyMethodDef CSTNode_methods[] = {
+static const PyMethodDef CSTNode_methods[] = {
     {"get_type", (PyCFunction)CSTNode_method_get_type, METH_NOARGS, "Get the node type"},
     {"get_content", (PyCFunction)CSTNode_method_get_content, METH_NOARGS, "Get the node content"},
     {"get_range", (PyCFunction)CSTNode_method_get_range, METH_NOARGS, "Get the node range"},
-    {"get_children", (PyCFunction)CSTNode_method_get_children, METH_NOARGS, "Get the node children"},
+    {"get_children", (PyCFunction)CSTNode_method_get_children, METH_NOARGS,
+     "Get the node children"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
 /**
  * @brief Property getters for ASTNode
  */
-static PyGetSetDef ASTNode_getsetters[] = {
+static const PyGetSetDef ASTNode_getsetters[] = {
     {"name", (getter)ASTNode_get_name, NULL, "Name of the node", NULL},
     {"qualified_name", (getter)ASTNode_get_qualified_name, NULL, "Qualified name of the node",
      NULL},
@@ -974,7 +961,7 @@ static PyGetSetDef ASTNode_getsetters[] = {
     {NULL} /* Sentinel */
 };
 
-static PyGetSetDef CSTNode_getsetters[] = {
+static const PyGetSetDef CSTNode_getsetters[] = {
     {"type", (getter)CSTNode_get_type, NULL, "Node type", NULL},
     {"content", (getter)CSTNode_get_content, NULL, "Node content", NULL},
     {"range", (getter)CSTNode_get_range, NULL, "Node source range", NULL},
@@ -1000,15 +987,15 @@ PyTypeObject ASTNodePyType = {PyVarObject_HEAD_INIT(NULL, 0).tp_name = "scopemux
  * @brief Type definition for CSTNode
  */
 PyTypeObject CSTNodePyType = {PyVarObject_HEAD_INIT(NULL, 0).tp_name = "scopemux_core.CSTNode",
-                               .tp_basicsize = sizeof(CSTNodeObject),
-                               .tp_itemsize = 0,
-                               .tp_dealloc = (destructor)CSTNode_dealloc,
-                               .tp_flags = Py_TPFLAGS_DEFAULT,
-                               .tp_doc = "CST node representing a parsed concrete syntax entity",
-                               .tp_methods = CSTNode_methods,
-                               .tp_getset = CSTNode_getsetters,
-                               .tp_init = (initproc)CSTNode_init,
-                               .tp_new = CSTNode_new};
+                              .tp_basicsize = sizeof(CSTNodeObject),
+                              .tp_itemsize = 0,
+                              .tp_dealloc = (destructor)CSTNode_dealloc,
+                              .tp_flags = Py_TPFLAGS_DEFAULT,
+                              .tp_doc = "CST node representing a parsed concrete syntax entity",
+                              .tp_methods = CSTNode_methods,
+                              .tp_getset = CSTNode_getsetters,
+                              .tp_init = (initproc)CSTNode_init,
+                              .tp_new = CSTNode_new};
 
 /**
  * @brief Detect language from filename
@@ -1032,10 +1019,18 @@ static PyObject *detect_language(PyObject *self, PyObject *args, PyObject *kwds)
 /**
  * @brief Module methods
  */
-PyMethodDef module_methods[] = {
+const PyMethodDef module_methods[] = {
     {"detect_language", (PyCFunction)detect_language, METH_VARARGS | METH_KEYWORDS,
      "Detect language from filename and optionally content"},
     {NULL, NULL, 0, NULL} /* Sentinel */
+};
+
+static struct PyModuleDef scopemux_core_module = {
+    PyModuleDef_HEAD_INIT,
+    "scopemux_core",          // Module name
+    "ScopeMux core bindings", // Module docstring
+    -1,                       // Size of per-interpreter state (-1 means global)
+    module_methods            // Method table
 };
 
 /**
@@ -1092,4 +1087,13 @@ void init_parser_bindings(void *m) {
   PyModule_AddIntConstant(module, "NODE_MODULE", NODE_MODULE);
   PyModule_AddIntConstant(module, "NODE_COMMENT", NODE_COMMENT);
   PyModule_AddIntConstant(module, "NODE_DOCSTRING", NODE_DOCSTRING);
+}
+
+// --- Python 3 module initialization function ---
+PyMODINIT_FUNC PyInit_scopemux_core(void) {
+  PyObject *module = PyModule_Create(&scopemux_core_module);
+  if (!module)
+    return NULL;
+  init_parser_bindings(module);
+  return module;
 }

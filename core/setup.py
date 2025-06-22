@@ -45,6 +45,7 @@ ext_modules = [
             "src/common/error_handling.c",
             "src/common/memory_management.c",
             "src/common/logging.c",
+            "src/utils/memory_debug.c",
             # Processor files
             "src/processors/test_processor.c",
             "src/processors/ast_post_processor.c",

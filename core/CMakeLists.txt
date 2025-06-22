@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.14)
+project(scopemux_core)
+
 # Set compiler flags for this directory
 # Note: C/C++ standards are already set in the root CMakeLists.txt
 
@@ -16,6 +19,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     endif()
 endif()
 
+# Option to enable memory debugging features
+option(SCOPEMUX_DEBUG_MEMORY "Enable memory debugging and tracking" OFF)
+if(SCOPEMUX_DEBUG_MEMORY)
+    add_definitions(-DSCOPEMUX_DEBUG_MEMORY)
+    message(STATUS "Memory debugging enabled: detailed tracking and validation will be active")
+endif()
+
 # Find Python packages needed for the project
 find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
 
@@ -23,7 +33,7 @@ find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
 include(FetchContent)
 FetchContent_Declare(
     pybind11
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/vendor/pybind11
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/pybind11
 )
 FetchContent_MakeAvailable(pybind11)
 
@@ -49,6 +59,13 @@ add_compile_definitions(
     SCOPEMUX_BUILDING=1
     PY_SSIZE_T_CLEAN
 )
+
+# Configure Valgrind support when requested
+option(SCOPEMUX_VALGRIND_COMPATIBLE "Build with Valgrind compatibility" OFF)
+if(SCOPEMUX_VALGRIND_COMPATIBLE)
+    add_definitions(-DSCOPEMUX_VALGRIND_COMPATIBLE)
+    message(STATUS "Building with Valgrind compatibility")
+endif()
 
 # Add compiler flags for Python C API
 add_compile_options($<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>)
@@ -83,13 +100,23 @@ message(STATUS "Python libraries: ${Python_LIBRARIES}")
 
 # Build parser core static library
 add_library(parser_core STATIC
+    # Refactored parser components
     src/parser/parser.c
+    src/parser/ast_node.c
+    src/parser/cst_node.c
+    src/parser/memory_tracking.c
+    src/parser/parser_context.c
+    src/parser/query_processing.c
+    # Tree-sitter integration
     src/parser/tree_sitter_integration.c
     src/parser/query_manager.c
     # Common files
     src/common/memory_management.c
     src/common/error_handling.c
     src/common/logging.c
+    # Memory debugging utilities
+    src/utils/memory_debug.c
+    src/utils/ts_resource_manager.c
 )
 set_target_properties(parser_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
@@ -110,6 +137,11 @@ set(COMMON_SOURCES
     src/common/logging.c
 )
 
+set(UTILS_SOURCES
+    src/utils/memory_debug.c
+    src/utils/ts_resource_manager.c
+)
+
 # Add library targets
 add_library(context_engine STATIC ${CONTEXT_ENGINE_SOURCES} ${COMMON_SOURCES})
 
@@ -128,27 +160,38 @@ target_link_libraries(parser_core PRIVATE
 )
 
 # Python bindings module with test_processor bindings and implementation
-pybind11_add_module(scopemux_core
+pybind11_add_module(scopemux_core MODULE
     # Binding files
     src/bindings/module.c
     src/bindings/parser_bindings.c
     src/bindings/context_engine_bindings.c
     src/bindings/test_processor_bindings.c
+    src/bindings/signal_handler.c
+)
 
-    # Direct implementation of test_processor.c to ensure symbols are linked
-    src/processors/test_processor.c
+# Set include directories for the Python bindings module
+target_include_directories(scopemux_core PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/bindings
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
+)
 
-    # Additional needed files
-    src/context_engine/context_engine.c
-    src/common/memory_management.c
-    src/common/error_handling.c
-    src/common/logging.c
+# Link the module with necessary libraries
+target_link_libraries(scopemux_core PRIVATE
+    ${TREE_SITTER_LIBS}
+    -ldl  # Needed for dlopen/dlsym functions
+    parser_core  # Link with the static library directly
+)
+
+# Add explicit linker flags to force export of symbols
+target_link_options(scopemux_core PRIVATE
+    -Wl,--export-dynamic
 )
 
 # Ensure all symbols from our implementation are accessible
 set_target_properties(scopemux_core PROPERTIES
     ENABLE_EXPORTS TRUE
-    LINK_FLAGS "-rdynamic"
 )
 
 # Link libraries to the Python module
@@ -197,3 +240,5 @@ message(STATUS "Configuration summary:")
 message(STATUS "  C Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
 message(STATUS "  Python: ${Python_VERSION}")
 message(STATUS "  Installation prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  Memory debugging: ${SCOPEMUX_DEBUG_MEMORY}")
+message(STATUS "  Valgrind compatibility: ${SCOPEMUX_VALGRIND_COMPATIBLE}")
