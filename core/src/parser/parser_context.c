@@ -7,13 +7,11 @@
  */
 
 #include "parser_context.h"
+#include "../../core/include/scopemux/query_manager.h"
 #include "ast_node.h"
 #include "cst_node.h"
 #include "memory_tracking.h"
 #include "parser_internal.h"
-
-// Forward declarations for integration with other modules
-QueryManager *query_manager_new(void);
 
 /**
  * Initialize a new parser context.
@@ -38,13 +36,7 @@ ParserContext *parser_init(void) {
   }
 
   // Initialize the query manager
-  ctx->q_manager = query_manager_new();
-  if (!ctx->q_manager) {
-    log_error("Failed to initialize query manager");
-    ts_parser_delete(ctx->ts_parser);
-    memory_debug_free(ctx, __FILE__, __LINE__);
-    return NULL;
-  }
+  ctx->q_manager = NULL;
 
   // Default to parse both AST and CST
   ctx->mode = PARSE_BOTH;

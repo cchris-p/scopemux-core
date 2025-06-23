@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/scopemux/parser.h"
-#include "../../../include/scopemux/tree_sitter_integration.h"
+#include "../../../core/include/scopemux/parser.h"
+#include "../../../core/include/scopemux/tree_sitter_integration.h"
 #include "../../include/test_helpers.h"
 
 //=================================

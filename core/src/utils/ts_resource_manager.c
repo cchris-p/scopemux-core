@@ -6,10 +6,10 @@
  * helping to prevent leaks and memory corruption during shutdown.
  */
 
-#include "../../include/scopemux/ts_resource_manager.h"
-#include "../../include/scopemux/logging.h"
-#include "../../include/scopemux/memory_debug.h"
-#include "../../include/tree_sitter/api.h"
+#include "../../core/include/scopemux/ts_resource_manager.h"
+#include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/tree_sitter/api.h"
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>

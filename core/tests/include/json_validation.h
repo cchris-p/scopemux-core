@@ -1,7 +1,7 @@
 #ifndef SCOPEMUX_JSON_VALIDATION_H
 #define SCOPEMUX_JSON_VALIDATION_H
 
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/parser.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

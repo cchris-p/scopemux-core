@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/scopemux/context_engine.h"
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/context_engine.h"
+#include "../../core/include/scopemux/parser.h"
 
 /**
  * @brief Expand a compressed block to its original form

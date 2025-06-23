@@ -6,8 +6,8 @@
  * the token budget for the context engine.
  */
 
-#include "../../include/scopemux/context_engine.h"
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/context_engine.h"
+#include "../../core/include/scopemux/parser.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

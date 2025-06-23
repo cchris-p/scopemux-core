@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/scopemux/parser.h"
-#include "../../include/scopemux/tree_sitter_integration.h"
+#include "../../core/include/scopemux/parser.h"
+#include "../../core/include/scopemux/tree_sitter_integration.h"
 
 /**
  * Reads test file content from the examples directory

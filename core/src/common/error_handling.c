@@ -6,7 +6,7 @@
  * error message management and error code definitions.
  */
 
-#include "../../include/scopemux/common.h"
+#include "../../core/include/scopemux/common.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>

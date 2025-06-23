@@ -8,7 +8,7 @@
 #ifndef SCOPEMUX_PARSER_CONTEXT_H
 #define SCOPEMUX_PARSER_CONTEXT_H
 
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/parser.h"
 
 /**
  * @brief Initialize a new parser context

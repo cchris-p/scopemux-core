@@ -9,12 +9,12 @@
 #ifndef SCOPEMUX_PARSER_INTERNAL_H
 #define SCOPEMUX_PARSER_INTERNAL_H
 
-#include "../../include/scopemux/config/node_type_mapping_loader.h"
-#include "../../include/scopemux/logging.h"
-#include "../../include/scopemux/memory_debug.h"
-#include "../../include/scopemux/parser.h"
-#include "../../include/scopemux/query_manager.h"
-#include "../../include/scopemux/tree_sitter_integration.h"
+#include "../../core/include/scopemux/config/node_type_mapping_loader.h"
+#include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/scopemux/parser.h"
+#include "../../core/include/scopemux/query_manager.h"
+#include "../../core/include/scopemux/tree_sitter_integration.h"
 #include <setjmp.h>
 #include <signal.h>
 #include <stdbool.h>

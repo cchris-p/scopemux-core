@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200809L // For strdup
 
-#include "../../include/scopemux/context_engine.h"
+#include "../../core/include/scopemux/context_engine.h"
 #include <stdio.h>  // For snprintf
 #include <stdlib.h> // For malloc, calloc, free
 #include <string.h> // For strlen, strncpy, strdup

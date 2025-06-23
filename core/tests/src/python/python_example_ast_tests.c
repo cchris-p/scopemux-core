@@ -25,9 +25,9 @@
  * the expected parser output for different Python language constructs.
  */
 
+#include "../../../core/include/scopemux/parser.h"
 #include "../../include/json_validation.h"
 #include "../../include/test_helpers.h"
-#include "../../../include/scopemux/parser.h"
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
 #include <dirent.h>
@@ -38,7 +38,7 @@
 
 /**
  * Check if a file has a specific extension
- * 
+ *
  * @param filename The filename to check
  * @param ext The extension to look for (with the dot, e.g. ".py")
  * @return true if the file has the specified extension
@@ -46,11 +46,11 @@
 static bool has_extension(const char *filename, const char *ext) {
   size_t filename_len = strlen(filename);
   size_t ext_len = strlen(ext);
-  
+
   if (filename_len <= ext_len) {
     return false;
   }
-  
+
   return strcmp(filename + filename_len - ext_len, ext) == 0;
 }
 
@@ -66,19 +66,19 @@ static void test_python_example(const char *category, const char *filename) {
     cr_log_error("Failed to duplicate filename");
     cr_assert_fail("Memory allocation failed");
   }
-  
+
   // Remove extension to get base name
   char *dot = strrchr(base_filename, '.');
   if (dot) {
     *dot = '\0';
   }
-  
+
   cr_log_info("Testing Python example: %s/%s", category, base_filename);
-  
+
   // 1. Read example Python file
   char *source = read_test_file("python", category, filename);
   cr_assert(source != NULL, "Failed to read source file: %s/%s", category, filename);
-  
+
   // 2. Parse the Python code into an AST
   ParserContext *ctx = parser_init();
   cr_assert(ctx != NULL, "Failed to create parser context");
@@ -88,30 +88,29 @@ static void test_python_example(const char *category, const char *filename) {
   cr_assert(parse_ok, "Failed to parse Python code into AST");
   ASTNode *ast = ctx->ast_root;
   cr_assert(ast != NULL, "AST root is NULL after parsing");
-  
+
   // 3. Load the expected JSON file
   JsonValue *expected_json = load_expected_json("python", category, base_filename);
   if (!expected_json) {
-    cr_log_warn("No .expected.json file found for %s/%s, skipping validation",
-               category, base_filename);
+    cr_log_warn("No .expected.json file found for %s/%s, skipping validation", category,
+                base_filename);
     free(base_filename);
     free(source);
     parser_free(ctx);
     return;
   }
-  
+
   // 4. Validate AST against expected JSON
   bool valid = validate_ast_against_json(ast, expected_json, base_filename);
-  
+
   // Free resources
   free_json_value(expected_json);
   free(base_filename);
   free(source);
   parser_free(ctx);
-  
+
   // 5. Report results
-  cr_assert(valid, "AST validation failed against expected JSON for %s/%s",
-            category, filename);
+  cr_assert(valid, "AST validation failed against expected JSON for %s/%s", category, filename);
 }
 
 /**
@@ -122,58 +121,48 @@ static void test_python_example(const char *category, const char *filename) {
 static void process_python_category(const char *category) {
   char path[512];
   snprintf(path, sizeof(path), "../examples/python/%s", category);
-  
+
   DIR *dir = opendir(path);
   if (!dir) {
     cr_log_warn("Could not open category directory: %s", path);
     return;
   }
-  
+
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
     // Skip directories and non-Python files
     if (entry->d_type != DT_REG || !has_extension(entry->d_name, ".py")) {
       continue;
     }
-    
+
     // Run test for this example file
     test_python_example(category, entry->d_name);
   }
-  
+
   closedir(dir);
 }
 
 /**
  * Test basic Python syntax examples
  */
-Test(python_examples, basic_syntax) {
-  process_python_category("basic_syntax");
-}
+Test(python_examples, basic_syntax) { process_python_category("basic_syntax"); }
 
 /**
  * Test advanced Python features examples
  */
-Test(python_examples, advanced_features) {
-  process_python_category("advanced_features");
-}
+Test(python_examples, advanced_features) { process_python_category("advanced_features"); }
 
 /**
  * Test Python classes examples
  */
-Test(python_examples, classes) {
-  process_python_category("classes");
-}
+Test(python_examples, classes) { process_python_category("classes"); }
 
 /**
  * Test Python decorators examples
  */
-Test(python_examples, decorators) {
-  process_python_category("decorators");
-}
+Test(python_examples, decorators) { process_python_category("decorators"); }
 
 /**
  * Test Python type hints examples
  */
-Test(python_examples, type_hints) {
-  process_python_category("type_hints");
-}
+Test(python_examples, type_hints) { process_python_category("type_hints"); }

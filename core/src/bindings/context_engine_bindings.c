@@ -16,9 +16,9 @@
 #include <string.h>
 
 /* ScopeMux header includes */
-#include "../../include/scopemux/context_engine.h"
-#include "../../include/scopemux/python_bindings.h"
-#include "../../include/scopemux/python_utils.h"
+#include "../../core/include/scopemux/context_engine.h"
+#include "../../core/include/scopemux/python_bindings.h"
+#include "../../core/include/scopemux/python_utils.h"
 
 // These type definitions are now in python_utils.h
 // ParserContextObject - Python wrapper for ParserContext

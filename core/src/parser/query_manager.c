@@ -33,7 +33,6 @@
 
 #define _POSIX_C_SOURCE 200809L // For strdup
 
-#include "../../include/scopemux/query_manager.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -42,8 +41,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "scopemux/parser.h" // For LanguageType constants
-#include "scopemux/query_manager.h"
+#include "../../core/include/scopemux/parser.h" // For LanguageType constants
+#include "../../core/include/scopemux/query_manager.h"
 
 // Forward declarations for Tree-sitter language functions from vendor library
 extern const TSLanguage *tree_sitter_c(void);
@@ -158,7 +157,7 @@ QueryManager *query_manager_init(const char *queries_dir) {
 void query_manager_free(QueryManager *manager) {
   printf("[QUERY_MANAGER_FREE] ENTER: manager=%p\n", (void *)manager);
   fflush(stdout);
-  
+
   if (!manager) {
     printf("[QUERY_MANAGER_FREE] EXIT: manager is NULL\n");
     fflush(stdout);
@@ -175,46 +174,48 @@ void query_manager_free(QueryManager *manager) {
 
   // Free all cached queries and their names
   if (manager->cached_queries) {
-    printf("[QUERY_MANAGER_FREE] Freeing cached queries array at %p (language_count=%zu)\n", 
+    printf("[QUERY_MANAGER_FREE] Freeing cached queries array at %p (language_count=%zu)\n",
            (void *)manager->cached_queries, manager->language_count);
     fflush(stdout);
-    
+
     for (size_t i = 0; i < manager->language_count; i++) {
       if (manager->cached_queries[i]) {
-        printf("[QUERY_MANAGER_FREE] Freeing cached queries for language %zu at %p (query_count=%zu)\n", 
+        printf("[QUERY_MANAGER_FREE] Freeing cached queries for language %zu at %p "
+               "(query_count=%zu)\n",
                i, (void *)manager->cached_queries[i], manager->query_counts[i]);
         fflush(stdout);
-        
+
         // Free each cached query for this language
         for (size_t j = 0; j < manager->query_counts[i]; j++) {
           if (manager->cached_queries[i][j].query_name) {
-            printf("[QUERY_MANAGER_FREE] Freeing query name at %p: '%s'\n", 
-                   (void *)manager->cached_queries[i][j].query_name, manager->cached_queries[i][j].query_name);
+            printf("[QUERY_MANAGER_FREE] Freeing query name at %p: '%s'\n",
+                   (void *)manager->cached_queries[i][j].query_name,
+                   manager->cached_queries[i][j].query_name);
             fflush(stdout);
             free((void *)manager->cached_queries[i][j].query_name);
             manager->cached_queries[i][j].query_name = NULL;
           }
-          
+
           if (manager->cached_queries[i][j].query) {
-            printf("[QUERY_MANAGER_FREE] Freeing TSQuery at %p\n", 
+            printf("[QUERY_MANAGER_FREE] Freeing TSQuery at %p\n",
                    (void *)manager->cached_queries[i][j].query);
             fflush(stdout);
             ts_query_delete((TSQuery *)manager->cached_queries[i][j].query); // Cast away const
             manager->cached_queries[i][j].query = NULL;
           }
         }
-        
+
         // Free the array of QueryCacheEntry
-        printf("[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at %p\n", 
+        printf("[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at %p\n",
                (void *)manager->cached_queries[i]);
         fflush(stdout);
         free(manager->cached_queries[i]);
         manager->cached_queries[i] = NULL;
       }
     }
-    
+
     // Free the array of QueryCacheEntry pointers
-    printf("[QUERY_MANAGER_FREE] Freeing cached_queries array at %p\n", 
+    printf("[QUERY_MANAGER_FREE] Freeing cached_queries array at %p\n",
            (void *)manager->cached_queries);
     fflush(stdout);
     free(manager->cached_queries);
@@ -232,7 +233,8 @@ void query_manager_free(QueryManager *manager) {
 
   // Free the language types array
   if (manager->language_types) {
-    printf("[QUERY_MANAGER_FREE] Freeing language_types array at %p\n", (void *)manager->language_types);
+    printf("[QUERY_MANAGER_FREE] Freeing language_types array at %p\n",
+           (void *)manager->language_types);
     fflush(stdout);
     free(manager->language_types);
     manager->language_types = NULL;
@@ -240,7 +242,8 @@ void query_manager_free(QueryManager *manager) {
 
   // Free the query counts array
   if (manager->query_counts) {
-    printf("[QUERY_MANAGER_FREE] Freeing query_counts array at %p\n", (void *)manager->query_counts);
+    printf("[QUERY_MANAGER_FREE] Freeing query_counts array at %p\n",
+           (void *)manager->query_counts);
     fflush(stdout);
     free(manager->query_counts);
     manager->query_counts = NULL;
@@ -250,7 +253,7 @@ void query_manager_free(QueryManager *manager) {
   printf("[QUERY_MANAGER_FREE] Freeing manager struct at %p\n", (void *)manager);
   fflush(stdout);
   free(manager);
-  
+
   printf("[QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete\n");
   fflush(stdout);
 }
@@ -270,36 +273,37 @@ static char *construct_query_path(const QueryManager *manager, const char *langu
     return NULL;
   }
 
-  // Calculate the required buffer size for the full path
-  // queries_dir + "/" + language_name + "/" + query_name + ".scm" + "\0"
-  size_t path_len = strlen(manager->queries_dir) + strlen(language_name) + strlen(query_name) +
-                    7; // 7 for "/", "/", ".scm", and null terminator
-
+  size_t path_len = strlen(manager->queries_dir) + strlen(language_name) + strlen(query_name) + 7;
   char *full_path = (char *)malloc(path_len);
   if (!full_path) {
     return NULL;
   }
 
-  // Format the path string
-  // First try project root relative path
+  // Primary path
   snprintf(full_path, path_len, "%s/%s/%s.scm", manager->queries_dir, language_name, query_name);
-
-  // Debug path construction - only shown when query path debugging is enabled
-  if (QUERY_PATH_DEBUG_MODE) {
-    fprintf(stderr, "Trying query path: %s\n", full_path);
-  }
-
-  // Check if file exists
-  if (access(full_path, F_OK) == -1) {
-    // Try with /home/matrillo/apps/scopemux/queries/
-    snprintf(full_path, path_len, "/home/matrillo/apps/scopemux/queries/%s/%s.scm", language_name,
-             query_name);
+  if (access(full_path, F_OK) == 0) {
     if (QUERY_PATH_DEBUG_MODE) {
-      fprintf(stderr, "Trying alternative query path: %s\n", full_path);
+      fprintf(stderr, "Validated query path: %s\n", full_path);
     }
+    return full_path;
   }
 
-  return full_path;
+  // Fallback path
+  snprintf(full_path, path_len, "/home/matrillo/apps/scopemux/queries/%s/%s.scm", language_name,
+           query_name);
+  if (access(full_path, F_OK) == 0) {
+    if (QUERY_PATH_DEBUG_MODE) {
+      fprintf(stderr, "Validated fallback query path: %s\n", full_path);
+    }
+    return full_path;
+  }
+
+  if (QUERY_PATH_DEBUG_MODE) {
+    fprintf(stderr, "Query file not found at expected paths\n");
+  }
+
+  free(full_path);
+  return NULL;
 }
 
 /**

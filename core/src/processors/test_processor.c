@@ -9,11 +9,11 @@
 
 #define _GNU_SOURCE /* Required for strdup() function */
 
-#include "../../include/scopemux/processors/test_processor.h"
+#include "../../core/include/scopemux/processors/test_processor.h"
 
 // File-level logging toggle. Set to true to enable logs for this file.
 static bool enable_logging = true;
-#include "../../include/scopemux/logging.h"
+#include "../../core/include/scopemux/logging.h"
 
 #include <setjmp.h> /* Used for error handling to prevent segfaults */
 #include <stdlib.h>

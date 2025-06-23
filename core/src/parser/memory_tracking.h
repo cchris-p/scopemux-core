@@ -9,7 +9,7 @@
 #ifndef SCOPEMUX_MEMORY_TRACKING_H
 #define SCOPEMUX_MEMORY_TRACKING_H
 
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/parser.h"
 #include <setjmp.h>
 #include <stdbool.h>
 

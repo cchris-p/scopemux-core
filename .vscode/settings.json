@@ -27,5 +27,21 @@
     "vendor": true,
     "core/build": true,
     "core/scopemux_core.egg-info": true
+  },
+  "search.exclude": {
+    "**/main.c": true,
+    "**/*.h": true,
+    "**/.windsurfrules": true,
+    "**/*.txt": true,
+    "**/*.md": true,
+    "**/Makefile": true,
+    "**/*.sh": true,
+    "**/.git": true,
+    "**/build": true,
+    "*.dir": true,
+    "*.rs": true,
+    "*.d.ts": true,
+    "**/vendor": true,
+    "**/*.c.o.d,": true
   }
 }

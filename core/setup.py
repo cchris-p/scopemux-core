@@ -6,8 +6,10 @@ import os
 __version__ = "0.1.0"
 
 # Base project directory and build directory
-project_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-ts_lib_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build', 'tree-sitter-libs')
+project_base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ts_lib_dir = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "build", "tree-sitter-libs"
+)
 
 # Determine Python include directory
 # This is a more robust way than relying on distutils.sysconfig for some setups
@@ -29,13 +31,19 @@ ext_modules = [
         sources=[  # All source files needed for the extension
             # Binding files
             "src/bindings/module.c",
-            "src/bindings/parser_bindings.c", 
+            "src/bindings/parser_bindings.c",
             "src/bindings/context_engine_bindings.c",
             "src/bindings/test_processor_bindings.c",
             # Parser files
             "src/parser/parser.c",
+            "src/parser/parser_context.c",
             "src/parser/tree_sitter_integration.c",
             "src/parser/query_manager.c",
+            "src/parser/query_processing.c",
+            "src/parser/memory_tracking.c",
+            "src/parser/ast_node.c",
+            "src/parser/cst_node.c",
+            "src/bindings/signal_handler.c",
             # Context engine files
             "src/context_engine/context_engine.c",
             "src/context_engine/compressor.c",
@@ -58,14 +66,15 @@ ext_modules = [
         ],
         include_dirs=[
             "include",  # Relative to this setup.py file
-            "include/scopemux",
             # Tree-sitter include directories
             os.path.join(project_base, "vendor", "tree-sitter", "lib", "include"),
             os.path.join(project_base, "vendor", "tree-sitter-c", "src"),
             os.path.join(project_base, "vendor", "tree-sitter-cpp", "src"),
             os.path.join(project_base, "vendor", "tree-sitter-python", "src"),
             os.path.join(project_base, "vendor", "tree-sitter-javascript", "src"),
-            os.path.join(project_base, "vendor", "tree-sitter-typescript", "typescript", "src"),
+            os.path.join(
+                project_base, "vendor", "tree-sitter-typescript", "typescript", "src"
+            ),
         ]
         + python_include_dirs,
         define_macros=[
@@ -84,20 +93,18 @@ ext_modules = [
         ],
         # For pure C extensions, 'language' is not typically needed or is 'c'
         # language="c" # Redundant for standard C extensions
-        
         # Library directories where the static libraries are located
         library_dirs=[
             ts_lib_dir,
         ],
-        
         # Libraries to link against
         libraries=[
-            'tree-sitter',
-            'tree-sitter-c',
-            'tree-sitter-cpp',
-            'tree-sitter-python',
-            'tree-sitter-javascript',
-            'tree-sitter-typescript',
+            "tree-sitter",
+            "tree-sitter-c",
+            "tree-sitter-cpp",
+            "tree-sitter-python",
+            "tree-sitter-javascript",
+            "tree-sitter-typescript",
         ],
     ),
 ]

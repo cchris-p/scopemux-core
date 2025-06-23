@@ -1,5 +1,5 @@
-#include "../../include/scopemux/adapters/adapter_registry.h"
-#include "../../include/scopemux/adapters/language_adapter.h"
+#include "../../core/include/scopemux/adapters/adapter_registry.h"
+#include "../../core/include/scopemux/adapters/language_adapter.h"
 #include <stdlib.h> // For NULL
 
 #define MAX_ADAPTERS 10

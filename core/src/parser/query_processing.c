@@ -11,7 +11,7 @@
 #include "parser_internal.h"
 
 // Include tree-sitter API for query functions
-#include "tree_sitter/api.h"
+#include "../../core/include/tree_sitter/api.h"
 
 // Define function signatures for Tree-sitter query API to avoid compilation warnings
 // These should match the actual Tree-sitter API signatures
@@ -23,6 +23,8 @@ extern bool ts_query_cursor_next_match(TSQueryCursor *, TSQueryMatch *);
 static bool process_function_match(ParserContext *ctx, TSQueryMatch *match);
 static bool process_class_match(ParserContext *ctx, TSQueryMatch *match);
 static bool process_variable_match(ParserContext *ctx, TSQueryMatch *match);
+static size_t ts_query_results_match_count(TSQueryCursor *cursor);
+static bool ts_query_results_get_match(void *results, size_t index, TSQueryMatch *match);
 
 /**
  * Detect programming language from file extension and content.
@@ -120,7 +122,7 @@ bool parser_execute_query(ParserContext *ctx, const char *query_name) {
   }
 
   // Get the query from the query manager
-  void *query = query_manager_get_query(ctx->q_manager, ctx->language, query_name);
+  const struct TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_name);
   if (!query) {
     log_error("Failed to get query '%s' for language %d", query_name, ctx->language);
     return false;
@@ -132,22 +134,22 @@ bool parser_execute_query(ParserContext *ctx, const char *query_name) {
   // For now, we'll just use a placeholder and return an error
   log_error("Tree-sitter integration not fully implemented yet");
   return false;
-  
+
   /* The following is a template for the actual implementation
-  
+
   // Create a query cursor
   TSQueryCursor *cursor = ts_query_cursor_new();
   if (!cursor) {
     log_error("Failed to create query cursor for query '%s'", query_name);
     return false;
   }
-  
+
   // Execute the query using the cursor
   ts_query_cursor_exec(cursor, query, root_node);
-  
+
   // Process the query results to build AST nodes
   bool success = process_query_results(ctx, cursor, query_name);
-  
+
   // Free the query cursor
   ts_query_cursor_delete(cursor);
   */
@@ -166,11 +168,11 @@ bool process_query_results(ParserContext *ctx, void *results, const char *query_
     log_error("Cannot process query results: invalid parameters");
     return false;
   }
-  
+
   // Get the number of matches
   size_t match_count = ts_query_results_match_count(results);
   log_debug("Query '%s' returned %zu matches", query_name, match_count);
-  
+
   // Process each match
   for (size_t i = 0; i < match_count; i++) {
     // Get the current match
@@ -193,35 +195,125 @@ bool process_query_results(ParserContext *ctx, void *results, const char *query_
     }
     // Add more query types as needed
   }
-  
+
   log_debug("Processed %zu matches for query '%s'", match_count, query_name);
   return true;
 }
 
-// Internal helper functions for processing different types of matches
-// These would be implemented based on the specific Tree-sitter query structure
-// and the requirements for AST node creation
+/**
+ * Retrieve the number of matched query results
+ * Iterate through all matches and count them.
+ * WARNING: This will consume the cursor, so you cannot reuse it for further iteration.
+ * Use this only if you do not need to access matches after counting, or if you can re-execute the
+ * query.
+ */
+
+size_t ts_query_results_match_count(TSQueryCursor *cursor) {
+  if (!cursor)
+    return 0;
+  size_t count = 0;
+  TSQueryMatch match;
+  while (ts_query_cursor_next_match(cursor, &match)) {
+    count++;
+  }
+  return count;
+}
+
+/**
+ * Retrieve a match from query results by index.
+ * WARNING: This will consume the cursor up to the requested index.
+ * Use only if you do not need to access earlier matches after this call,
+ * or if you can re-execute the query.
+ *
+ * @param results Pointer to TSQueryCursor.
+ * @param index   Zero-based index of the match to retrieve.
+ * @param match   Output pointer for the match.
+ * @return true if match was found, false otherwise.
+ */
+static bool ts_query_results_get_match(void *results, size_t index, TSQueryMatch *match) {
+  if (!results || !match)
+    return false;
+  TSQueryCursor *cursor = (TSQueryCursor *)results;
+  size_t current = 0;
+  TSQueryMatch temp;
+  while (ts_query_cursor_next_match(cursor, &temp)) {
+    if (current == index) {
+      *match = temp; // Copy the match
+      return true;
+    }
+    current++;
+  }
+  // Index out of range
+  return false;
+}
+
+// Internal helper functions for processing different types of matches.
+// These functions are responsible for extracting relevant information from Tree-sitter query
+// matches and constructing the corresponding AST nodes in the ScopeMux IR.
+//
+// The implementation of each function depends on:
+//   - The structure of the Tree-sitter queries (capture names, patterns, etc.)
+//   - The language being parsed (Python, C, etc.)
+//   - The expected AST node types and their fields
+//
+// Typical processing steps:
+//   1. Iterate over match->captures and identify relevant captures by their names or indices.
+//   2. Extract text spans from the source using the capture's node information.
+//   3. Allocate and initialize the appropriate AST node type (e.g., AST_NODE_FUNCTION).
+//   4. Attach extracted information (name, signature, body, etc.) to the AST node.
+//   5. Insert the new AST node into the AST tree or context as appropriate.
+//
+// Caveats and TODOs:
+//   - Ensure all capture indices and names are validated against the query definition.
+//   - Handle language-specific constructs and differences in query structure.
+//   - Add error handling for missing or malformed captures.
+//   - Consider memory management for created AST nodes and extracted strings.
+//   - Extend or refactor as new query patterns or AST node types are added.
 
 static bool process_function_match(ParserContext *ctx, TSQueryMatch *match) {
-  // Implementation would extract function name, signature, etc.
-  // from the match and create an AST_NODE_FUNCTION node
-
-  // This is a placeholder - actual implementation depends on Tree-sitter specifics
+  // TODO: Extract function name, parameters, and body from match->captures.
+  // Example (pseudo-code):
+  //   for (uint32_t i = 0; i < match->capture_count; i++) {
+  //     const char *capture_name = ...; // Get capture name from query
+  //     if (strcmp(capture_name, "name") == 0) { ... }
+  //     else if (strcmp(capture_name, "parameters") == 0) { ... }
+  //     else if (strcmp(capture_name, "body") == 0) { ... }
+  //   }
+  //   Create AST_NODE_FUNCTION and populate fields.
+  //   Insert node into AST.
+  //
+  // NOTE: Actual implementation depends on Tree-sitter query definitions.
   return true;
 }
 
 static bool process_class_match(ParserContext *ctx, TSQueryMatch *match) {
-  // Implementation would extract class name, methods, etc.
-  // from the match and create an AST_NODE_CLASS node
-
-  // This is a placeholder - actual implementation depends on Tree-sitter specifics
+  // TODO: Extract class name, base classes, and methods from match->captures.
+  // Example (pseudo-code):
+  //   for (uint32_t i = 0; i < match->capture_count; i++) {
+  //     const char *capture_name = ...;
+  //     if (strcmp(capture_name, "name") == 0) { ... }
+  //     else if (strcmp(capture_name, "base") == 0) { ... }
+  //     else if (strcmp(capture_name, "method") == 0) { ... }
+  //   }
+  //   Create AST_NODE_CLASS and populate fields.
+  //   Insert node into AST.
+  //
+  // NOTE: Actual implementation depends on Tree-sitter query definitions.
   return true;
 }
 
 static bool process_variable_match(ParserContext *ctx, TSQueryMatch *match) {
-  // Implementation would extract variable name, type, etc.
-  // from the match and create an AST_NODE_VARIABLE node
-
-  // This is a placeholder - actual implementation depends on Tree-sitter specifics
+  // TODO: Extract variable name, type, and initializer from match->captures.
+  // Example (pseudo-code):
+  //   for (uint32_t i = 0; i < match->capture_count; i++) {
+  //     const char *capture_name = ...;
+  //     if (strcmp(capture_name, "name") == 0) { ... }
+  //     else if (strcmp(capture_name, "type") == 0) { ... }
+  //     else if (strcmp(capture_name, "value") == 0) { ... }
+  //   }
+  //   Create AST_NODE_VARIABLE and populate fields.
+  //   Insert node into AST.
+  //
+  // NOTE: Actual implementation depends on Tree-sitter query definitions.
   return true;
 }

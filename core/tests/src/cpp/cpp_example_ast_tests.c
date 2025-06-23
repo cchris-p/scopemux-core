@@ -26,9 +26,9 @@
  * the expected parser output for different C++ language constructs.
  */
 
+#include "../../../core/include/scopemux/parser.h"
 #include "../../include/json_validation.h"
 #include "../../include/test_helpers.h"
-#include "../../../include/scopemux/parser.h"
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
 #include <dirent.h>
@@ -39,7 +39,7 @@
 
 /**
  * Check if a file has a specific extension
- * 
+ *
  * @param filename The filename to check
  * @param ext The extension to look for (with the dot, e.g. ".cpp")
  * @return true if the file has the specified extension
@@ -47,25 +47,23 @@
 static bool has_extension(const char *filename, const char *ext) {
   size_t filename_len = strlen(filename);
   size_t ext_len = strlen(ext);
-  
+
   if (filename_len <= ext_len) {
     return false;
   }
-  
+
   return strcmp(filename + filename_len - ext_len, ext) == 0;
 }
 
 /**
  * Check if a file is a C++ source file
- * 
+ *
  * @param filename The filename to check
  * @return true if the file has a C++ extension (.cpp, .cc, .cxx, etc.)
  */
 static bool is_cpp_source_file(const char *filename) {
-  return has_extension(filename, ".cpp") ||
-         has_extension(filename, ".cc") ||
-         has_extension(filename, ".cxx") ||
-         has_extension(filename, ".hpp") ||
+  return has_extension(filename, ".cpp") || has_extension(filename, ".cc") ||
+         has_extension(filename, ".cxx") || has_extension(filename, ".hpp") ||
          has_extension(filename, ".h");
 }
 
@@ -81,49 +79,48 @@ static void test_cpp_example(const char *category, const char *filename) {
     cr_log_error("Failed to duplicate filename");
     cr_assert_fail("Memory allocation failed");
   }
-  
+
   // Remove extension to get base name
   char *dot = strrchr(base_filename, '.');
   if (dot) {
     *dot = '\0';
   }
-  
+
   cr_log_info("Testing C++ example: %s/%s", category, base_filename);
-  
+
   // 1. Read example C++ file
   char *source = read_test_file("cpp", category, filename);
   cr_assert(source != NULL, "Failed to read source file: %s/%s", category, filename);
-  
+
   // 2. Parse the C++ code into an AST
   ParserContext *ctx = parser_context_new();
   cr_assert(ctx != NULL, "Failed to create parser context");
-  
+
   ASTNode *ast = parse_cpp_ast(ctx, source);
   cr_assert(ast != NULL, "Failed to parse C++ code into AST");
-  
+
   // 3. Load the expected JSON file
   JsonValue *expected_json = load_expected_json("cpp", category, base_filename);
   if (!expected_json) {
-    cr_log_warn("No .expected.json file found for %s/%s, skipping validation",
-               category, base_filename);
+    cr_log_warn("No .expected.json file found for %s/%s, skipping validation", category,
+                base_filename);
     free(base_filename);
     free(source);
     parser_context_free(ctx);
     return;
   }
-  
+
   // 4. Validate AST against expected JSON
   bool valid = validate_ast_against_json(ast, expected_json, base_filename);
-  
+
   // Free resources
   free_json_value(expected_json);
   free(base_filename);
   free(source);
   parser_context_free(ctx);
-  
+
   // 5. Report results
-  cr_assert(valid, "AST validation failed against expected JSON for %s/%s",
-            category, filename);
+  cr_assert(valid, "AST validation failed against expected JSON for %s/%s", category, filename);
 }
 
 /**
@@ -134,65 +131,53 @@ static void test_cpp_example(const char *category, const char *filename) {
 static void process_cpp_category(const char *category) {
   char path[512];
   snprintf(path, sizeof(path), "../examples/cpp/%s", category);
-  
+
   DIR *dir = opendir(path);
   if (!dir) {
     cr_log_warn("Could not open category directory: %s", path);
     return;
   }
-  
+
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
     // Skip directories and non-C++ files
     if (entry->d_type != DT_REG || !is_cpp_source_file(entry->d_name)) {
       continue;
     }
-    
+
     // Run test for this example file
     test_cpp_example(category, entry->d_name);
   }
-  
+
   closedir(dir);
 }
 
 /**
  * Test basic C++ syntax examples
  */
-Test(cpp_examples, basic_syntax) {
-  process_cpp_category("basic_syntax");
-}
+Test(cpp_examples, basic_syntax) { process_cpp_category("basic_syntax"); }
 
 /**
  * Test C++ template examples
  */
-Test(cpp_examples, templates) {
-  process_cpp_category("templates");
-}
+Test(cpp_examples, templates) { process_cpp_category("templates"); }
 
 /**
  * Test C++ class examples
  */
-Test(cpp_examples, classes) {
-  process_cpp_category("classes");
-}
+Test(cpp_examples, classes) { process_cpp_category("classes"); }
 
 /**
  * Test C++ namespace examples
  */
-Test(cpp_examples, namespaces) {
-  process_cpp_category("namespaces");
-}
+Test(cpp_examples, namespaces) { process_cpp_category("namespaces"); }
 
 /**
  * Test C++ STL examples
  */
-Test(cpp_examples, stl) {
-  process_cpp_category("stl");
-}
+Test(cpp_examples, stl) { process_cpp_category("stl"); }
 
 /**
  * Test modern C++ examples
  */
-Test(cpp_examples, modern_cpp) {
-  process_cpp_category("modern_cpp");
-}
+Test(cpp_examples, modern_cpp) { process_cpp_category("modern_cpp"); }

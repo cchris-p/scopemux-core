@@ -7,8 +7,8 @@
  * It can be used alongside Valgrind for comprehensive memory safety analysis.
  */
 
-#include "../../include/scopemux/memory_debug.h"
-#include "../../include/scopemux/logging.h"
+#include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/scopemux/logging.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

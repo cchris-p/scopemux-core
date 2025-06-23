@@ -36,18 +36,41 @@
 // Define _POSIX_C_SOURCE to make strdup available
 #define _POSIX_C_SOURCE 200809L
 
-#include "../../include/scopemux/tree_sitter_integration.h"
-#include "../../include/scopemux/adapters/adapter_registry.h"
-#include "../../include/scopemux/adapters/language_adapter.h"
-#include "../../include/scopemux/logging.h"
-#include "../../include/scopemux/parser.h"
-#include "../../include/scopemux/processors/ast_post_processor.h"
-#include "../../include/scopemux/processors/docstring_processor.h"
-#include "../../include/scopemux/processors/test_processor.h"
-#include "../../include/scopemux/query_manager.h"
+#include "../../core/include/scopemux/tree_sitter_integration.h"
+#include "../../core/include/scopemux/adapters/adapter_registry.h"
+#include "../../core/include/scopemux/adapters/language_adapter.h"
+#include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/parser.h"
+#include "../../core/include/scopemux/processors/ast_post_processor.h"
+#include "../../core/include/scopemux/processors/docstring_processor.h"
+#include "../../core/include/scopemux/processors/test_processor.h"
+#include "../../core/include/scopemux/query_manager.h"
 #include <limits.h>
 #include <stddef.h> /* For offsetof() */
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+// Returns a heap-allocated string for the queries directory for the given language.
+// The caller is responsible for freeing the returned string.
+char *build_queries_dir(LanguageType language) {
+    const char *base = "/home/matrillo/apps/scopemux/queries";
+    const char *subdir = "unknown";
+    switch (language) {
+        case LANG_C: subdir = "c"; break;
+        case LANG_CPP: subdir = "cpp"; break;
+        case LANG_PYTHON: subdir = "python"; break;
+        case LANG_JAVASCRIPT: subdir = "javascript"; break;
+        case LANG_TYPESCRIPT: subdir = "typescript"; break;
+        default: break;
+    }
+    size_t len = strlen(base) + 1 + strlen(subdir) + 1;
+    char *result = (char *)malloc(len);
+    if (!result) return NULL;
+    snprintf(result, len, "%s/%s", base, subdir);
+    return result;
+}
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -137,6 +160,13 @@ bool ts_init_parser(ParserContext *ctx, LanguageType language) {
     return false;
   }
 
+  if (!ctx->q_manager) {
+    char *queries_dir = build_queries_dir(language); // Helper to construct path
+    ctx->q_manager = query_manager_init(queries_dir);
+    if (!ctx->q_manager) {
+      log_error("Failed to initialize query manager for queries_dir %d", queries_dir);
+    }
+  }
   log_debug("Successfully initialized Tree-sitter parser for language %d", language);
   return true;
 }
@@ -314,7 +344,7 @@ static char *extract_full_signature(TSNode func_node, const char *source_code) {
 #define MATCH_SKIP 1
 #define MATCH_ERROR 2
 
-#include "../../include/config/node_type_mapping_loader.h"
+#include "../../core/include/config/node_type_mapping_loader.h"
 
 /**
  * @brief Maps a query type string to the corresponding ASTNodeType enum using config-driven

@@ -1,5 +1,5 @@
 #include "../../include/test_helpers.h"
-#include "../../../include/scopemux/logging.h"
+#include "../../../core/include/scopemux/logging.h"
 
 // Centralized logging toggle for all test executables
 int logging_enabled = 0;
@@ -13,24 +13,24 @@ char *read_test_file(const char *language, const char *category, const char *fil
     cr_log_error("read_test_file called with NULL parameter(s)");
     return NULL;
   }
-  
+
   fprintf(stderr, "DEBUG: read_test_file called for %s/%s/%s\n", language, category, file_name);
-  
+
   char filepath[1024];
   char project_root_path[1024] = "";
   char cwd_safe[1024] = "";
   FILE *f = NULL;
-  
+
   // First try using PROJECT_ROOT_DIR environment variable
   const char *project_root = getenv("PROJECT_ROOT_DIR");
   if (project_root && strlen(project_root) > 0) {
     // Check for potential buffer overflow
-    size_t path_len = snprintf(NULL, 0, "%s/core/tests/examples/%s/%s/%s", 
-             project_root, language, category, file_name);
+    size_t path_len = snprintf(NULL, 0, "%s/core/tests/examples/%s/%s/%s", project_root, language,
+                               category, file_name);
     if (path_len < sizeof(project_root_path)) {
-      snprintf(project_root_path, sizeof(project_root_path), "%s/core/tests/examples/%s/%s/%s", 
+      snprintf(project_root_path, sizeof(project_root_path), "%s/core/tests/examples/%s/%s/%s",
                project_root, language, category, file_name);
-      
+
       fprintf(stderr, "DEBUG: Trying path using PROJECT_ROOT_DIR: %s\n", project_root_path);
       f = fopen(project_root_path, "rb");
       if (f) {
@@ -39,13 +39,14 @@ char *read_test_file(const char *language, const char *category, const char *fil
         goto file_found;
       }
     } else {
-      fprintf(stderr, "WARNING: Path using PROJECT_ROOT_DIR would overflow buffer (length: %zu)\n", path_len);
+      fprintf(stderr, "WARNING: Path using PROJECT_ROOT_DIR would overflow buffer (length: %zu)\n",
+              path_len);
       cr_log_warn("Path using PROJECT_ROOT_DIR would overflow buffer");
     }
   } else {
     fprintf(stderr, "DEBUG: PROJECT_ROOT_DIR environment variable not set or empty\n");
   }
-  
+
   // Get current working directory for logging and path calculation
   if (getcwd(cwd_safe, sizeof(cwd_safe)) == NULL) {
     fprintf(stderr, "ERROR: Failed to get current working directory: %s\n", strerror(errno));
@@ -54,16 +55,16 @@ char *read_test_file(const char *language, const char *category, const char *fil
   }
   fprintf(stderr, "DEBUG: Current working directory: %s\n", cwd_safe);
   cr_log_info("Current working directory: %s", cwd_safe);
-  
+
   // Try multiple possible paths based on where the test might be running from
   const char *possible_paths[] = {
-    "../../../core/tests/examples/%s/%s/%s",           // Original path
-    "../../core/tests/examples/%s/%s/%s",            // One level up
-    "../core/tests/examples/%s/%s/%s",               // Two levels up
-    "./core/tests/examples/%s/%s/%s",                // From project root
-    "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s"  // Absolute path
+      "../../../core/tests/examples/%s/%s/%s",                    // Original path
+      "../../core/tests/examples/%s/%s/%s",                       // One level up
+      "../core/tests/examples/%s/%s/%s",                          // Two levels up
+      "./core/tests/examples/%s/%s/%s",                           // From project root
+      "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s" // Absolute path
   };
-  
+
   for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
     // Check for potential buffer overflow
     size_t path_len = snprintf(NULL, 0, possible_paths[i], language, category, file_name);
@@ -72,10 +73,10 @@ char *read_test_file(const char *language, const char *category, const char *fil
       cr_log_warn("Path %zu would overflow buffer", i);
       continue;
     }
-    
+
     snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
     fprintf(stderr, "DEBUG: Trying path: %s\n", filepath);
-    
+
     f = fopen(filepath, "rb");
     if (f) {
       fprintf(stderr, "DEBUG: Successfully opened file: %s\n", filepath);
@@ -83,7 +84,7 @@ char *read_test_file(const char *language, const char *category, const char *fil
       goto file_found;
     }
   }
-  
+
   // Make a copy of cwd before modifying it
   char cwd_copy[512];
   if (strlen(cwd_safe) >= sizeof(cwd_copy)) {
@@ -91,29 +92,29 @@ char *read_test_file(const char *language, const char *category, const char *fil
     cr_log_error("CWD path too long to copy");
     return NULL;
   }
-  
+
   strcpy(cwd_copy, cwd_safe); // Safe copy of CWD
-  
+
   // Try to construct paths by navigating from the build directory to the source directory
   if (strstr(cwd_copy, "/build/")) {
     fprintf(stderr, "DEBUG: CWD contains '/build/', trying to construct relative path\n");
-    
+
     // If we're in a build subdirectory, try to navigate to source
     char *build_pos = strstr(cwd_copy, "/build/");
     if (build_pos) {
       *build_pos = '\0'; // Terminate string at /build to get project root
-      
+
       // Check for potential buffer overflow
-      size_t path_len = snprintf(NULL, 0, "%s/core/tests/examples/%s/%s/%s", 
-               cwd_copy, language, category, file_name);
+      size_t path_len = snprintf(NULL, 0, "%s/core/tests/examples/%s/%s/%s", cwd_copy, language,
+                                 category, file_name);
       if (path_len >= sizeof(filepath)) {
         fprintf(stderr, "WARNING: Build-relative path would overflow buffer\n");
         cr_log_warn("Build-relative path would overflow buffer");
       } else {
         // Construct path from project root to examples
-        snprintf(filepath, sizeof(filepath), "%s/core/tests/examples/%s/%s/%s", 
-                 cwd_copy, language, category, file_name);
-        
+        snprintf(filepath, sizeof(filepath), "%s/core/tests/examples/%s/%s/%s", cwd_copy, language,
+                 category, file_name);
+
         fprintf(stderr, "DEBUG: Trying build-relative path: %s\n", filepath);
         f = fopen(filepath, "rb");
         if (f) {
@@ -124,14 +125,14 @@ char *read_test_file(const char *language, const char *category, const char *fil
       }
     }
   }
-  
+
   // If all paths failed
-  fprintf(stderr, "ERROR: Failed to open test file: %s/%s/%s (from working dir: %s)\n", 
-          language, category, file_name, cwd_safe);
-  cr_log_error("Failed to open test file: %s/%s/%s (from working dir: %s)", 
-               language, category, file_name, cwd_safe);
+  fprintf(stderr, "ERROR: Failed to open test file: %s/%s/%s (from working dir: %s)\n", language,
+          category, file_name, cwd_safe);
+  cr_log_error("Failed to open test file: %s/%s/%s (from working dir: %s)", language, category,
+               file_name, cwd_safe);
   return NULL;
-  
+
 file_found:
   if (!f) {
     fprintf(stderr, "ERROR: File handle is NULL despite reaching file_found label\n");
@@ -146,7 +147,7 @@ file_found:
     fclose(f);
     return NULL;
   }
-  
+
   long length = ftell(f);
   if (length < 0) {
     fprintf(stderr, "ERROR: Failed to get file size: %s\n", strerror(errno));
@@ -155,7 +156,7 @@ file_found:
     return NULL;
   }
   fprintf(stderr, "DEBUG: File size is %ld bytes\n", length);
-  
+
   if (fseek(f, 0, SEEK_SET) != 0) {
     fprintf(stderr, "ERROR: Failed to seek back to start of file: %s\n", strerror(errno));
     cr_log_error("Failed to seek back to start of file: %s", strerror(errno));
@@ -171,22 +172,22 @@ file_found:
     fclose(f);
     return NULL;
   }
-  
+
   // Read file contents
   size_t bytes_read = fread(buffer, 1, length, f);
   if (bytes_read != (size_t)length) {
-    fprintf(stderr, "ERROR: Failed to read entire file (read %zu of %ld bytes): %s\n", 
-            bytes_read, length, ferror(f) ? strerror(errno) : "Unknown error");
+    fprintf(stderr, "ERROR: Failed to read entire file (read %zu of %ld bytes): %s\n", bytes_read,
+            length, ferror(f) ? strerror(errno) : "Unknown error");
     cr_log_error("Failed to read entire file (read %zu of %ld bytes)", bytes_read, length);
     free(buffer);
     fclose(f);
     return NULL;
   }
-  
+
   // Null-terminate the buffer
   buffer[length] = '\0';
   fclose(f);
-  
+
   fprintf(stderr, "DEBUG: Successfully read file contents\n");
   return buffer;
 }

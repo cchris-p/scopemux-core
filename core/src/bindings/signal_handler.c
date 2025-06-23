@@ -2,7 +2,7 @@
  * @file signal_handler.c
  * @brief Signal handling implementation for the Python bindings
  *
- * This file provides a wrapper implementation for the segfault_handler function
+ * This file provides a wrapper for the segfault_handler function
  * to ensure proper linking in the Python module.
  */
 
@@ -14,7 +14,7 @@
 #include "../../src/parser/memory_tracking.h"
 
 /**
- * @brief Forward declaration of the real segfault_handler from memory_tracking.c
+ * @brief Forward declaration for the segfault_handler from memory_tracking.c
  */
 extern void segfault_handler(int sig);
 

@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../../../core/include/scopemux/parser.h"
+#include "../../../core/include/scopemux/tree_sitter_integration.h"
 #include "../../include/test_helpers.h"
-#include "../../../include/scopemux/parser.h"
-#include "../../../include/scopemux/tree_sitter_integration.h"
 
 //=================================
 // C++ AST Extraction Tests
@@ -17,29 +17,30 @@
  * Verifies that functions are correctly identified and
  * their properties are extracted properly.
  */
-Test(cpp_ast, functions,
-     .description = "Test AST extraction of C++ functions") {
-     
+Test(cpp_ast, functions, .description = "Test AST extraction of C++ functions") {
+
   cr_log_info("Testing C++ function AST extraction");
-  
+
   // Read test file with C++ functions (to be created)
   char *source_code = read_test_file("cpp", "basic_syntax", "functions.cpp");
   cr_assert_not_null(source_code, "Failed to read test file");
-  
+
   // Initialize parser context
   ParserContext *ctx = parser_context_new();
   cr_assert_not_null(ctx, "Failed to create parser context");
-  
+
   // Parse the source code
-  bool parse_result = parser_parse_string(ctx, source_code, strlen(source_code), "functions.cpp", LANG_CPP);
+  bool parse_result =
+      parser_parse_string(ctx, source_code, strlen(source_code), "functions.cpp", LANG_CPP);
   cr_assert(parse_result, "Parsing should succeed");
-  cr_assert_null(parser_get_last_error(ctx), "Parser error: %s", parser_get_last_error(ctx) ? parser_get_last_error(ctx) : "");
-  
+  cr_assert_null(parser_get_last_error(ctx), "Parser error: %s",
+                 parser_get_last_error(ctx) ? parser_get_last_error(ctx) : "");
+
   // Verify the AST root was created
   cr_assert_not_null(ctx->ast_root, "AST root should not be NULL");
-  
+
   // TODO: Add specific C++ function tests once example files are created
-  
+
   // Clean up
   parser_free(ctx);
   free(source_code);
@@ -50,29 +51,30 @@ Test(cpp_ast, functions,
  * Verifies that class definitions are correctly identified
  * and their properties are extracted properly.
  */
-Test(cpp_ast, classes,
-     .description = "Test AST extraction of C++ classes") {
-     
+Test(cpp_ast, classes, .description = "Test AST extraction of C++ classes") {
+
   cr_log_info("Testing C++ class AST extraction");
-  
+
   // Read test file with C++ classes (to be created)
   char *source_code = read_test_file("cpp", "basic_syntax", "classes.cpp");
   cr_assert_not_null(source_code, "Failed to read test file");
-  
+
   // Initialize parser context
   ParserContext *ctx = parser_context_new();
   cr_assert_not_null(ctx, "Failed to create parser context");
-  
+
   // Parse the source code
-  bool parse_result = parser_parse_string(ctx, source_code, strlen(source_code), "classes.cpp", LANG_CPP);
+  bool parse_result =
+      parser_parse_string(ctx, source_code, strlen(source_code), "classes.cpp", LANG_CPP);
   cr_assert(parse_result, "Parsing should succeed");
-  cr_assert_null(parser_get_last_error(ctx), "Parser error: %s", parser_get_last_error(ctx) ? parser_get_last_error(ctx) : "");
-  
+  cr_assert_null(parser_get_last_error(ctx), "Parser error: %s",
+                 parser_get_last_error(ctx) ? parser_get_last_error(ctx) : "");
+
   // Verify the AST root was created
   cr_assert_not_null(ctx->ast_root, "AST root should not be NULL");
-  
+
   // TODO: Add specific C++ class tests once example files are created
-  
+
   // Clean up
   parser_free(ctx);
   free(source_code);
@@ -83,29 +85,30 @@ Test(cpp_ast, classes,
  * Verifies that template definitions are correctly identified
  * and their properties are extracted properly.
  */
-Test(cpp_ast, templates,
-     .description = "Test AST extraction of C++ templates") {
-     
+Test(cpp_ast, templates, .description = "Test AST extraction of C++ templates") {
+
   cr_log_info("Testing C++ template AST extraction");
-  
+
   // Read test file with C++ templates (to be created)
   char *source_code = read_test_file("cpp", "templates", "basic_templates.cpp");
   cr_assert_not_null(source_code, "Failed to read test file");
-  
+
   // Initialize parser context
   ParserContext *ctx = parser_context_new();
   cr_assert_not_null(ctx, "Failed to create parser context");
-  
+
   // Parse the source code
-  bool parse_result = parser_parse_string(ctx, source_code, strlen(source_code), "basic_templates.cpp", LANG_CPP);
+  bool parse_result =
+      parser_parse_string(ctx, source_code, strlen(source_code), "basic_templates.cpp", LANG_CPP);
   cr_assert(parse_result, "Parsing should succeed");
-  cr_assert_null(parser_get_last_error(ctx), "Parser error: %s", parser_get_last_error(ctx) ? parser_get_last_error(ctx) : "");
-  
+  cr_assert_null(parser_get_last_error(ctx), "Parser error: %s",
+                 parser_get_last_error(ctx) ? parser_get_last_error(ctx) : "");
+
   // Verify the AST root was created
   cr_assert_not_null(ctx->ast_root, "AST root should not be NULL");
-  
+
   // TODO: Add specific C++ template tests once example files are created
-  
+
   // Clean up
   parser_free(ctx);
   free(source_code);

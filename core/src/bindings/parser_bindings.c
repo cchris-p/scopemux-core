@@ -19,10 +19,10 @@
 #include <string.h>
 
 /* ScopeMux header includes */
-#include "../../include/scopemux/parser.h"
-#include "../../include/scopemux/python_bindings.h"
-#include "../../include/scopemux/python_utils.h"
-#include "../../include/tree_sitter/api.h"
+#include "../../core/include/scopemux/parser.h"
+#include "../../core/include/scopemux/python_bindings.h"
+#include "../../core/include/scopemux/python_utils.h"
+#include "../../core/include/tree_sitter/api.h"
 
 /* Tree-sitter function declarations */
 void ts_parser_delete(TSParser *parser);
@@ -1089,11 +1089,4 @@ void init_parser_bindings(void *m) {
   PyModule_AddIntConstant(module, "NODE_DOCSTRING", NODE_DOCSTRING);
 }
 
-// --- Python 3 module initialization function ---
-PyMODINIT_FUNC PyInit_scopemux_core(void) {
-  PyObject *module = PyModule_Create(&scopemux_core_module);
-  if (!module)
-    return NULL;
-  init_parser_bindings(module);
-  return module;
-}
+// Module initialization is now handled in module.c

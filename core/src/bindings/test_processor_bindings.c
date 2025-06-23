@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "../../include/scopemux/processors/test_processor.h"
-#include "../../include/scopemux/parser.h"
-#include "../../include/scopemux/adapters/language_adapter.h"
-#include "../../include/scopemux/adapters/adapter_registry.h"
+#include "../../core/include/scopemux/processors/test_processor.h"
+#include "../../core/include/scopemux/parser.h"
+#include "../../core/include/scopemux/adapters/language_adapter.h"
+#include "../../core/include/scopemux/adapters/adapter_registry.h"
 
 /**
  * Direct implementation of test processor functions needed by the Python module

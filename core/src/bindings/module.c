@@ -11,13 +11,14 @@
 
 /* Include necessary headers for module initialization */
 #include <Python.h>
+#include <dlfcn.h>
 
 /* Include logging header */
-#include "../../include/scopemux/logging.h"
+#include "../../core/include/scopemux/logging.h"
 
 /* Include module bindings */
-#include "parser_bindings.h"
 #include "context_engine_bindings.h"
+#include "parser_bindings.h"
 #include "test_processor_bindings.h"
 
 /* Include signal handling and crash recovery */
@@ -33,8 +34,8 @@ int logging_enabled = 0;
  * Clangd incorrectly flags this as unused, but removing it causes compile errors
  * DO NOT REMOVE even if linter suggests it's unused
  */
-#include "../../include/scopemux/python_bindings.h"
-#include "../../include/scopemux/python_utils.h"
+#include "../../core/include/scopemux/python_bindings.h"
+#include "../../core/include/scopemux/python_utils.h"
 
 // Include forward declarations for binding initialization functions
 extern void init_parser_bindings(void *m);
@@ -83,7 +84,7 @@ void init_scopemux_module(void *m) {
   PyModule_AddIntConstant(m, "DEFAULT_TOKEN_BUDGET", 2048);
 
   // Create a capsule object to expose segfault_handler for linking
-  PyObject* capsule = PyCapsule_New((void*)segfault_handler, "segfault_handler", NULL);
+  PyObject *capsule = PyCapsule_New((void *)segfault_handler, "segfault_handler", NULL);
   PyModule_AddObject(m, "_segfault_handler", capsule);
 }
 
@@ -107,3 +108,31 @@ static PyModuleDef scopemux_module = {
     NULL,             /* m_clear */
     NULL,             /* m_free */
 };
+
+/**
+ * @brief Module initialization function
+ *
+ * This is the entry point for Python when importing the module.
+ * Also loads the tree-sitter shared libraries with RTLD_GLOBAL to make symbols available.
+ */
+PyMODINIT_FUNC PyInit_scopemux_core(void) {
+  // Load tree-sitter libraries with RTLD_GLOBAL flag to make symbols available to dependent
+  // libraries
+  dlopen("libtree-sitter.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-c.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-cpp.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-python.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-javascript.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-typescript.so", RTLD_NOW | RTLD_GLOBAL);
+
+  // Create the module
+  PyObject *m = PyModule_Create(&scopemux_module);
+  if (m == NULL) {
+    return NULL;
+  }
+
+  // Initialize module components
+  init_scopemux_module(m);
+
+  return m;
+}

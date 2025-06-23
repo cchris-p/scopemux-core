@@ -9,7 +9,7 @@
 #ifndef SCOPEMUX_QUERY_PROCESSING_H
 #define SCOPEMUX_QUERY_PROCESSING_H
 
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/parser.h"
 
 /**
  * @brief Execute a Tree-sitter query and process results for AST generation

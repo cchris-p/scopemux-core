@@ -7,11 +7,11 @@
  * section from ts_tree_to_ast() to improve maintainability.
  */
 
-#include "../../include/scopemux/processors/ast_post_processor.h"
+#include "../../core/include/scopemux/processors/ast_post_processor.h"
 
 // File-level logging toggle. Set to true to enable logs for this file.
 static bool enable_logging = false;
-#include "../../include/scopemux/logging.h"
+#include "../../core/include/scopemux/logging.h"
 
 #include <stdlib.h>
 #include <string.h>

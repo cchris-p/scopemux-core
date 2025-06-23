@@ -48,7 +48,6 @@ include_directories(
     ${TS_TS_INCLUDE_DIR}
     # Project headers
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
     # Python headers
     ${Python_INCLUDE_DIRS}
     ${pybind11_INCLUDE_DIRS}
@@ -180,13 +179,18 @@ target_include_directories(scopemux_core PRIVATE
 # Link the module with necessary libraries
 target_link_libraries(scopemux_core PRIVATE
     ${TREE_SITTER_LIBS}
-    -ldl  # Needed for dlopen/dlsym functions
-    parser_core  # Link with the static library directly
+    -ldl # Needed for dlopen/dlsym functions
+    parser_core # Link with the static library directly
 )
 
-# Add explicit linker flags to force export of symbols
+# Add explicit linker flags to force export of symbols and include whole archive for parser_core
+# This ensures all symbols from parser_core (including segfault_handler) are included
+# regardless of whether they're directly referenced
 target_link_options(scopemux_core PRIVATE
     -Wl,--export-dynamic
+    -Wl,--whole-archive
+    -Wl,$<TARGET_FILE:parser_core>
+    -Wl,--no-whole-archive
 )
 
 # Ensure all symbols from our implementation are accessible

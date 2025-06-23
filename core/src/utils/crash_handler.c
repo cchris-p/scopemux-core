@@ -6,8 +6,8 @@
  * like segmentation faults, with optional backtrace and context logging.
  */
 
-#include "../../include/scopemux/crash_handler.h"
-#include "../../include/scopemux/logging.h"
+#include "../../core/include/scopemux/crash_handler.h"
+#include "../../core/include/scopemux/logging.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>

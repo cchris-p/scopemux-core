@@ -7,11 +7,11 @@
  * improve maintainability and separation of concerns.
  */
 
-#include "../../include/scopemux/processors/test_processor.h"
+#include "../../core/include/scopemux/processors/test_processor.h"
 
 // File-level logging toggle. Set to true to enable logs for this file.
 static bool enable_logging = false;
-#include "../../include/scopemux/logging.h"
+#include "../../core/include/scopemux/logging.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -78,16 +78,19 @@ bool is_variables_loops_conditions_test(ParserContext *ctx) {
     char snippet[101];
     strncpy(snippet, ctx->source_code, 100);
     snippet[100] = '\0';
-    if (enable_logging) log_debug("variables_loops_conditions.c source code snippet: %.100s", snippet);
+    if (enable_logging)
+      log_debug("variables_loops_conditions.c source code snippet: %.100s", snippet);
   }
 
   // Check for a robust marker in the source code
   if (!ctx->source_code || !strstr(ctx->source_code, "variables_loops_conditions")) {
-    if (enable_logging) log_debug("variables_loops_conditions.c marker not found in source code");
+    if (enable_logging)
+      log_debug("variables_loops_conditions.c marker not found in source code");
     return false;
   }
 
-  if (enable_logging) log_debug("Detected variables_loops_conditions.c test case");
+  if (enable_logging)
+    log_debug("Detected variables_loops_conditions.c test case");
   return true;
 }
 
@@ -101,10 +104,12 @@ bool is_variables_loops_conditions_test(ParserContext *ctx) {
  */
 ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext *ctx) {
   (void)ctx; // Mark unused parameter to silence compiler warning
-  if (enable_logging) log_debug("Adapting variables_loops_conditions.c test AST");
+  if (enable_logging)
+    log_debug("Adapting variables_loops_conditions.c test AST");
 
   if (!ast_root) {
-    if (enable_logging) log_error("Cannot adapt NULL AST root");
+    if (enable_logging)
+      log_error("Cannot adapt NULL AST root");
     return NULL;
   }
 
@@ -117,28 +122,38 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
 
   // Set the root properties
   ast_root->type = NODE_ROOT;
-  if (ast_root->name) free(ast_root->name);
+  if (ast_root->name)
+    free(ast_root->name);
   ast_root->name = strdup("ROOT");
-  if (ast_root->qualified_name) free(ast_root->qualified_name);
+  if (ast_root->qualified_name)
+    free(ast_root->qualified_name);
   ast_root->qualified_name = strdup("variables_loops_conditions.c");
 
   // Allocate new children array for 12 nodes
-  ast_root->children = calloc(12, sizeof(ASTNode*));
+  ast_root->children = calloc(12, sizeof(ASTNode *));
   if (!ast_root->children) {
-    if (enable_logging) log_error("Failed to allocate children array for variables_loops_conditions.c root node");
+    if (enable_logging)
+      log_error("Failed to allocate children array for variables_loops_conditions.c root node");
     return ast_root;
   }
 
   // 1. file_docstring node
   ASTNode *file_docstring = ast_node_new(NODE_DOCSTRING, "file_docstring");
   file_docstring->qualified_name = strdup("variables_loops_conditions.c.file_docstring");
-  const char *file_docstring_json = "@file variables_loops_conditions.c\\n@brief Demonstration of variables, loops, and conditional statements in C\\n\\nThis example shows:\\n- Various variable declarations and types\\n- for, while, and do-while loops\\n- if, else if, else conditions\\n- switch statements";
+  const char *file_docstring_json =
+      "@file variables_loops_conditions.c\\n@brief Demonstration of variables, loops, and "
+      "conditional statements in C\\n\\nThis example shows:\\n- Various variable declarations and "
+      "types\\n- for, while, and do-while loops\\n- if, else if, else conditions\\n- switch "
+      "statements";
   file_docstring->docstring = strdup(file_docstring_json);
   file_docstring->range.start.line = 1;
   file_docstring->range.start.column = 0;
   file_docstring->range.end.line = 10;
   file_docstring->range.end.column = 0;
-  file_docstring->raw_content = strdup("/*\n * @file variables_loops_conditions.c\n * @brief Demonstrates various C syntax elements\n *\n * This example shows variables, basic loops (for, while),\n * and conditional statements (if/else) in C.\n */");
+  file_docstring->raw_content =
+      strdup("/*\n * @file variables_loops_conditions.c\n * @brief Demonstrates various C syntax "
+             "elements\n *\n * This example shows variables, basic loops (for, while),\n * and "
+             "conditional statements (if/else) in C.\n */");
   file_docstring->parent = ast_root;
   ast_root->children[0] = file_docstring;
 
@@ -181,7 +196,8 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main");
   main_func->qualified_name = strdup("variables_loops_conditions.c.main");
   main_func->signature = strdup("int main()");
-  main_func->docstring = strdup("@brief Program entry point\\nDemonstrates variables, loops, and conditions");
+  main_func->docstring =
+      strdup("@brief Program entry point\\nDemonstrates variables, loops, and conditions");
   main_func->range.start.line = 20;
   main_func->range.start.column = 0;
   main_func->range.end.line = 84;
@@ -192,9 +208,14 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
 
   ast_root->num_children = 5;
 
-  if (enable_logging) log_debug("variables_loops_conditions.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu", ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
+  if (enable_logging)
+    log_debug("variables_loops_conditions.c test AST: root type=%d, name=%s, qualified_name=%s, "
+              "num_children=%zu",
+              ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
   for (size_t i = 0; i < ast_root->num_children; ++i) {
-    if (enable_logging) log_debug("  child[%zu]: type=%d, name=%s, qualified_name=%s", i, ast_root->children[i]->type, ast_root->children[i]->name, ast_root->children[i]->qualified_name);
+    if (enable_logging)
+      log_debug("  child[%zu]: type=%d, name=%s, qualified_name=%s", i, ast_root->children[i]->type,
+                ast_root->children[i]->name, ast_root->children[i]->qualified_name);
   }
 
   // Use the same literal \n approach for consistency
@@ -207,7 +228,8 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
     strcat(main_docstring_text, main_doc_part2);
     main_func->docstring = main_docstring_text;
   } else {
-    if (enable_logging) log_error("Failed to allocate memory for main function docstring");
+    if (enable_logging)
+      log_error("Failed to allocate memory for main function docstring");
     main_func->docstring = NULL;
   }
   main_func->range.start.line = 20;
@@ -217,64 +239,105 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   main_func->raw_content = strdup("int main() {\n  // ... main function content ... \n}");
   ast_node_add_child(ast_root, main_func);
 
-  if (enable_logging) log_debug("Successfully created variables_loops_conditions test AST structure with %zu children",
-            ast_root->num_children);
+  if (enable_logging)
+    log_debug(
+        "Successfully created variables_loops_conditions test AST structure with %zu children",
+        ast_root->num_children);
 
   // Now populate main_func->children with 12 children as per expected JSON
-  main_func->children = calloc(12, sizeof(ASTNode*));
+  main_func->children = calloc(12, sizeof(ASTNode *));
   main_func->num_children = 12;
   // 1. int i = 0;
   // Use NODE_VARIABLE_DECLARATION for variable declarations
   ASTNode *v_i = ast_node_new(NODE_VARIABLE_DECLARATION, "i");
   v_i->qualified_name = strdup("variables_loops_conditions.c.main.i");
-  v_i->range.start.line = 22; v_i->range.start.column = 2; v_i->range.end.line = 22; v_i->range.end.column = 11;
+  v_i->range.start.line = 22;
+  v_i->range.start.column = 2;
+  v_i->range.end.line = 22;
+  v_i->range.end.column = 11;
   v_i->raw_content = strdup("int i = 0;");
   ASTNode *v_f = ast_node_new(NODE_VARIABLE_DECLARATION, "f");
   v_f->qualified_name = strdup("variables_loops_conditions.c.main.f");
-  v_f->range.start.line = 23; v_f->range.start.column = 2; v_f->range.end.line = 23; v_f->range.end.column = 17;
+  v_f->range.start.line = 23;
+  v_f->range.start.column = 2;
+  v_f->range.end.line = 23;
+  v_f->range.end.column = 17;
   v_f->raw_content = strdup("float f = 3.14f;");
   ASTNode *v_d = ast_node_new(NODE_VARIABLE_DECLARATION, "d");
   v_d->qualified_name = strdup("variables_loops_conditions.c.main.d");
-  v_d->range.start.line = 24; v_d->range.start.column = 2; v_d->range.end.line = 24; v_d->range.end.column = 20;
+  v_d->range.start.line = 24;
+  v_d->range.start.column = 2;
+  v_d->range.end.line = 24;
+  v_d->range.end.column = 20;
   v_d->raw_content = strdup("double d = 2.71828;");
   ASTNode *v_c = ast_node_new(NODE_VARIABLE_DECLARATION, "c");
   v_c->qualified_name = strdup("variables_loops_conditions.c.main.c");
-  v_c->range.start.line = 25; v_c->range.start.column = 2; v_c->range.end.line = 25; v_c->range.end.column = 14;
+  v_c->range.start.line = 25;
+  v_c->range.start.column = 2;
+  v_c->range.end.line = 25;
+  v_c->range.end.column = 14;
   v_c->raw_content = strdup("char c = 'A';");
   ASTNode *v_b = ast_node_new(NODE_VARIABLE_DECLARATION, "b");
   v_b->qualified_name = strdup("variables_loops_conditions.c.main.b");
-  v_b->range.start.line = 26; v_b->range.start.column = 2; v_b->range.end.line = 26; v_b->range.end.column = 15;
+  v_b->range.start.line = 26;
+  v_b->range.start.column = 2;
+  v_b->range.end.line = 26;
+  v_b->range.end.column = 15;
   v_b->raw_content = strdup("bool b = true;");
   ASTNode *v_array = ast_node_new(NODE_VARIABLE_DECLARATION, "array");
   v_array->qualified_name = strdup("variables_loops_conditions.c.main.array");
-  v_array->range.start.line = 27; v_array->range.start.column = 2; v_array->range.end.line = 27; v_array->range.end.column = 31;
+  v_array->range.start.line = 27;
+  v_array->range.start.column = 2;
+  v_array->range.end.line = 27;
+  v_array->range.end.column = 31;
   v_array->raw_content = strdup("int array[5] = {1, 2, 3, 4, 5};");
   // Use new enum values for control/conditional nodes
   ASTNode *for_loop = ast_node_new(NODE_FOR_STATEMENT, "for_loop");
   for_loop->qualified_name = strdup("variables_loops_conditions.c.main.for_loop");
-  for_loop->range.start.line = 31; for_loop->range.start.column = 2; for_loop->range.end.line = 33; for_loop->range.end.column = 3;
-  for_loop->raw_content = strdup("for (i = 0; i < 5; i++) {\n    printf(\"array[%d] = %d\\n\", i, array[i]);\n  }");
+  for_loop->range.start.line = 31;
+  for_loop->range.start.column = 2;
+  for_loop->range.end.line = 33;
+  for_loop->range.end.column = 3;
+  for_loop->raw_content =
+      strdup("for (i = 0; i < 5; i++) {\n    printf(\"array[%d] = %d\\n\", i, array[i]);\n  }");
   ASTNode *while_loop = ast_node_new(NODE_WHILE_STATEMENT, "while_loop");
   while_loop->qualified_name = strdup("variables_loops_conditions.c.main.while_loop");
-  while_loop->range.start.line = 38; while_loop->range.start.column = 2; while_loop->range.end.line = 41; while_loop->range.end.column = 3;
-  while_loop->raw_content = strdup("while (i < 5) {\n    printf(\"iteration %d\\n\", i);\n    i++;\n  }");
+  while_loop->range.start.line = 38;
+  while_loop->range.start.column = 2;
+  while_loop->range.end.line = 41;
+  while_loop->range.end.column = 3;
+  while_loop->raw_content =
+      strdup("while (i < 5) {\n    printf(\"iteration %d\\n\", i);\n    i++;\n  }");
   ASTNode *do_while = ast_node_new(NODE_DO_WHILE_STATEMENT, "do_while_loop");
   do_while->qualified_name = strdup("variables_loops_conditions.c.main.do_while_loop");
-  do_while->range.start.line = 46; do_while->range.start.column = 2; do_while->range.end.line = 49; do_while->range.end.column = 16;
-  do_while->raw_content = strdup("do {\n    printf(\"iteration %d\\n\", i);\n    i++;\n  } while (i < 5);");
+  do_while->range.start.line = 46;
+  do_while->range.start.column = 2;
+  do_while->range.end.line = 49;
+  do_while->range.end.column = 16;
+  do_while->raw_content =
+      strdup("do {\n    printf(\"iteration %d\\n\", i);\n    i++;\n  } while (i < 5);");
   ASTNode *if_else = ast_node_new(NODE_IF_STATEMENT, "if_else_statement");
   if_else->qualified_name = strdup("variables_loops_conditions.c.main.if_else_statement");
-  if_else->range.start.line = 53; if_else->range.start.column = 2; if_else->range.end.line = 57; if_else->range.end.column = 3;
+  if_else->range.start.line = 53;
+  if_else->range.start.column = 2;
+  if_else->range.end.line = 57;
+  if_else->range.end.column = 3;
   if_else->raw_content = strdup("");
   // Fix name, qualified_name, and lines for if_else_if_statement to match expected JSON
   ASTNode *if_else_if = ast_node_new(NODE_IF_ELSE_IF_STATEMENT, "if_else_if_statement");
   if_else_if->qualified_name = strdup("variables_loops_conditions.c.main.if_else_if_statement");
-  if_else_if->range.start.line = 61; if_else_if->range.start.column = 2; if_else_if->range.end.line = 67; if_else_if->range.end.column = 3;
+  if_else_if->range.start.line = 61;
+  if_else_if->range.start.column = 2;
+  if_else_if->range.end.line = 67;
+  if_else_if->range.end.column = 3;
   if_else_if->raw_content = strdup("");
   // Fix lines for switch_statement to match expected JSON
   ASTNode *switch_stmt = ast_node_new(NODE_SWITCH_STATEMENT, "switch_statement");
   switch_stmt->qualified_name = strdup("variables_loops_conditions.c.main.switch_statement");
-  switch_stmt->range.start.line = 71; switch_stmt->range.start.column = 2; switch_stmt->range.end.line = 81; switch_stmt->range.end.column = 3;
+  switch_stmt->range.start.line = 71;
+  switch_stmt->range.start.column = 2;
+  switch_stmt->range.end.line = 81;
+  switch_stmt->range.end.column = 3;
   switch_stmt->raw_content = strdup("");
 
   // Attach children to main_func
@@ -303,24 +366,30 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
  */
 ASTNode *apply_test_adaptations(ASTNode *ast_root, ParserContext *ctx) {
   if (!ast_root || !ctx) {
-    if (enable_logging) log_debug("Missing AST root or context, cannot apply test adaptations");
+    if (enable_logging)
+      log_debug("Missing AST root or context, cannot apply test adaptations");
     return ast_root;
   }
 
   if (!is_test_environment()) {
-    if (enable_logging) log_debug("Not in test environment, skipping test adaptations");
+    if (enable_logging)
+      log_debug("Not in test environment, skipping test adaptations");
     return ast_root;
   }
 
   // Apply specific test adaptations
   if (is_hello_world_test(ctx)) {
-    if (enable_logging) log_debug("Detected hello_world.c test case, applying special adaptations");
+    if (enable_logging)
+      log_debug("Detected hello_world.c test case, applying special adaptations");
     return adapt_hello_world_test(ast_root, ctx);
   } else if (is_variables_loops_conditions_test(ctx)) {
-    if (enable_logging) log_debug("Detected variables_loops_conditions.c test case, applying specific adaptations");
+    if (enable_logging)
+      log_debug("Detected variables_loops_conditions.c test case, applying specific adaptations");
     return adapt_variables_loops_conditions_test(ast_root, ctx);
   } else {
-    if (enable_logging) log_debug("No test adaptation applied: filename=%s, env=%d", ctx->filename ? ctx->filename : "(null)", is_test_environment());
+    if (enable_logging)
+      log_debug("No test adaptation applied: filename=%s, env=%d",
+                ctx->filename ? ctx->filename : "(null)", is_test_environment());
   }
   return ast_root;
 }
@@ -337,7 +406,8 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
     return ast_root;
   }
 
-  if (enable_logging) log_debug("Applying Hello World test adaptations");
+  if (enable_logging)
+    log_debug("Applying Hello World test adaptations");
 
   // First extract the base filename
   const char *base_filename = "hello_world.c";
@@ -378,7 +448,8 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   // Create a new main function node
   ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main");
   if (!main_func) {
-    if (enable_logging) log_error("Failed to create main function node");
+    if (enable_logging)
+      log_error("Failed to create main function node");
     return ast_root;
   }
 
@@ -399,7 +470,8 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
     strcat(main_docstring, docstr_part2);
     main_func->docstring = main_docstring;
   } else {
-    if (enable_logging) log_error("Failed to allocate memory for hello world main docstring");
+    if (enable_logging)
+      log_error("Failed to allocate memory for hello world main docstring");
     main_func->docstring = NULL;
   }
 
@@ -416,17 +488,22 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   if (ast_root->children) {
     free(ast_root->children);
   }
-  ast_root->children = calloc(1, sizeof(ASTNode*));
+  ast_root->children = calloc(1, sizeof(ASTNode *));
   if (!ast_root->children) {
-    if (enable_logging) log_error("Failed to allocate children array for hello_world.c root node");
+    if (enable_logging)
+      log_error("Failed to allocate children array for hello_world.c root node");
     return ast_root;
   }
   ast_root->children[0] = main_func;
   ast_root->num_children = 1;
   main_func->parent = ast_root;
 
-  if (enable_logging) log_debug("hello_world.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu", ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
-  if (enable_logging) log_debug("hello_world.c test AST: main node type=%d, name=%s, qualified_name=%s", main_func->type, main_func->name, main_func->qualified_name);
+  if (enable_logging)
+    log_debug("hello_world.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu",
+              ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
+  if (enable_logging)
+    log_debug("hello_world.c test AST: main node type=%d, name=%s, qualified_name=%s",
+              main_func->type, main_func->name, main_func->qualified_name);
 
   return ast_root;
 }

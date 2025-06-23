@@ -9,7 +9,7 @@
 #ifndef SCOPEMUX_PARSER_IMPL_H
 #define SCOPEMUX_PARSER_IMPL_H
 
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/parser.h"
 #include "ast_node.h"
 #include "cst_node.h"
 #include "memory_tracking.h"

@@ -1,5 +1,7 @@
 # Most Important Notes
 
+* ALWAYS use grep when searching for files, not the search tool.
+
 * Do not write "you" or "your" in the code. Write comments with a standard documentation tone. In the comments, note useful information, caveats, and todo/action items. If you see commented code that do not follow this best practice, update them at the spot. Also clarify vague messages whenever possible.
 
 * Build the python bindings with this shell script ran from the project root directory: `build_all_and_pybind.sh `

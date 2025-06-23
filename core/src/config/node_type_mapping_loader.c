@@ -1,8 +1,8 @@
 // Define _POSIX_C_SOURCE to make strdup available
 #define _POSIX_C_SOURCE 200809L
 
-#include "../../include/scopemux/config/node_type_mapping_loader.h"
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/config/node_type_mapping_loader.h"
+#include "../../core/include/scopemux/parser.h"
 #include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
