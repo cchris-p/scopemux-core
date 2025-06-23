@@ -15,7 +15,7 @@ TEST_FAILURES=0
 # TypeScript Language Test Toggles
 RUN_TS_BASIC_AST_TESTS=true
 RUN_TS_EXAMPLE_AST_TESTS=true
-RUN_TS_CST_TESTS=false  # Disabled - source files don't exist yet
+RUN_TS_CST_TESTS=false # Disabled - source files don't exist yet
 
 # TypeScript example test directory toggles
 RUN_TS_BASIC_SYNTAX_TESTS=true
@@ -68,7 +68,7 @@ echo "[run_ts_tests.sh] Running TypeScript language test suite"
 if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
     build_test_target "ts_basic_ast_tests" "TypeScript Basic AST Tests"
     build_result=$?
-    
+
     if [ $build_result -ne 0 ]; then
         echo "[run_ts_tests.sh] ERROR: Failed to build ts_basic_ast_tests"
         ((TEST_FAILURES++))
@@ -76,7 +76,7 @@ if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
         # Change to build directory and get absolute path to executable
         cd "$CMAKE_PROJECT_BUILD_DIR"
         make "ts_basic_ast_tests"
-        
+
         # Verify that the executable was built
         if [ ! -f "core/tests/ts_basic_ast_tests" ]; then
             echo "[run_ts_tests.sh] ERROR: Executable not found at core/tests/ts_basic_ast_tests"
@@ -84,7 +84,7 @@ if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
         else
             # Get the absolute path to the executable
             executable_path="$(pwd)/core/tests/ts_basic_ast_tests"
-            
+
             # Run the test
             run_test_suite "TypeScript Basic AST Tests" "$executable_path"
             if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
@@ -92,46 +92,31 @@ if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
     fi
 fi
 
-# Define the TypeScript test categories array for example tests
+# Gather enabled TypeScript example test categories
 TS_TEST_CATEGORIES=()
-if [ "${RUN_TS_BASIC_SYNTAX_TESTS}" = true ]; then
+if [ "$RUN_TS_BASIC_SYNTAX_TESTS" = true ]; then
     TS_TEST_CATEGORIES+=("basic_syntax")
 fi
-if [ "${RUN_TS_INTERFACES_TESTS}" = true ]; then
+if [ "$RUN_TS_INTERFACES_TESTS" = true ]; then
     TS_TEST_CATEGORIES+=("interfaces")
 fi
-if [ "${RUN_TS_GENERICS_TESTS}" = true ]; then
+if [ "$RUN_TS_GENERICS_TESTS" = true ]; then
     TS_TEST_CATEGORIES+=("generics")
 fi
-if [ "${RUN_TS_CLASSES_TESTS}" = true ]; then
+if [ "$RUN_TS_CLASSES_TESTS" = true ]; then
     TS_TEST_CATEGORIES+=("classes")
 fi
 
-# Process all TypeScript example tests using the shared library
-echo "[run_ts_tests.sh] Processing TypeScript example test directories (with recursive scanning)"
-if [ ${#TS_TEST_CATEGORIES[@]} -gt 0 ]; then
-    # Build the example test executable if we have any categories to run
-    build_test_target "ts_example_ast_tests" "TypeScript Example AST Tests"
-    
-    # Run all the TypeScript example tests from the categories
-    process_language_tests \
-        "ts" \
-        TS_TEST_CATEGORIES \
-        "${CMAKE_PROJECT_BUILD_DIR}/core/tests/ts_example_ast_tests" \
-        "${PARALLEL_JOBS}" \
-        ".ts"
-    
-    # Track failures from the language test processor
-    if [ $? -gt 0 ]; then 
-        TEST_FAILURES=$((TEST_FAILURES + 1))
-    fi
+# Run per-directory TypeScript example tests if any are enabled
+if [ "${#TS_TEST_CATEGORIES[@]}" -gt 0 ]; then
+    process_language_tests ts TS_TEST_CATEGORIES "$CMAKE_PROJECT_BUILD_DIR/core/tests/ts_example_ast_tests" "$PARALLEL_JOBS" ".ts"
 fi
 
 # Run CST tests if enabled
 if [ "${RUN_TS_CST_TESTS}" = true ]; then
     build_test_target "ts_cst_tests" "TypeScript CST Tests"
     build_result=$?
-    
+
     if [ $build_result -ne 0 ]; then
         echo "[run_ts_tests.sh] ERROR: Failed to build ts_cst_tests"
         ((TEST_FAILURES++))
@@ -139,7 +124,7 @@ if [ "${RUN_TS_CST_TESTS}" = true ]; then
         # Change to build directory and get absolute path to executable
         cd "$CMAKE_PROJECT_BUILD_DIR"
         make "ts_cst_tests"
-        
+
         # Verify that the executable was built
         if [ ! -f "core/tests/ts_cst_tests" ]; then
             echo "[run_ts_tests.sh] ERROR: Executable not found at core/tests/ts_cst_tests"
@@ -147,7 +132,7 @@ if [ "${RUN_TS_CST_TESTS}" = true ]; then
         else
             # Get the absolute path to the executable
             executable_path="$(pwd)/core/tests/ts_cst_tests"
-            
+
             # Run the test
             run_test_suite "TypeScript CST Tests" "$executable_path"
             if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi

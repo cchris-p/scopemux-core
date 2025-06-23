@@ -7,6 +7,8 @@ TMP_DIR=$(mktemp -d)
 TEST_FAILURES=0
 TOTAL_MISSING_JSON=0
 START_TIME=$(date +%s)
+# Associative array for per-suite results (Bash 4+)
+declare -A TEST_SUITE_RESULTS
 
 # Standardized error handling
 # Handles errors by printing a message and returning 1 (does not exit the script).
@@ -55,6 +57,7 @@ run_test_suite() {
 
     if [ ! -f "${executable_path}" ]; then
         echo "❌ FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
+        TEST_SUITE_RESULTS["$test_suite_name"]="FAIL"
         return 1
     fi
 
@@ -76,10 +79,13 @@ run_test_suite() {
 
     # Check for the summary line indicating all tests passed
     if grep -q "Failing: 0 | Crashing: 0" "$test_log"; then
-        echo "✅ PASS: ${test_suite_name} (All tests passed)"
+        # All tests passed in suite
+        echo -e "\033[1;32m✅✅ PASS: ${test_suite_name} (All tests passed)\033[0m"
+        TEST_SUITE_RESULTS["$test_suite_name"]="PASS"
         return 0
     else
-        echo "❌ FAIL: ${test_suite_name} (One or more tests failed)"
+        echo -e "\033[1;31m❌ FAIL: ${test_suite_name} (One or more tests failed)\033[0m"
+        TEST_SUITE_RESULTS["$test_suite_name"]="FAIL"
         if [ "$test_exit_code" -eq 0 ]; then
             return 1 # Ensure we return failure even if binary exited with 0
         else
@@ -87,6 +93,7 @@ run_test_suite() {
         fi
     fi
 }
+
 
 # Standardized directory processing (recursive, parallel, sorted)
 # Handles testing source files with expected JSON output
@@ -110,6 +117,12 @@ process_language_tests() {
         # Local counters for this directory
         local failed_tests=0
         local missing_json=0
+        
+        # Create temporary files to track failures across parallel jobs
+        local fail_counter="$TMP_DIR/${lang}_${category}_failures"
+        local missing_counter="$TMP_DIR/${lang}_${category}_missing"
+        echo 0 > "$fail_counter"
+        echo 0 > "$missing_counter"
 
         # Create a semaphore with $PARALLEL_JOBS slots
         local sem="$TMP_DIR/semaphore_$$"
@@ -157,27 +170,42 @@ process_language_tests() {
 
                     local test_log="$TMP_DIR/$(basename "${test_file}").log"
                     pushd "$(dirname "${example_executable_path}")" >/dev/null
+                    local executable="./$(basename "${example_executable_path}")"
+                    local test_result=1
                     local raw_log="${test_log}.raw"
-                    "./$(basename "${example_executable_path}")" >"$raw_log" 2>&1
-                    local test_result=$?
-                    awk -v prefix="[$test_name] " '{print prefix $0}' "$raw_log" >"$test_log"
+                    
+                    if [ -x "$executable" ]; then
+                        "$executable" >"$raw_log" 2>&1
+                        test_result=$?
+                        awk -v prefix="[$test_name] " '{print prefix $0}' "$raw_log" >"$test_log"
+                        grep -v "FAIL: .* (One or more tests failed)" "$test_log" || true
+                    else
+                        echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
+                        echo "[$test_name] This is likely due to a build failure. Check the build logs for errors." >>"$test_log"
+                        cat "$test_log"
+                    fi
+                    
                     rm -f "$raw_log"
                     popd >/dev/null
 
-                    grep -v "FAIL: .* (One or more tests failed)" "$test_log" || true
+                    # Don't need additional filtering as it's already done above
 
                     if [ $test_result -ne 0 ]; then
-                        failed_tests=$((failed_tests + 1))
-                        echo "❌ FAIL: $test_name"
+                        # Update the failure counter in the temp file atomically
+                        local current_fails=$(cat "$fail_counter")
+                        echo $((current_fails + 1)) > "$fail_counter"
+                        echo "❌ FAIL: $test_name ($((i+1))/$total_tests)"
                     else
-                        echo "✅ PASS: $test_name"
+                        echo "✅ PASS: $test_name ($((i+1))/$total_tests)"
                     fi
 
                     unset SCOPEMUX_TEST_FILE
                     unset SCOPEMUX_EXPECTED_JSON
                 else
-                    echo "❌ ERROR: Missing required JSON file for ${test_file}"
-                    missing_json=$((missing_json + 1))
+                    echo "❌ ERROR: Missing expected JSON for test: $test_file"
+                    # Update the missing counter in the temp file atomically
+                    local current_missing=$(cat "$missing_counter")
+                    echo $((current_missing + 1)) > "$missing_counter"
                 fi
 
                 # Return the token
@@ -185,8 +213,17 @@ process_language_tests() {
             } &
         done
 
-        # Wait for all background jobs to complete
-        wait
+        # Wait for all background jobs to finish
+        for job in $(jobs -p); do
+            wait $job
+        done
+        
+        # Collect failure counts from temporary files
+        failed_tests=$(cat "$fail_counter")
+        missing_json=$(cat "$missing_counter")
+        
+        # Clean up temporary counter files
+        rm -f "$fail_counter" "$missing_counter"
 
         # Close the semaphore
         exec 3>&-
@@ -206,13 +243,21 @@ process_language_tests() {
             TOTAL_MISSING_JSON=$((TOTAL_MISSING_JSON + missing_json))
         fi
 
+        local total_tests=${#test_files[@]}
+        local passed_tests=$((total_tests - failed_tests - missing_json))
         if [ $dir_errors -eq 0 ]; then
-            echo "[test_runner_lib] All tests passed in directory: $dir"
+            # All tests passed in directory
+            echo -e "\033[1;32m✅✅ PASS: $lang/$category ($passed_tests/$total_tests tests passed)\033[0m"
+            TEST_SUITE_RESULTS["$lang/$category"]="PASS"
         else
+            # Some tests failed or missing JSON
+            echo -e "\033[1;31m❌ FAIL: $lang/$category ($passed_tests/$total_tests tests passed, $dir_errors problems in directory)\033[0m"
+            TEST_SUITE_RESULTS["$lang/$category"]="FAIL"
             TEST_FAILURES=$((TEST_FAILURES + 1))
         fi
     done
 }
+
 
 # Setup CMake configuration
 setup_cmake_config() {
@@ -257,6 +302,21 @@ print_test_summary() {
     echo "======================================================================="
     echo "Total execution time: $total_time seconds"
 
+    # Per-suite summary table
+    if [ ${#TEST_SUITE_RESULTS[@]} -gt 0 ]; then
+        printf "\n%-40s | %-8s\n" "Test Suite" "Result"
+        printf '%s\n' "------------------------------------------|----------"
+        for suite in "${!TEST_SUITE_RESULTS[@]}"; do
+            result="${TEST_SUITE_RESULTS[$suite]}"
+            if [ "$result" = "PASS" ]; then
+                printf "\033[1;32m%-40s | %-8s\033[0m\n" "$suite" "✅ PASS"
+            else
+                printf "\033[1;31m%-40s | %-8s\033[0m\n" "$suite" "❌ FAIL"
+            fi
+        done
+        echo ""
+    fi
+
     # Report on missing JSON files even if tests pass
     if [ $TOTAL_MISSING_JSON -gt 0 ]; then
         echo "⚠️ Missing JSON files: $TOTAL_MISSING_JSON"
@@ -270,3 +330,4 @@ print_test_summary() {
         exit 1
     fi
 }
+

@@ -71,39 +71,24 @@ if [ "${RUN_PYTHON_BASIC_AST_TESTS}" = true ]; then
     if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
 fi
 
-# Define the Python test categories array for example tests
+# Gather enabled Python example test categories
 PYTHON_TEST_CATEGORIES=()
-if [ "${RUN_PYTHON_BASIC_SYNTAX_TESTS}" = true ]; then
+if [ "$RUN_PYTHON_BASIC_SYNTAX_TESTS" = true ]; then
     PYTHON_TEST_CATEGORIES+=("basic_syntax")
 fi
-if [ "${RUN_PYTHON_COMPLEX_STRUCTURES_TESTS}" = true ]; then
+if [ "$RUN_PYTHON_COMPLEX_STRUCTURES_TESTS" = true ]; then
     PYTHON_TEST_CATEGORIES+=("complex_structures")
 fi
-if [ "${RUN_PYTHON_CLASS_TESTS}" = true ]; then
+if [ "$RUN_PYTHON_CLASS_TESTS" = true ]; then
     PYTHON_TEST_CATEGORIES+=("classes")
 fi
-if [ "${RUN_PYTHON_FUNCTION_TESTS}" = true ]; then
+if [ "$RUN_PYTHON_FUNCTION_TESTS" = true ]; then
     PYTHON_TEST_CATEGORIES+=("functions")
 fi
 
-# Process all Python example tests using the shared library
-echo "[run_python_tests.sh] Processing Python example test directories (with recursive scanning)"
-if [ ${#PYTHON_TEST_CATEGORIES[@]} -gt 0 ]; then
-    # Build the example test executable if we have any categories to run
-    build_test_target "python_example_ast_tests" "Python Example AST Tests"
-    
-    # Run all the Python example tests from the categories
-    process_language_tests \
-        "python" \
-        PYTHON_TEST_CATEGORIES \
-        "${CMAKE_PROJECT_BUILD_DIR}/core/tests/python_example_ast_tests" \
-        "${PARALLEL_JOBS}" \
-        ".py"
-    
-    # Track failures from the language test processor
-    if [ $? -gt 0 ]; then 
-        TEST_FAILURES=$((TEST_FAILURES + 1))
-    fi
+# Run per-directory Python example tests if any are enabled
+if [ "${#PYTHON_TEST_CATEGORIES[@]}" -gt 0 ]; then
+    process_language_tests python PYTHON_TEST_CATEGORIES "$CMAKE_PROJECT_BUILD_DIR/core/tests/python_example_ast_tests" "$PARALLEL_JOBS" ".py"
 fi
 
 # Run CST tests if enabled

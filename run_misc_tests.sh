@@ -67,7 +67,7 @@ cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
 
 # Execute CMake with explicit source and build directory specification
 echo "[run_misc_tests.sh] Configuring CMake in build directory: ${CMAKE_PROJECT_BUILD_DIR}"
-cmake -S "${PROJECT_ROOT_DIR}" -B "${CMAKE_PROJECT_BUILD_DIR}" -G "Unix Makefiles" > "${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log" 2>&1
+cmake -S "${PROJECT_ROOT_DIR}" -B "${CMAKE_PROJECT_BUILD_DIR}" -G "Unix Makefiles" >"${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log" 2>&1
 
 if [ $? -ne 0 ]; then
     echo "❌ ERROR: CMake configuration failed. See log for details:"
@@ -90,12 +90,12 @@ echo "[run_misc_tests.sh] Running miscellaneous test suite"
 if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
     # Make sure we're in the build directory before running make
     cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    
+
     # Try to build directly for better error visibility
     echo "[run_misc_tests.sh] Building init_parser_tests directly (for debugging)..."
     make "init_parser_tests" VERBOSE=1
     build_result=$?
-    
+
     if [ $build_result -eq 0 ]; then
         echo "[run_misc_tests.sh] Successfully built init_parser_tests, running tests..."
         run_test_suite "Init Parser Tests" "${CMAKE_PROJECT_BUILD_DIR}/${INIT_PARSER_EXECUTABLE_RELPATH}"
@@ -114,6 +114,15 @@ if [ "${RUN_EDGE_CASE_TESTS}" = true ]; then
     run_test_suite "Edge Case Tests" "${CMAKE_PROJECT_BUILD_DIR}/${EDGE_CASE_EXECUTABLE_RELPATH}"
     if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
 fi
+
+# Example for future: gather enabled misc categories and call process_language_tests here
+# MISC_TEST_CATEGORIES=()
+# if [ "$RUN_MISC_CATEGORY1_TESTS" = true ]; then
+#     MISC_TEST_CATEGORIES+=("category1")
+# fi
+# if [ "${#MISC_TEST_CATEGORIES[@]}" -gt 0 ]; then
+#     process_language_tests misc MISC_TEST_CATEGORIES "<misc_example_executable_path>"
+# fi
 
 # Return to project root before printing summary
 cd "${PROJECT_ROOT_DIR}" || exit 1

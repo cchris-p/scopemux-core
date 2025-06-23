@@ -83,57 +83,57 @@ C_TEST_EXECUTABLES["c_preprocessor_tests"]="core/tests/c_preprocessor_tests"
 # Loop over all C test targets
 for target in "${C_TEST_TARGETS[@]}"; do
     # Split the target:description string
-    IFS=':' read -r test_name test_description <<< "$target"
-    
+    IFS=':' read -r test_name test_description <<<"$target"
+
     # Check if test source files exist
     case "$test_name" in
-        "c_cst_tests" | "c_preprocessor_tests")
-            # These tests don't have source files yet
-            if [[ "$test_name" == "c_cst_tests" && "$RUN_C_CST_TESTS" == "true" ]]; then
-                echo "[run_c_tests.sh] WARNING: $test_name source files don't exist yet, skipping test"
-                continue
-            fi
-            if [[ "$test_name" == "c_preprocessor_tests" && "$RUN_C_PREPROCESSOR_TESTS" == "true" ]]; then
-                echo "[run_c_tests.sh] WARNING: $test_name source files don't exist yet, skipping test"
-                continue
-            fi
-            # Skip silently if not enabled
+    "c_cst_tests" | "c_preprocessor_tests")
+        # These tests don't have source files yet
+        if [[ "$test_name" == "c_cst_tests" && "$RUN_C_CST_TESTS" == "true" ]]; then
+            echo "[run_c_tests.sh] WARNING: $test_name source files don't exist yet, skipping test"
             continue
-            ;;
+        fi
+        if [[ "$test_name" == "c_preprocessor_tests" && "$RUN_C_PREPROCESSOR_TESTS" == "true" ]]; then
+            echo "[run_c_tests.sh] WARNING: $test_name source files don't exist yet, skipping test"
+            continue
+        fi
+        # Skip silently if not enabled
+        continue
+        ;;
     esac
-    
+
     # Build the test target
     echo "[run_c_tests.sh] Building $test_description ($test_name)..."
     build_test_target "$test_name" "$CMAKE_PROJECT_BUILD_DIR"
     build_result=$?
-    
+
     if [ $build_result -ne 0 ]; then
         echo "[run_c_tests.sh] ERROR: Failed to build $test_name"
         ((TEST_FAILURES++))
         continue
     fi
-    
+
     # Need to do a new build of the target to ensure it's available
     cd "$CMAKE_PROJECT_BUILD_DIR"
     make "$test_name"
-    
+
     # Verify that the executable was built
     if [ ! -f "core/tests/$test_name" ]; then
         echo "[run_c_tests.sh] ERROR: Executable not found at core/tests/$test_name"
         ((TEST_FAILURES++))
         continue
     fi
-    
+
     # Get the absolute path to the executable
     executable_path="$(pwd)/core/tests/$test_name"
-    
+
     # Set environment variables for example tests if needed
     if [[ "$test_name" == "c_example_ast_tests" ]]; then
         # Create example files if not present
         mkdir -p "core/tests/examples"
-        
+
         # Create a simple C example file for testing
-        cat > "core/tests/examples/c_example.c" << 'EOL'
+        cat >"core/tests/examples/c_example.c" <<'EOL'
 /* Example C file for AST testing */
 int main() {
     // This is a comment
@@ -141,9 +141,9 @@ int main() {
     return 0;
 }
 EOL
-        
+
         # Create expected JSON output
-        cat > "core/tests/examples/c_example_expected.json" << 'EOL'
+        cat >"core/tests/examples/c_example_expected.json" <<'EOL'
 {
   "type": "ROOT",
   "children": [
@@ -161,19 +161,19 @@ EOL
   ]
 }
 EOL
-        
+
         # Set required environment variables for example tests
         export SCOPEMUX_TEST_FILE="$(pwd)/core/tests/examples/c_example.c"
         export SCOPEMUX_EXPECTED_JSON="$(pwd)/core/tests/examples/c_example_expected.json"
         # Also set this flag for test environment detection
         export SCOPEMUX_RUNNING_C_EXAMPLE_TESTS=1
     fi
-    
+
     # Run the test
     echo "[run_c_tests.sh] Running $test_description..."
     run_test_suite "$test_description" "$executable_path"
     test_result=$?
-    
+
     if [ $test_result -ne 0 ]; then
         echo "[run_c_tests.sh] ERROR: Test $test_name failed with exit code $test_result"
         ((TEST_FAILURES++))
@@ -181,4 +181,27 @@ EOL
         echo "[run_c_tests.sh] Test $test_name passed"
     fi
 done
+# Gather enabled C example test categories
+C_CATEGORIES=()
+if [ "$RUN_C_BASIC_SYNTAX_TESTS" = true ]; then
+    C_CATEGORIES+=("basic_syntax")
+fi
+if [ "$RUN_C_COMPLEX_STRUCTURES_TESTS" = true ]; then
+    C_CATEGORIES+=("complex_structures")
+fi
+if [ "$RUN_C_FILE_IO_TESTS" = true ]; then
+    C_CATEGORIES+=("file_io")
+fi
+if [ "$RUN_C_MEMORY_MANAGEMENT_TESTS" = true ]; then
+    C_CATEGORIES+=("memory_management")
+fi
+if [ "$RUN_C_STRUCT_UNION_ENUM_TESTS" = true ]; then
+    C_CATEGORIES+=("struct_union_enum")
+fi
+
+# Run per-directory C example tests if any are enabled
+if [ "${#C_CATEGORIES[@]}" -gt 0 ]; then
+    process_language_tests c C_CATEGORIES "$C_EXAMPLE_AST_EXECUTABLE_RELPATH"
+fi
+
 print_test_summary
