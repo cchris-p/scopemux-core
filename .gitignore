@@ -34,6 +34,16 @@ htmlcov/
 build/
 bindings/build/
 
+# Test executables and build artifacts
+core/tests/CMakeFiles/
+# Ignore all binaries in test directories (files without extensions)
+core/tests/*[!.][!.][!.]
+core/tests/*/*[!.][!.][!.]
+# Additionally catch specifically named test executables
+core/tests/*_tests
+core/tests/*_test
+core/tests/test_*
+
 # Executables
 *.exe
 *.out

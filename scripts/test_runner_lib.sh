@@ -65,9 +65,9 @@ run_test_suite() {
     local raw_log="${test_log}.raw"
     "./$(basename "${executable_path}")" >"$raw_log" 2>&1
     local test_exit_code=$?
-    
+
     # Add test name prefix to each line for better readability with parallel execution
-    awk -v prefix="[${test_suite_name}] " '{print prefix $0}' "$raw_log" > "$test_log"
+    awk -v prefix="[${test_suite_name}] " '{print prefix $0}' "$raw_log" >"$test_log"
     rm -f "$raw_log"
     popd >/dev/null
 
@@ -104,54 +104,54 @@ process_language_tests() {
             echo "[test_runner_lib] Warning: Directory does not exist: $dir"
             continue
         fi
-        
+
         echo "[test_runner_lib] Processing $lang/$category tests..."
-        
+
         # Local counters for this directory
         local failed_tests=0
         local missing_json=0
-        
+
         # Create a semaphore with $PARALLEL_JOBS slots
         local sem="$TMP_DIR/semaphore_$$"
         mkfifo "$sem"
         exec 3<>"$sem"
         rm -f "$sem"
-        
+
         # Initialize semaphore with $PARALLEL_JOBS tokens
-        for ((i=1; i<=parallel_jobs; i++)); do
+        for ((i = 1; i <= parallel_jobs; i++)); do
             echo >&3
         done
-        
+
         # Process all test files in directory (sorted alphabetically)
         # Use find to recursively locate all test files and sort them alphabetically
         local OLD_IFS="$IFS"
         IFS=$'\n'
         test_files=($(find "$dir" -type f -name "*.${file_extension#.}" | sort))
         IFS="$OLD_IFS"
-        
+
         if [ ${#test_files[@]} -eq 0 ]; then
             echo "[test_runner_lib] No test files found in $dir"
             continue
         fi
-        
+
         echo "[test_runner_lib] Found ${#test_files[@]} test files"
-        
+
         # Process each test file in parallel (limited by semaphore)
         for test_file in "${test_files[@]}"; do
             # Wait for a semaphore slot
             read -u 3
-            
+
             # Run in background
             {
                 # Generate expected JSON filename
                 expected_json_file="${test_file}.expected.json"
-                
+
                 # Check if expected JSON exists
                 if [ -f "$expected_json_file" ]; then
                     # Set environment for tests
                     export SCOPEMUX_TEST_FILE="$test_file"
                     export SCOPEMUX_EXPECTED_JSON="$expected_json_file"
-                    
+
                     local test_name="$lang Example Test: $(basename "$test_file")"
                     echo "[test_runner_lib] Testing: $test_file"
 
@@ -160,7 +160,7 @@ process_language_tests() {
                     local raw_log="${test_log}.raw"
                     "./$(basename "${example_executable_path}")" >"$raw_log" 2>&1
                     local test_result=$?
-                    awk -v prefix="[$test_name] " '{print prefix $0}' "$raw_log" > "$test_log"
+                    awk -v prefix="[$test_name] " '{print prefix $0}' "$raw_log" >"$test_log"
                     rm -f "$raw_log"
                     popd >/dev/null
 
@@ -179,33 +179,33 @@ process_language_tests() {
                     echo "❌ ERROR: Missing required JSON file for ${test_file}"
                     missing_json=$((missing_json + 1))
                 fi
-                
+
                 # Return the token
                 echo >&3
             } &
         done
-        
+
         # Wait for all background jobs to complete
         wait
-        
+
         # Close the semaphore
         exec 3>&-
-        
+
         # Return cumulative error status (don't return immediately on first error)
         local dir_errors=0
-        
+
         if [ $failed_tests -gt 0 ]; then
             echo "[test_runner_lib] $failed_tests tests failed in directory: $dir"
             dir_errors=$((dir_errors + failed_tests))
         fi
-        
+
         if [ $missing_json -gt 0 ]; then
             echo "[test_runner_lib] $missing_json JSON files missing in directory: $dir"
             dir_errors=$((dir_errors + missing_json))
             # Track missing JSON files globally
             TOTAL_MISSING_JSON=$((TOTAL_MISSING_JSON + missing_json))
         fi
-        
+
         if [ $dir_errors -eq 0 ]; then
             echo "[test_runner_lib] All tests passed in directory: $dir"
         else
@@ -218,12 +218,12 @@ process_language_tests() {
 setup_cmake_config() {
     local project_root_dir=$1
     local build_dir="${project_root_dir}/build"
-    
+
     # Always run CMake configuration in the build directory
     if [ ! -d "$build_dir" ]; then
         mkdir -p "$build_dir"
     fi
-    
+
     echo "[test_runner_lib] Running CMake configuration: cmake -S $project_root_dir -B $build_dir -G 'Unix Makefiles'"
     cmake -S "$project_root_dir" -B "$build_dir" -G "Unix Makefiles"
     if [ $? -ne 0 ]; then
@@ -250,18 +250,18 @@ prepare_clean_build_dir() {
 print_test_summary() {
     local end_time=$(date +%s)
     local total_time=$((end_time - START_TIME))
-    
+
     echo ""
-    echo "=======================================================================" 
+    echo "======================================================================="
     echo "                      TEST EXECUTION SUMMARY                          "
     echo "======================================================================="
     echo "Total execution time: $total_time seconds"
-    
+
     # Report on missing JSON files even if tests pass
     if [ $TOTAL_MISSING_JSON -gt 0 ]; then
         echo "⚠️ Missing JSON files: $TOTAL_MISSING_JSON"
     fi
-    
+
     if [ $TEST_FAILURES -eq 0 ]; then
         echo "✅ ALL TESTS PASSED"
         exit 0

@@ -13,93 +13,30 @@ static char *parse_string(const char **json);
 
 JsonValue *load_expected_json(const char *language, const char *category, const char *file_name) {
   char filepath[1024];
-  char project_root_path[1024] = "";
   FILE *f = NULL;
+  char current_dir[512] = "";
 
-  // First try using PROJECT_ROOT_DIR environment variable
-  const char *project_root = getenv("PROJECT_ROOT_DIR");
-  if (project_root) {
-    snprintf(project_root_path, sizeof(project_root_path),
-             "%s/core/tests/examples/%s/%s/%s.expected.json", project_root, language, category,
-             file_name);
-    f = fopen(project_root_path, "rb");
-    if (f) {
-      cr_log_info("Successfully opened expected JSON file using PROJECT_ROOT_DIR: %s",
-                  project_root_path);
-      goto file_found;
-    }
+  // Get current directory for error reporting
+  if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
+    cr_log_error("Failed to get current working directory");
   }
 
-  // Get current working directory for logging and path calculation
-  char cwd[512];
-  if (getcwd(cwd, sizeof(cwd)) == NULL) {
-    cr_log_error("Failed to get current working directory");
+  // Only use one standard path to look for JSON files - in the examples directory
+  // This path works when run from the build directory, which is the standard location
+  snprintf(filepath, sizeof(filepath), "../../../core/tests/examples/%s/%s/%s.expected.json",
+           language, category, file_name);
+
+  cr_log_info("Looking for expected JSON file: %s", filepath);
+  f = fopen(filepath, "rb");
+
+  if (!f) {
+    cr_log_error("Failed to open expected JSON file: %s/%s/%s.expected.json (from working dir: %s)",
+                 language, category, file_name, current_dir);
     return NULL;
   }
-  cr_log_info("Current working directory for JSON: %s", cwd);
 
-  // Try multiple possible paths based on where the test might be running from
-  const char *possible_paths[] = {
-      "./%s/%s/%s.expected.json", // Direct path in build directory (most important)
-      "./%s/%s.expected.json",    // Direct path without category subdirectory
-      "../../../core/tests/examples/%s/%s/%s.expected.json", // From build/core/tests/
-      "../../core/tests/examples/%s/%s/%s.expected.json",    // One level up
-      "../core/tests/examples/%s/%s/%s.expected.json",       // Two levels up
-      "../examples/%s/%s/%s.expected.json",                  // Original path
-      "./core/tests/examples/%s/%s/%s.expected.json",        // From project root
-      "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s.expected.json" // Absolute path
-  };
+  cr_log_info("Successfully opened expected JSON file: %s", filepath);
 
-  for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
-    // Handle different format string patterns
-    if (i == 0) {
-      // Direct path in build directory: ./%s/%s/%s.expected.json
-      snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
-    } else if (i == 1) {
-      // Direct path without category: ./%s/%s.expected.json
-      snprintf(filepath, sizeof(filepath), possible_paths[i], language, file_name);
-    } else {
-      // All other paths with three format specifiers
-      snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
-    }
-
-    fprintf(stderr, "DEBUG: Trying path for JSON: %s\n", filepath);
-    f = fopen(filepath, "rb");
-    if (f) {
-      cr_log_info("Successfully opened expected JSON file: %s", filepath);
-      fprintf(stderr, "DEBUG: Found expected JSON at: %s\n", filepath);
-      goto file_found;
-    }
-  }
-
-  // Try to construct paths by navigating from the build directory to the source directory
-  if (strstr(cwd, "/build/")) {
-    // If we're in a build subdirectory, try to navigate to source
-    char build_path[512];
-    strcpy(build_path, cwd);
-
-    char *build_pos = strstr(build_path, "/build/");
-    if (build_pos) {
-      *build_pos = '\0'; // Terminate string at /build to get project root
-
-      // Construct path from project root to examples
-      snprintf(filepath, sizeof(filepath), "%s/core/tests/examples/%s/%s/%s.expected.json",
-               build_path, language, category, file_name);
-      f = fopen(filepath, "rb");
-      if (f) {
-        cr_log_info("Successfully opened expected JSON file using build directory logic: %s",
-                    filepath);
-        goto file_found;
-      }
-    }
-  }
-
-  // If all paths failed
-  cr_log_error("Failed to open expected JSON file: %s/%s/%s.expected.json (from working dir: %s)",
-               language, category, file_name, cwd);
-  return NULL;
-
-file_found:
   // Get file size
   fseek(f, 0, SEEK_END);
   long length = ftell(f);
@@ -274,10 +211,10 @@ static JsonValue *find_json_field(JsonValue *obj, const char *field_name) {
 bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *node_path) {
   // Ensure we have a valid path string to use in error messages
   const char *safe_path = node_path ? node_path : "<unknown>";
-  
+
   // Ensure we have proper validation for all tests
   // No special cases or bypasses - the core logic must be correct
-  
+
   // Ensure node exists
   if (!node) {
     cr_log_error("%s: AST node is NULL", safe_path);
@@ -426,23 +363,24 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
         // Print hexdump of both expected and actual docstrings to help debug
         cr_log_error("Expected docstring length: %zu", strlen(expected_doc));
         cr_log_error("Actual docstring length: %zu", strlen(node->docstring));
-        
+
         // Print first 50 chars in both strings for comparison
-        int max_print = 50; 
+        int max_print = 50;
         int i;
-        
+
         cr_log_error("Expected docstring bytes:");
         for (i = 0; i < strlen(expected_doc) && i < max_print; i++) {
-            cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)expected_doc[i], 
-                     (unsigned char)expected_doc[i], 
-                     (expected_doc[i] >= 32 && expected_doc[i] <= 126) ? expected_doc[i] : '?');
+          cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)expected_doc[i],
+                       (unsigned char)expected_doc[i],
+                       (expected_doc[i] >= 32 && expected_doc[i] <= 126) ? expected_doc[i] : '?');
         }
-        
+
         cr_log_error("Actual docstring bytes:");
         for (i = 0; i < strlen(node->docstring) && i < max_print; i++) {
-            cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)node->docstring[i], 
-                     (unsigned char)node->docstring[i], 
-                     (node->docstring[i] >= 32 && node->docstring[i] <= 126) ? node->docstring[i] : '?');
+          cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)node->docstring[i],
+                       (unsigned char)node->docstring[i],
+                       (node->docstring[i] >= 32 && node->docstring[i] <= 126) ? node->docstring[i]
+                                                                               : '?');
         }
         valid = false;
       }
@@ -1027,18 +965,18 @@ static char *parse_string(const char **json) {
 
 /**
  * Parse a JSON string into a JsonValue structure
- * 
+ *
  * @param json_str The JSON string to parse
  * @return Pointer to parsed JSON structure, or NULL on failure
  */
 JsonValue *parse_json_string(const char *json_str) {
-    if (!json_str) {
-        return NULL;
-    }
-    
-    // Create a copy that can be modified by the parser functions
-    const char *json_copy = json_str;
-    return parse_json_value(&json_copy);
+  if (!json_str) {
+    return NULL;
+  }
+
+  // Create a copy that can be modified by the parser functions
+  const char *json_copy = json_str;
+  return parse_json_value(&json_copy);
 }
 
 // Note: This is a simplified JSON parser implementation

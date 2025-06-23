@@ -493,15 +493,8 @@ foreach(EXAMPLE_FILE ${C_EXAMPLES} ${C_EXPECTED_JSON})
     configure_file(${EXAMPLE_FILE} ${CMAKE_CURRENT_BINARY_DIR}/examples/${REL_PATH} COPYONLY)
 endforeach()
 
-# Now copy to the direct test location to match test search paths
-foreach(EXPECTED_JSON ${C_EXPECTED_JSON})
-    get_filename_component(JSON_FILENAME ${EXPECTED_JSON} NAME)
-    get_filename_component(JSON_DIR ${EXPECTED_JSON} DIRECTORY)
-    get_filename_component(CATEGORY ${JSON_DIR} NAME)
-    string(REPLACE ".c.expected.json" ".expected.json" DEST_NAME ${JSON_FILENAME})
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/c/${CATEGORY})
-    configure_file(${EXPECTED_JSON} ${CMAKE_CURRENT_BINARY_DIR}/c/${CATEGORY}/${DEST_NAME} COPYONLY)
-endforeach()
+# Note: We no longer copy files to the c/ directory to avoid duplication
+# Tests should look directly in the examples/c directory instead
 
 # --- Memory Debug/Crash Handler Diagnostic Test ---
 add_executable(test_memory_debug
