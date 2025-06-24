@@ -93,8 +93,8 @@ static void test_cpp_example(const char *category, const char *filename) {
   cr_assert(source != NULL, "Failed to read source file: %s/%s", category, filename);
 
   // 2. Parse the C++ code into an AST
-  ParserContext *ctx = parser_context_new();
-  cr_assert(ctx != NULL, "Failed to create parser context");
+  ParserContext *ctx = parser_init();
+  cr_assert_not_null(ctx, "Failed to initialize parser context");
 
   ASTNode *ast = parse_cpp_ast(ctx, source);
   cr_assert(ast != NULL, "Failed to parse C++ code into AST");
