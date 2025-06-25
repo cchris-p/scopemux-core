@@ -2,20 +2,13 @@
 (class_definition
   name: (identifier) @name
   [
-    (argument_list
-      (identifier) @superclass)  ; Capture base classes
-    (argument_list)
+    (argument_list)  ; Base classes list
   ]?
-  body: (block) @body) @class
+  body: (block) @body) @node
 
-;; Class with decorator
+;; Class with decorator - simplified to avoid attribute pattern issues
 (decorated_definition
-  (decorator
-    "@" @decorator_symbol
-    name: [
-      (identifier) @decorator
-      (attribute 
-        object: (identifier)? @decorator_object
-        attribute: (identifier) @decorator_attribute)
-    ]) 
-  definition: (class_definition) @decorated_class) @class_with_decorator
+  (decorator) @decorator
+  definition: (class_definition
+    name: (identifier) @name
+    body: (block) @body)) @node

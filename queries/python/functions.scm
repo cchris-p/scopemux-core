@@ -5,7 +5,7 @@
   [
     return_type: (type) @return_type
   ]?
-  body: (block) @body) @function
+  body: (block) @body) @node
 
 ;; Function with docstring
 (function_definition
@@ -13,16 +13,12 @@
   parameters: (parameters) @params
   body: (block
     (expression_statement
-      (string) @docstring) ._*)) @function_with_docstring
+      (string) @docstring) ._*)) @node
 
-;; Decorated function
+;; Decorated function - simplified to avoid attribute pattern issues
 (decorated_definition
-  (decorator
-    "@" @decorator_symbol
-    name: [
-      (identifier) @decorator
-      (attribute 
-        object: (identifier)? @decorator_object
-        attribute: (identifier) @decorator_attribute)
-    ]) 
-  definition: (function_definition) @decorated_function) @function_with_decorator
+  (decorator) @decorator
+  definition: (function_definition
+    name: (identifier) @name
+    parameters: (parameters) @params
+    body: (block) @body)) @node

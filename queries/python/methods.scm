@@ -1,34 +1,17 @@
-;; Method definitions within classes
-(class_definition
-  body: (block 
-    (function_definition
-      name: (identifier) @name
-      parameters: (parameters) @params
-      [
-        return_type: (type) @return_type
-      ]?
-      body: (block) @body) @method))
+;; Python Method Declarations
 
-;; Decorated methods
+;; Simple method pattern
 (class_definition
-  body: (block
-    (decorated_definition
-      (decorator
-        "@" @decorator_symbol
-        name: [
-          (identifier) @decorator
-          (attribute 
-            object: (identifier)? @decorator_object
-            attribute: (identifier) @decorator_attribute)
-        ]) 
-      definition: (function_definition) @decorated_method) @method_with_decorator))
-
-;; Class methods with docstring
-(class_definition
+  name: (identifier) @class_name
   body: (block
     (function_definition
       name: (identifier) @name
       parameters: (parameters) @params
-      body: (block
-        (expression_statement
-          (string) @docstring) ._*)) @method_with_docstring))
+      body: (block)) @body)) @node
+
+;; Method with any parameters
+(class_definition
+  body: (block
+    (function_definition
+      name: (identifier) @name
+      parameters: (parameters)) @method)) @node
