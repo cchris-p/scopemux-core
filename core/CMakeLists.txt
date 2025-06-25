@@ -108,6 +108,10 @@ add_library(parser_core STATIC
     src/parser/query_processing.c
     # Tree-sitter integration
     src/parser/tree_sitter_integration.c
+    src/parser/ts_init.c
+    src/parser/ts_ast_builder.c
+    src/parser/ts_cst_builder.c
+    src/parser/ts_query_processor.c
     src/parser/query_manager.c
     # Common files
     src/common/memory_management.c

@@ -188,8 +188,15 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
  * @param node_map Node mapping for parent relationships
  */
 void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
-                   ASTNode **node_map) {
+                    ASTNode **node_map) {
   if (!query_type || ts_node_is_null(root_node) || !ctx || !ast_root) {
+    if (ctx && ctx->log_level <= LOG_DEBUG) {
+      log_debug("Invalid arguments to process_query: %s%s%s%s",
+              !query_type ? "query_type is null, " : "",
+              ts_node_is_null(root_node) ? "root_node is null, " : "",
+              !ctx ? "ctx is null, " : "",
+              !ast_root ? "ast_root is null" : "");
+    }
     return;
   }
 
@@ -197,10 +204,13 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
   const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
   if (!query) {
     if (ctx->log_level <= LOG_DEBUG) {
-      log_debug("No query found for type '%s' and language %d", query_type, ctx->language);
+      log_debug("No query found for type '%s' and language %d - check query file exists and is valid", 
+              query_type, ctx->language);
     }
     return;
   }
+  
+  int match_count = 0;
 
   // Create a query cursor
   TSQueryCursor *cursor = ts_query_cursor_new();
@@ -215,6 +225,8 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
   // Process all matches
   TSQueryMatch match;
   while (ts_query_cursor_next_match(cursor, &match)) {
+    match_count++;
+    
     // Process each match based on its pattern
     for (uint32_t i = 0; i < match.capture_count; i++) {
       TSNode captured_node = match.captures[i].node;
@@ -224,12 +236,18 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       uint32_t length;
       const char *capture_name = ts_query_capture_name_for_id(query, capture_index, &length);
       if (!capture_name) {
+        if (ctx->log_level <= LOG_DEBUG) {
+          log_debug("No capture name for index %d in query '%s'", capture_index, query_type);
+        }
         continue;
       }
 
       // Map to a standard node type
       uint32_t node_type = map_query_type_to_node_type(query_type);
       if (node_type == NODE_UNKNOWN) {
+        if (ctx->log_level <= LOG_DEBUG) {
+          log_debug("Unknown node type for query '%s'", query_type);
+        }
         continue;
       }
 
@@ -261,6 +279,15 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
 
   // Clean up
   ts_query_cursor_delete(cursor);
+  
+  // Report query match results
+  if (ctx->log_level <= LOG_DEBUG) {
+    if (match_count > 0) {
+      log_debug("Query '%s' found %d matches in the syntax tree", query_type, match_count);
+    } else {
+      log_debug("Query '%s' did not find any matches in the syntax tree - check query correctness", query_type);
+    }
+  }
 }
 
 /**
@@ -272,6 +299,12 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
  */
 void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
   if (ts_node_is_null(root_node) || !ctx || !ast_root) {
+    if (ctx && ctx->log_level <= LOG_ERROR) {
+      log_error("Invalid arguments to process_all_ast_queries: %s%s%s",
+               ts_node_is_null(root_node) ? "root_node is null, " : "",
+               !ctx ? "ctx is null, " : "",
+               !ast_root ? "ast_root is null" : "");
+    }
     return;
   }
 
@@ -287,6 +320,10 @@ void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
   };
   static const size_t num_query_types = sizeof(query_types) / sizeof(query_types[0]);
 
+  // Count successful queries for diagnostics
+  int successful_queries = 0;
+  int failed_queries = 0;
+
   // Allocate node map for tracking parents
   // (Size would depend on implementation details)
   size_t node_map_size = 1024; // Arbitrary size for example
@@ -299,9 +336,39 @@ void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
   // Process queries in semantic order
   for (size_t i = 0; i < num_query_types; i++) {
     if (ctx->log_level <= LOG_DEBUG) {
-      log_debug("Processing query type: %s", query_types[i]);
+      log_debug("Processing query type: %s (%zu of %zu)", query_types[i], i+1, num_query_types);
     }
+    
+    // Track AST node count before processing this query
+    size_t prev_child_count = ast_root->num_children;
+    
+    // Process the query
     process_query(query_types[i], root_node, ctx, ast_root, node_map);
+    
+    // Check if new nodes were added
+    if (ast_root->num_children > prev_child_count) {
+      successful_queries++;
+      if (ctx->log_level <= LOG_DEBUG) {
+        log_debug("Query '%s' added %zu node(s)", query_types[i], 
+                 ast_root->num_children - prev_child_count);
+      }
+    } else {
+      failed_queries++;
+      if (ctx->log_level <= LOG_DEBUG) {
+        log_debug("Query '%s' did not add any nodes", query_types[i]);
+      }
+    }
+  }
+
+  // Final diagnostics
+  if (ctx->log_level <= LOG_INFO) {
+    log_info("AST query processing complete: %d successful, %d failed, total AST nodes: %zu", 
+            successful_queries, failed_queries, ast_root->num_children);
+  }
+  
+  // If no queries succeeded, log a warning
+  if (successful_queries == 0 && ctx->log_level <= LOG_WARNING) {
+    log_warning("All AST queries failed to add nodes - check query patterns and grammar compatibility");
   }
 
   // Clean up

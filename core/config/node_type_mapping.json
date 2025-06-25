@@ -1,6 +1,6 @@
 {
   "classes": "NODE_CLASS",
-  "control_flow": "NODE_UNKNOWN",
+  "control_flow": "NODE_CONTROL_FLOW",
   "docstrings": "NODE_DOCSTRING",
   "enums": "NODE_ENUM",
   "functions": "NODE_FUNCTION",
@@ -9,9 +9,15 @@
   "interfaces": "NODE_INTERFACE",
   "macros": "NODE_MACRO",
   "methods": "NODE_METHOD",
+  "namespaces": "NODE_NAMESPACE",
   "structs": "NODE_STRUCT",
   "templates": "NODE_TEMPLATE",
+  "template_specializations": "NODE_TEMPLATE_SPECIALIZATION",
   "typedefs": "NODE_TYPEDEF",
   "unions": "NODE_UNION",
-  "variables": "NODE_VARIABLE"
+  "variables": "NODE_VARIABLE",
+  "lambda_expressions": "NODE_LAMBDA",
+  "using_directives": "NODE_USING",
+  "friend_declarations": "NODE_FRIEND",
+  "operators": "NODE_OPERATOR"
 }

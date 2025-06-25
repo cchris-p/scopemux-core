@@ -55,4 +55,13 @@ int count_nodes_by_type(ASTNode *root, ASTNodeType type);
  */
 void dump_ast_structure(ASTNode *node, int level);
 
+/**
+ * Parse C++ source code into an AST
+ *
+ * @param ctx Parser context to use
+ * @param source Source code to parse
+ * @return Root AST node or NULL on failure
+ */
+ASTNode *parse_cpp_ast(ParserContext *ctx, const char *source);
+
 #endif /* SCOPEMUX_TEST_HELPERS_H */

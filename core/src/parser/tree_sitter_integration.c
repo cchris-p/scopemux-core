@@ -34,53 +34,68 @@
 #include "../../core/include/scopemux/tree_sitter_integration.h"
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/parser.h"
+#include "../../core/include/scopemux/ts_internal.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * @brief Implements the public interface for Tree-sitter integration.
- * 
+ *
  * This file now serves as a thin facade that delegates to specialized modules
  * for different aspects of Tree-sitter integration:
- * 
+ *
  * - ts_init.c: Handles parser initialization and language setup
  * - ts_ast_builder.c: Handles AST generation from Tree-sitter trees
  * - ts_cst_builder.c: Handles CST generation from Tree-sitter trees
  * - ts_query_processor.c: Handles Tree-sitter query execution
- * 
+ *
  * This architecture follows the Single Responsibility Principle by separating
  * different concerns into focused modules, while maintaining backward compatibility
  * with the existing public interface.
  */
 
+// Forward declarations for Tree-sitter language functions
+extern const TSLanguage *tree_sitter_c(void);
+extern const TSLanguage *tree_sitter_cpp(void);
+extern const TSLanguage *tree_sitter_python(void);
+extern const TSLanguage *tree_sitter_javascript(void);
+extern const TSLanguage *tree_sitter_typescript(void);
+
 /**
- * @brief Initializes or retrieves a Tree-sitter parser for the given language.
+ * @brief Builds a queries directory path for the given language
  *
- * This facade implementation delegates to the specialized parser initialization 
- * module. It provides the public interface while the actual implementation is 
- * in ts_init.c.
+ * This function is implemented in ts_init.c
+ */
+extern char *build_queries_dir_impl(LanguageType language);
+
+/**
+ * @brief Initialize the Tree-sitter parser for a specific language.
  *
- * @param ctx The parser context to initialize.
- * @param language The language to initialize the parser for.
- * @return True on success, false on failure.
+ * @param ctx Parser context
+ * @param language Language type
+ * @return true Parser initialized successfully
+ * @return false Parser failed to initialize
  */
 bool ts_init_parser(ParserContext *ctx, LanguageType language) {
-    if (!ctx) {
-        log_error("NULL context passed to ts_init_parser");
-        return false;
-    }
-    
-    // Implementation delegated to ts_init.c
-    // This facade maintains the public interface
-    extern bool ts_init_parser_impl(ParserContext *ctx, LanguageType language);
-    return ts_init_parser_impl(ctx, language);
+  if (!ctx) {
+    log_error("NULL context passed to ts_init_parser");
+    return false;
+  }
+
+  // Implementation delegated to ts_init.c
+  // This facade maintains the public interface
+  extern bool ts_init_parser_impl(ParserContext * ctx, LanguageType language);
+  log_debug("ts_init_parser facade called, delegating to ts_init_parser_impl for language %d",
+            language);
+  return ts_init_parser_impl(ctx, language);
 }
 
 /**
  * @brief Converts a raw Tree-sitter tree into a ScopeMux Abstract Syntax Tree.
  *
  * This facade implementation delegates to the specialized AST builder module.
- * It provides the public interface while the actual implementation is in 
+ * It provides the public interface while the actual implementation is in
  * ts_ast_builder.c.
  *
  * @param root_node The root node of the Tree-sitter syntax tree.
@@ -88,17 +103,17 @@ bool ts_init_parser(ParserContext *ctx, LanguageType language) {
  * @return ASTNode* The root of the generated AST, or NULL on failure.
  */
 ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
-    if (ts_node_is_null(root_node) || !ctx) {
-        if (ctx) {
-            parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
-        }
-        return NULL;
+  if (ts_node_is_null(root_node) || !ctx) {
+    if (ctx) {
+      parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
     }
-    
-    // Implementation delegated to ts_ast_builder.c
-    // This facade maintains the public interface
-    extern ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx);
-    return ts_tree_to_ast_impl(root_node, ctx);
+    return NULL;
+  }
+
+  // Implementation delegated to ts_ast_builder.c
+  // This facade maintains the public interface
+  extern ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext * ctx);
+  return ts_tree_to_ast_impl(root_node, ctx);
 }
 
 /**
@@ -113,13 +128,13 @@ ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
  * @return CSTNode* The root of the generated CST, or NULL on failure.
  */
 CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx) {
-    if (ts_node_is_null(root_node) || !ctx || !ctx->source_code) {
-        parser_set_error(ctx, -1, "Invalid context for CST generation");
-        return NULL;
-    }
-    
-    // Implementation delegated to ts_cst_builder.c
-    // This facade maintains the public interface  
-    extern CSTNode *ts_tree_to_cst_impl(TSNode root_node, ParserContext *ctx);
-    return ts_tree_to_cst_impl(root_node, ctx);
+  if (ts_node_is_null(root_node) || !ctx || !ctx->source_code) {
+    parser_set_error(ctx, -1, "Invalid context for CST generation");
+    return NULL;
+  }
+
+  // Implementation delegated to ts_cst_builder.c
+  // This facade maintains the public interface
+  extern CSTNode *ts_tree_to_cst_impl(TSNode root_node, ParserContext * ctx);
+  return ts_tree_to_cst_impl(root_node, ctx);
 }

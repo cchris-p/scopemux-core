@@ -1,5 +1,6 @@
 #include "../../include/test_helpers.h"
 #include "../../../core/include/scopemux/logging.h"
+#include "../../../core/include/scopemux/config/node_type_mapping_loader.h"
 
 // Centralized logging toggle for all test executables
 int logging_enabled = 0;
@@ -62,19 +63,35 @@ char *read_test_file(const char *language, const char *category, const char *fil
       "../../core/tests/examples/%s/%s/%s",                       // One level up
       "../core/tests/examples/%s/%s/%s",                          // Two levels up
       "./core/tests/examples/%s/%s/%s",                           // From project root
-      "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s" // Absolute path
+      "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s", // Absolute path
+      "%s/core/tests/examples/%s/%s/%s",                          // Using CWD as base
+      "%s/../core/tests/examples/%s/%s/%s",                       // CWD one level up
+      "%s/../../core/tests/examples/%s/%s/%s"                     // CWD two levels up
   };
 
   for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
-    // Check for potential buffer overflow
-    size_t path_len = snprintf(NULL, 0, possible_paths[i], language, category, file_name);
+    // Check for potential buffer overflow and handle different format strings
+    size_t path_len = 0;
+    
+    // Handle different format string patterns based on index
+    if (i >= 5) { // Paths with CWD parameter
+      path_len = snprintf(NULL, 0, possible_paths[i], cwd_safe, language, category, file_name);
+    } else { // Original paths without CWD parameter
+      path_len = snprintf(NULL, 0, possible_paths[i], language, category, file_name);
+    }
+    
     if (path_len >= sizeof(filepath)) {
       fprintf(stderr, "WARNING: Path %zu would overflow buffer (length: %zu)\n", i, path_len);
       cr_log_warn("Path %zu would overflow buffer", i);
       continue;
     }
 
-    snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
+    // Format the path string
+    if (i >= 5) { // Paths with CWD parameter
+      snprintf(filepath, sizeof(filepath), possible_paths[i], cwd_safe, language, category, file_name);
+    } else { // Original paths without CWD parameter
+      snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
+    }
     fprintf(stderr, "DEBUG: Trying path: %s\n", filepath);
 
     f = fopen(filepath, "rb");
@@ -249,4 +266,100 @@ void dump_ast_structure(ASTNode *node, int level) {
   for (size_t i = 0; i < node->num_children; i++) {
     dump_ast_structure(node->children[i], level + 1);
   }
+}
+
+/**
+ * Parse C++ source code into an AST
+ * 
+ * This function provides a standardized way to parse C++ code for tests.
+ * It handles all the details of proper parser initialization and cleanup.
+ * 
+ * @param ctx Parser context to use
+ * @param source Source code to parse
+ * @return Root AST node or NULL on failure
+ */
+ASTNode *parse_cpp_ast(ParserContext *ctx, const char *source) {
+  if (!ctx || !source) {
+    fprintf(stderr, "ERROR: Invalid arguments to parse_cpp_ast\n");
+    return NULL;
+  }
+
+  // Set a very verbose logging level for debugging
+  ctx->log_level = LOG_DEBUG;
+
+  // Declare a filename for diagnostic messages
+  const char *filename = "test_source.cpp";
+  
+  // Load node type mappings explicitly
+  fprintf(stderr, "DEBUG: Loading node type mappings for tests\n");
+  
+  // Try multiple possible paths for the mapping config
+  const char *possible_config_paths[] = {
+      "/home/matrillo/apps/scopemux/core/config/node_type_mapping.json",
+      "../../../core/config/node_type_mapping.json",
+      "../../core/config/node_type_mapping.json",
+      "../core/config/node_type_mapping.json"
+  };
+  
+  bool mapping_loaded = false;
+  for (size_t i = 0; i < sizeof(possible_config_paths) / sizeof(possible_config_paths[0]); i++) {
+    fprintf(stderr, "DEBUG: Trying to load node type mapping from: %s\n", possible_config_paths[i]);
+    FILE *f = fopen(possible_config_paths[i], "r");
+    if (f) {
+      fclose(f);
+      load_node_type_mapping(possible_config_paths[i]);
+      fprintf(stderr, "DEBUG: Successfully loaded node type mapping from: %s\n", possible_config_paths[i]);
+      mapping_loaded = true;
+      break;
+    }
+  }
+  
+  if (!mapping_loaded) {
+    fprintf(stderr, "WARNING: Could not load node type mapping from any path\n");
+  }
+  
+  // Output diagnostics
+  fprintf(stderr, "DEBUG: Parsing C++ source with length %zu\n", strlen(source));
+
+  // Parse the source code
+  bool parse_result = parser_parse_string(ctx, source, strlen(source), filename, LANG_CPP);
+  if (!parse_result) {
+    fprintf(stderr, "ERROR: Failed to parse C++ source: %s\n", 
+            parser_get_last_error(ctx) ? parser_get_last_error(ctx) : "Unknown error");
+    return NULL;
+  }
+
+  // Verify the AST root was created
+  if (!ctx->ast_root) {
+    fprintf(stderr, "ERROR: No AST root was created during parsing\n");
+    
+    // Add additional diagnostic information
+    fprintf(stderr, "DIAGNOSTIC: TS parser is %s\n", ctx->ts_parser ? "initialized" : "NULL");
+    fprintf(stderr, "DIAGNOSTIC: Language type is %d\n", ctx->language);
+    
+    // Try to parse again with more debug output
+    fprintf(stderr, "RECOVERY: Attempting to re-parse with more debugging\n");
+    
+    // Force verbose diagnostics mode in the parser context
+    ctx->log_level = LOG_DEBUG;
+    
+    // Re-parse with explicit query loading through parser context API
+    bool reparse_result = parser_parse_string(ctx, source, strlen(source), filename, LANG_CPP);
+    fprintf(stderr, "RECOVERY: Re-parse %s\n", reparse_result ? "succeeded" : "failed");
+    
+    if (reparse_result && ctx->ast_root) {
+      fprintf(stderr, "RECOVERY: Successfully created AST root on second attempt\n");
+    } else {
+      fprintf(stderr, "RECOVERY: Failed to create AST root on second attempt\n");
+    }
+    
+    return ctx->ast_root; // Return whatever we have, possibly still NULL
+  }
+
+  // Output AST statistics
+  fprintf(stderr, "INFO: Successfully parsed C++ code into AST with %zu nodes\n", 
+          ctx->num_ast_nodes);
+
+  // Return the AST root node
+  return ctx->ast_root;
 }

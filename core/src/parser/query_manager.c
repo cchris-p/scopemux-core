@@ -48,7 +48,6 @@
 extern const TSLanguage *tree_sitter_c(void);
 extern const TSLanguage *tree_sitter_cpp(void);
 extern const TSLanguage *tree_sitter_python(void);
-// JavaScript and TypeScript support removed temporarily
 extern const TSLanguage *tree_sitter_javascript(void);
 extern const TSLanguage *tree_sitter_typescript(void);
 

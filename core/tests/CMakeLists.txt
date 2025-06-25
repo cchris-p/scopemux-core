@@ -78,6 +78,12 @@ set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/tree_sitter_integration.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
+    
+    # Tree-sitter implementation files
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_init.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_ast_builder.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_cst_builder.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_query_processor.c
 
     # Common utilities
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/error_handling.c
@@ -295,49 +301,64 @@ target_link_libraries(init_parser_tests PRIVATE
     ts_typescript
 )
 
-# Link C Basic AST tests
+# Link C Basic AST tests - FIX: Reorder linking to ensure proper symbol resolution
+# Use whole-archive linker flags to ensure static libraries are fully linked
 target_link_libraries(c_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
     parser_core
-    m
-    dl
-    # Tree-sitter imported targets from root CMake
-    ts_core
+    # Start whole-archive section for Tree-sitter libraries
+    # This forces inclusion of all symbols from static libraries
+    -Wl,--whole-archive
     ts_c
     ts_cpp
     ts_python
     ts_javascript
     ts_typescript
+    ts_core
+    -Wl,--no-whole-archive
+    # System libraries at the end
+    m
+    dl
 )
 
-# Link Python Basic AST tests
+# Link Python Basic AST tests - FIX: Reorder linking to ensure proper symbol resolution
+# Use whole-archive linker flags to ensure static libraries are fully linked
 target_link_libraries(python_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
     parser_core
-    m
-    dl
-    # Tree-sitter imported targets from root CMake
-    ts_core
+    # Start whole-archive section for Tree-sitter libraries
+    # This forces inclusion of all symbols from static libraries
+    -Wl,--whole-archive
     ts_c
     ts_cpp
     ts_python
     ts_javascript
     ts_typescript
+    ts_core
+    -Wl,--no-whole-archive
+    # System libraries at the end
+    m
+    dl
 )
 
-# Link C++ Basic AST tests
+# Link C++ Basic AST tests - FIX: Reorder linking to ensure proper symbol resolution
+# Use whole-archive linker flags to ensure static libraries are fully linked
 target_link_libraries(cpp_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
     parser_core
-    m
-    dl
-    # Tree-sitter imported targets from root CMake
-    ts_core
+    # Start whole-archive section for Tree-sitter libraries
+    # This forces inclusion of all symbols from static libraries
+    -Wl,--whole-archive
     ts_c
     ts_cpp
     ts_python
     ts_javascript
     ts_typescript
+    ts_core
+    -Wl,--no-whole-archive
+    # System libraries at the end
+    m
+    dl
 )
 
 # Link Example AST tests

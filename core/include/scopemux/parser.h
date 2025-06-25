@@ -408,6 +408,16 @@ bool ast_node_add_child(ASTNode *parent, ASTNode *child);
 bool ast_node_add_reference(ASTNode *from, ASTNode *to);
 
 /**
+ * @brief Set a property on an AST node
+ *
+ * @param node Node to set property on
+ * @param key Property key
+ * @param value Property value
+ * @return bool True on success, false on failure
+ */
+bool ast_node_set_property(ASTNode *node, const char *key, const char *value);
+
+/**
  * @brief Create a new CST node.
  *
  * @param type Node type string (from Tree-sitter, not copied).

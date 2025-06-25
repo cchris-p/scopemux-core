@@ -9,17 +9,20 @@
 #include "parser.h"
 #include "ast_node.h"
 #include "cst_node.h"
+#include "memory_tracking.h"
 #include "parser_context.h"
 #include "parser_internal.h"
 #include "query_processing.h"
-#include "memory_tracking.h"
 
-#include <signal.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <setjmp.h>
-#define _POSIX_C_SOURCE 200809L  // For strdup on some systems
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define _POSIX_C_SOURCE 200809L // For strdup on some systems
+
+// Include the proper header for Tree-sitter integration functions
+#include "../../core/include/scopemux/tree_sitter_integration.h"
 
 /**
  * Parse a file and generate the AST and/or CST.
@@ -128,24 +131,68 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
   crash_occurred = 0;
   if (setjmp(parse_crash_recovery) != 0) {
     // Restore original signal handler
-    signal(SIGSEGV, SIG_DFL);  // Restore default handler
+    signal(SIGSEGV, SIG_DFL); // Restore default handler
 
     parser_set_error(ctx, 8, "Parser crashed during parsing");
     log_error("Recovered from parser crash");
     return false;
   }
 
-  // Parse using Tree-sitter
-  TSParser *ts_parser = (TSParser *)ctx->ts_parser;
+  log_error("===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====");
+  log_error("Language type: %d (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)", language);
+
+  // Initialize the Tree-sitter parser for the specified language
+  bool init_result = ts_init_parser(ctx, language);
+  log_error("ts_init_parser returned: %s", init_result ? "TRUE" : "FALSE");
+
+  if (!init_result) {
+    log_error("Failed to initialize Tree-sitter parser");
+    return false;
+  }
+
+  // Verify the parser language was actually set
+  TSParser *ts_parser = ctx->ts_parser;
+  const TSLanguage *current_lang = ts_parser_language(ts_parser);
+  log_error("After initialization: Tree-sitter parser=%p, language=%p", (void *)ts_parser,
+            (void *)current_lang);
+
+  if (!current_lang) {
+    parser_set_error(ctx, 8, "Tree-sitter parser language not set");
+    return false;
+  }
+
+  log_error("===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====");
+
+  log_debug("Successfully initialized Tree-sitter parser for language %d", language);
+
+  // Use Tree-sitter to generate a parse tree
+  if (!ts_parser) {
+    parser_set_error(ctx, 8, "Tree-sitter parser not initialized");
+    return false;
+  }
+
+  // Log debugging information
+  if (ctx->log_level <= LOG_DEBUG) {
+    log_debug("Parsing %s with Tree-sitter, content length: %zu, language: %d", filename,
+              content_length, language);
+    log_debug("Tree-sitter parser at %p, language object at %p", (void *)ts_parser,
+              (void *)ts_parser_language(ts_parser));
+  }
+
+  // Verify we've already checked that the language is properly set above, no need to check again
+
+  // Parse the content
   TSTree *ts_tree = ts_parser_parse_string(ts_parser, NULL, content, (uint32_t)content_length);
+  if (!ts_tree) {
+    char error_msg[256];
+    snprintf(error_msg, sizeof(error_msg), "Tree-sitter parsing failed for language %d", language);
+    parser_set_error(ctx, 9, error_msg);
+    log_error("Tree-sitter parsing failed for %s (language %d)", filename, language);
+    return false;
+  }
 
   // Restore original signal handler
   signal(SIGSEGV, SIG_DFL);
-
-  if (!ts_tree) {
-    parser_set_error(ctx, 9, "Tree-sitter parsing failed");
-    return false;
-  }
 
   // Generate CST if requested
   if (ctx->mode == PARSE_CST || ctx->mode == PARSE_BOTH) {
@@ -179,9 +226,21 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     // Add the AST root to the context if it was created successfully
     if (ast_root) {
       parser_add_ast_node(ctx, ast_root);
+      
+      // CRITICAL: Set the AST root node in the parser context
+      // This ensures the root is accessible via ctx->ast_root in tests
+      ctx->ast_root = ast_root;
+      
+      if (ctx->log_level <= LOG_DEBUG) {
+        log_debug("AST root set in parser context, node count: %zu", ast_root->num_children);
+      }
     } else {
-      log_warning("AST generation failed");
-      // Non-fatal, continue with other processing
+      log_error("AST generation failed - falling back to initial root node");
+      // Use the basic root node as fallback
+      ctx->ast_root = root;
+      if (ctx->log_level <= LOG_WARNING) {
+        log_warning("Using fallback AST root with %zu children", root->num_children);
+      }
     }
   }
 
