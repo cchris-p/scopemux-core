@@ -1,4 +1,6 @@
 tree_sitter_*/*
+windsurf-collector/*
+
 
 # Python
 __pycache__/
