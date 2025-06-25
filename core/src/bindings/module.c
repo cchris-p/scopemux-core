@@ -9,17 +9,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Include necessary headers for module initialization */
+#include <Python.h>
+#include <dlfcn.h>
+
+/* Include logging header */
+#include "../../core/include/scopemux/logging.h"
+
+/* Include module bindings */
+#include "context_engine_bindings.h"
+#include "parser_bindings.h"
+#include "test_processor_bindings.h"
+
+/* Include signal handling and crash recovery */
+#include "../parser/memory_tracking.h"
+
+// Forward declaration of the signal handling initialization function
+void py_init_signal_handling(void);
+
+/* Define logging_enabled variable for module */
+int logging_enabled = 0;
+
 /* This include is REQUIRED - it provides Python.h with PyObject and Python API
  * Clangd incorrectly flags this as unused, but removing it causes compile errors
  * DO NOT REMOVE even if linter suggests it's unused
  */
-#include "../../include/scopemux/python_bindings.h"
-#include "../../include/scopemux/python_utils.h"
+#include "../../core/include/scopemux/python_bindings.h"
+#include "../../core/include/scopemux/python_utils.h"
 
 // Include forward declarations for binding initialization functions
 extern void init_parser_bindings(void *m);
 extern void init_context_engine_bindings(void *m);
-extern void init_tree_sitter_bindings(void *m);
+extern void register_test_processor(void *m);
 
 /**
  * @brief Module documentation string
@@ -50,14 +71,21 @@ void init_scopemux_module(void *m) {
   // Initialize the context engine bindings
   init_context_engine_bindings(m);
 
-  // Initialize the tree-sitter bindings
-  init_tree_sitter_bindings(m);
+  // Initialize test processor bindings
+  register_test_processor(m);
+
+  // Initialize signal handling for the Python module
+  py_init_signal_handling();
 
   // Add version information
-  PyModule_AddStringConstant(module, "__version__", "0.1.0");
+  PyModule_AddStringConstant(m, "__version__", "0.1.0");
 
   // Add additional module-level constants or functions as needed
-  PyModule_AddIntConstant(module, "DEFAULT_TOKEN_BUDGET", 2048);
+  PyModule_AddIntConstant(m, "DEFAULT_TOKEN_BUDGET", 2048);
+
+  // Create a capsule object to expose segfault_handler for linking
+  PyObject *capsule = PyCapsule_New((void *)segfault_handler, "segfault_handler", NULL);
+  PyModule_AddObject(m, "_segfault_handler", capsule);
 }
 
 /**
@@ -82,19 +110,28 @@ static PyModuleDef scopemux_module = {
 };
 
 /**
- * @brief Python module initialization function
+ * @brief Module initialization function
  *
- * This function is called when the module is imported in Python.
- *
- * @return PyObject* The module object
+ * This is the entry point for Python when importing the module.
+ * Also loads the tree-sitter shared libraries with RTLD_GLOBAL to make symbols available.
  */
 PyMODINIT_FUNC PyInit_scopemux_core(void) {
+  // Load tree-sitter libraries with RTLD_GLOBAL flag to make symbols available to dependent
+  // libraries
+  dlopen("libtree-sitter.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-c.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-cpp.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-python.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-javascript.so", RTLD_NOW | RTLD_GLOBAL);
+  dlopen("libtree-sitter-typescript.so", RTLD_NOW | RTLD_GLOBAL);
+
+  // Create the module
   PyObject *m = PyModule_Create(&scopemux_module);
   if (m == NULL) {
     return NULL;
   }
 
-  // Initialize the module
+  // Initialize module components
   init_scopemux_module(m);
 
   return m;

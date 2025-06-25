@@ -7,7 +7,6 @@
  */
 
 /* Python header includes must come first */
-#define PY_SSIZE_T_CLEAN /* Make sure PY_SSIZE_T_CLEAN is defined before including Python.h */
 #include <Python.h>
 #include <structmember.h>
 
@@ -17,13 +16,13 @@
 #include <string.h>
 
 /* ScopeMux header includes */
-#include "../../include/scopemux/context_engine.h"
-#include "../../include/scopemux/python_bindings.h"
-#include "../../include/scopemux/python_utils.h"
+#include "../../core/include/scopemux/context_engine.h"
+#include "../../core/include/scopemux/python_bindings.h"
+#include "../../core/include/scopemux/python_utils.h"
 
 // These type definitions are now in python_utils.h
 // ParserContextObject - Python wrapper for ParserContext
-// IRNodeObject - Python wrapper for IRNode
+
 // ContextEngineObject - Python wrapper for ContextEngine
 // InfoBlockObject - Python wrapper for InfoBlock
 
@@ -53,6 +52,10 @@ static void InfoBlock_dealloc(InfoBlockObject *self) {
  * @brief Create a new ContextEngineObject
  */
 static PyObject *ContextEngine_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)args;
+  (void)kwds;
+
   ContextEngineObject *self;
   self = (ContextEngineObject *)type->tp_alloc(type, 0);
   if (self != NULL) {
@@ -148,8 +151,9 @@ static int ContextEngine_init(ContextEngineObject *self, PyObject *args, PyObjec
 /**
  * @brief Add a parser context to the context engine
  */
-static PyObject *ContextEngine_add_parser_context(ContextEngineObject *self, PyObject *args,
+static PyObject *ContextEngine_add_parser_context(PyObject *self_obj, PyObject *args,
                                                   PyObject *kwds) {
+  ContextEngineObject *self = (ContextEngineObject *)self_obj;
   PyObject *py_parser_ctx;
   static char *kwlist[] = {"parser_ctx", NULL};
 
@@ -174,8 +178,8 @@ static PyObject *ContextEngine_add_parser_context(ContextEngineObject *self, PyO
 /**
  * @brief Rank blocks by relevance
  */
-static PyObject *ContextEngine_rank_blocks(ContextEngineObject *self, PyObject *args,
-                                           PyObject *kwds) {
+static PyObject *ContextEngine_rank_blocks(PyObject *self_obj, PyObject *args, PyObject *kwds) {
+  ContextEngineObject *self = (ContextEngineObject *)self_obj;
   const char *cursor_file;
   unsigned int cursor_line;
   unsigned int cursor_column;
@@ -200,7 +204,8 @@ static PyObject *ContextEngine_rank_blocks(ContextEngineObject *self, PyObject *
 /**
  * @brief Apply compression to fit within token budget
  */
-static PyObject *ContextEngine_compress(ContextEngineObject *self, PyObject *ignored) {
+static PyObject *ContextEngine_compress(PyObject *self_obj, PyObject *ignored) {
+  ContextEngineObject *self = (ContextEngineObject *)self_obj;
   (void)ignored; // Unused parameter
   bool success = context_engine_compress(self->engine);
   if (!success) {
@@ -214,7 +219,8 @@ static PyObject *ContextEngine_compress(ContextEngineObject *self, PyObject *ign
 /**
  * @brief Get compressed context as a string
  */
-static PyObject *ContextEngine_get_context(ContextEngineObject *self, PyObject *ignored) {
+static PyObject *ContextEngine_get_context(PyObject *self_obj, PyObject *ignored) {
+  ContextEngineObject *self = (ContextEngineObject *)self_obj;
   (void)ignored; // Unused parameter
   // First, get the required size
   size_t size = context_engine_get_context(self->engine, NULL, 0);
@@ -239,8 +245,8 @@ static PyObject *ContextEngine_get_context(ContextEngineObject *self, PyObject *
 /**
  * @brief Estimate the number of tokens in a string
  */
-static PyObject *ContextEngine_estimate_tokens(ContextEngineObject *self, PyObject *args,
-                                               PyObject *kwds) {
+static PyObject *ContextEngine_estimate_tokens(PyObject *self_obj, PyObject *args, PyObject *kwds) {
+  ContextEngineObject *self = (ContextEngineObject *)self_obj;
   const char *text;
   Py_ssize_t text_length;
   static char *kwlist[] = {"text", NULL};
@@ -257,8 +263,8 @@ static PyObject *ContextEngine_estimate_tokens(ContextEngineObject *self, PyObje
 /**
  * @brief Update user focus for specific blocks
  */
-static PyObject *ContextEngine_update_focus(ContextEngineObject *self, PyObject *args,
-                                            PyObject *kwds) {
+static PyObject *ContextEngine_update_focus(PyObject *self_obj, PyObject *args, PyObject *kwds) {
+  ContextEngineObject *self = (ContextEngineObject *)self_obj;
   PyObject *py_node_names;
   float focus_value;
   static char *kwlist[] = {"node_qualified_names", "focus_value", NULL};
@@ -302,8 +308,8 @@ static PyObject *ContextEngine_update_focus(ContextEngineObject *self, PyObject 
 /**
  * @brief Reset all compression
  */
-static PyObject *ContextEngine_reset_compression(ContextEngineObject *self,
-                                                 PyObject *Py_UNUSED(args)) {
+static PyObject *ContextEngine_reset_compression(PyObject *self_obj, PyObject *Py_UNUSED(args)) {
+  ContextEngineObject *self = (ContextEngineObject *)self_obj;
   context_engine_reset_compression(self->engine);
   Py_RETURN_NONE;
 }
@@ -313,17 +319,17 @@ static PyObject *ContextEngine_reset_compression(ContextEngineObject *self,
  */
 static PyMethodDef ContextEngine_methods[] = {
     {"add_parser_context", (PyCFunction)ContextEngine_add_parser_context,
-     METH_VARARGS | METH_KEYWORDS, "Add all nodes from a parser context to the context engine"},
+     METH_VARARGS | METH_KEYWORDS, "Add a parser context"},
     {"rank_blocks", (PyCFunction)ContextEngine_rank_blocks, METH_VARARGS | METH_KEYWORDS,
      "Rank blocks by relevance"},
     {"compress", (PyCFunction)ContextEngine_compress, METH_NOARGS,
      "Apply compression to fit within token budget"},
     {"get_context", (PyCFunction)ContextEngine_get_context, METH_NOARGS,
-     "Get compressed context as a string"},
+     "Get compressed context as a single string"},
     {"estimate_tokens", (PyCFunction)ContextEngine_estimate_tokens, METH_VARARGS | METH_KEYWORDS,
-     "Estimate the number of tokens in a string"},
+     "Estimate the number of tokens in a text string"},
     {"update_focus", (PyCFunction)ContextEngine_update_focus, METH_VARARGS | METH_KEYWORDS,
-     "Update user focus for specific blocks"},
+     "Update the user focus for specific blocks"},
     {"reset_compression", (PyCFunction)ContextEngine_reset_compression, METH_NOARGS,
      "Reset all compression to COMPRESSION_NONE"},
     {NULL} /* Sentinel */
@@ -348,6 +354,7 @@ static PyTypeObject ContextEngineType = {
  * @brief Property getters for InfoBlock
  */
 static PyObject *InfoBlock_get_original_tokens(InfoBlockObject *self, void *closure) {
+  (void)closure; // Silence unused parameter warning
   if (!self->block) {
     Py_RETURN_NONE;
   }
@@ -355,6 +362,7 @@ static PyObject *InfoBlock_get_original_tokens(InfoBlockObject *self, void *clos
 }
 
 static PyObject *InfoBlock_get_compressed_tokens(InfoBlockObject *self, void *closure) {
+  (void)closure; // Silence unused parameter warning
   if (!self->block) {
     Py_RETURN_NONE;
   }
@@ -362,6 +370,7 @@ static PyObject *InfoBlock_get_compressed_tokens(InfoBlockObject *self, void *cl
 }
 
 static PyObject *InfoBlock_get_compression_level(InfoBlockObject *self, void *closure) {
+  (void)closure; // Silence unused parameter warning
   if (!self->block) {
     Py_RETURN_NONE;
   }
@@ -369,6 +378,7 @@ static PyObject *InfoBlock_get_compression_level(InfoBlockObject *self, void *cl
 }
 
 static PyObject *InfoBlock_get_relevance(InfoBlockObject *self, void *closure) {
+  (void)closure; // Silence unused parameter warning
   if (!self->block) {
     Py_RETURN_NONE;
   }
@@ -393,36 +403,15 @@ static PyObject *InfoBlock_get_relevance(InfoBlockObject *self, void *closure) {
 }
 
 static PyObject *InfoBlock_get_compressed_content(InfoBlockObject *self, void *closure) {
+  (void)closure; // Silence unused parameter warning
   if (!self->block || !self->block->compressed_content) {
     Py_RETURN_NONE;
   }
   return PyUnicode_FromString(self->block->compressed_content);
 }
 
-static PyObject *InfoBlock_get_ir_node(InfoBlockObject *self, void *closure) {
-  if (!self->block || !self->block->ir_node) {
-    Py_RETURN_NONE;
-  }
-
-  // Create a PyObject for the node
-  PyTypeObject *ir_node_type =
-      (PyTypeObject *)PyObject_GetAttrString(PyImport_ImportModule("scopemux_core"), "IRNode");
-  if (!ir_node_type) {
-    return NULL;
-  }
-
-  IRNodeObject *py_node = (IRNodeObject *)ir_node_type->tp_alloc(ir_node_type, 0);
-  if (!py_node) {
-    Py_DECREF(ir_node_type);
-    return NULL;
-  }
-
-  py_node->node = self->block->ir_node;
-  py_node->owned = 0; // This is a reference, not owned
-
-  Py_DECREF(ir_node_type);
-  return (PyObject *)py_node;
-}
+// This function was removed as part of IRNode deprecation
+// InfoBlock now uses ASTNode instead of IRNode
 
 /**
  * @brief Property definition for InfoBlock
@@ -436,7 +425,6 @@ static PyGetSetDef InfoBlock_getsetters[] = {
     {"relevance", (getter)InfoBlock_get_relevance, NULL, "Relevance metrics for ranking", NULL},
     {"compressed_content", (getter)InfoBlock_get_compressed_content, NULL, "Compressed content",
      NULL},
-    {"ir_node", (getter)InfoBlock_get_ir_node, NULL, "Reference to the original IR node", NULL},
     {NULL} /* Sentinel */
 };
 

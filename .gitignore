@@ -1,7 +1,8 @@
+tree_sitter_*/*
+
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 *.so
 .Python
 build/
@@ -32,6 +33,19 @@ htmlcov/
 # Build directories
 build/
 bindings/build/
+
+# Test executables and build artifacts
+core/tests/CMakeFiles/
+# Ignore all test binaries (no extension), but allow .c files like *_tests.c
+core/tests/*_tests
+core/tests/*_test
+core/tests/test_*
+!core/tests/*_tests.c
+!core/tests/*_test.c
+!core/tests/test_*.c
+!core/tests/*_tests.h
+!core/tests/*_test.h
+!core/tests/test_*.h
 
 # Executables
 *.exe

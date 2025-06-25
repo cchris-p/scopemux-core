@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/scopemux/context_engine.h"
-#include "../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/context_engine.h"
+#include "../../core/include/scopemux/parser.h"
 
 /**
  * @brief Expand a compressed block to its original form
@@ -22,6 +22,10 @@
  * @return bool True on success, false on failure
  */
 bool context_engine_expand_block(ContextEngine *engine, InfoBlock *block) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)engine;
+  (void)block;
+
   // TODO: Implement block expansion
   // Restore the original content of the block
   return false; // Placeholder
@@ -38,6 +42,12 @@ bool context_engine_expand_block(ContextEngine *engine, InfoBlock *block) {
  */
 size_t context_engine_get_expanded_block(ContextEngine *engine, InfoBlock *block, char *out_buffer,
                                          size_t buffer_size) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)engine;
+  (void)block;
+  (void)out_buffer;
+  (void)buffer_size;
+
   // TODO: Implement expanded block retrieval
   // Get the expanded form of a specific block
   return 0; // Placeholder
@@ -53,6 +63,11 @@ size_t context_engine_get_expanded_block(ContextEngine *engine, InfoBlock *block
  */
 size_t context_engine_expand_relevant_blocks(ContextEngine *engine, size_t max_blocks,
                                              size_t max_tokens) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)engine;
+  (void)max_blocks;
+  (void)max_tokens;
+
   // TODO: Implement selective expansion based on relevance
   // Expand the most relevant blocks within the token budget
   return 0; // Placeholder
@@ -66,6 +81,10 @@ size_t context_engine_expand_relevant_blocks(ContextEngine *engine, size_t max_b
  * @return bool True on success, false on failure
  */
 static bool reset_block_compression(ContextEngine *engine, InfoBlock *block) {
+  // Mark unused parameters to avoid compiler warnings
+  (void)engine;
+  (void)block;
+
   // TODO: Implement block reset
   // Reset the block to its original uncompressed form
   return false; // Placeholder

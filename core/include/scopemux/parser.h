@@ -11,58 +11,10 @@
 #ifndef SCOPEMUX_PARSER_H
 #define SCOPEMUX_PARSER_H
 
+#include "logging.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-/**
- * @brief Supported programming languages
- */
-typedef enum {
-  LANG_UNKNOWN = 0,
-  LANG_C,
-  LANG_CPP,
-  LANG_PYTHON,
-  LANG_JAVASCRIPT,
-  LANG_TYPESCRIPT,
-  // Add more languages as needed
-} LanguageType;
-
-/**
- * @brief Types of AST nodes that we care about
- */
-typedef enum {
-  NODE_UNKNOWN = 0,
-  NODE_FUNCTION,
-  NODE_METHOD,
-  NODE_CLASS,
-  NODE_STRUCT,
-  NODE_ENUM,
-  NODE_INTERFACE,
-  NODE_NAMESPACE,
-  NODE_MODULE,
-  NODE_COMMENT,
-  NODE_DOCSTRING,
-  // Add more node types as needed
-} ASTNodeType;
-
-typedef enum { PARSE_AST, PARSE_CST } ParseMode;
-
-/**
- * @brief Represents a generic node in the Concrete Syntax Tree (CST).
- */
-typedef struct CSTNode {
-  const char *type; ///< The syntax type of the node (e.g., "function_definition", "identifier").
-  char *content;    ///< The source code content of the node.
-  SourceRange range;
-  struct CSTNode **children; ///< Array of child nodes.
-  unsigned int children_count;
-} CSTNode;
-
-// CST Node lifecycle functions
-CSTNode *cst_node_new(const char *type, char *content);
-void cst_node_free(CSTNode *node);
-void cst_node_add_child(CSTNode *parent, CSTNode *child);
 
 /**
  * @brief Representation of a source location
@@ -81,17 +33,130 @@ typedef struct {
   SourceLocation end;
 } SourceRange;
 
+// Forward declaration of QueryManager
+typedef struct QueryManager QueryManager;
+
 /**
- * @brief AST node representing a parsed semantic entity.
+ * @brief Supported programming languages
+ */
+typedef enum {
+  LANG_UNKNOWN = 0,
+  LANG_C,
+  LANG_CPP,
+  LANG_PYTHON,
+  LANG_JAVASCRIPT,
+  LANG_TYPESCRIPT,
+  // Add more languages as needed
+} LanguageType;
+
+/**
+ * @brief Standard AST node types used across all supported languages
+ *
+ * These node types define the common semantic structure that ScopeMux uses
+ * across all supported programming languages. Each language-specific parser
+ * maps its syntax constructs to these standard types, enabling language-agnostic
+ * analysis and transformation tools.
+ *
+ * The node types are organized in a hierarchical fashion that mirrors typical
+ * code organization (files contain modules/namespaces, which contain classes,
+ * which contain methods, etc.).
+ */
+typedef enum {
+  NODE_UNKNOWN = 0, // Unknown or unclassified node type
+  NODE_ROOT,        // Root node for the AST (represents a file or module)
+  NODE_FUNCTION,    // Function definition (common across all languages)
+  NODE_METHOD,      // Method definition (functions within classes/objects)
+  NODE_CLASS,       // Class definition (OOP languages: C++, Python, JS, etc.)
+  NODE_STRUCT,      // Structure definition (C, C++, Go, etc.)
+  NODE_ENUM,        // Enumeration type (C, C++, TypeScript, etc.)
+  NODE_INTERFACE,   // Interface definition (TypeScript, Java, etc.)
+  NODE_NAMESPACE,   // Namespace definition (C++, C#, etc.)
+  NODE_MODULE,      // Module definition (Python, JavaScript, etc.)
+  NODE_COMMENT,     // Regular comment
+  NODE_DOCSTRING,   // Documentation comment/string
+
+  // Language-specific node types with standardized semantics
+  NODE_UNION,    // Union type (C, C++, TypeScript)
+  NODE_TYPEDEF,  // Type alias/definition (C, C++, TypeScript)
+  NODE_INCLUDE,  // Include/import statement (represented consistently across languages)
+  NODE_MACRO,    // Macro definitions (C, C++, Rust)
+  NODE_VARIABLE, // Variable declarations (common across all languages)
+  NODE_TEMPLATE, // Template definition (C++, TypeScript, etc.)
+
+  // Test-specific and extended node types for precise AST adaptation
+  NODE_VARIABLE_DECLARATION,
+  NODE_FOR_STATEMENT,
+  NODE_WHILE_STATEMENT,
+  NODE_DO_WHILE_STATEMENT,
+  NODE_IF_STATEMENT,
+  NODE_IF_ELSE_IF_STATEMENT,
+  NODE_SWITCH_STATEMENT,
+
+  // Add more node types as needed
+
+  /*
+   * Note on cross-language mapping:
+   * - C++ classes map to NODE_CLASS
+   * - Python classes map to NODE_CLASS
+   * - JavaScript/TypeScript classes map to NODE_CLASS
+   * - C structs map to NODE_STRUCT
+   * - Python imports map to NODE_INCLUDE
+   * - JavaScript imports/requires map to NODE_INCLUDE
+   */
+} ASTNodeType;
+
+typedef enum { PARSE_AST, PARSE_CST, PARSE_BOTH } ParseMode;
+
+/**
+ * @brief Represents a generic node in the Concrete Syntax Tree (CST).
+ */
+typedef struct CSTNode {
+  const char *type; ///< The syntax type of the node (e.g., "function_definition", "identifier").
+  char *content;    ///< The source code content of the node.
+  SourceRange range;
+  struct CSTNode **children; ///< Array of child nodes.
+  unsigned int children_count;
+} CSTNode;
+
+// CST Node lifecycle functions
+CSTNode *cst_node_new(const char *type, char *content);
+void cst_node_free(CSTNode *node);
+bool cst_node_add_child(CSTNode *parent, CSTNode *child);
+
+/**
+ * @brief Creates a deep copy of a CST node and all its children
+ *
+ * @param node The node to copy
+ * @return CSTNode* A new allocated copy or NULL on failure
+ */
+CSTNode *cst_node_copy_deep(const CSTNode *node);
+
+/**
+ * @brief AST node representing a parsed semantic entity in a language-agnostic way.
+ *
+ * This is the core data structure for representing parsed code entities across
+ * all supported languages. It provides a standardized representation that enables
+ * consistent analysis regardless of the source language.
+ *
+ * Key aspects of the cross-language standardization:
+ *
+ * 1. Common node types (defined in ASTNodeType) represent equivalent semantic constructs
+ *    across languages (e.g., NODE_FUNCTION represents functions in C, Python, JavaScript)
+ *
+ * 2. Hierarchical relationships are preserved consistently (classes contain methods,
+ *    namespaces contain classes, etc.)
+ *
+ * 3. Qualified names provide a consistent way to reference entities regardless of
+ *    language-specific namespacing mechanisms
+ *
+ * 4. Language-specific details are preserved in attributes like signature, raw_content,
+ *    and additional_data while maintaining the common structure
  *
  * All string fields (name, signature, etc.) are owned by this struct
  * and will be freed when the AST is destroyed via parser_free().
- *
- * This is the core data structure for representing parsed code entities.
- * It contains metadata about the entity, its location, and references to
- * related entities.
  */
 typedef struct ASTNode {
+  uint32_t magic;       ///< Canary for heap corruption/use-after-free detection
   ASTNodeType type;     // Type of the node
   char *name;           // Name of the entity
   char *qualified_name; // Fully qualified name (e.g., namespace::class::method)
@@ -118,7 +183,7 @@ typedef struct ASTNode {
 // AST Node lifecycle functions
 ASTNode *ast_node_new(ASTNodeType type, const char *name);
 void ast_node_free(ASTNode *node);
-void ast_node_add_child(ASTNode *parent, ASTNode *child);
+bool ast_node_add_child(ASTNode *parent, ASTNode *child);
 
 /**
  * @brief Context for the parser
@@ -126,7 +191,7 @@ void ast_node_add_child(ASTNode *parent, ASTNode *child);
  * This structure holds the state of the parser, including the
  * Tree-sitter parser, parsed file information, and the resulting IR.
  */
-typedef struct {
+typedef struct ParserContext {
   void *ts_parser;           // Tree-sitter parser (void* to avoid dependency)
   QueryManager *q_manager;   // Query manager for .scm files
   ParseMode mode;            // Type of parse mode (e.g., AST or CST)
@@ -153,7 +218,22 @@ typedef struct {
   // Error handling
   char *last_error; // Last error message
   int error_code;   // Error code
+
+  /**
+   * @brief Logging level for this parser context (see logging.h)
+   * Set to LOG_ERROR, LOG_DEBUG, etc. to control output.
+   */
+  LogLevel log_level;
 } ParserContext;
+
+/**
+ * @brief Adds an AST node to the parser context's tracking list
+ *
+ * @param ctx Parser context
+ * @param node Node to add to tracking
+ * @return bool True on success, false on failure
+ */
+bool parser_add_ast_node(ParserContext *ctx, ASTNode *node);
 
 /**
  * @brief Initialize the parser
@@ -230,6 +310,15 @@ bool parser_parse_string(ParserContext *ctx, const char *const content, size_t c
 const char *parser_get_last_error(const ParserContext *ctx);
 
 /**
+ * @brief Set an error message and code in the parser context
+ *
+ * @param ctx Parser context
+ * @param code Error code
+ * @param message Error message
+ */
+void parser_set_error(ParserContext *ctx, int code, const char *message);
+
+/**
  * @brief Get the AST node for a specific entity
  *
  * @param ctx Parser context
@@ -237,6 +326,16 @@ const char *parser_get_last_error(const ParserContext *ctx);
  * @return const ASTNode* Found node or NULL if not found
  */
 const ASTNode *parser_get_ast_node(const ParserContext *ctx, const char *qualified_name);
+
+/**
+ * @brief Get the root of the Abstract Syntax Tree (AST).
+ *
+ * This function should only be called after a successful parse in PARSE_AST mode.
+ *
+ * @param ctx Parser context.
+ * @return const ASTNode* Root of the AST or NULL if not available.
+ */
+const ASTNode *parser_get_ast_root(const ParserContext *ctx);
 
 /**
  * @brief Get the root of the Concrete Syntax Tree (CST).
@@ -247,6 +346,17 @@ const ASTNode *parser_get_ast_node(const ParserContext *ctx, const char *qualifi
  * @return const CSTNode* Root of the CST or NULL if not available.
  */
 const CSTNode *parser_get_cst_root(const ParserContext *ctx);
+
+/**
+ * @brief Set the root of the Concrete Syntax Tree (CST).
+ *
+ * This function allows explicitly setting the CST root, primarily used
+ * for memory management when freeing CST nodes.
+ *
+ * @param ctx Parser context.
+ * @param root The new CST root node (can be NULL to clear).
+ */
+void parser_set_cst_root(ParserContext *ctx, CSTNode *root);
 
 /**
  * @brief Get all AST nodes of a specific type
@@ -298,6 +408,16 @@ bool ast_node_add_child(ASTNode *parent, ASTNode *child);
 bool ast_node_add_reference(ASTNode *from, ASTNode *to);
 
 /**
+ * @brief Set a property on an AST node
+ *
+ * @param node Node to set property on
+ * @param key Property key
+ * @param value Property value
+ * @return bool True on success, false on failure
+ */
+bool ast_node_set_property(ASTNode *node, const char *key, const char *value);
+
+/**
  * @brief Create a new CST node.
  *
  * @param type Node type string (from Tree-sitter, not copied).
@@ -322,5 +442,25 @@ void cst_node_free(CSTNode *node);
  * @return bool True on success, false on failure.
  */
 bool cst_node_add_child(CSTNode *parent, CSTNode *child);
+
+/**
+ * @brief Unified status codes for parser and processor helpers
+ */
+typedef enum {
+  PARSE_OK = 0,   ///< Operation succeeded
+  PARSE_SKIP = 1, ///< Skip this entity (not an error)
+  PARSE_ERROR = 2 ///< Error occurred, check context for details
+} ParseStatus;
+
+/**
+ * @brief Logging level for parser and processor modules
+ *
+ * This field allows unified control of logging output per context.
+ * Set to LOG_ERROR, LOG_DEBUG, etc. (see logging.h)
+ */
+// Add this to ParserContext:
+//   LogLevel log_level;
+// Example usage:
+//   ctx->log_level = LOG_DEBUG;
 
 #endif /* SCOPEMUX_PARSER_H */

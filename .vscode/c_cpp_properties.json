@@ -3,6 +3,8 @@
     {
       "name": "Linux",
       "includePath": [
+        "${workspaceFolder}/core/include",
+        "${workspaceFolder}/core/src",
         "${workspaceFolder}/**",
         "/usr/include/python3.10",
         "/usr/include",
@@ -10,6 +12,8 @@
       ],
       "browse": {
         "path": [
+          "${workspaceFolder}/core/include",
+          "${workspaceFolder}/core/src",
           "${workspaceFolder}",
           "/usr/include/python3.10",
           "/usr/include",
@@ -24,7 +28,8 @@
       "cppStandard": "gnu++17",
       "intelliSenseMode": "linux-clang-x64",
       "compilerArgs": [
-        "-I/usr/include/python3.10"
+        "-I/usr/include/python3.10",
+        "-I${workspaceFolder}/core/include"
       ]
     }
   ],

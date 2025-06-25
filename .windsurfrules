@@ -1,3 +1,21 @@
+# Most Important Notes
+
+* ALWAYS use grep when searching for files, not the search tool.
+
+* Do not write "you" or "your" in the code. Write comments with a standard documentation tone. In the comments, note useful information, caveats, and todo/action items. If you see commented code that do not follow this best practice, update them at the spot. Also clarify vague messages whenever possible.
+
+* Build the python bindings with this shell script ran from the project root directory: `build_all_and_pybind.sh `
+
+* I am going to suggest you to fix errors in the test suite at times. Do not manually execute command strings to run the test suite unless if you are targeting a single test, even though that is not preferred. Run the tests via the shell scripts in the project root directory.
+
+Here are the shell scripts
+- run_cpp_tests.sh
+- run_c_tests.sh
+- run_js_tests.sh
+- run_misc_tests.sh <- Tests basic functionality for parsing
+- run_python_tests.sh
+- run_ts_tests.sh
+
 # 🔍 Tree-sitter Parsing in ScopeMux
 
 ## 📚 Role of Tree-sitter
@@ -60,9 +78,6 @@ ScopeMux now supports dual-mode parsing:
 
   * `ASTNode`, `CSTNode`
   * Lifecycle methods: `_new`, `_free`, `_add_child`
-
-> **Note**: `ir_generator.c` and `IRNode` are deprecated for AST/CST parsing.
-> IR generation should now use the updated `ASTNode` / `CSTNode` architecture.
 
 ***
 

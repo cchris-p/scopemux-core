@@ -1,0 +1,143 @@
+#!/bin/bash
+
+# ScopeMux C++ Test Runner (standardized)
+# Uses shared test runner library for consistent logic across languages
+
+# Source the shared test runner library
+source scripts/test_runner_lib.sh
+
+# Exit on any error (disabled during test loop to allow all tests to run)
+# set -e
+
+# Initialize global counters
+TEST_FAILURES=0
+
+# C++ Language Test Toggles
+RUN_CPP_BASIC_AST_TESTS=true
+RUN_CPP_CST_TESTS=false # Disabled - source files don't exist yet
+
+# C++ example test directory toggles
+RUN_CPP_BASIC_SYNTAX_TESTS=true
+RUN_CPP_COMPLEX_STRUCTURES_TESTS=true
+RUN_CPP_MODERN_CPP_TESTS=true
+RUN_CPP_TEMPLATES_TESTS=true
+
+# Project root directory (assuming this script is in the root)
+PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
+
+# Set parallel jobs for test execution
+PARALLEL_JOBS=4
+
+# C++ language test executables
+CPP_BASIC_AST_EXECUTABLE_RELPATH="core/tests/cpp_basic_ast_tests"
+CPP_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/cpp_example_ast_tests"
+CPP_CST_EXECUTABLE_RELPATH="core/tests/cpp_cst_tests"
+
+# Command-line flag parsing for advanced options
+CLEAN_BUILD=true
+
+# Process command line arguments
+for arg in "$@"; do
+    case $arg in
+    --no-clean)
+        CLEAN_BUILD=false
+        echo "[run_cpp_tests.sh] Skipping clean build"
+        ;;
+    --help)
+        echo "Usage: ./run_cpp_tests.sh [options]"
+        echo "Options:"
+        echo "  --no-clean      : Skip cleaning build directory"
+        echo "  --help          : Show this help message"
+        exit 0
+        ;;
+    esac
+done
+
+# Prepare build directory (clean or not, depending on flag)
+prepare_clean_build_dir "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
+
+# Setup CMake configuration using the shared library
+setup_cmake_config "$PROJECT_ROOT_DIR"
+
+# Run standard C++ language tests
+echo "[run_cpp_tests.sh] Running C++ language test suite"
+
+# Run basic C++ tests if enabled
+if [ "${RUN_CPP_BASIC_AST_TESTS}" = true ]; then
+    build_test_target "cpp_basic_ast_tests" "C++ Basic AST Tests"
+    build_result=$?
+
+    if [ $build_result -ne 0 ]; then
+        echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_basic_ast_tests"
+        ((TEST_FAILURES++))
+    else
+        # Change to build directory and get absolute path to executable
+        cd "$CMAKE_PROJECT_BUILD_DIR"
+        make "cpp_basic_ast_tests"
+
+        # Verify that the executable was built
+        if [ ! -f "core/tests/cpp_basic_ast_tests" ]; then
+            echo "[run_cpp_tests.sh] ERROR: Executable not found at core/tests/cpp_basic_ast_tests"
+            ((TEST_FAILURES++))
+        else
+            # Get the absolute path to the executable
+            executable_path="$(pwd)/core/tests/cpp_basic_ast_tests"
+
+            # Run the test
+            run_test_suite "C++ Basic AST Tests" "$executable_path"
+            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+        fi
+    fi
+fi
+
+# Gather enabled C++ example test categories
+CPP_TEST_CATEGORIES=()
+if [ "$RUN_CPP_BASIC_SYNTAX_TESTS" = true ]; then
+    CPP_TEST_CATEGORIES+=("basic_syntax")
+fi
+if [ "$RUN_CPP_COMPLEX_STRUCTURES_TESTS" = true ]; then
+    CPP_TEST_CATEGORIES+=("complex_structures")
+fi
+if [ "$RUN_CPP_MODERN_CPP_TESTS" = true ]; then
+    CPP_TEST_CATEGORIES+=("modern_cpp")
+fi
+if [ "$RUN_CPP_TEMPLATES_TESTS" = true ]; then
+    CPP_TEST_CATEGORIES+=("templates")
+fi
+
+# Run per-directory C++ example tests if any are enabled
+if [ "${#CPP_TEST_CATEGORIES[@]}" -gt 0 ]; then
+    process_language_tests cpp CPP_TEST_CATEGORIES "$CMAKE_PROJECT_BUILD_DIR/core/tests/cpp_example_ast_tests" "$PARALLEL_JOBS" ".cpp"
+fi
+
+# Run CST tests if enabled
+if [ "${RUN_CPP_CST_TESTS}" = true ]; then
+    build_test_target "cpp_cst_tests" "C++ CST Tests"
+    build_result=$?
+
+    if [ $build_result -ne 0 ]; then
+        echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_cst_tests"
+        ((TEST_FAILURES++))
+    else
+        # Change to build directory and get absolute path to executable
+        cd "$CMAKE_PROJECT_BUILD_DIR"
+        make "cpp_cst_tests"
+
+        # Verify that the executable was built
+        if [ ! -f "core/tests/cpp_cst_tests" ]; then
+            echo "[run_cpp_tests.sh] ERROR: Executable not found at core/tests/cpp_cst_tests"
+            ((TEST_FAILURES++))
+        else
+            # Get the absolute path to the executable
+            executable_path="$(pwd)/core/tests/cpp_cst_tests"
+
+            # Run the test
+            run_test_suite "C++ CST Tests" "$executable_path"
+            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+        fi
+    fi
+fi
+
+# Let the shared library handle the final test summary and exit code
+print_test_summary

@@ -17,8 +17,8 @@
  * struct definitions and Python object handling across all binding files.
  */
 
-/* Make sure PY_SSIZE_T_CLEAN is defined before including Python.h */
-#define PY_SSIZE_T_CLEAN
+/* PY_SSIZE_T_CLEAN is already defined by the build system in CMakeLists.txt */
+/* No need to define it here, removed to avoid redefinition warnings */
 
 /* Include Python.h first before using any Python macros */
 #include <Python.h>
@@ -36,14 +36,32 @@
 struct ParserContext;
 #endif
 
-#ifndef IR_NODE_H_INCLUDED
-struct IRNode;
-#endif
-
 #ifndef CONTEXT_ENGINE_H_INCLUDED
 struct ContextEngine;
 struct InfoBlock;
 #endif
+
+/**
+ * @brief Python wrapper object for ASTNode
+ */
+typedef struct {
+  PyObject_HEAD
+      /* The C ASTNode instance */
+      struct ASTNode *node;
+  /* Flag to indicate if we own the ASTNode memory */
+  int owned;
+} ASTNodeObject;
+
+/**
+ * @brief Python wrapper object for CSTNode
+ */
+typedef struct {
+  PyObject_HEAD
+      /* The C CSTNode instance */
+      struct CSTNode *node;
+  /* Flag to indicate if we own the CSTNode memory */
+  int owned;
+} CSTNodeObject;
 
 /**
  * @brief Python wrapper object for ParserContext
@@ -53,19 +71,6 @@ typedef struct {
       /* The C ParserContext instance */
       struct ParserContext *context;
 } ParserContextObject;
-
-/**
- * @brief Python wrapper object for IRNode
- */
-typedef struct {
-  PyObject_HEAD
-      /* The C IRNode instance */
-      struct IRNode *node;
-  /* Keep reference to parent context */
-  ParserContextObject *parser_ctx_obj;
-  /* Flag to indicate if we own the IRNode memory */
-  int owned;
-} IRNodeObject;
 
 /**
  * @brief Python wrapper object for ContextEngine
@@ -88,5 +93,9 @@ typedef struct {
   /* Flag to indicate if we own the InfoBlock memory */
   int owned;
 } InfoBlockObject;
+
+/* Forward declarations of PyTypeObject for nodes */
+extern PyTypeObject ASTNodePyType;
+extern PyTypeObject CSTNodePyType;
 
 #endif /* SCOPEMUX_PYTHON_UTILS_H */

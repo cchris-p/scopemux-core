@@ -35,7 +35,7 @@ void init_parser_bindings(void *m);
 void init_context_engine_bindings(void *m);
 
 /**
- * @brief Initialize the tree-sitter bindings
+ * @brief Initialize the Python bindings
  *
  * @param m Pointer to the Python module
  */
