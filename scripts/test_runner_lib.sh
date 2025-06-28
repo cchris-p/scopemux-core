@@ -185,7 +185,8 @@ process_language_tests() {
                     if [ -x "$executable" ]; then
                         "$executable" >"$raw_log" 2>&1
                         test_result=$?
-                        awk -v prefix="[$test_name] " '{print prefix $0}' "$raw_log" >"$test_log"
+                        # Filter out misleading Synthesis message before adding prefix
+                        grep -v '\[====\] Synthesis:' "$raw_log" | awk -v prefix="[$test_name] " '{print prefix $0}' >"$test_log"
                         grep -v "FAIL: .* (One or more tests failed)" "$test_log" || true
                     else
                         echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
