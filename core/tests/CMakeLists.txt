@@ -33,7 +33,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities
 
     # Core include directories - the main one contains the scopemux/ directory
-    ${PROJECT_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include
 
     # Tree-sitter include directories (from root CMakeLists.txt)
     ${TS_CORE_INCLUDE_DIR}
@@ -63,8 +63,8 @@ add_library(test_utilities STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/json_validation.c
 )
 target_include_directories(test_utilities PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${Criterion_INCLUDE_DIRS}
 )
@@ -76,6 +76,10 @@ target_include_directories(test_utilities PRIVATE
 set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     # Parser core components
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ast_node.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser_context.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/cst_node.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/memory_tracking.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
     
@@ -84,11 +88,27 @@ set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_ast_builder.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_cst_builder.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_query_processor.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_processing.c
+
+    # Tree-sitter language sources
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-c/src/parser.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-cpp/src/parser.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-cpp/src/scanner.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/parser.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/scanner.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-javascript/src/parser.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-javascript/src/scanner.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/tsx/src/parser.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/tsx/src/scanner.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/typescript/src/parser.c
+    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/typescript/src/scanner.c
 
     # Common utilities
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/error_handling.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/logging.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/memory_management.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils/memory_debug.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/config/node_type_mapping_loader.c
 
     # Adapters for language-specific functionality
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/adapters/adapter_registry.c
@@ -206,10 +226,16 @@ add_executable(init_parser_tests
     ${INIT_PARSER_TEST_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
-target_link_libraries(init_parser_tests PRIVATE test_utilities)
+target_link_libraries(init_parser_tests PRIVATE
+    test_utilities
+    ${Criterion_LIBRARIES}
+    ts_core
+    m
+    dl
+)
 target_include_directories(init_parser_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
 )
 
 # Edge Case tests executable
@@ -217,17 +243,23 @@ add_executable(edge_case_tests
     ${EDGE_CASE_TEST_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
-target_link_libraries(edge_case_tests PRIVATE test_utilities)
+target_link_libraries(edge_case_tests PRIVATE
+    test_utilities
+    ${Criterion_LIBRARIES}
+    ts_core
+    m
+    dl
+)
 target_include_directories(edge_case_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
 )
 
 # --- Reference Resolver Stub Library ---
 add_library(reference_resolver_stubs STATIC ${REFERENCE_RESOLVER_STUB_SOURCES})
 target_include_directories(reference_resolver_stubs PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -245,6 +277,7 @@ target_link_libraries(reference_resolver_tests PRIVATE
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets
@@ -256,8 +289,8 @@ target_link_libraries(reference_resolver_tests PRIVATE
     ts_typescript
 )
 target_include_directories(reference_resolver_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${Criterion_INCLUDE_DIRS}
 )
 
@@ -271,6 +304,7 @@ target_link_libraries(resolver_core_tests PRIVATE
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets
@@ -282,8 +316,8 @@ target_link_libraries(resolver_core_tests PRIVATE
     ts_typescript
 )
 target_include_directories(resolver_core_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${Criterion_INCLUDE_DIRS}
 )
 
@@ -297,6 +331,7 @@ target_link_libraries(resolver_registration_tests PRIVATE
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets
@@ -308,8 +343,8 @@ target_link_libraries(resolver_registration_tests PRIVATE
     ts_typescript
 )
 target_include_directories(resolver_registration_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${Criterion_INCLUDE_DIRS}
 )
 
@@ -323,6 +358,7 @@ target_link_libraries(resolver_resolution_tests PRIVATE
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets
@@ -334,8 +370,8 @@ target_link_libraries(resolver_resolution_tests PRIVATE
     ts_typescript
 )
 target_include_directories(resolver_resolution_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${Criterion_INCLUDE_DIRS}
 )
 
@@ -349,6 +385,7 @@ target_link_libraries(language_resolver_tests PRIVATE
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets
@@ -360,8 +397,8 @@ target_link_libraries(language_resolver_tests PRIVATE
     ts_typescript
 )
 target_include_directories(language_resolver_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${Criterion_INCLUDE_DIRS}
 )
 
@@ -374,6 +411,7 @@ target_link_libraries(symbol_table_tests PRIVATE
     test_utilities
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets
@@ -385,8 +423,8 @@ target_link_libraries(symbol_table_tests PRIVATE
     ts_typescript
 )
 target_include_directories(symbol_table_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${Criterion_INCLUDE_DIRS}
 )
 
@@ -399,6 +437,7 @@ target_link_libraries(project_context_tests PRIVATE
     test_utilities
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets
@@ -410,8 +449,8 @@ target_link_libraries(project_context_tests PRIVATE
     ts_typescript
 )
 target_include_directories(project_context_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
     ${Criterion_INCLUDE_DIRS}
 )
 
@@ -433,8 +472,8 @@ macro(create_test_executable test_name source_var)
         ts_typescript
     )
     target_include_directories(${test_name} PRIVATE
-        ${PROJECT_SOURCE_DIR}/core/include
-        ${PROJECT_SOURCE_DIR}/core/include/scopemux
+        ${CMAKE_SOURCE_DIR}/core/include
+        ${CMAKE_SOURCE_DIR}/core/include/scopemux
     )
 endmacro()
 
@@ -463,6 +502,7 @@ target_link_libraries(cpp_basic_ast_tests PRIVATE
     ts_javascript
     ts_typescript
     ts_core
+    ts_core
     -Wl,--no-whole-archive
     # System libraries at the end
     m
@@ -478,6 +518,7 @@ target_link_libraries(c_example_ast_tests PRIVATE
     test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets from root CMake
@@ -493,6 +534,7 @@ target_link_libraries(python_example_ast_tests PRIVATE
     test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets from root CMake
@@ -508,6 +550,7 @@ target_link_libraries(cpp_example_ast_tests PRIVATE
     test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets from root CMake
@@ -523,6 +566,7 @@ target_link_libraries(cpp_example_ast_tests PRIVATE
 target_link_libraries(js_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets from root CMake
@@ -537,6 +581,7 @@ target_link_libraries(js_basic_ast_tests PRIVATE
 target_link_libraries(ts_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets from root CMake
@@ -552,6 +597,7 @@ target_link_libraries(js_example_ast_tests PRIVATE
     test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets from root CMake
@@ -567,6 +613,7 @@ target_link_libraries(ts_example_ast_tests PRIVATE
     test_utilities # This already contains json_validation.c
     ${Criterion_LIBRARIES}
     parser_core
+    ts_core
     m
     dl
     # Tree-sitter imported targets from root CMake

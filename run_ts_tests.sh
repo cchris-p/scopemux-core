@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# All output from this script (stdout and stderr) is written to a file named after the script and the current datetime.
-# Filename format: run_ts_tests-YYYYMMDD-HHMMSS.txt (UTC)
+# All output from this script (stdout and stderr) is written to a file named after the script.
+# Filename format: run_ts_tests.txt
 # This is useful for preserving logs for each test run.
 SCRIPT_BASENAME="$(basename "$0" .sh)"
-RUN_DATETIME="$(date -u +"%Y%m%d-%H%M%S")"
-OUTPUT_FILE="${SCRIPT_BASENAME}-${RUN_DATETIME}.txt"
+OUTPUT_FILE="run_ts_tests.txt"
 # Redirect all output to the log file (both stdout and stderr)
 exec > >(tee "$OUTPUT_FILE") 2>&1
 
