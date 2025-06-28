@@ -8,6 +8,10 @@
 
 * I am going to suggest you to fix errors in the test suite at times. Do not manually execute command strings to run the test suite unless if you are targeting a single test, even though that is not preferred. Run the tests via the shell scripts in the project root directory.
 
+Best Practice in C
+- Never forward-declare a typedef for an enum in a header unless you are also providing the full definition in the same place.
+- Always include the header that defines the typedef if you want to use the typedef name in function signatures or struct fields.
+
 Here are the shell scripts
 - run_cpp_tests.sh
 - run_c_tests.sh

@@ -3,6 +3,8 @@
     {
       "name": "Linux",
       "includePath": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/core",
         "${workspaceFolder}/core/include",
         "${workspaceFolder}/core/src",
         "${workspaceFolder}/**",
@@ -12,6 +14,8 @@
       ],
       "browse": {
         "path": [
+          "${workspaceFolder}",
+          "${workspaceFolder}/core",
           "${workspaceFolder}/core/include",
           "${workspaceFolder}/core/src",
           "${workspaceFolder}",

@@ -2,10 +2,12 @@
   "cmake.ignoreCMakeListsMissing": true,
   "editor.formatOnSave": true,
   "[c]": {
-    "editor.defaultFormatter": "xaver.clang-format"
+    "editor.defaultFormatter": "xaver.clang-format",
+    "editor.formatOnSave": false
   },
   "[cpp]": {
-    "editor.defaultFormatter": "xaver.clang-format"
+    "editor.defaultFormatter": "xaver.clang-format",
+    "editor.formatOnSave": false
   },
   "[markdown]": {
     "editor.defaultFormatter": "unifiedjs.vscode-remark",
@@ -26,16 +28,15 @@
     "build": true,
     "vendor": true,
     "core/build": true,
-    "core/scopemux_core.egg-info": true
+    "core/scopemux_core.egg-info": true,
+    "core/vendor/pybind11": true,
+    "core/vendor": true
   },
   "search.exclude": {
     "**/main.c": true,
-    "**/*.h": true,
     "**/.windsurfrules": true,
     "**/*.txt": true,
-    "**/*.md": true,
     "**/Makefile": true,
-    "**/*.sh": true,
     "**/.git": true,
     "**/build": true,
     "*.dir": true,
