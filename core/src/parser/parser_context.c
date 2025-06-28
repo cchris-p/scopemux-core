@@ -7,6 +7,7 @@
  */
 
 #include "parser_context.h"
+#include <stdlib.h>
 #include "../../core/include/scopemux/query_manager.h"
 #include "ast_node.h"
 #include "cst_node.h"
@@ -364,4 +365,11 @@ void parser_set_cst_root(ParserContext *ctx, CSTNode *cst_root) {
   } else {
     log_debug("CST root cleared (set to NULL)");
   }
+}
+
+/**
+ * Compatibility alias for parser_free. Use parser_free in new code.
+ */
+void parser_context_free(ParserContext *ctx) {
+    parser_free(ctx);
 }

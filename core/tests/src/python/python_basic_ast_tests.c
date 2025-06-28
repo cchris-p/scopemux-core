@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "../../../core/include/scopemux/parser.h"
-#include "../../../core/include/scopemux/tree_sitter_integration.h"
+
 #include "../../include/test_helpers.h"
 
 //=================================

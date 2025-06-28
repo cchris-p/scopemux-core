@@ -11,7 +11,7 @@
 
 // Fix include paths to correctly reference the header files
 #include "../../../include/scopemux/parser.h"
-#include "../../../include/scopemux/tree_sitter_integration.h"
+
 #include "../../include/test_helpers.h"
 
 //=================================

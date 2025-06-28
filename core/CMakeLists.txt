@@ -107,7 +107,7 @@ add_library(parser_core STATIC
     src/parser/parser_context.c
     src/parser/query_processing.c
     # Tree-sitter integration
-    src/parser/tree_sitter_integration.c
+
     src/parser/ts_init.c
     src/parser/ts_ast_builder.c
     src/parser/ts_cst_builder.c
@@ -120,7 +120,13 @@ add_library(parser_core STATIC
     # Memory debugging utilities
     src/utils/memory_debug.c
     src/utils/ts_resource_manager.c
+    # MISSING symbol implementations
+
+    src/processors/docstring_processor.c
+    src/processors/ast_post_processor.c
+    src/processors/test_processor.c
 )
+
 set_target_properties(parser_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Create a separate object library for test_processor.c to ensure it gets linked properly
@@ -232,15 +238,11 @@ target_include_directories(scopemux_core PRIVATE
 # Installation rules
 install(TARGETS scopemux_core DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-# Add subdirectories for tests and examples if they exist
+# Add subdirectories for tests if they exist
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     add_subdirectory(tests)
     add_subdirectory(src/adapters)
     add_subdirectory(src/config)
-endif()
-
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples)
-    add_subdirectory(examples)
 endif()
 
 # Print configuration summary

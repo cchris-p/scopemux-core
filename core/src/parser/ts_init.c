@@ -15,7 +15,8 @@
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/parser.h"
 #include "../../core/include/scopemux/query_manager.h"
-#include "../../core/include/scopemux/tree_sitter_integration.h"
+
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <dlfcn.h>
 #include <stdbool.h>
 #include <stdio.h>

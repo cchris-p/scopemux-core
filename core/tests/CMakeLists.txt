@@ -76,7 +76,7 @@ target_include_directories(test_utilities PRIVATE
 set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     # Parser core components
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/tree_sitter_integration.c
+
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
     
     # Tree-sitter implementation files
@@ -100,7 +100,7 @@ set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/processors/test_processor.c
 
     # Configuration modules
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/config/node_type_mapping_loader.c
+
 )
 
 # --- Language-specific Test Sources ---
@@ -158,6 +158,49 @@ set(INIT_PARSER_TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/init_parser_tests.c
 )
 
+# --- Interfile Resolution Tests ---
+# Define source files for reference resolver implementation stubs
+set(REFERENCE_RESOLVER_STUB_SOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/reference_resolver_stubs.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_test_adapter.c
+)
+
+# Define source files for each interfile reference resolution test target
+set(REFERENCE_RESOLVER_TEST_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolver_tests.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
+)
+
+set(RESOLVER_CORE_TEST_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_core_tests.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
+)
+
+set(RESOLVER_REGISTRATION_TEST_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_registration_tests.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
+)
+
+set(RESOLVER_RESOLUTION_TEST_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_resolution_tests.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/project_context_test_stubs.c
+)
+
+set(LANGUAGE_RESOLVER_TEST_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/language_resolver_tests.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
+)
+
+# Symbol Table and Project Context test sources for interfile testing
+set(SYMBOL_TABLE_TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/symbol_table_tests.c
+)
+
+set(PROJECT_CONTEXT_TEST_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/project_context_tests.c
+)
+
 # Define executables
 add_executable(init_parser_tests
     ${INIT_PARSER_TEST_SOURCES}
@@ -180,168 +223,233 @@ target_include_directories(edge_case_tests PRIVATE
     ${PROJECT_SOURCE_DIR}/core/include/scopemux
 )
 
-
-# C Basic AST tests executable
-add_executable(c_basic_ast_tests
-    ${C_BASIC_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-target_link_libraries(c_basic_ast_tests PRIVATE test_utilities)
-target_include_directories(c_basic_ast_tests PRIVATE
+# --- Reference Resolver Stub Library ---
+add_library(reference_resolver_stubs STATIC ${REFERENCE_RESOLVER_STUB_SOURCES})
+target_include_directories(reference_resolver_stubs PRIVATE
     ${PROJECT_SOURCE_DIR}/core/include
     ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${Criterion_INCLUDE_DIRS}
 )
 
+# --- Interfile Resolution Test Executables ---
 
-# Python Basic AST tests executable
-add_executable(python_basic_ast_tests
-    ${PYTHON_BASIC_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+# Main Reference Resolver Tests
+add_executable(reference_resolver_tests
+    ${REFERENCE_RESOLVER_TEST_SRCS}
 )
-target_link_libraries(python_basic_ast_tests PRIVATE test_utilities)
-target_include_directories(python_basic_ast_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
-)
-
-
-# C++ Basic AST tests executable
-add_executable(cpp_basic_ast_tests
-    ${CPP_BASIC_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-target_link_libraries(cpp_basic_ast_tests PRIVATE test_utilities)
-target_include_directories(cpp_basic_ast_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
-)
-
-
-# Example AST test executables
-add_executable(c_example_ast_tests
-    ${C_EXAMPLE_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-target_link_libraries(c_example_ast_tests PRIVATE test_utilities)
-# Ensure correct include paths for all scopemux headers
-# This prevents missing header errors for scopemux/logging.h, etc.
-target_include_directories(c_example_ast_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
-)
-get_target_property(EXAMPLE_TESTS_INCLUDES c_example_ast_tests INCLUDE_DIRECTORIES)
-message(STATUS "[CMake Diagnostics] c_example_ast_tests include dirs: ${EXAMPLE_TESTS_INCLUDES}")
-
-
-add_executable(python_example_ast_tests
-    ${PYTHON_EXAMPLE_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-target_include_directories(python_example_ast_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
-)
-
-
-add_executable(cpp_example_ast_tests
-    ${CPP_EXAMPLE_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-target_include_directories(cpp_example_ast_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
-)
-
-
-# JavaScript and TypeScript test executables
-add_executable(js_basic_ast_tests
-    ${JS_BASIC_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-target_link_libraries(js_basic_ast_tests PRIVATE test_utilities)
-target_include_directories(js_basic_ast_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
-)
-
-
-add_executable(ts_basic_ast_tests
-    ${TS_BASIC_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-target_link_libraries(ts_basic_ast_tests PRIVATE test_utilities)
-target_include_directories(ts_basic_ast_tests PRIVATE
-    ${PROJECT_SOURCE_DIR}/core/include
-    ${PROJECT_SOURCE_DIR}/core/include/scopemux
-)
-
-
-add_executable(js_example_ast_tests
-    ${JS_EXAMPLE_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-
-add_executable(ts_example_ast_tests
-    ${TS_EXAMPLE_AST_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
-)
-
-# Link against Criterion and your project's C libraries
-target_link_libraries(init_parser_tests PRIVATE
-    ${Criterion_LIBRARIES} # Provided by pkg_check_modules
-    parser_core
-    m # Math library, often needed
-    dl # Dynamic linking library, sometimes needed by test frameworks or tree-sitter
-    # Tree-sitter imported targets from root CMake
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
-)
-
-# Link C Basic AST tests - FIX: Reorder linking to ensure proper symbol resolution
-# Use whole-archive linker flags to ensure static libraries are fully linked
-target_link_libraries(c_basic_ast_tests PRIVATE
+target_link_libraries(reference_resolver_tests PRIVATE 
+    test_utilities
+    reference_resolver_stubs
     ${Criterion_LIBRARIES}
     parser_core
-    # Start whole-archive section for Tree-sitter libraries
-    # This forces inclusion of all symbols from static libraries
-    -Wl,--whole-archive
+    m
+    dl
+    # Tree-sitter imported targets
+    ts_core
     ts_c
     ts_cpp
     ts_python
     ts_javascript
     ts_typescript
-    ts_core
-    -Wl,--no-whole-archive
-    # System libraries at the end
-    m
-    dl
+)
+target_include_directories(reference_resolver_tests PRIVATE
+    ${PROJECT_SOURCE_DIR}/core/include
+    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${Criterion_INCLUDE_DIRS}
 )
 
-# Link Python Basic AST tests - FIX: Reorder linking to ensure proper symbol resolution
-# Use whole-archive linker flags to ensure static libraries are fully linked
-target_link_libraries(python_basic_ast_tests PRIVATE
+# Resolver Core Tests
+add_executable(resolver_core_tests
+    ${RESOLVER_CORE_TEST_SRCS}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+target_link_libraries(resolver_core_tests PRIVATE 
+    test_utilities
+    reference_resolver_stubs
     ${Criterion_LIBRARIES}
     parser_core
-    # Start whole-archive section for Tree-sitter libraries
-    # This forces inclusion of all symbols from static libraries
-    -Wl,--whole-archive
+    m
+    dl
+    # Tree-sitter imported targets
+    ts_core
     ts_c
     ts_cpp
     ts_python
     ts_javascript
     ts_typescript
-    ts_core
-    -Wl,--no-whole-archive
-    # System libraries at the end
-    m
-    dl
+)
+target_include_directories(resolver_core_tests PRIVATE
+    ${PROJECT_SOURCE_DIR}/core/include
+    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${Criterion_INCLUDE_DIRS}
 )
 
-# Link C++ Basic AST tests - FIX: Reorder linking to ensure proper symbol resolution
+# Resolver Registration Tests
+add_executable(resolver_registration_tests
+    ${RESOLVER_REGISTRATION_TEST_SRCS}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+target_link_libraries(resolver_registration_tests PRIVATE 
+    test_utilities
+    reference_resolver_stubs
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+target_include_directories(resolver_registration_tests PRIVATE
+    ${PROJECT_SOURCE_DIR}/core/include
+    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${Criterion_INCLUDE_DIRS}
+)
+
+# Resolver Resolution Tests
+add_executable(resolver_resolution_tests
+    ${RESOLVER_RESOLUTION_TEST_SRCS}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+target_link_libraries(resolver_resolution_tests PRIVATE 
+    test_utilities
+    reference_resolver_stubs
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+target_include_directories(resolver_resolution_tests PRIVATE
+    ${PROJECT_SOURCE_DIR}/core/include
+    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${Criterion_INCLUDE_DIRS}
+)
+
+# Language Resolver Tests
+add_executable(language_resolver_tests
+    ${LANGUAGE_RESOLVER_TEST_SRCS}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+target_link_libraries(language_resolver_tests PRIVATE 
+    test_utilities
+    reference_resolver_stubs
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+target_include_directories(language_resolver_tests PRIVATE
+    ${PROJECT_SOURCE_DIR}/core/include
+    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${Criterion_INCLUDE_DIRS}
+)
+
+# Symbol Table Tests
+add_executable(symbol_table_tests
+    ${SYMBOL_TABLE_TEST_SOURCES}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+target_link_libraries(symbol_table_tests PRIVATE 
+    test_utilities
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+target_include_directories(symbol_table_tests PRIVATE
+    ${PROJECT_SOURCE_DIR}/core/include
+    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${Criterion_INCLUDE_DIRS}
+)
+
+# Project Context Tests
+add_executable(project_context_tests
+    ${PROJECT_CONTEXT_TEST_SOURCES}
+    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+)
+target_link_libraries(project_context_tests PRIVATE 
+    test_utilities
+    ${Criterion_LIBRARIES}
+    parser_core
+    m
+    dl
+    # Tree-sitter imported targets
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+target_include_directories(project_context_tests PRIVATE
+    ${PROJECT_SOURCE_DIR}/core/include
+    ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    ${Criterion_INCLUDE_DIRS}
+)
+
+# --- Macro to create test executables ---
+# Macro now takes test target and its source variable
+macro(create_test_executable test_name source_var)
+    add_executable(${test_name} ${${source_var}})
+    target_link_libraries(${test_name} PRIVATE
+        test_utilities
+        parser_core
+        ${Criterion_LIBRARIES}
+        m
+        dl
+        ts_core
+        ts_c
+        ts_cpp
+        ts_python
+        ts_javascript
+        ts_typescript
+    )
+    target_include_directories(${test_name} PRIVATE
+        ${PROJECT_SOURCE_DIR}/core/include
+        ${PROJECT_SOURCE_DIR}/core/include/scopemux
+    )
+endmacro()
+
+# --- Create Language-Specific Test Executables ---
+create_test_executable(c_basic_ast_tests C_BASIC_AST_TEST_SOURCES)
+create_test_executable(python_basic_ast_tests PYTHON_BASIC_AST_TEST_SOURCES)
+create_test_executable(cpp_basic_ast_tests CPP_BASIC_AST_TEST_SOURCES)
+create_test_executable(c_example_ast_tests C_EXAMPLE_AST_TEST_SOURCES)
+create_test_executable(python_example_ast_tests PYTHON_EXAMPLE_AST_TEST_SOURCES)
+create_test_executable(cpp_example_ast_tests CPP_EXAMPLE_AST_TEST_SOURCES)
+create_test_executable(js_basic_ast_tests JS_BASIC_AST_TEST_SOURCES)
+create_test_executable(ts_basic_ast_tests TS_BASIC_AST_TEST_SOURCES)
+create_test_executable(js_example_ast_tests JS_EXAMPLE_AST_TEST_SOURCES)
+create_test_executable(ts_example_ast_tests TS_EXAMPLE_AST_TEST_SOURCES)
+
 # Use whole-archive linker flags to ensure static libraries are fully linked
 target_link_libraries(cpp_basic_ast_tests PRIVATE
     ${Criterion_LIBRARIES}
@@ -483,6 +591,15 @@ add_test(NAME TSBasicASTTests COMMAND ts_basic_ast_tests)
 add_test(NAME JSExampleASTTests COMMAND js_example_ast_tests)
 add_test(NAME TSExampleASTTests COMMAND ts_example_ast_tests)
 add_test(NAME EdgeCaseTests COMMAND edge_case_tests)
+
+# Add interfile resolution tests to CTest
+add_test(NAME ReferenceResolverTests COMMAND reference_resolver_tests)
+add_test(NAME ResolverCoreTests COMMAND resolver_core_tests)
+add_test(NAME ResolverRegistrationTests COMMAND resolver_registration_tests)
+add_test(NAME ResolverResolutionTests COMMAND resolver_resolution_tests)
+add_test(NAME LanguageResolverTests COMMAND language_resolver_tests)
+add_test(NAME SymbolTableTests COMMAND symbol_table_tests)
+add_test(NAME ProjectContextTests COMMAND project_context_tests)
 
 # Link Edge Case tests
 target_link_libraries(edge_case_tests PRIVATE

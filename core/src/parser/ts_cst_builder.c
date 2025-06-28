@@ -12,7 +12,8 @@
 
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/parser.h"
-#include "../../core/include/scopemux/tree_sitter_integration.h"
+
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

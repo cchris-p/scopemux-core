@@ -13,6 +13,8 @@
 #include "parser_context.h"
 #include "parser_internal.h"
 #include "query_processing.h"
+#include "scopemux/ast.h"
+#include "scopemux/tree_sitter_integration.h"
 
 #include <setjmp.h>
 #include <signal.h>
@@ -22,7 +24,10 @@
 #define _POSIX_C_SOURCE 200809L // For strdup on some systems
 
 // Include the proper header for Tree-sitter integration functions
-#include "../../core/include/scopemux/tree_sitter_integration.h"
+
+#include "../../core/include/scopemux/ts_resource_manager.h"
+#include "scopemux/ts_internal.h"
+#include "scopemux/logging.h"
 
 /**
  * Parse a file and generate the AST and/or CST.
@@ -226,11 +231,11 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     // Add the AST root to the context if it was created successfully
     if (ast_root) {
       parser_add_ast_node(ctx, ast_root);
-      
+
       // CRITICAL: Set the AST root node in the parser context
       // This ensures the root is accessible via ctx->ast_root in tests
       ctx->ast_root = ast_root;
-      
+
       if (ctx->log_level <= LOG_DEBUG) {
         log_debug("AST root set in parser context, node count: %zu", ast_root->num_children);
       }
@@ -328,4 +333,32 @@ const CSTNode *parser_get_cst_root(const ParserContext *ctx) {
     return NULL;
   }
   return ctx->cst_root;
+}
+
+// === Tree-sitter integration public API ===
+bool ts_init_parser(ParserContext *ctx, LanguageType language) {
+  if (!ctx) {
+    log_error("NULL context passed to ts_init_parser");
+    return false;
+  }
+  log_debug("ts_init_parser facade called, delegating to ts_init_parser_impl for language %d", language);
+  return ts_init_parser_impl(ctx, language);
+}
+
+ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
+  if (ts_node_is_null(root_node) || !ctx) {
+    if (ctx) {
+      parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
+    }
+    return NULL;
+  }
+  return ts_tree_to_ast_impl(root_node, ctx);
+}
+
+CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx) {
+  if (ts_node_is_null(root_node) || !ctx || !ctx->source_code) {
+    parser_set_error(ctx, -1, "Invalid context for CST generation");
+    return NULL;
+  }
+  return ts_tree_to_cst_impl(root_node, ctx);
 }

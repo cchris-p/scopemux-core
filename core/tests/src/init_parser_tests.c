@@ -8,7 +8,7 @@
 
 // Include the necessary header files for tree-sitter integration
 #include "scopemux/parser.h"
-#include "scopemux/tree_sitter_integration.h"
+
 // Include test utilities that provide the TreeSitterParser functionality
 #include "../utilities/tree_sitter_test_util.h"
 

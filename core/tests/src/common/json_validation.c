@@ -1,4 +1,5 @@
 #include "../../include/json_validation.h"
+#include "../../../include/scopemux/ast.h" // Canonical source of ASTNodeType enum
 #include <criterion/criterion.h>
 #include <criterion/logging.h> /* For cr_log_* functions */
 #include <stdio.h>
@@ -103,6 +104,7 @@ void free_json_value(JsonValue *json) {
 // This is a hack for testing purposes only
 __thread const char *current_node_name = NULL;
 
+// NOTE: This function must always be kept in sync with ASTNodeType in ast.h.
 static const char *ast_type_to_string(ASTNodeType type) {
   // Add comprehensive logging for node type conversion
   cr_log_info("Converting AST node type (%d) to string (for node name: %s)", (int)type,
@@ -121,52 +123,30 @@ static const char *ast_type_to_string(ASTNodeType type) {
   }
 
   switch (type) {
-  case NODE_UNKNOWN:
-    return "UNKNOWN"; // Changed to uppercase for consistency
-  case NODE_FUNCTION:
-    return "FUNCTION";
-  case NODE_METHOD:
-    return "METHOD";
-  case NODE_CLASS:
-    return "CLASS";
-  case NODE_STRUCT:
-    return "STRUCT";
-  case NODE_ENUM:
-    return "ENUM";
-  case NODE_INTERFACE:
-    return "INTERFACE";
-  case NODE_NAMESPACE:
-    return "NAMESPACE";
-  case NODE_MODULE:
-    return "MODULE";
-  case NODE_COMMENT:
-    return "COMMENT";
-  case NODE_DOCSTRING:
-    return "DOCSTRING";
-  case NODE_UNION:
-    return "UNION";
-  case NODE_TYPEDEF:
-    return "TYPEDEF";
-  case NODE_INCLUDE:
-    return "INCLUDE";
-  case NODE_MACRO:
-    return "MACRO";
-  case NODE_VARIABLE:
-    return "VARIABLE";
-  case NODE_VARIABLE_DECLARATION:
-    return "VARIABLE_DECLARATION";
-  case NODE_FOR_STATEMENT:
-    return "FOR_STATEMENT";
-  case NODE_WHILE_STATEMENT:
-    return "WHILE_STATEMENT";
-  case NODE_DO_WHILE_STATEMENT:
-    return "DO_WHILE_STATEMENT";
-  case NODE_IF_STATEMENT:
-    return "IF_STATEMENT";
-  case NODE_IF_ELSE_IF_STATEMENT:
-    return "IF_STATEMENT";
-  case NODE_SWITCH_STATEMENT:
-    return "SWITCH_STATEMENT";
+    // Only use enum values from ast.h. Remove any duplicates or obsolete cases.
+  case NODE_UNKNOWN: return "UNKNOWN";
+  case NODE_FUNCTION: return "FUNCTION";
+  case NODE_METHOD: return "METHOD";
+  case NODE_CLASS: return "CLASS";
+  case NODE_STRUCT: return "STRUCT";
+  case NODE_ENUM: return "ENUM";
+  case NODE_INTERFACE: return "INTERFACE";
+  case NODE_NAMESPACE: return "NAMESPACE";
+  case NODE_MODULE: return "MODULE";
+  case NODE_COMMENT: return "COMMENT";
+  case NODE_DOCSTRING: return "DOCSTRING";
+  case NODE_UNION: return "UNION";
+  case NODE_TYPEDEF: return "TYPEDEF";
+  case NODE_INCLUDE: return "INCLUDE";
+  case NODE_MACRO: return "MACRO";
+  case NODE_VARIABLE: return "VARIABLE";
+  case NODE_VARIABLE_DECLARATION: return "VARIABLE_DECLARATION";
+  case NODE_FOR_STATEMENT: return "FOR_STATEMENT";
+  case NODE_WHILE_STATEMENT: return "WHILE_STATEMENT";
+  case NODE_DO_WHILE_STATEMENT: return "DO_WHILE_STATEMENT";
+  case NODE_IF_STATEMENT: return "IF_STATEMENT";
+  case NODE_IF_ELSE_IF_STATEMENT: return "IF_STATEMENT";
+  case NODE_SWITCH_STATEMENT: return "SWITCH_STATEMENT";
   default:
     cr_log_warn("Unknown AST node type: %d", (int)type);
     return "UNKNOWN"; // Changed to uppercase for consistency

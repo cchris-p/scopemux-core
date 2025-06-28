@@ -2,7 +2,7 @@
 
 #include "../common.h"                  // For LanguageType
 #include "../parser.h"                  // For ASTNode, ParserContext
-#include "../tree_sitter_integration.h" // For TSNode, TSQuery, TSQueryMatch
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h" // For TSNode, TSQuery, TSQueryMatch
 #include <stdint.h>                     // For uint32_t
 
 typedef struct LanguageAdapter {

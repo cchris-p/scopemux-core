@@ -1,6 +1,7 @@
 #ifndef TS_INTERNAL_H
 #define TS_INTERNAL_H
 
+#include "scopemux/ast.h"
 #include "scopemux/parser.h"
 #include "tree_sitter/api.h"
 

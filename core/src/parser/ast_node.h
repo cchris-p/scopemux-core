@@ -18,14 +18,13 @@
  * @param name Node name
  * @return ASTNode* Created node or NULL on failure
  */
-ASTNode *ast_node_new(ASTNodeType type, const char *name);
+// NOTE: Public ASTNode API is declared in core/include/scopemux/ast.h
 
 /**
  * @brief Free an AST node and all its resources
  *
  * @param node Node to free
  */
-void ast_node_free(ASTNode *node);
 
 /**
  * @brief Free an AST node's internal resources but not the node itself or its children
@@ -42,7 +41,6 @@ void ast_node_free_internal(ASTNode *node);
  * @param child Child node
  * @return bool True on success, false on failure
  */
-bool ast_node_add_child(ASTNode *parent, ASTNode *child);
 
 /**
  * @brief Add a reference from one AST node to another
@@ -65,14 +63,8 @@ bool ast_node_set_property(ASTNode *node, const char *key, const char *value);
 
 /**
  * @brief Create a new AST node with full attributes
- *
- * @param type Node type
- * @param name Node name
- * @param qualified_name Fully qualified name
- * @param range Source range
- * @return ASTNode* Created node or NULL on failure
  */
-ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name,
-                         SourceRange range);
+ASTNode *ast_node_create_full(ASTNodeType type, const char *name, const char *qualified_name,
+                              SourceRange range);
 
 #endif /* SCOPEMUX_AST_NODE_H */

@@ -37,7 +37,7 @@ ext_modules = [
             # Parser files
             "src/parser/parser.c",
             "src/parser/parser_context.c",
-            "src/parser/tree_sitter_integration.c",
+
             "src/parser/query_manager.c",
             "src/parser/query_processing.c",
             "src/parser/memory_tracking.c",
@@ -59,7 +59,7 @@ ext_modules = [
             "src/processors/ast_post_processor.c",
             "src/processors/docstring_processor.c",
             # Config files
-            "src/config/node_type_mapping_loader.c",
+
             # Adapter files
             "src/adapters/adapter_registry.c",
             "src/adapters/language_adapter.c",

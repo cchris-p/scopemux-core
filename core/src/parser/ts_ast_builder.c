@@ -18,7 +18,8 @@
 #include "../../core/include/scopemux/processors/docstring_processor.h"
 #include "../../core/include/scopemux/processors/test_processor.h"
 #include "../../core/include/scopemux/query_manager.h"
-#include "../../core/include/scopemux/tree_sitter_integration.h"
+
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,6 +1,6 @@
 #include "../../include/test_helpers.h"
 #include "../../../core/include/scopemux/logging.h"
-#include "../../../core/include/scopemux/config/node_type_mapping_loader.h"
+#include "scopemux/ast.h"
 
 // Centralized logging toggle for all test executables
 int logging_enabled = 0;

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../core/include/scopemux/tree_sitter_integration.h"
+
 #include "../../include/minimal_parser.h"
 #define LOG_WARN(fmt, ...) criterion_log(CR_LOG_WARNING, fmt, ##__VA_ARGS__)
 #include "../../include/test_helpers.h"

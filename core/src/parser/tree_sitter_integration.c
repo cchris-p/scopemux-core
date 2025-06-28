@@ -5,16 +5,6 @@
  * This file serves as a facade for the Tree-sitter integration, delegating to
  * specialized modules while maintaining the public interface.
  *
- * The implementation follows the SOLID principles:
- * - Single Responsibility: Each module handles one aspect of parsing
- * - Open/Closed: New languages can be added without modifying existing code
- * - Liskov Substitution: Consistent interfaces across language implementations
- * - Interface Segregation: Clean separation between AST and CST generation
- * - Dependency Inversion: High-level modules depend on abstractions
- *
- * This refactored implementation removes deprecated and legacy code while
- * maintaining full compatibility with the existing public interface.
- *
  * The AST generation process follows these key steps:
  * 1. Create a root NODE_ROOT node representing the file/module
  * 2. Process Tree-sitter queries in a hierarchical order
@@ -31,10 +21,12 @@
 // Define _POSIX_C_SOURCE to make strdup available
 #define _POSIX_C_SOURCE 200809L
 
-#include "../../core/include/scopemux/tree_sitter_integration.h"
-#include "../../core/include/scopemux/logging.h"
-#include "../../core/include/scopemux/parser.h"
-#include "../../core/include/scopemux/ts_internal.h"
+
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
+#include "scopemux/logging.h"
+#include "scopemux/ast.h"
+#include "scopemux/parser.h"
+#include "scopemux/ts_internal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
