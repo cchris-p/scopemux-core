@@ -32,7 +32,7 @@ EDGE_CASE_EXECUTABLE_RELPATH="core/tests/edge_case_tests"
 # Add additional misc test executable paths here as needed
 
 # Set parallel jobs for test execution
-PARALLEL_JOBS=4
+PARALLEL_JOBS=1
 
 # Command-line flag parsing for advanced options
 CLEAN_BUILD=true

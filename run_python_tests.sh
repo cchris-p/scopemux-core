@@ -28,7 +28,7 @@ PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
 
 # Set parallel jobs for test execution
-PARALLEL_JOBS=4
+PARALLEL_JOBS=1
 
 # Python language test executables
 PYTHON_BASIC_AST_EXECUTABLE_RELPATH="core/tests/python_basic_ast_tests"

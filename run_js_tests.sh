@@ -17,6 +17,7 @@ RUN_JS_BASIC_AST_TESTS=true
 RUN_JS_EXAMPLE_AST_TESTS=true
 RUN_JS_CST_TESTS=false # Disabled - source files don't exist yet
 
+
 # JavaScript example test directory toggles
 RUN_JS_BASIC_SYNTAX_TESTS=true
 RUN_JS_MODERN_JS_TESTS=false
@@ -28,7 +29,7 @@ PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
 
 # Set parallel jobs for test execution
-PARALLEL_JOBS=4
+PARALLEL_JOBS=1
 
 # JavaScript language test executables
 JS_BASIC_AST_EXECUTABLE_RELPATH="core/tests/js_basic_ast_tests"

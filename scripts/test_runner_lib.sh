@@ -55,27 +55,35 @@ run_test_suite() {
     # Use test name for log file instead of timestamp for easier debugging
     local test_log="$TMP_DIR/$(basename "${executable_path}").log"
 
+    echo "[test_runner_lib] Checking for test executable: ${executable_path}"
+    
     if [ ! -f "${executable_path}" ]; then
         echo "❌ FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
+        # Try to help diagnose the issue
+        echo "[test_runner_lib] Searching for the missing executable..."
+        find "$(dirname "${executable_path}")" -type f -executable -name "$(basename "${executable_path}")" || true
         TEST_SUITE_RESULTS["$test_suite_name"]="FAIL"
         return 1
     fi
 
-    echo "[test_runner_lib] Running ${test_suite_name}..."
+    echo "[test_runner_lib] Running ${test_suite_name}: ${executable_path}"
 
-    pushd "$(dirname "${executable_path}")" >/dev/null
+    # Execute directly with full path instead of changing directory
     # Capture output to a temporary log file first
     local raw_log="${test_log}.raw"
-    "./$(basename "${executable_path}")" >"$raw_log" 2>&1
+    "${executable_path}" >"$raw_log" 2>&1
     local test_exit_code=$?
 
     # Add test name prefix to each line for better readability with parallel execution
     awk -v prefix="[${test_suite_name}] " '{print prefix $0}' "$raw_log" >"$test_log"
     rm -f "$raw_log"
-    popd >/dev/null
-
+    
+    # Output the test result log with line identification
+    echo "[test_runner_lib] Test output from ${test_suite_name}:"
+    cat "$test_log"
+    
     # Remove misleading Criterion summary line from output (both stdout and stderr)
-    grep -v "FAIL: .* (One or more tests failed)" "$test_log"
+    grep -v "FAIL: .* (One or more tests failed)" "$test_log" >/dev/null 2>&1
 
     # Check for the summary line indicating all tests passed
     if grep -q "Failing: 0 | Crashing: 0" "$test_log"; then

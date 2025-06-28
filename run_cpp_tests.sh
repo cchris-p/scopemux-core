@@ -27,7 +27,7 @@ PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
 
 # Set parallel jobs for test execution
-PARALLEL_JOBS=4
+PARALLEL_JOBS=1
 
 # C++ language test executables
 CPP_BASIC_AST_EXECUTABLE_RELPATH="core/tests/cpp_basic_ast_tests"
@@ -60,82 +60,75 @@ prepare_clean_build_dir "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
 # Setup CMake configuration using the shared library
 setup_cmake_config "$PROJECT_ROOT_DIR"
 
-# Run standard C++ language tests
-echo "[run_cpp_tests.sh] Running C++ language test suite"
+# Define all C++ test targets and their display names
+CPP_TEST_TARGETS=(
+    "cpp_basic_ast_tests:C++ Basic AST Tests"
+    "cpp_cst_tests:C++ CST Tests"
+)
 
-# Run basic C++ tests if enabled
-if [ "${RUN_CPP_BASIC_AST_TESTS}" = true ]; then
-    build_test_target "cpp_basic_ast_tests" "C++ Basic AST Tests"
-    build_result=$?
+# Map from target to executable relpath
+declare -A CPP_TEST_EXECUTABLES
+CPP_TEST_EXECUTABLES["cpp_basic_ast_tests"]="core/tests/cpp_basic_ast_tests"
+CPP_TEST_EXECUTABLES["cpp_cst_tests"]="core/tests/cpp_cst_tests"
 
-    if [ $build_result -ne 0 ]; then
-        echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_basic_ast_tests"
-        ((TEST_FAILURES++))
-    else
-        # Change to build directory and get absolute path to executable
-        cd "$CMAKE_PROJECT_BUILD_DIR"
-        make "cpp_basic_ast_tests"
+# Loop over all C++ test targets that have their own executables
+for target in "${CPP_TEST_TARGETS[@]}"; do
+    IFS=':' read -r test_name test_description <<<"$target"
 
-        # Verify that the executable was built
-        if [ ! -f "core/tests/cpp_basic_ast_tests" ]; then
-            echo "[run_cpp_tests.sh] ERROR: Executable not found at core/tests/cpp_basic_ast_tests"
-            ((TEST_FAILURES++))
-        else
-            # Get the absolute path to the executable
-            executable_path="$(pwd)/core/tests/cpp_basic_ast_tests"
-
-            # Run the test
-            run_test_suite "C++ Basic AST Tests" "$executable_path"
-            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    # Determine if the test should run based on its toggle
+    should_run=false
+    case "$test_name" in
+    "cpp_basic_ast_tests")
+        if [ "$RUN_CPP_BASIC_AST_TESTS" = true ]; then should_run=true; fi
+        ;;
+    "cpp_cst_tests")
+        if [ "$RUN_CPP_CST_TESTS" = true ]; then
+            echo "[run_cpp_tests.sh] WARNING: $test_name is enabled but its source files do not exist yet. Skipping."
         fi
+        continue
+        ;;
+    esac
+
+    if [ "$should_run" = false ]; then
+        continue
     fi
-fi
+
+    build_test_target "$test_name" "$CMAKE_PROJECT_BUILD_DIR"
+    build_result=$?
+    if [ $build_result -ne 0 ]; then
+        echo "[run_cpp_tests.sh] ERROR: Failed to build $test_name"
+        ((TEST_FAILURES++))
+        continue
+    fi
+
+    executable_path="${CMAKE_PROJECT_BUILD_DIR}/${CPP_TEST_EXECUTABLES[$test_name]}"
+    if [ ! -f "$executable_path" ]; then
+        echo "[run_cpp_tests.sh] ERROR: Executable not found at $executable_path"
+        ((TEST_FAILURES++))
+        continue
+    fi
+
+    run_test_suite "$test_description" "$executable_path"
+    if [ $? -ne 0 ]; then ((TEST_FAILURES++)); fi
+done
 
 # Gather enabled C++ example test categories
 CPP_TEST_CATEGORIES=()
-if [ "$RUN_CPP_BASIC_SYNTAX_TESTS" = true ]; then
-    CPP_TEST_CATEGORIES+=("basic_syntax")
-fi
-if [ "$RUN_CPP_COMPLEX_STRUCTURES_TESTS" = true ]; then
-    CPP_TEST_CATEGORIES+=("complex_structures")
-fi
-if [ "$RUN_CPP_MODERN_CPP_TESTS" = true ]; then
-    CPP_TEST_CATEGORIES+=("modern_cpp")
-fi
-if [ "$RUN_CPP_TEMPLATES_TESTS" = true ]; then
-    CPP_TEST_CATEGORIES+=("templates")
-fi
+if [ "$RUN_CPP_BASIC_SYNTAX_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("basic_syntax"); fi
+if [ "$RUN_CPP_COMPLEX_STRUCTURES_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("complex_structures"); fi
+if [ "$RUN_CPP_MODERN_CPP_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("modern_cpp"); fi
+if [ "$RUN_CPP_TEMPLATES_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("templates"); fi
 
 # Run per-directory C++ example tests if any are enabled
 if [ "${#CPP_TEST_CATEGORIES[@]}" -gt 0 ]; then
-    process_language_tests cpp CPP_TEST_CATEGORIES "$CMAKE_PROJECT_BUILD_DIR/core/tests/cpp_example_ast_tests" "$PARALLEL_JOBS" ".cpp"
-fi
-
-# Run CST tests if enabled
-if [ "${RUN_CPP_CST_TESTS}" = true ]; then
-    build_test_target "cpp_cst_tests" "C++ CST Tests"
+    echo "[run_cpp_tests.sh] Building C++ example AST tests executable..."
+    build_test_target "cpp_example_ast_tests" "$CMAKE_PROJECT_BUILD_DIR"
     build_result=$?
-
     if [ $build_result -ne 0 ]; then
-        echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_cst_tests"
+        echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_example_ast_tests, skipping example tests."
         ((TEST_FAILURES++))
     else
-        # Change to build directory and get absolute path to executable
-        cd "$CMAKE_PROJECT_BUILD_DIR"
-        make "cpp_cst_tests"
-
-        # Verify that the executable was built
-        if [ ! -f "core/tests/cpp_cst_tests" ]; then
-            echo "[run_cpp_tests.sh] ERROR: Executable not found at core/tests/cpp_cst_tests"
-            ((TEST_FAILURES++))
-        else
-            # Get the absolute path to the executable
-            executable_path="$(pwd)/core/tests/cpp_cst_tests"
-
-            # Run the test
-            run_test_suite "C++ CST Tests" "$executable_path"
-            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
-        fi
+        process_language_tests cpp CPP_TEST_CATEGORIES "$CPP_EXAMPLE_AST_EXECUTABLE_RELPATH"
     fi
 fi
 
