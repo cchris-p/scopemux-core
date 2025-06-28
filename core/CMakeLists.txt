@@ -121,6 +121,7 @@ add_library(parser_core STATIC
     src/utils/memory_debug.c
     src/utils/ts_resource_manager.c
     # MISSING symbol implementations
+    src/config/node_type_mapping_loader.c
 
     src/processors/docstring_processor.c
     src/processors/ast_post_processor.c

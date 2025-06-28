@@ -26,8 +26,8 @@
 // Include the proper header for Tree-sitter integration functions
 
 #include "../../core/include/scopemux/ts_resource_manager.h"
-#include "scopemux/ts_internal.h"
 #include "scopemux/logging.h"
+#include "scopemux/ts_internal.h"
 
 /**
  * Parse a file and generate the AST and/or CST.
@@ -341,7 +341,8 @@ bool ts_init_parser(ParserContext *ctx, LanguageType language) {
     log_error("NULL context passed to ts_init_parser");
     return false;
   }
-  log_debug("ts_init_parser facade called, delegating to ts_init_parser_impl for language %d", language);
+  log_debug("ts_init_parser facade called, delegating to ts_init_parser_impl for language %d",
+            language);
   return ts_init_parser_impl(ctx, language);
 }
 
