@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# ScopeMux C++ Test Runner (standardized)
-# Uses shared test runner library for consistent logic across languages
+# ScopeMux C++ Tests Runner Script
+# Uses the shared test runner library for standardized test execution
+#
+# NOTE: This script uses a unique build directory (build-cpp) to allow parallel test execution across languages.
+# This prevents race conditions and build directory conflicts with other test runners.
 
 # Source the shared test runner library
 source scripts/test_runner_lib.sh
@@ -24,7 +27,7 @@ RUN_CPP_TEMPLATES_TESTS=true
 
 # Project root directory (assuming this script is in the root)
 PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
+CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build-cpp"
 
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1

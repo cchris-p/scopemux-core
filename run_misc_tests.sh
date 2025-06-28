@@ -2,6 +2,9 @@
 
 # ScopeMux Miscellaneous Tests Runner Script
 # Uses the shared test runner library for standardized test execution
+#
+# NOTE: This script uses a unique build directory (build-misc) to allow parallel test execution across languages.
+# This prevents race conditions and build directory conflicts with other test runners.
 
 # Source the shared test runner library
 source scripts/test_runner_lib.sh
@@ -24,7 +27,7 @@ CORE_DIR="${PROJECT_ROOT_DIR}/core"
 TESTS_DIR="${CORE_DIR}/tests"
 
 # Main CMake build directory for the entire project
-CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build"
+CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build-misc"
 
 # Relative paths from the CMAKE_PROJECT_BUILD_DIR to where the misc test executables are located
 INIT_PARSER_EXECUTABLE_RELPATH="core/tests/init_parser_tests"
