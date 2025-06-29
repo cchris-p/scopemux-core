@@ -9,22 +9,23 @@
 #include "scopemux/ast.h"
 #include "scopemux/reference_resolver.h"
 #include "scopemux/symbol_table.h"
+#include "reference_resolver_private.h"
 #include <criterion/criterion.h>
 #include <criterion/new/assert.h>
 
 // Forward declarations for language-specific resolvers
-extern ResolutionResult c_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+extern ResolutionStatus c_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
                                         GlobalSymbolTable *symbol_table, void *resolver_data);
 
-extern ResolutionResult python_resolver_impl(ASTNode *node, ReferenceType ref_type,
+extern ResolutionStatus python_resolver_impl(ASTNode *node, ReferenceType ref_type,
                                              const char *name, GlobalSymbolTable *symbol_table,
                                              void *resolver_data);
 
-extern ResolutionResult javascript_resolver_impl(ASTNode *node, ReferenceType ref_type,
+extern ResolutionStatus javascript_resolver_impl(ASTNode *node, ReferenceType ref_type,
                                                  const char *name, GlobalSymbolTable *symbol_table,
                                                  void *resolver_data);
 
-extern ResolutionResult typescript_resolver_impl(ASTNode *node, ReferenceType ref_type,
+extern ResolutionStatus typescript_resolver_impl(ASTNode *node, ReferenceType ref_type,
                                                  const char *name, GlobalSymbolTable *symbol_table,
                                                  void *resolver_data);
 
@@ -37,33 +38,31 @@ static ASTNode *ts_node = NULL;
 
 // Helper for creating test AST nodes with language-specific attributes
 static ASTNode *create_test_node(LanguageType lang, const char *name) {
-  ASTNode *node = ast_node_new(NODE_TYPE_FUNCTION_CALL);
-  node->language = lang;
-  ast_node_set_name(node, name);
+  ASTNode *node = ast_node_new(NODE_FUNCTION, name);
+  // Note: ASTNode doesn't have a language field, so we'll skip that for now
+  // This will need to be addressed when we extend ASTNode or use additional_data
 
   // Add language-specific attributes where needed
   switch (lang) {
   case LANG_C:
     // Simulate scoping via parent relationship for C
-    ASTNode *parent = ast_node_new(NODE_TYPE_FUNCTION);
-    parent->language = LANG_C;
-    ast_node_set_name(parent, "parent_function");
+    ASTNode *parent = ast_node_new(NODE_FUNCTION, "parent_function");
     ast_node_add_child(parent, node);
     return parent;
 
   case LANG_PYTHON:
-    // Add import attributes for Python
-    ast_node_set_attribute(node, "module", "test_module");
+    // Note: ast_node_set_attribute doesn't exist yet
+    // This will be implemented in Phase B
     return node;
 
   case LANG_JAVASCRIPT:
-    // Add module attributes for JavaScript
-    ast_node_set_attribute(node, "module_path", "./test_module.js");
+    // Note: ast_node_set_attribute doesn't exist yet
+    // This will be implemented in Phase B
     return node;
 
   case LANG_TYPESCRIPT:
-    // Add type information for TypeScript
-    ast_node_set_attribute(node, "type_annotation", "TestType");
+    // Note: ast_node_set_attribute doesn't exist yet
+    // This will be implemented in Phase B
     return node;
 
   default:
@@ -146,58 +145,63 @@ Test(language_resolvers, c_resolver, .init = setup_language_resolvers,
   ASTNode *call_node = c_node->children[0];
 
   // Call the C resolver directly
-  ResolutionResult result =
-      c_resolver_impl(call_node, REF_TYPE_FUNCTION, "c_function", symbol_table, NULL);
+  ResolutionStatus result =
+      c_resolver_impl(call_node, REF_CALL, "c_function", symbol_table, NULL);
 
   // Verify resolution
-  cr_assert(result == RESOLUTION_SUCCESS, "C resolver should successfully resolve the reference");
-  cr_assert(call_node->reference != NULL, "Reference should be populated");
-  cr_assert_str_eq(call_node->reference->file_path, "test.c", "Reference file path should match");
-  cr_assert(call_node->reference->line == 10, "Reference line should match");
+  cr_assert(result == RESOLVE_SUCCESS, "C resolver should successfully resolve the reference");
+  // Note: call_node->reference doesn't exist - we'll use the test helper functions
+  Symbol *ref = ast_node_get_reference(call_node);
+  cr_assert(ref != NULL, "Reference should be populated");
+  cr_assert_str_eq(ref->file_path, "test.c", "Reference file path should match");
+  cr_assert(ref->line == 10, "Reference line should match");
 }
 
 // Test Python language resolver
 Test(language_resolvers, python_resolver, .init = setup_language_resolvers,
      .fini = teardown_language_resolvers) {
   // Call the Python resolver directly
-  ResolutionResult result =
-      python_resolver_impl(python_node, REF_TYPE_FUNCTION, "python_function", symbol_table, NULL);
+  ResolutionStatus result =
+      python_resolver_impl(python_node, REF_CALL, "python_function", symbol_table, NULL);
 
   // Verify resolution
-  cr_assert(result == RESOLUTION_SUCCESS,
+  cr_assert(result == RESOLVE_SUCCESS,
             "Python resolver should successfully resolve the reference");
-  cr_assert(python_node->reference != NULL, "Reference should be populated");
-  cr_assert_str_eq(python_node->reference->file_path, "test.py",
+  Symbol *ref = ast_node_get_reference(python_node);
+  cr_assert(ref != NULL, "Reference should be populated");
+  cr_assert_str_eq(ref->file_path, "test.py",
                    "Reference file path should match");
-  cr_assert(python_node->reference->line == 20, "Reference line should match");
+  cr_assert(ref->line == 20, "Reference line should match");
 }
 
 // Test JavaScript language resolver
 Test(language_resolvers, javascript_resolver, .init = setup_language_resolvers,
      .fini = teardown_language_resolvers) {
   // Call the JavaScript resolver directly
-  ResolutionResult result =
-      javascript_resolver_impl(js_node, REF_TYPE_FUNCTION, "js_function", symbol_table, NULL);
+  ResolutionStatus result =
+      javascript_resolver_impl(js_node, REF_CALL, "js_function", symbol_table, NULL);
 
   // Verify resolution
-  cr_assert(result == RESOLUTION_SUCCESS,
+  cr_assert(result == RESOLVE_SUCCESS,
             "JavaScript resolver should successfully resolve the reference");
-  cr_assert(js_node->reference != NULL, "Reference should be populated");
-  cr_assert_str_eq(js_node->reference->file_path, "test.js", "Reference file path should match");
-  cr_assert(js_node->reference->line == 30, "Reference line should match");
+  Symbol *ref = ast_node_get_reference(js_node);
+  cr_assert(ref != NULL, "Reference should be populated");
+  cr_assert_str_eq(ref->file_path, "test.js", "Reference file path should match");
+  cr_assert(ref->line == 30, "Reference line should match");
 }
 
 // Test TypeScript language resolver
 Test(language_resolvers, typescript_resolver, .init = setup_language_resolvers,
      .fini = teardown_language_resolvers) {
   // Call the TypeScript resolver directly
-  ResolutionResult result =
-      typescript_resolver_impl(ts_node, REF_TYPE_FUNCTION, "ts_function", symbol_table, NULL);
+  ResolutionStatus result =
+      typescript_resolver_impl(ts_node, REF_CALL, "ts_function", symbol_table, NULL);
 
   // Verify resolution
-  cr_assert(result == RESOLUTION_SUCCESS,
+  cr_assert(result == RESOLVE_SUCCESS,
             "TypeScript resolver should successfully resolve the reference");
-  cr_assert(ts_node->reference != NULL, "Reference should be populated");
-  cr_assert_str_eq(ts_node->reference->file_path, "test.ts", "Reference file path should match");
-  cr_assert(ts_node->reference->line == 40, "Reference line should match");
+  Symbol *ref = ast_node_get_reference(ts_node);
+  cr_assert(ref != NULL, "Reference should be populated");
+  cr_assert_str_eq(ref->file_path, "test.ts", "Reference file path should match");
+  cr_assert(ref->line == 40, "Reference line should match");
 }

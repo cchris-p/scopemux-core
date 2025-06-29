@@ -8,14 +8,24 @@
  */
 
 #include "scopemux/ast.h"
-#include "../../core/include/scopemux/logging.h"
+#include "scopemux/logging.h"
 #include "scopemux/parser.h"
-#include "../../core/include/scopemux/query_manager.h"
+#include "parser_internal.h"
+#include "scopemux/memory_debug.h"
+#include "config/node_type_mapping_loader.h"
+
+// Forward declaration of functions from node_type_mapping_loader.h
+extern ASTNodeType get_node_type_for_query(const char *query_type);
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// Ensure strdup is properly declared to avoid implicit declaration warnings
+#ifndef _GNU_SOURCE
+char *strdup(const char *s);
+#endif
 
 // Helper return codes for error handling
 #define MATCH_OK 0
@@ -29,12 +39,27 @@
  * @return uint32_t The corresponding ASTNodeType value
  */
 static uint32_t map_query_type_to_node_type(const char *query_type) {
+  // Validate input parameter
   if (!query_type) {
+    log_error("NULL query_type passed to map_query_type_to_node_type");
     return NODE_UNKNOWN;
   }
 
-  // Use the node type mapping system
-  uint32_t node_type = get_node_type_for_query(query_type);
+  // Defensive check for empty string
+  if (query_type[0] == '\0') {
+    log_error("Empty query_type string passed to map_query_type_to_node_type");
+    return NODE_UNKNOWN;
+  }
+
+  // Use the node type mapping system with error handling
+  uint32_t node_type;
+  
+  // Safe call to get_node_type_for_query
+  // This is a critical section that might cause segfaults
+  // Use a direct call but with proper validation
+  log_debug("Mapping query type: '%s'", query_type);
+  node_type = get_node_type_for_query(query_type);
+  log_debug("Query type '%s' mapped to node type %u", query_type, node_type);
 
   // Fall back to hardcoded mappings if needed
   if (node_type == NODE_UNKNOWN) {
@@ -160,19 +185,49 @@ static int create_node_from_match(uint32_t node_type, const char *name, TSNode t
  * @return char* Heap-allocated content string (caller must free)
  */
 static char *extract_raw_content(TSNode node, const char *source_code) {
+  // Validate input parameters
   if (ts_node_is_null(node) || !source_code) {
+    log_debug("extract_raw_content: Invalid parameters - node is null: %s, source_code is null: %s", 
+             ts_node_is_null(node) ? "yes" : "no", 
+             !source_code ? "yes" : "no");
     return NULL;
   }
 
+  // Get node byte range
   uint32_t start_byte = ts_node_start_byte(node);
   uint32_t end_byte = ts_node_end_byte(node);
+  
+  // Validate byte range
+  if (start_byte > end_byte) {
+    log_error("extract_raw_content: Invalid byte range - start: %u, end: %u", start_byte, end_byte);
+    return NULL;
+  }
+  
   uint32_t length = end_byte - start_byte;
-
-  char *result = (char *)malloc(length + 1);
-  if (!result) {
+  
+  // Check for reasonable length to prevent memory issues
+  if (length > 1024 * 1024) { // 1MB limit
+    log_warning("extract_raw_content: Content length exceeds limit (%u bytes)", length);
     return NULL;
   }
 
+  // Allocate memory for content
+  char *result = (char *)memory_debug_malloc(length + 1, __FILE__, __LINE__, "extract_raw_content");
+  if (!result) {
+    log_error("extract_raw_content: Failed to allocate memory for content");
+    return NULL;
+  }
+
+  // Safely copy content with bounds checking
+  // Validate that start_byte is within source_code bounds
+  // This is a basic check and not foolproof since we don't know source_code length
+  if (source_code[start_byte] == '\0') {
+    log_error("extract_raw_content: Start byte position (%u) is beyond source code bounds", start_byte);
+    memory_debug_free(result, __FILE__, __LINE__);
+    return NULL;
+  }
+  
+  // Copy content
   memcpy(result, source_code + start_byte, length);
   result[length] = '\0';
 
@@ -189,16 +244,34 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
  * @param node_map Node mapping for parent relationships
  */
 void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
-                    ASTNode **node_map) {
-  if (!query_type || ts_node_is_null(root_node) || !ctx || !ast_root) {
-    if (ctx && ctx->log_level <= LOG_DEBUG) {
-      log_debug("Invalid arguments to process_query: %s%s%s%s",
-              !query_type ? "query_type is null, " : "",
-              ts_node_is_null(root_node) ? "root_node is null, " : "",
-              !ctx ? "ctx is null, " : "",
-              !ast_root ? "ast_root is null" : "");
-    }
+                     ASTNode **node_map) {
+  log_debug("ENTERING process_query with query_type: %s", query_type ? query_type : "NULL");
+  
+  // Validate all input parameters
+  if (!query_type) {
+    log_error("process_query: query_type is NULL");
     return;
+  }
+  
+  if (ts_node_is_null(root_node)) {
+    log_error("process_query: root_node is NULL for query type '%s'", query_type);
+    return;
+  }
+  
+  if (!ctx) {
+    log_error("process_query: ctx is NULL for query type '%s'", query_type);
+    return;
+  }
+  
+  if (!ast_root) {
+    log_error("process_query: ast_root is NULL for query type '%s'", query_type);
+    return;
+  }
+  
+  // Additional validation for node_map
+  if (!node_map) {
+    log_warning("process_query: node_map is NULL for query type '%s' - parent relationships will not be tracked", query_type);
+    // We continue execution as node_map is optional
   }
 
   // Get the compiled query from the query manager
@@ -257,8 +330,16 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       ParseStatus status = create_node_from_match(node_type, NULL, captured_node, &ast_node, ctx);
 
       if (status == 0 && ast_node) {
-        // Set node metadata
-        ast_node->raw_content = extract_raw_content(captured_node, ctx->source_code);
+        // Set node metadata with robust error handling
+        if (ctx->source_code) {
+          ast_node->raw_content = extract_raw_content(captured_node, ctx->source_code);
+          if (!ast_node->raw_content && ctx->log_level <= LOG_DEBUG) {
+            log_debug("Failed to extract raw content for node type %u", node_type);
+          }
+        } else {
+          log_warning("Source code is NULL, cannot extract raw content");
+          ast_node->raw_content = NULL;
+        }
 
         // Add to the node hierarchy
         ASTNode *parent = NULL;

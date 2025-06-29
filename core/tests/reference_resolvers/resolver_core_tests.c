@@ -25,7 +25,7 @@ static ResolutionStatus mock_resolver_func(ASTNode *node, ReferenceType ref_type
   (void)name;          // Suppress unused parameter warnings
   (void)symbol_table;  // Suppress unused parameter warnings
   (void)resolver_data; // Suppress unused parameter warnings
-  return RESOLUTION_SUCCESS;
+  return RESOLVE_SUCCESS;
 }
 
 // Test fixture for reference resolver tests
@@ -75,7 +75,7 @@ Test(resolver_core, register_resolver, .init = setup_resolver, .fini = teardown_
   // Try resolving with the registered resolver
   ResolutionStatus status =
       reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name");
-  cr_assert(status == RESOLUTION_SUCCESS, "Resolution should succeed with registered resolver");
+  cr_assert(status == RESOLVE_SUCCESS, "Resolution should succeed with registered resolver");
 
   // Clean up
   ast_node_free(test_node);
@@ -97,7 +97,7 @@ Test(resolver_core, register_replacement, .init = setup_resolver, .fini = teardo
 
   ResolutionStatus status =
       reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name");
-  cr_assert(status == RESOLUTION_SUCCESS, "Resolution should still work after replacement");
+  cr_assert(status == RESOLVE_SUCCESS, "Resolution should still work after replacement");
 
   // Clean up
   ast_node_free(test_node);
@@ -119,7 +119,7 @@ Test(resolver_core, unregister_resolver, .init = setup_resolver, .fini = teardow
   // With no resolver registered, we should get RESOLUTION_UNKNOWN
   ResolutionStatus status =
       reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name");
-  cr_assert(status == RESOLUTION_UNKNOWN, "Resolution should fail after unregistering resolver");
+  cr_assert(status == RESOLVE_NOT_FOUND, "Resolution should fail after unregistering resolver");
 
   // Clean up
   ast_node_free(test_node);

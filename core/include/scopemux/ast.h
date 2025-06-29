@@ -138,6 +138,15 @@ bool ast_node_set_file_path(ASTNode *node, const char *file_path);
 bool ast_node_set_qualified_name(ASTNode *node, const char *qualified_name);
 
 /**
+ * Set an attribute on an AST node
+ * @param node The node to modify
+ * @param key The attribute key
+ * @param value The attribute value (will be copied)
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_set_attribute(ASTNode *node, const char *key, const char *value);
+
+/**
  * Find a child node by name
  * @param node The parent node to search in
  * @param name The name to search for

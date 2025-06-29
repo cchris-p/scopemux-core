@@ -68,7 +68,7 @@ static ResolutionStatus test_mock_resolver(ASTNode *node, ReferenceType ref_type
   (void)name;          // Suppress unused parameter warnings
   (void)symbol_table;  // Suppress unused parameter warnings
   (void)resolver_data; // Suppress unused parameter warnings
-  return RESOLUTION_SUCCESS;
+  return RESOLVE_SUCCESS;
 }
 
 // Test the public API delegation from reference_resolver.c to implementation modules
@@ -131,7 +131,7 @@ Test(reference_resolver_delegation, resolve_reference_delegate, .init = setup_ma
   ast_node_set_reference(node, sym);
 
   // Verify delegation worked
-  cr_assert(status == RESOLUTION_SUCCESS, "Resolution should succeed via delegation");
+  cr_assert(status == RESOLVE_SUCCESS, "Resolution should succeed via delegation");
 
   Symbol *ref = ast_node_get_reference(node);
   cr_assert(ref != NULL, "Reference should be populated");

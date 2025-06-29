@@ -10,6 +10,55 @@
 #include "parser_internal.h"
 
 /**
+ * Convert an ASTNodeType enum value to its canonical string representation
+ * 
+ * This function maps internal enum values to their canonical schema string
+ * representations as defined in the AST/CST schema documentation.
+ * 
+ * @param type The ASTNodeType enum value
+ * @return The canonical string representation (e.g., "ROOT", "FUNCTION", etc.)
+ */
+const char *ast_node_type_to_string(ASTNodeType type) {
+    switch (type) {
+        case NODE_ROOT: return "ROOT";
+        case NODE_FUNCTION: return "FUNCTION";
+        case NODE_CLASS: return "CLASS";
+        case NODE_METHOD: return "METHOD";
+        case NODE_VARIABLE: return "VARIABLE";
+        case NODE_PARAMETER: return "PARAMETER";
+        case NODE_IDENTIFIER: return "IDENTIFIER";
+        case NODE_IMPORT: return "IMPORT";
+        case NODE_INCLUDE: return "INCLUDE";
+        case NODE_MODULE: return "MODULE";
+        case NODE_VARIABLE_DECLARATION: return "VARIABLE_DECLARATION";
+        case NODE_FOR_STATEMENT: return "FOR_STATEMENT";
+        case NODE_WHILE_STATEMENT: return "WHILE_STATEMENT";
+        case NODE_DO_WHILE_STATEMENT: return "DO_WHILE_STATEMENT";
+        case NODE_IF_STATEMENT: return "IF_STATEMENT";
+        case NODE_IF_ELSE_IF_STATEMENT: return "IF_ELSE_IF_STATEMENT";
+        case NODE_SWITCH_STATEMENT: return "SWITCH_STATEMENT";
+        case NODE_COMMENT: return "COMMENT";
+        case NODE_DOCSTRING: return "DOCSTRING";
+        case NODE_NAMESPACE: return "NAMESPACE";
+        case NODE_STRUCT: return "STRUCT";
+        case NODE_ENUM: return "ENUM";
+        case NODE_INTERFACE: return "INTERFACE";
+        case NODE_UNION: return "UNION";
+        case NODE_TYPEDEF: return "TYPEDEF";
+        case NODE_MACRO: return "MACRO";
+        case NODE_CONTROL_FLOW: return "CONTROL_FLOW";
+        case NODE_TEMPLATE_SPECIALIZATION: return "TEMPLATE_SPECIALIZATION";
+        case NODE_LAMBDA: return "LAMBDA";
+        case NODE_USING: return "USING";
+        case NODE_FRIEND: return "FRIEND";
+        case NODE_OPERATOR: return "OPERATOR";
+        case NODE_UNKNOWN:
+        default:
+            return "UNKNOWN";
+    }
+}
+
+/**
  * Recursively free an AST node's resources, but not its children
  * This is different from ast_node_free which also frees children
  */
@@ -288,4 +337,11 @@ bool ast_node_set_property(ASTNode *node, const char *key, const char *value) {
   }
 
   return true;
+}
+
+/**
+ * Set an attribute on an AST node (alias for ast_node_set_property for test compatibility).
+ */
+bool ast_node_set_attribute(ASTNode *node, const char *key, const char *value) {
+  return ast_node_set_property(node, key, value);
 }

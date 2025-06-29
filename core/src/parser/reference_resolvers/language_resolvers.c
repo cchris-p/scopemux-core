@@ -19,7 +19,7 @@
 #include <string.h>
 
 // Forward declaration of generic resolver for fallback
-extern ResolutionResult reference_resolver_generic_resolve_impl(
+extern ResolutionStatus reference_resolver_generic_resolve_impl(
     ASTNode *node, ReferenceType ref_type, const char *name, GlobalSymbolTable *symbol_table);
 
 /**
@@ -28,11 +28,11 @@ extern ResolutionResult reference_resolver_generic_resolve_impl(
  * Handles C-specific reference resolution, including header inclusion,
  * macro expansion, and C symbol lookup rules
  */
-ResolutionResult reference_resolver_c_impl(ASTNode *node, ReferenceType ref_type,
+ResolutionStatus reference_resolver_c_impl(ASTNode *node, ReferenceType ref_type,
                                       const char *name, GlobalSymbolTable *symbol_table,
                                       void *resolver_data) {
     if (!node || !name || !symbol_table) {
-        return RESOLUTION_FAILED;
+        return RESOLVE_ERROR;
     }
     
     // Track C-specific resolution statistics if resolver_data is provided
@@ -52,9 +52,9 @@ ResolutionResult reference_resolver_c_impl(ASTNode *node, ReferenceType ref_type
         // Add reference to node
         if (node->num_references < node->references_capacity || 
             ast_node_add_reference(node, entry->node)) {
-            return RESOLUTION_SUCCESS;
+            return RESOLVE_SUCCESS;
         }
-        return RESOLUTION_FAILED; // Failed to add reference
+        return RESOLVE_ERROR; // Failed to add reference
     }
     
     // 2. Try current scope lookup
@@ -69,15 +69,15 @@ ResolutionResult reference_resolver_c_impl(ASTNode *node, ReferenceType ref_type
         // Add reference to node
         if (node->num_references < node->references_capacity || 
             ast_node_add_reference(node, entry->node)) {
-            return RESOLUTION_SUCCESS;
+            return RESOLVE_SUCCESS;
         }
-        return RESOLUTION_FAILED; // Failed to add reference
+        return RESOLVE_ERROR; // Failed to add reference
     }
     
     // If we got this far, fallback to generic resolution
-    ResolutionResult result = reference_resolver_generic_resolve_impl(node, ref_type, name, symbol_table);
+    ResolutionStatus result = reference_resolver_generic_resolve_impl(node, ref_type, name, symbol_table);
     
-    if (result == RESOLUTION_SUCCESS && stats) {
+    if (result == RESOLVE_SUCCESS && stats) {
         stats->resolved_count++;
     }
     
@@ -90,11 +90,11 @@ ResolutionResult reference_resolver_c_impl(ASTNode *node, ReferenceType ref_type
  * Handles Python-specific reference resolution, including module imports,
  * dot notation for attributes, and Python's scope resolution rules
  */
-ResolutionResult reference_resolver_python_impl(ASTNode *node, ReferenceType ref_type,
+ResolutionStatus reference_resolver_python_impl(ASTNode *node, ReferenceType ref_type,
                                            const char *name, GlobalSymbolTable *symbol_table,
                                            void *resolver_data) {
     if (!node || !name || !symbol_table) {
-        return RESOLUTION_FAILED;
+        return RESOLVE_ERROR;
     }
     
     // Track Python-specific resolution statistics if resolver_data is provided
@@ -115,7 +115,7 @@ ResolutionResult reference_resolver_python_impl(ASTNode *node, ReferenceType ref
         // Add reference to node
         if (node->num_references < node->references_capacity) {
             node->references[node->num_references++] = entry->node;
-            return RESOLUTION_SUCCESS;
+            return RESOLVE_SUCCESS;
         } else {
             // Resize references array
             size_t new_capacity = node->references_capacity * 2;
@@ -128,10 +128,10 @@ ResolutionResult reference_resolver_python_impl(ASTNode *node, ReferenceType ref
                 node->references = new_refs;
                 node->references_capacity = new_capacity;
                 node->references[node->num_references++] = entry->node;
-                return RESOLUTION_SUCCESS;
+                return RESOLVE_SUCCESS;
             }
         }
-        return RESOLUTION_FAILED; // Failed to add reference
+        return RESOLVE_ERROR; // Failed to add reference
     }
     
     // 2. Try scope-aware lookup (handles relative references within a module)
@@ -148,7 +148,7 @@ ResolutionResult reference_resolver_python_impl(ASTNode *node, ReferenceType ref
         // Add reference
         if (node->num_references < node->references_capacity) {
             node->references[node->num_references++] = entry->node;
-            return RESOLUTION_SUCCESS;
+            return RESOLVE_SUCCESS;
         } else {
             // Resize references array
             size_t new_capacity = node->references_capacity * 2;
@@ -161,45 +161,19 @@ ResolutionResult reference_resolver_python_impl(ASTNode *node, ReferenceType ref
                 node->references = new_refs;
                 node->references_capacity = new_capacity;
                 node->references[node->num_references++] = entry->node;
-                return RESOLUTION_SUCCESS;
+                return RESOLVE_SUCCESS;
             }
         }
-        return RESOLUTION_FAILED; // Failed to add reference
+        return RESOLVE_ERROR; // Failed to add reference
     }
     
     // 3. Try resolving as module attribute (for 'from X import Y' style references)
-    if (node->parent && node->parent->type == NODE_IMPORT && node->parent->module_path) {
-        char module_ref[256];
-        snprintf(module_ref, sizeof(module_ref), "%s.%s", node->parent->module_path, name);
+    // Note: module_path would need to be added to ASTNode or stored in additional_data
+    if (node->parent && node->parent->type == NODE_IMPORT) {
+        // For now, skip module attribute resolution until ASTNode is extended
+        // This will be implemented when we add module_path field or use additional_data
         
-        entry = symbol_table_lookup(symbol_table, module_ref);
-        if (entry) {
-            if (stats) {
-                stats->resolved_count++;
-                stats->import_resolved++;
-            }
-            
-            // Add reference
-            if (node->num_references < node->references_capacity) {
-                node->references[node->num_references++] = entry->node;
-                return RESOLUTION_SUCCESS;
-            } else {
-                // Resize references array
-                size_t new_capacity = node->references_capacity * 2;
-                if (new_capacity == 0) new_capacity = 4;
-                
-                ASTNode **new_refs = (ASTNode **)realloc(
-                    node->references, new_capacity * sizeof(ASTNode *));
-                    
-                if (new_refs) {
-                    node->references = new_refs;
-                    node->references_capacity = new_capacity;
-                    node->references[node->num_references++] = entry->node;
-                    return RESOLUTION_SUCCESS;
-                }
-            }
-            return RESOLUTION_FAILED; // Failed to add reference
-        }
+        // TODO: Implement module attribute resolution when module_path is available
     }
     
     // 4. Look in builtins (Python has a builtin scope)
@@ -213,7 +187,7 @@ ResolutionResult reference_resolver_python_impl(ASTNode *node, ReferenceType ref
             // Add reference
             if (node->num_references < node->references_capacity) {
                 node->references[node->num_references++] = entry->node;
-                return RESOLUTION_SUCCESS;
+                return RESOLVE_SUCCESS;
             } else {
                 // Resize references array
                 size_t new_capacity = node->references_capacity * 2;
@@ -226,17 +200,17 @@ ResolutionResult reference_resolver_python_impl(ASTNode *node, ReferenceType ref
                     node->references = new_refs;
                     node->references_capacity = new_capacity;
                     node->references[node->num_references++] = entry->node;
-                    return RESOLUTION_SUCCESS;
+                    return RESOLVE_SUCCESS;
                 }
             }
-            return RESOLUTION_FAILED; // Failed to add reference
+            return RESOLVE_ERROR; // Failed to add reference
         }
     }
     
     // If we got this far, fallback to generic resolution
-    ResolutionResult result = reference_resolver_generic_resolve_impl(node, ref_type, name, symbol_table);
+    ResolutionStatus result = reference_resolver_generic_resolve_impl(node, ref_type, name, symbol_table);
     
-    if (result == RESOLUTION_SUCCESS && stats) {
+    if (result == RESOLVE_SUCCESS && stats) {
         stats->resolved_count++;
     }
     
@@ -249,7 +223,7 @@ ResolutionResult reference_resolver_python_impl(ASTNode *node, ReferenceType ref
  * Handles JavaScript-specific reference resolution, including module imports,
  * CommonJS requires, and JavaScript's scope resolution rules
  */
-ResolutionResult reference_resolver_javascript_impl(ASTNode *node, ReferenceType ref_type,
+ResolutionStatus reference_resolver_javascript_impl(ASTNode *node, ReferenceType ref_type,
                                                const char *name, GlobalSymbolTable *symbol_table,
                                                void *resolver_data) {
     // For now, fall back to the generic resolver
@@ -263,7 +237,7 @@ ResolutionResult reference_resolver_javascript_impl(ASTNode *node, ReferenceType
  * Handles TypeScript-specific reference resolution, including module imports,
  * type references, and TypeScript's scope resolution rules
  */
-ResolutionResult reference_resolver_typescript_impl(ASTNode *node, ReferenceType ref_type,
+ResolutionStatus reference_resolver_typescript_impl(ASTNode *node, ReferenceType ref_type,
                                                const char *name, GlobalSymbolTable *symbol_table,
                                                void *resolver_data) {
     // For now, fall back to the generic resolver
@@ -272,26 +246,47 @@ ResolutionResult reference_resolver_typescript_impl(ASTNode *node, ReferenceType
 }
 
 // Export implementations as public symbols for use in delegation layer
-ResolutionResult reference_resolver_c(ASTNode *node, ReferenceType ref_type,
+ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type,
                                    const char *name, GlobalSymbolTable *symbol_table,
                                    void *resolver_data) {
     return reference_resolver_c_impl(node, ref_type, name, symbol_table, resolver_data);
 }
 
-ResolutionResult reference_resolver_python(ASTNode *node, ReferenceType ref_type,
+ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type,
                                         const char *name, GlobalSymbolTable *symbol_table,
                                         void *resolver_data) {
     return reference_resolver_python_impl(node, ref_type, name, symbol_table, resolver_data);
 }
 
-ResolutionResult reference_resolver_javascript(ASTNode *node, ReferenceType ref_type,
+ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_type,
                                             const char *name, GlobalSymbolTable *symbol_table,
                                             void *resolver_data) {
     return reference_resolver_javascript_impl(node, ref_type, name, symbol_table, resolver_data);
 }
 
-ResolutionResult reference_resolver_typescript(ASTNode *node, ReferenceType ref_type,
+ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_type,
                                             const char *name, GlobalSymbolTable *symbol_table,
                                             void *resolver_data) {
+    return reference_resolver_typescript_impl(node, ref_type, name, symbol_table, resolver_data);
+}
+
+// Test-specific function aliases that tests expect
+ResolutionStatus c_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+                                GlobalSymbolTable *symbol_table, void *resolver_data) {
+    return reference_resolver_c_impl(node, ref_type, name, symbol_table, resolver_data);
+}
+
+ResolutionStatus python_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+                                     GlobalSymbolTable *symbol_table, void *resolver_data) {
+    return reference_resolver_python_impl(node, ref_type, name, symbol_table, resolver_data);
+}
+
+ResolutionStatus javascript_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+                                         GlobalSymbolTable *symbol_table, void *resolver_data) {
+    return reference_resolver_javascript_impl(node, ref_type, name, symbol_table, resolver_data);
+}
+
+ResolutionStatus typescript_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+                                         GlobalSymbolTable *symbol_table, void *resolver_data) {
     return reference_resolver_typescript_impl(node, ref_type, name, symbol_table, resolver_data);
 }

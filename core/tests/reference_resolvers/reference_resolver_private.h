@@ -74,17 +74,8 @@ typedef struct {
 // Language constants for testing
 #define LANG_RUST LANG_UNKNOWN // Use LANG_UNKNOWN for tests
 
-/**
- * @brief Detailed resolution result type
- */
-typedef enum {
-  RESOLUTION_UNKNOWN = 0,   ///< Resolution status is unknown
-  RESOLUTION_SUCCESS,       ///< Reference successfully resolved
-  RESOLUTION_NOT_FOUND,     ///< Symbol not found
-  RESOLUTION_AMBIGUOUS,     ///< Multiple matching symbols found
-  RESOLUTION_TYPE_MISMATCH, ///< Symbol found but type mismatch
-  RESOLUTION_ERROR          ///< Resolution error (internal)
-} ResolutionResult;
+// Use the standard ResolutionStatus from reference_resolver.h
+// No need to redefine it here
 
 /**
  * @brief Symbol type enumeration
@@ -110,37 +101,58 @@ typedef struct {
   char *file_path;      ///< Source file path
   unsigned int line;    ///< Line number
   unsigned int column;  ///< Column number
+  LanguageType language; ///< Language of the symbol
   void *data;           ///< Optional additional data
 } Symbol;
 
-// Function to create a new symbol
-Symbol *symbol_new(const char *name, SymbolType type);
-// Function to free a symbol
-void symbol_free(Symbol *symbol);
+// Implementation of symbol functions for tests
+static inline Symbol *symbol_new(const char *name, SymbolType type) {
+  if (!name) return NULL;
+  
+  Symbol *symbol = (Symbol *)malloc(sizeof(Symbol));
+  if (!symbol) return NULL;
+  
+  symbol->name = strdup(name);
+  symbol->qualified_name = strdup(name);
+  symbol->type = type;
+  symbol->file_path = NULL;
+  symbol->line = 0;
+  symbol->column = 0;
+  symbol->language = LANG_UNKNOWN;
+  symbol->data = NULL;
+  
+  return symbol;
+}
+
+static inline void symbol_free(Symbol *symbol) {
+  if (!symbol) return;
+  
+  free(symbol->name);
+  free(symbol->qualified_name);
+  free(symbol->file_path);
+  free(symbol);
+}
+
 // Function to add a symbol to a symbol table (for tests)
 static inline void symbol_table_add(GlobalSymbolTable *table, Symbol *symbol) {
   // This is a mock implementation for tests
   if (!table || !symbol)
     return;
   // In a real implementation, this would add the symbol to the table
+  // For now, we just track that it was called
 }
 // Function to resolve a reference (for tests)
-static inline ResolutionResult resolve_reference(ReferenceResolver *resolver, ASTNode *node,
+static inline ResolutionStatus resolve_reference(ReferenceResolver *resolver, ASTNode *node,
                                                  ReferenceType ref_type) {
   // This is a mock implementation that calls the actual API
   if (!resolver || !node)
-    return RESOLUTION_ERROR;
+    return RESOLVE_ERROR;
 
   // Use direct reference resolver function
   ResolutionStatus status =
       reference_resolver_resolve_node(resolver, node, ref_type, "test_symbol");
 
-  // Convert status to result for tests
-  if (status == RESOLVE_SUCCESS) {
-    return RESOLUTION_SUCCESS;
-  } else {
-    return RESOLUTION_ERROR;
-  }
+  return status;
 }
 
 // Add extension to ASTNode for reference tests
@@ -216,11 +228,8 @@ static inline void cleanup_node_references(void) {
 #define NODE_TYPE_FUNCTION_CALL 100
 #define REF_TYPE_FUNCTION REF_CALL
 
-// Define resolution status mappings between public API and test implementation
-#define RESOLVE_SUCCESS RESOLUTION_SUCCESS
-#define RESOLVE_NOT_FOUND RESOLUTION_NOT_FOUND
-#define RESOLVE_ERROR RESOLUTION_ERROR
-#define RESOLVE_ERROR_INVALID_ARGS RESOLUTION_ERROR
+// Resolution status values are already defined in reference_resolver.h
+// No need to redefine them here
 
 #ifdef __cplusplus
 }

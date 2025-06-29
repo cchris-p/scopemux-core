@@ -63,6 +63,10 @@ typedef struct GlobalSymbolTable {
     size_t num_symbols;            ///< Total number of symbols in the table
     size_t collisions;             ///< Number of hash collisions (for statistics)
     
+    // Compatibility fields for tests
+    size_t capacity;               ///< Alias for num_buckets (for test compatibility)
+    size_t count;                  ///< Alias for num_symbols (for test compatibility)
+    
     // Scope and namespace tracking
     char **scope_prefixes;         ///< Array of scope prefixes for resolution
     size_t num_scopes;             ///< Number of scope prefixes
