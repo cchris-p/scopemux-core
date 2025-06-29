@@ -1,5 +1,8 @@
-tree_sitter_*/*
+**/tree_sitter_*/*
+build-interfile/*
+build-misc/*
 windsurf-collector/*
+run_*_tests.txt
 
 
 # Python

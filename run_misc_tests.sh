@@ -1,5 +1,38 @@
 #!/bin/bash
 
+# -----------------------------------------------------------------------------
+# ScopeMux Miscellaneous Tests Runner Script
+#
+# Purpose:
+#   Runs core and infrastructure tests that are not covered by language-specific
+#   test scripts (e.g., run_c_tests.sh, run_cpp_tests.sh, etc.).
+#   This includes:
+#     - Parser initialization and teardown (init_parser_tests)
+#     - Edge-case and cross-language parsing scenarios (edge_case_tests)
+#     - Any future categories of tests that are not language-specific
+#
+# Build Isolation:
+#   Uses a dedicated build directory (build-misc) to avoid conflicts and enable
+#   parallel test execution with other test runners.
+#
+# Logging:
+#   All output (stdout and stderr) is written to a timestamped log file for
+#   reproducibility and debugging.
+#
+# Test Runner:
+#   Relies on the shared test runner library (scripts/test_runner_lib.sh) for
+#   standardized test execution, summary, and cleanup.
+#
+# Test Toggles:
+#   Enable or disable specific categories of miscellaneous tests using the
+#   RUN_*_TESTS variables below.
+#
+# Caveats / TODO:
+#   - Add new miscellaneous test categories as needed.
+#   - Ensure that any new test categories are not duplicated in language-specific
+#     scripts.
+# -----------------------------------------------------------------------------
+
 # All output from this script (stdout and stderr) is written to a file named after the script and the current datetime.
 # Filename format: run_misc_tests-YYYYMMDD-HHMMSS.txt (UTC)
 # This is useful for preserving logs for each test run.

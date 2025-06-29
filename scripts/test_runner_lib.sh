@@ -1,5 +1,34 @@
 #!/bin/bash
 # test_runner_lib.sh - Common functions for all language test runners in ScopeMux
+#
+# Purpose:
+#   Provides setup, environment configuration, and utility functions for all test runners.
+#   Ensures Tree-sitter shared libraries are present for dynamic loading (via dlopen/dlsym).
+#
+# Shared Library Build Step:
+#   Automatically checks for required Tree-sitter .so files in build/tree-sitter-libs.
+#   If any are missing, runs scripts/build_shared_libs.sh to generate them from static .a files.
+#   This avoids manual intervention and guarantees tests always have correct runtime dependencies.
+#
+# Caveats:
+#   - Assumes static libraries are built (via build_all_and_pybind.sh or equivalent) before running tests.
+#   - This script should be sourced or invoked by all test runners (run_c_tests.sh, etc).
+#   - Do not invoke scripts/build_shared_libs.sh manually except for debugging.
+#
+# Usage:
+#   Source this script in your test runners to ensure a consistent and robust test environment.
+
+# Ensure Tree-sitter shared libraries exist (build if missing)
+if [ ! -f "${TS_LIBS_DIR}/libtree-sitter-c.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-cpp.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-python.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-javascript.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-typescript.so" ]; then
+    echo "[test_runner_lib] Shared libraries missing, running scripts/build_shared_libs.sh..."
+    bash scripts/build_shared_libs.sh
+fi
+
+# Set LD_LIBRARY_PATH to include the Tree-sitter shared libraries directory
+# This ensures that the dynamic loader can find the shared libraries at runtime
+TS_LIBS_DIR="$(pwd)/build/tree-sitter-libs"
+export LD_LIBRARY_PATH="${TS_LIBS_DIR}:${LD_LIBRARY_PATH}"
+echo "[test_runner_lib] Setting LD_LIBRARY_PATH to include: ${TS_LIBS_DIR}"
 
 # Global variables
 PARALLEL_JOBS=4
@@ -56,7 +85,7 @@ run_test_suite() {
     local test_log="$TMP_DIR/$(basename "${executable_path}").log"
 
     echo "[test_runner_lib] Checking for test executable: ${executable_path}"
-    
+
     if [ ! -f "${executable_path}" ]; then
         echo "❌ FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
         # Try to help diagnose the issue
@@ -77,11 +106,11 @@ run_test_suite() {
     # Add test name prefix to each line for better readability with parallel execution
     awk -v prefix="[${test_suite_name}] " '{print prefix $0}' "$raw_log" >"$test_log"
     rm -f "$raw_log"
-    
+
     # Output the test result log with line identification
     echo "[test_runner_lib] Test output from ${test_suite_name}:"
     cat "$test_log"
-    
+
     # Remove misleading Criterion summary line from output (both stdout and stderr)
     grep -v "FAIL: .* (One or more tests failed)" "$test_log" >/dev/null 2>&1
 
@@ -101,7 +130,6 @@ run_test_suite() {
         fi
     fi
 }
-
 
 # Standardized directory processing (recursive, parallel, sorted)
 # Handles testing source files with expected JSON output
@@ -125,12 +153,12 @@ process_language_tests() {
         # Local counters for this directory
         local failed_tests=0
         local missing_json=0
-        
+
         # Create temporary files to track failures across parallel jobs
         local fail_counter="$TMP_DIR/${lang}_${category}_failures"
         local missing_counter="$TMP_DIR/${lang}_${category}_missing"
-        echo 0 > "$fail_counter"
-        echo 0 > "$missing_counter"
+        echo 0 >"$fail_counter"
+        echo 0 >"$missing_counter"
 
         # Create a semaphore with $PARALLEL_JOBS slots
         local sem="$TMP_DIR/semaphore_$$"
@@ -181,7 +209,7 @@ process_language_tests() {
                     local executable="./$(basename "${example_executable_path}")"
                     local test_result=1
                     local raw_log="${test_log}.raw"
-                    
+
                     if [ -x "$executable" ]; then
                         "$executable" >"$raw_log" 2>&1
                         test_result=$?
@@ -193,7 +221,7 @@ process_language_tests() {
                         echo "[$test_name] This is likely due to a build failure. Check the build logs for errors." >>"$test_log"
                         cat "$test_log"
                     fi
-                    
+
                     rm -f "$raw_log"
                     popd >/dev/null
 
@@ -202,10 +230,10 @@ process_language_tests() {
                     if [ $test_result -ne 0 ]; then
                         # Update the failure counter in the temp file atomically
                         local current_fails=$(cat "$fail_counter")
-                        echo $((current_fails + 1)) > "$fail_counter"
-                        echo "❌ FAIL: $test_name ($((i+1))/$total_tests)"
+                        echo $((current_fails + 1)) >"$fail_counter"
+                        echo "❌ FAIL: $test_name ($((i + 1))/$total_tests)"
                     else
-                        echo "✅ PASS: $test_name ($((i+1))/$total_tests)"
+                        echo "✅ PASS: $test_name ($((i + 1))/$total_tests)"
                     fi
 
                     unset SCOPEMUX_TEST_FILE
@@ -214,7 +242,7 @@ process_language_tests() {
                     echo "❌ ERROR: Missing expected JSON for test: $test_file"
                     # Update the missing counter in the temp file atomically
                     local current_missing=$(cat "$missing_counter")
-                    echo $((current_missing + 1)) > "$missing_counter"
+                    echo $((current_missing + 1)) >"$missing_counter"
                 fi
 
                 # Return the token
@@ -226,11 +254,11 @@ process_language_tests() {
         for job in $(jobs -p); do
             wait $job
         done
-        
+
         # Collect failure counts from temporary files
         failed_tests=$(cat "$fail_counter")
         missing_json=$(cat "$missing_counter")
-        
+
         # Clean up temporary counter files
         rm -f "$fail_counter" "$missing_counter"
 
@@ -266,7 +294,6 @@ process_language_tests() {
         fi
     done
 }
-
 
 # Setup CMake configuration
 setup_cmake_config() {
@@ -339,4 +366,3 @@ print_test_summary() {
         exit 1
     fi
 }
-

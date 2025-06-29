@@ -24,6 +24,7 @@ set(TS_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/tree-sitter-libs)
 file(MAKE_DIRECTORY ${TS_LIB_DIR})
 
 # Define paths for the built Tree-sitter libraries
+# Static libraries
 set(TS_CORE_LIB ${TS_LIB_DIR}/libtree-sitter.a)
 set(TS_C_LIB ${TS_LIB_DIR}/libtree-sitter-c.a)
 set(TS_CPP_LIB ${TS_LIB_DIR}/libtree-sitter-cpp.a)
@@ -31,11 +32,19 @@ set(TS_PYTHON_LIB ${TS_LIB_DIR}/libtree-sitter-python.a)
 set(TS_JS_LIB ${TS_LIB_DIR}/libtree-sitter-javascript.a)
 set(TS_TS_LIB ${TS_LIB_DIR}/libtree-sitter-typescript.a)
 
+# Shared libraries
+set(TS_CORE_SO ${TS_LIB_DIR}/libtree-sitter.so)
+set(TS_C_SO ${TS_LIB_DIR}/libtree-sitter-c.so)
+set(TS_CPP_SO ${TS_LIB_DIR}/libtree-sitter-cpp.so)
+set(TS_PYTHON_SO ${TS_LIB_DIR}/libtree-sitter-python.so)
+set(TS_JS_SO ${TS_LIB_DIR}/libtree-sitter-javascript.so)
+set(TS_TS_SO ${TS_LIB_DIR}/libtree-sitter-typescript.so)
+
 # Build the main Tree-sitter library
 ExternalProject_Add(tree_sitter_core
     SOURCE_DIR ${TS_DIR}
     CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_DIR}
+    BUILD_COMMAND make -C ${TS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
         ${TS_DIR}/libtree-sitter.a
@@ -47,7 +56,7 @@ ExternalProject_Add(tree_sitter_core
 ExternalProject_Add(tree_sitter_c
     SOURCE_DIR ${TS_C_DIR}
     CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_C_DIR}
+    BUILD_COMMAND make -C ${TS_C_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
         ${TS_C_DIR}/libtree-sitter-c.a
@@ -60,7 +69,7 @@ ExternalProject_Add(tree_sitter_c
 ExternalProject_Add(tree_sitter_cpp
     SOURCE_DIR ${TS_CPP_DIR}
     CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_CPP_DIR}
+    BUILD_COMMAND make -C ${TS_CPP_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
         ${TS_CPP_DIR}/libtree-sitter-cpp.a
@@ -73,7 +82,7 @@ ExternalProject_Add(tree_sitter_cpp
 ExternalProject_Add(tree_sitter_python
     SOURCE_DIR ${TS_PYTHON_DIR}
     CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_PYTHON_DIR}
+    BUILD_COMMAND make -C ${TS_PYTHON_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
         ${TS_PYTHON_DIR}/libtree-sitter-python.a
@@ -86,7 +95,7 @@ ExternalProject_Add(tree_sitter_python
 ExternalProject_Add(tree_sitter_javascript
     SOURCE_DIR ${TS_JS_DIR}
     CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_JS_DIR}
+    BUILD_COMMAND make -C ${TS_JS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
         ${TS_JS_DIR}/libtree-sitter-javascript.a
@@ -99,7 +108,7 @@ ExternalProject_Add(tree_sitter_javascript
 ExternalProject_Add(tree_sitter_typescript
     SOURCE_DIR ${TS_TS_DIR}
     CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_TS_DIR}
+    BUILD_COMMAND make -C ${TS_TS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
         ${TS_TS_DIR}/libtree-sitter-typescript.a
