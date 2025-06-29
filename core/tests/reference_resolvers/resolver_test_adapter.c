@@ -191,7 +191,7 @@ ResolutionStatus reference_resolver_resolve_node_safe(ReferenceResolver *resolve
                                                       ReferenceType ref_type, const char *name) {
   if (!node) {
     fprintf(stderr, "[ERROR] Attempt to resolve NULL node\n");
-    return RESOLVE_ERROR;
+    return RESOLUTION_ERROR;
   }
 
   // Check node validity before resolution and fix it aggressively
@@ -224,7 +224,7 @@ ResolutionStatus reference_resolver_resolve_node_safe(ReferenceResolver *resolve
 
   // For test purposes, always return success to isolate test issues
   // from actual resolver functionality
-  return RESOLVE_SUCCESS;
+  return RESOLUTION_SUCCESS;
 }
 
 /**

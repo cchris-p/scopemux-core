@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/scopemux/crash_handler.h"
 
 /* Include necessary headers for module initialization */
 #include <Python.h>
@@ -60,6 +62,9 @@ static const char module_docstring[] =
  * @param m Pointer to the Python module
  */
 void init_scopemux_module(void *m) {
+  // Enable memory debugging and crash handler for diagnostics
+  memory_debug_configure(true, true, true);
+  memory_debug_init();
   PyObject *module = (PyObject *)m;
 
   // Set module docstring

@@ -29,8 +29,7 @@ static bool ts_query_results_get_match(void *results, size_t index, TSQueryMatch
 /**
  * Detect programming language from file extension and content.
  */
-LanguageType parser_detect_language(const char *filename, const char *content,
-                                    size_t content_length) {
+Language parser_detect_language(const char *filename, const char *content, size_t content_length) {
   if (!filename && !content) {
     log_error("Cannot detect language: no filename or content provided");
     return LANG_UNKNOWN;

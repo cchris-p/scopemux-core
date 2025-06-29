@@ -5,8 +5,8 @@
 #include "scopemux/parser.h"
 #include "tree_sitter/api.h"
 
-// Parser initialization 
-bool ts_init_parser_impl(ParserContext *ctx, LanguageType language);
+// Parser initialization
+bool ts_init_parser_impl(ParserContext *ctx, Language language);
 
 // AST generation
 ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx);

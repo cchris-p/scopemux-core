@@ -65,7 +65,7 @@ typedef struct QueryCacheEntry {
 struct QueryManager {
   const char *queries_dir;          // Root directory for query files
   const TSLanguage **languages;     // Array of supported languages
-  LanguageType *language_types;     // Array of language type enums
+  Language *language_types;         // Array of language type enums
   QueryCacheEntry **cached_queries; // Array of cached queries per language
   size_t *query_counts;             // Array of query counts per language
   size_t language_count;            // Number of supported languages
@@ -103,7 +103,7 @@ QueryManager *query_manager_init(const char *queries_dir) {
 
   // Allocate arrays for languages, language_types, cached_queries, and query_counts
   manager->languages = (const TSLanguage **)calloc(MAX_LANGUAGES, sizeof(TSLanguage *));
-  manager->language_types = (LanguageType *)calloc(MAX_LANGUAGES, sizeof(LanguageType));
+  manager->language_types = (Language *)calloc(MAX_LANGUAGES, sizeof(Language));
   manager->cached_queries = (QueryCacheEntry **)calloc(MAX_LANGUAGES, sizeof(QueryCacheEntry *));
   manager->query_counts = (size_t *)calloc(MAX_LANGUAGES, sizeof(size_t));
 
@@ -371,29 +371,55 @@ static char *read_query_file(const char *file_path, uint32_t *content_len) {
  */
 static const TSQuery *compile_query(const TSLanguage *language, const char *query_str,
                                     uint32_t query_len, uint32_t *error_offset) {
-  if (!language || !query_str || query_len == 0) {
+  log_debug("ENTERING compile_query with language=%p, query_len=%u", (void *)language, query_len);
+
+  // Validate input parameters
+  if (!language) {
+    log_error("compile_query: language is NULL");
     return NULL;
   }
 
+  if (!query_str) {
+    log_error("compile_query: query_str is NULL");
+    return NULL;
+  }
+
+  if (query_len == 0) {
+    log_error("compile_query: query_len is 0");
+    return NULL;
+  }
+
+  // Log first few characters of the query for debugging
+  char preview[41] = {0};
+  uint32_t preview_len = query_len < 40 ? query_len : 40;
+  memcpy(preview, query_str, preview_len);
+  preview[preview_len] = '\0';
+  log_debug("Query preview: '%s%s'", preview, query_len > 40 ? "..." : "");
+
   // Compile the query using Tree-sitter
-  uint32_t error_type;
+  uint32_t error_type = 0;
+  log_debug("Calling ts_query_new with language=%p, query_str=%p, query_len=%u", (void *)language,
+            (void *)query_str, query_len);
+
   const TSQuery *query = ts_query_new(language, query_str, query_len, error_offset, &error_type);
 
   if (!query) {
     const char *error_types[] = {"None", "Syntax", "NodeType", "Field", "Capture"};
     const char *error_type_str = (error_type < 5) ? error_types[error_type] : "Unknown";
 
-    fprintf(stderr, "Failed to compile query: %s error at offset %u\n", error_type_str,
-            error_offset ? *error_offset : 0);
+    log_error("Failed to compile query: %s error at offset %u", error_type_str,
+              error_offset ? *error_offset : 0);
 
     // Print a snippet of the query string around the error location
     if (error_offset && *error_offset < query_len) {
       uint32_t start = *error_offset > 20 ? *error_offset - 20 : 0;
       uint32_t end = *error_offset + 20 < query_len ? *error_offset + 20 : query_len;
 
-      fprintf(stderr, "Query snippet: ...%.*s[ERROR]%.*s...\n", *error_offset - start,
-              query_str + start, end - *error_offset, query_str + *error_offset);
+      log_error("Query snippet: ...%.*s[ERROR]%.*s...", *error_offset - start, query_str + start,
+                end - *error_offset, query_str + *error_offset);
     }
+  } else {
+    log_debug("Successfully compiled query");
   }
 
   return query;
@@ -405,7 +431,7 @@ static const TSQuery *compile_query(const TSLanguage *language, const char *quer
  * @param language The language type enum.
  * @return A const string with the language name or NULL if unknown.
  */
-static const char *get_language_name(LanguageType language) {
+static const char *get_language_name(Language language) {
   switch (language) {
   case LANG_C:
     return "c";
@@ -429,7 +455,7 @@ static const char *get_language_name(LanguageType language) {
  * @param language The language type to find.
  * @return The index in the arrays, or -1 if not found.
  */
-static int get_language_index(const QueryManager *manager, LanguageType language) {
+static int get_language_index(const QueryManager *manager, Language language) {
   if (!manager || language == LANG_UNKNOWN) {
     return -1;
   }
@@ -516,21 +542,40 @@ static bool cache_query(QueryManager *manager, int lang_idx, const char *query_n
  * @param query_name The name of the query to retrieve.
  * @return A const pointer to the compiled TSQuery, or NULL if not found.
  */
-const TSQuery *query_manager_get_query(QueryManager *q_manager, LanguageType language,
+const TSQuery *query_manager_get_query(QueryManager *q_manager, Language language,
                                        const char *query_name) {
+  // Log entry into this function for debugging
+  log_debug("ENTERING query_manager_get_query with language=%d, query_name='%s'", language,
+            query_name ? query_name : "NULL");
+
+  // Validate query manager
   if (!q_manager) {
     log_error("NULL query manager passed to query_manager_get_query");
     return NULL;
   }
 
+  // Validate query name
   if (!query_name) {
     log_error("NULL query name passed to query_manager_get_query");
     return NULL;
   }
 
+  // Validate query name is not empty
+  if (query_name[0] == '\0') {
+    log_error("Empty query name passed to query_manager_get_query");
+    return NULL;
+  }
+
   // Safety check for language bounds
   if (language < 0 || language >= q_manager->language_count) {
-    log_error("Invalid language type (%d) passed to query_manager_get_query", language);
+    log_error("Invalid language type (%d) passed to query_manager_get_query (max=%d)", language,
+              q_manager->language_count - 1);
+    return NULL;
+  }
+
+  // Check if query manager is properly initialized
+  if (!q_manager->queries_dir) {
+    log_error("Query manager not properly initialized (queries_dir is NULL)");
     return NULL;
   }
 

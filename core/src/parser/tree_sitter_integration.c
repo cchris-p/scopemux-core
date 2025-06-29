@@ -41,10 +41,6 @@
  * - ts_ast_builder.c: Handles AST generation from Tree-sitter trees
  * - ts_cst_builder.c: Handles CST generation from Tree-sitter trees
  * - ts_query_processor.c: Handles Tree-sitter query execution
- *
- * This architecture follows the Single Responsibility Principle by separating
- * different concerns into focused modules, while maintaining backward compatibility
- * with the existing public interface.
  */
 
 // Forward declarations for Tree-sitter language functions

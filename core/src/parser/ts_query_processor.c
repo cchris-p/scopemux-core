@@ -21,6 +21,7 @@ extern ASTNodeType get_node_type_for_query(const char *query_type);
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 // Ensure strdup is properly declared to avoid implicit declaration warnings
 #ifndef _GNU_SOURCE
@@ -139,6 +140,9 @@ static const char *determine_capture_name(const char *node_type, const char *que
  */
 static int create_node_from_match(uint32_t node_type, const char *name, TSNode ts_node,
                                   ASTNode **ast_node, ParserContext *ctx) {
+  log_debug("create_node_from_match: node_type=%u, name=%s, ts_node_is_null=%d, ast_node_ptr=%p, ctx=%p", node_type, name ? name : "(null)", ts_node_is_null(ts_node), (void*)ast_node, (void*)ctx);
+  assert(ast_node != NULL && "ast_node output pointer must not be NULL");
+  assert(ctx != NULL && "ParserContext must not be NULL");
   if (ts_node_is_null(ts_node) || !ast_node || !ctx) {
     return 2; // Error
   }
@@ -162,7 +166,10 @@ static int create_node_from_match(uint32_t node_type, const char *name, TSNode t
   }
 
   // Create the AST node
+  log_debug("Calling ast_node_new with node_type=%u, node_name=%s", node_type, node_name ? node_name : "(null)");
   *ast_node = ast_node_new(node_type, node_name);
+  log_debug("ast_node_new returned %p", (void*)(*ast_node));
+  assert(*ast_node != NULL && "ast_node_new must not return NULL");
   if (!*ast_node) {
     free(node_name);
     return 2; // Failed to create node
@@ -198,7 +205,7 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
   uint32_t end_byte = ts_node_end_byte(node);
   
   // Validate byte range
-  if (start_byte > end_byte) {
+  if (start_byte >= end_byte) {
     log_error("extract_raw_content: Invalid byte range - start: %u, end: %u", start_byte, end_byte);
     return NULL;
   }
@@ -211,6 +218,34 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
     return NULL;
   }
 
+  // Validate source_code bounds more thoroughly
+  // Check if we can safely access the first and last byte
+  if (!source_code[0]) {
+    log_error("extract_raw_content: Source code is empty");
+    return NULL;
+  }
+  
+  // Estimate source code length to validate bounds
+  size_t estimated_source_length = 0;
+  const char *p = source_code;
+  while (*p && estimated_source_length <= end_byte + 1) {
+    p++;
+    estimated_source_length++;
+  }
+  
+  if (estimated_source_length <= start_byte) {
+    log_error("extract_raw_content: Start byte (%u) is beyond source code bounds (len ~%zu)", 
+              start_byte, estimated_source_length);
+    return NULL;
+  }
+  
+  if (estimated_source_length < end_byte) {
+    log_warning("extract_raw_content: End byte (%u) exceeds source length (~%zu), truncating", 
+               end_byte, estimated_source_length);
+    end_byte = (uint32_t)estimated_source_length;
+    length = end_byte - start_byte;
+  }
+
   // Allocate memory for content
   char *result = (char *)memory_debug_malloc(length + 1, __FILE__, __LINE__, "extract_raw_content");
   if (!result) {
@@ -218,18 +253,19 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
     return NULL;
   }
 
-  // Safely copy content with bounds checking
-  // Validate that start_byte is within source_code bounds
-  // This is a basic check and not foolproof since we don't know source_code length
-  if (source_code[start_byte] == '\0') {
-    log_error("extract_raw_content: Start byte position (%u) is beyond source code bounds", start_byte);
-    memory_debug_free(result, __FILE__, __LINE__);
-    return NULL;
+  // Copy content with explicit bounds checking
+  for (uint32_t i = 0; i < length; i++) {
+    if (start_byte + i >= estimated_source_length) {
+      // We've reached the end of the source code
+      result[i] = '\0';
+      log_warning("extract_raw_content: Truncated content at position %u", i);
+      return result;
+    }
+    result[i] = source_code[start_byte + i];
   }
   
-  // Copy content
-  memcpy(result, source_code + start_byte, length);
   result[length] = '\0';
+  log_debug("extract_raw_content: Successfully extracted %u bytes", length);
 
   return result;
 }
@@ -245,6 +281,10 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
  */
 void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
                      ASTNode **node_map) {
+  log_debug("process_query: query_type=%s, root_node_is_null=%d, ctx=%p, ast_root=%p, node_map=%p", query_type ? query_type : "(null)", ts_node_is_null(root_node), (void*)ctx, (void*)ast_root, (void*)node_map);
+  assert(query_type != NULL && "query_type must not be NULL");
+  assert(ctx != NULL && "ParserContext must not be NULL");
+  assert(ast_root != NULL && "ast_root must not be NULL");
   log_debug("ENTERING process_query with query_type: %s", query_type ? query_type : "NULL");
   
   // Validate all input parameters
@@ -380,6 +420,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
  * @param ast_root AST root node
  */
 void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
+  log_debug("process_all_ast_queries: Entered with root_node_is_null=%d, ctx=%p, ast_root=%p", ts_node_is_null(root_node), (void*)ctx, (void*)ast_root);
   if (ts_node_is_null(root_node) || !ctx || !ast_root) {
     if (ctx && ctx->log_level <= LOG_ERROR) {
       log_error("Invalid arguments to process_all_ast_queries: %s%s%s",

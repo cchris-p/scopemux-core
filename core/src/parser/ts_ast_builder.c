@@ -191,6 +191,7 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
  * @return ASTNode* Root AST node or NULL on failure
  */
 ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
+  log_debug("ts_tree_to_ast_impl: Entered with root_node_is_null=%d, ctx=%p", ts_node_is_null(root_node), (void*)ctx);
   if (ts_node_is_null(root_node) || !ctx) {
     if (ctx) {
       parser_set_error(ctx, -1, "Invalid parameters for AST generation");

@@ -2,7 +2,7 @@
 #define SCOPEMUX_QUERY_MANAGER_H
 
 #include "../tree_sitter/api.h"
-#include "parser.h" // For LanguageType
+#include "scopemux/language.h"
 
 // Forward declaration of the QueryManager structure.
 // The full definition will be in the .c file to hide implementation details.
@@ -44,7 +44,7 @@ void query_manager_free(QueryManager *manager);
  * @return A const pointer to the compiled TSQuery, or NULL if the query
  *         could not be found, loaded, or compiled.
  */
-const TSQuery *query_manager_get_query(QueryManager *manager, LanguageType language,
+const TSQuery *query_manager_get_query(QueryManager *manager, Language language,
                                        const char *query_name);
 
 #endif // SCOPEMUX_QUERY_MANAGER_H

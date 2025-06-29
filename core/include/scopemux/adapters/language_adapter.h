@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../common.h"                  // For LanguageType
-#include "../parser.h"                  // For ASTNode, ParserContext
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h" // For TSNode, TSQuery, TSQueryMatch
-#include <stdint.h>                     // For uint32_t
+#include "../parser.h"                                               // For ASTNode, ParserContext
+#include "scopemux/language.h"
+#include <stdint.h> // For uint32_t
 
 typedef struct LanguageAdapter {
-  LanguageType language_type;
+  Language language_type;
   const char *language_name;
 
   // Core processing functions

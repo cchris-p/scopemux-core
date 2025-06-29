@@ -14,7 +14,7 @@
 // Basic project context structure
 typedef struct ProjectContextImpl {
   char **file_paths;
-  LanguageType *languages;
+  Language *languages;
   size_t num_files;
   size_t capacity;
 } ProjectContextImpl;
@@ -52,7 +52,7 @@ void project_context_free(ProjectContext *ctx) {
 }
 
 // Add a file to project context
-void project_context_add_file(ProjectContext *ctx, const char *file_path, LanguageType lang) {
+void project_context_add_file(ProjectContext *ctx, const char *file_path, Language lang) {
   ProjectContextImpl *impl = (ProjectContextImpl *)ctx;
   if (!impl || !file_path) {
     return;
@@ -62,7 +62,7 @@ void project_context_add_file(ProjectContext *ctx, const char *file_path, Langua
   if (impl->num_files >= impl->capacity) {
     size_t new_capacity = impl->capacity == 0 ? 4 : impl->capacity * 2;
     char **new_paths = realloc(impl->file_paths, new_capacity * sizeof(char *));
-    LanguageType *new_langs = realloc(impl->languages, new_capacity * sizeof(LanguageType));
+    Language *new_langs = realloc(impl->languages, new_capacity * sizeof(Language));
 
     if (!new_paths || !new_langs) {
       if (new_paths)
@@ -99,7 +99,7 @@ const char *project_context_get_file_path(const ProjectContext *ctx, size_t inde
 }
 
 // Get the language type at a specified index
-LanguageType project_context_get_language(const ProjectContext *ctx, size_t index) {
+Language project_context_get_language(const ProjectContext *ctx, size_t index) {
   const ProjectContextImpl *impl = (const ProjectContextImpl *)ctx;
   if (!impl || index >= impl->num_files) {
     return LANG_UNKNOWN;

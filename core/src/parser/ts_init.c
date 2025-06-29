@@ -15,6 +15,7 @@
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/parser.h"
 #include "../../core/include/scopemux/query_manager.h"
+#include "config/node_type_mapping_loader.h"
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <dlfcn.h>
@@ -38,7 +39,7 @@ extern const TSLanguage *tree_sitter_typescript(void);
  * @param language Language type
  * @return char* Heap-allocated path string (caller must free)
  */
-char *build_queries_dir_impl(LanguageType language) {
+char *build_queries_dir_impl(Language language) {
   const char *base = "/home/matrillo/apps/scopemux/queries";
   const char *subdir = "unknown";
 
@@ -98,7 +99,7 @@ char *build_queries_dir_impl(LanguageType language) {
  * @return bool True on success, false on failure
  */
 // Ensure this is properly exported for linking
-bool ts_init_parser_impl(ParserContext *ctx, LanguageType language) {
+bool ts_init_parser_impl(ParserContext *ctx, Language language) {
   log_debug("ts_init_parser_impl called with language: %d, ctx: %p", language, (void *)ctx);
   if (!ctx) {
     log_error("NULL context passed to ts_init_parser");
@@ -127,8 +128,8 @@ bool ts_init_parser_impl(ParserContext *ctx, LanguageType language) {
 // Explicitly load the Tree-sitter shared libraries before using dlsym
 #if defined(__GNUC__)
   // Path to the shared libraries
-  const char* lib_path = "/home/matrillo/apps/scopemux/build/tree-sitter-libs";
-  
+  const char *lib_path = "/home/matrillo/apps/scopemux/build/tree-sitter-libs";
+
   // Construct full paths to each shared library
   char c_lib_path[512], cpp_lib_path[512], python_lib_path[512], js_lib_path[512], ts_lib_path[512];
   snprintf(c_lib_path, sizeof(c_lib_path), "%s/libtree-sitter-c.so", lib_path);
@@ -136,29 +137,39 @@ bool ts_init_parser_impl(ParserContext *ctx, LanguageType language) {
   snprintf(python_lib_path, sizeof(python_lib_path), "%s/libtree-sitter-python.so", lib_path);
   snprintf(js_lib_path, sizeof(js_lib_path), "%s/libtree-sitter-javascript.so", lib_path);
   snprintf(ts_lib_path, sizeof(ts_lib_path), "%s/libtree-sitter-typescript.so", lib_path);
-  
+
   // Open each shared library with RTLD_GLOBAL to make symbols available to dlsym(NULL, ...)
   fprintf(stderr, "Loading Tree-sitter shared libraries from: %s\n", lib_path);
-  
-  void* c_handle = dlopen(c_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!c_handle) fprintf(stderr, "  Failed to load %s: %s\n", c_lib_path, dlerror());
-  else fprintf(stderr, "  Loaded %s successfully\n", c_lib_path);
-  
-  void* cpp_handle = dlopen(cpp_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!cpp_handle) fprintf(stderr, "  Failed to load %s: %s\n", cpp_lib_path, dlerror());
-  else fprintf(stderr, "  Loaded %s successfully\n", cpp_lib_path);
-  
-  void* python_handle = dlopen(python_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!python_handle) fprintf(stderr, "  Failed to load %s: %s\n", python_lib_path, dlerror());
-  else fprintf(stderr, "  Loaded %s successfully\n", python_lib_path);
-  
-  void* js_handle = dlopen(js_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!js_handle) fprintf(stderr, "  Failed to load %s: %s\n", js_lib_path, dlerror());
-  else fprintf(stderr, "  Loaded %s successfully\n", js_lib_path);
-  
-  void* ts_handle = dlopen(ts_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!ts_handle) fprintf(stderr, "  Failed to load %s: %s\n", ts_lib_path, dlerror());
-  else fprintf(stderr, "  Loaded %s successfully\n", ts_lib_path);
+
+  void *c_handle = dlopen(c_lib_path, RTLD_LAZY | RTLD_GLOBAL);
+  if (!c_handle)
+    fprintf(stderr, "  Failed to load %s: %s\n", c_lib_path, dlerror());
+  else
+    fprintf(stderr, "  Loaded %s successfully\n", c_lib_path);
+
+  void *cpp_handle = dlopen(cpp_lib_path, RTLD_LAZY | RTLD_GLOBAL);
+  if (!cpp_handle)
+    fprintf(stderr, "  Failed to load %s: %s\n", cpp_lib_path, dlerror());
+  else
+    fprintf(stderr, "  Loaded %s successfully\n", cpp_lib_path);
+
+  void *python_handle = dlopen(python_lib_path, RTLD_LAZY | RTLD_GLOBAL);
+  if (!python_handle)
+    fprintf(stderr, "  Failed to load %s: %s\n", python_lib_path, dlerror());
+  else
+    fprintf(stderr, "  Loaded %s successfully\n", python_lib_path);
+
+  void *js_handle = dlopen(js_lib_path, RTLD_LAZY | RTLD_GLOBAL);
+  if (!js_handle)
+    fprintf(stderr, "  Failed to load %s: %s\n", js_lib_path, dlerror());
+  else
+    fprintf(stderr, "  Loaded %s successfully\n", js_lib_path);
+
+  void *ts_handle = dlopen(ts_lib_path, RTLD_LAZY | RTLD_GLOBAL);
+  if (!ts_handle)
+    fprintf(stderr, "  Failed to load %s: %s\n", ts_lib_path, dlerror());
+  else
+    fprintf(stderr, "  Loaded %s successfully\n", ts_lib_path);
 
   // Now check symbol resolution after loading the libraries
   void *c_sym = dlsym(NULL, "tree_sitter_c");
@@ -312,38 +323,34 @@ bool ts_init_parser_impl(ParserContext *ctx, LanguageType language) {
       ctx->ts_parser = NULL;
       return false;
     }
-    
+
     // Check if queries directory exists and has necessary files
     struct stat st;
     if (stat(queries_dir, &st) != 0 || !S_ISDIR(st.st_mode)) {
-      log_error("CRITICAL ERROR: Queries directory does not exist or is not accessible: %s", queries_dir);
+      log_error("CRITICAL ERROR: Queries directory does not exist or is not accessible: %s",
+                queries_dir);
       parser_set_error(ctx, -1, "Queries directory does not exist or is not accessible");
       free(queries_dir);
       ts_parser_delete(ctx->ts_parser);
       ctx->ts_parser = NULL;
       return false;
     }
-    
+
     // Verify existence of critical query files (e.g., docstrings.scm)
     char docstrings_path[1024];
     snprintf(docstrings_path, sizeof(docstrings_path), "%s/docstrings.scm", queries_dir);
-    
+
     if (stat(docstrings_path, &st) != 0) {
       log_error("WARNING: docstrings.scm not found at: %s", docstrings_path);
     } else {
       log_error("Found docstrings.scm at: %s", docstrings_path);
     }
-    
-    // Load node type mappings
-    char mapping_path[1024];
-    snprintf(mapping_path, sizeof(mapping_path), "%s/../../core/config/node_type_mapping.json", queries_dir);
-    
-    if (stat(mapping_path, &st) == 0) {
-      log_error("Loading node type mappings from: %s", mapping_path);
-      load_node_type_mapping(mapping_path);
-    } else {
-      log_error("WARNING: Node type mapping not found at: %s", mapping_path);
-    }
+
+    // Load hardcoded node type mappings
+    // Note: We're passing NULL to indicate we want to use hardcoded mappings
+    // instead of loading from a JSON file
+    log_error("Loading hardcoded node type mappings (source of truth)...");
+    load_node_type_mapping(NULL);
 
     // Initialize query manager with the queries directory
     ctx->q_manager = query_manager_init(queries_dir);

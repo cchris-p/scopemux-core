@@ -14,11 +14,15 @@
 #ifndef SCOPEMUX_REFERENCE_RESOLVER_H
 #define SCOPEMUX_REFERENCE_RESOLVER_H
 
-#include "parser.h"
-#include "project_context.h"
-#include "symbol_table.h"
 #include <stdbool.h>
 #include <stddef.h>
+
+// Include necessary headers for full definitions
+#include "ast.h"
+#include "parser.h"
+#include "project_context.h"
+#include "source_range.h"
+#include "symbol_table.h"
 
 /**
  * @brief Types of cross-file relationships
@@ -40,11 +44,13 @@ typedef enum {
  * @brief Status codes for reference resolution
  */
 typedef enum {
-  RESOLVE_SUCCESS = 0, ///< Reference successfully resolved
-  RESOLVE_NOT_FOUND,   ///< Target symbol not found
-  RESOLVE_AMBIGUOUS,   ///< Multiple potential targets found
-  RESOLVE_CIRCULAR,    ///< Circular dependency detected
-  RESOLVE_ERROR        ///< Other resolution error
+  RESOLUTION_SUCCESS = 0,   ///< Reference successfully resolved
+  RESOLUTION_NOT_FOUND,     ///< Target symbol not found
+  RESOLUTION_AMBIGUOUS,     ///< Multiple potential targets found
+  RESOLUTION_CIRCULAR,      ///< Circular dependency detected
+  RESOLUTION_ERROR,         ///< Other resolution error
+  RESOLUTION_NOT_SUPPORTED, ///< Resolution mechanism not supported for this type
+  RESOLUTION_FAILED         ///< Resolution failed for another reason
 } ResolutionStatus;
 
 /**
@@ -59,55 +65,49 @@ typedef struct {
 } ReferenceMetadata;
 
 /**
- * @brief Language-specific reference resolver
+ * @brief Language-specific resolver function type
  *
- * This structure contains function pointers for language-specific
- * reference resolution logic.
+ * @param node Node containing the reference
+ * @param ref_type Type of reference to resolve
+ * @param name Name of the symbol to resolve
+ * @param symbol_table Global symbol table
+ * @param resolver_data Language-specific resolver data
+ * @return ResolutionStatus indicating the success or failure
+ */
+typedef ResolutionStatus (*ResolverFunction)(ASTNode *node, ReferenceType ref_type,
+                                             const char *name, GlobalSymbolTable *symbol_table,
+                                             void *resolver_data);
+
+/**
+ * @brief Cleanup function type for language-specific resolver data
+ *
+ * @param resolver_data The data to clean up
+ */
+typedef void (*ResolverCleanupFunction)(void *resolver_data);
+
+/**
+ * @brief Language-specific resolver
+ */
+typedef struct {
+  Language language;                    ///< Language this resolver handles
+  ResolverFunction resolver_func;       ///< The resolution function
+  void *resolver_data;                  ///< Language-specific resolver data
+  ResolverCleanupFunction cleanup_func; ///< Function to clean up resolver data
+} LanguageResolver;
+
+/**
+ * @brief Main reference resolver
+ *
+ * This structure contains the core resolver infrastructure and statistics
  */
 typedef struct ReferenceResolver {
-  LanguageType language; ///< Language this resolver handles
+  GlobalSymbolTable *symbol_table;      ///< Symbol table for lookups
+  LanguageResolver *language_resolvers; ///< Array of language-specific resolvers
+  size_t num_resolvers;                 ///< Number of registered resolvers
 
-  /**
-   * @brief Resolve import/include statements in a file
-   *
-   * @param ctx Parser context for the file
-   * @param project Project context
-   * @param table Global symbol table
-   * @return bool True if all imports were successfully resolved
-   */
-  bool (*resolve_imports)(ParserContext *ctx, ProjectContext *project, GlobalSymbolTable *table);
-
-  /**
-   * @brief Resolve function/method calls in a file
-   *
-   * @param ctx Parser context for the file
-   * @param project Project context
-   * @param table Global symbol table
-   * @return bool True if all calls were successfully resolved
-   */
-  bool (*resolve_calls)(ParserContext *ctx, ProjectContext *project, GlobalSymbolTable *table);
-
-  /**
-   * @brief Resolve type references in a file
-   *
-   * @param ctx Parser context for the file
-   * @param project Project context
-   * @param table Global symbol table
-   * @return bool True if all type references were successfully resolved
-   */
-  bool (*resolve_types)(ParserContext *ctx, ProjectContext *project, GlobalSymbolTable *table);
-
-  /**
-   * @brief Resolve inheritance relationships in a file
-   *
-   * @param ctx Parser context for the file
-   * @param project Project context
-   * @param table Global symbol table
-   * @return bool True if all inheritance relationships were successfully resolved
-   */
-  bool (*resolve_inheritance)(ParserContext *ctx, ProjectContext *project,
-                              GlobalSymbolTable *table);
-
+  // Statistics
+  size_t total_references;    ///< Total references encountered
+  size_t resolved_references; ///< Successfully resolved references
 } ReferenceResolver;
 
 /**
@@ -150,8 +150,7 @@ bool resolver_registry_add(ResolverRegistry *registry, const ReferenceResolver *
  * @param language Language to get resolver for
  * @return const ReferenceResolver* Matching resolver or NULL if not found
  */
-const ReferenceResolver *resolver_registry_get(const ResolverRegistry *registry,
-                                               LanguageType language);
+const ReferenceResolver *resolver_registry_get(const ResolverRegistry *registry, Language language);
 
 /**
  * @brief Initialize the built-in reference resolvers
@@ -171,11 +170,11 @@ bool resolver_registry_init_defaults(ResolverRegistry *registry);
  *
  * @param ctx Parser context to resolve references for
  * @param project Project context
- * @param registry Resolver registry
+ * @param resolver Reference resolver
  * @return bool True if all references were resolved successfully
  */
 bool resolve_cross_file_references(ParserContext *ctx, ProjectContext *project,
-                                   const ResolverRegistry *registry);
+                                   ReferenceResolver *resolver);
 
 /**
  * @brief Add a reference between two ASTNodes with metadata
@@ -197,6 +196,74 @@ bool ast_node_add_reference_with_metadata(ASTNode *from, ASTNode *to, ReferenceT
 const ReferenceMetadata *ast_node_get_reference_metadata(const ASTNode *from, const ASTNode *to);
 
 /**
+ * @brief Create a new reference resolver
+ *
+ * @param symbol_table The global symbol table to use for resolution
+ * @return A newly allocated reference resolver, or NULL on failure
+ */
+ReferenceResolver *reference_resolver_create(GlobalSymbolTable *symbol_table);
+
+/**
+ * @brief Free all resources associated with a reference resolver
+ *
+ * @param resolver The reference resolver to free
+ */
+void reference_resolver_free(ReferenceResolver *resolver);
+
+/**
+ * @brief Register a language-specific resolver
+ *
+ * @param resolver The reference resolver
+ * @param language The language type to register for
+ * @param resolver_func The function to call for resolving references
+ * @param resolver_data Optional data for the resolver function
+ * @param cleanup_func Optional function to clean up resolver data
+ * @return true if registration succeeded, false otherwise
+ */
+bool reference_resolver_register(ReferenceResolver *resolver, Language language,
+                                 ResolverFunction resolver_func, void *resolver_data,
+                                 ResolverCleanupFunction cleanup_func);
+
+/**
+ * @brief Initialize built-in resolvers for all supported languages
+ *
+ * @param resolver The reference resolver to initialize
+ * @return True if all built-in resolvers were successfully registered
+ */
+bool reference_resolver_init_builtin(ReferenceResolver *resolver);
+
+/**
+ * @brief Resolve a reference in a specific node
+ *
+ * @param resolver The reference resolver
+ * @param node The AST node containing the reference
+ * @param ref_type The type of reference
+ * @param qualified_name The qualified name to resolve
+ * @return Resolution status
+ */
+ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, ASTNode *node,
+                                                 ReferenceType ref_type,
+                                                 const char *qualified_name);
+
+/**
+ * @brief Resolve all references in a file
+ *
+ * @param resolver The reference resolver
+ * @param file_context The parser context for the file
+ * @return Number of resolved references
+ */
+size_t reference_resolver_resolve_file(ReferenceResolver *resolver, ParserContext *file_context);
+
+/**
+ * @brief Resolve all references in a project
+ *
+ * @param resolver The reference resolver
+ * @param project_context The project context containing all files
+ * @return Number of resolved references across the entire project
+ */
+size_t reference_resolver_resolve_all(ReferenceResolver *resolver, ProjectContext *project_context);
+
+/**
  * @brief Resolve a symbol reference using scope-aware lookup
  *
  * This function attempts to resolve a reference by:
@@ -209,24 +276,41 @@ const ReferenceMetadata *ast_node_get_reference_metadata(const ASTNode *from, co
  * @param ctx Parser context
  * @param project Project context
  * @param ref_type Type of reference to resolve
+ * @param symbol_table Global symbol table
  * @return ASTNode* Resolved target node or NULL if not found
  */
 ASTNode *resolve_symbol_reference(const char *name, const ASTNode *current_node, ParserContext *ctx,
-                                  ProjectContext *project, ReferenceType ref_type);
+                                  ProjectContext *project, ReferenceType ref_type,
+                                  GlobalSymbolTable *symbol_table);
 
 /**
- * @brief C/C++ specific reference resolver
+ * @brief Functions for creating language-specific reference resolvers
  */
-extern const ReferenceResolver C_CPP_REFERENCE_RESOLVER;
+ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, const char *name,
+                                      GlobalSymbolTable *symbol_table, void *resolver_data);
+
+ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type, const char *name,
+                                           GlobalSymbolTable *symbol_table, void *resolver_data);
+
+ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_type,
+                                               const char *name, GlobalSymbolTable *symbol_table,
+                                               void *resolver_data);
+
+ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_type,
+                                               const char *name, GlobalSymbolTable *symbol_table,
+                                               void *resolver_data);
 
 /**
- * @brief Python specific reference resolver
+ * @brief Create a reference resolver for a given node
+ *
+ * @param node The node to create a resolver for
+ * @param ref_type The type of reference to resolve
+ * @param name The name of the reference
+ * @param symbol_table The global symbol table
+ * @return ResolutionStatus indicating the result
  */
-extern const ReferenceResolver PYTHON_REFERENCE_RESOLVER;
-
-/**
- * @brief JavaScript/TypeScript specific reference resolver
- */
-extern const ReferenceResolver JS_TS_REFERENCE_RESOLVER;
+ResolutionStatus reference_resolver_generic_resolve(ASTNode *node, ReferenceType ref_type,
+                                                    const char *name,
+                                                    GlobalSymbolTable *symbol_table);
 
 #endif /* SCOPEMUX_REFERENCE_RESOLVER_H */

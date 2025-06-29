@@ -24,7 +24,7 @@
  * @param language Optional language hint (LANG_UNKNOWN to auto-detect)
  * @return bool True on success, false on failure
  */
-bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType language);
+bool parser_parse_file(ParserContext *ctx, const char *filename, Language language);
 
 /**
  * @brief Parse a string and generate the AST and/or CST
@@ -37,7 +37,7 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
  * @return bool True on success, false on failure
  */
 bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
-                         const char *filename, LanguageType language);
+                         const char *filename, Language language);
 
 /**
  * @brief Get the AST node for a specific entity

@@ -13,11 +13,11 @@
 
 #include "logging.h"
 #include "scopemux/ast.h"
+#include "scopemux/language.h"
+#include "scopemux/source_range.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "scopemux/source_range.h"
-#include "scopemux/ast.h"
 
 struct ASTNode;
 typedef struct ASTNode ASTNode;
@@ -25,18 +25,7 @@ typedef struct ASTNode ASTNode;
 // Forward declaration of QueryManager
 typedef struct QueryManager QueryManager;
 
-/**
- * @brief Supported programming languages
- */
-typedef enum {
-  LANG_UNKNOWN = 0,
-  LANG_C,
-  LANG_CPP,
-  LANG_PYTHON,
-  LANG_JAVASCRIPT,
-  LANG_TYPESCRIPT,
-  // Add more languages as needed
-} LanguageType;
+/* Language enum is now defined in scopemux/language.h. */
 
 typedef enum { PARSE_AST, PARSE_CST, PARSE_BOTH } ParseMode;
 
@@ -82,7 +71,7 @@ typedef struct ParserContext {
   char *filename;            // Current file being parsed
   char *source_code;         // Source code content
   size_t source_code_length; // Length of source code
-  LanguageType language;     // Detected language
+  Language language;         // Detected language
 
   /**
    * @brief Root node of the Abstract Syntax Tree.
@@ -157,10 +146,9 @@ void parser_clear(ParserContext *ctx);
  * @param filename Path to the file
  * @param content File content (can be NULL, in which case the file will be read)
  * @param content_length Length of the content (ignored if content is NULL)
- * @return LanguageType Detected language
+ * @return Language Detected language
  */
-LanguageType parser_detect_language(const char *filename, const char *content,
-                                    size_t content_length);
+Language parser_detect_language(const char *filename, const char *content, size_t content_length);
 
 /**
  * @brief Parse a file and generate the IR
@@ -170,7 +158,7 @@ LanguageType parser_detect_language(const char *filename, const char *content,
  * @param language Optional language hint (LANG_UNKNOWN to auto-detect)
  * @return bool True on success, false on failure
  */
-bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType language);
+bool parser_parse_file(ParserContext *ctx, const char *filename, Language language);
 
 /**
  * @brief Parse a string and generate the IR
@@ -183,7 +171,7 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
  * @return bool True on success, false on failure
  */
 bool parser_parse_string(ParserContext *ctx, const char *const content, size_t content_length,
-                         const char *filename, LanguageType language);
+                         const char *filename, Language language);
 
 /**
  * @brief Get the last error message
@@ -301,6 +289,5 @@ typedef enum {
 //   LogLevel log_level;
 // Example usage:
 //   ctx->log_level = LOG_DEBUG;
-
 
 #endif /* SCOPEMUX_PARSER_H */

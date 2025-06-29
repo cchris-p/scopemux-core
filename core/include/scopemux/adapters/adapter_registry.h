@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 void register_adapter(LanguageAdapter *adapter);
-LanguageAdapter *get_adapter(LanguageType lang);
+LanguageAdapter *get_adapter(Language lang);
 
 #ifdef __cplusplus
 }

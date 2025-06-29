@@ -22,7 +22,7 @@ extern "C" {
 // Forward declarations matching the public API
 ReferenceResolver *reference_resolver_create(GlobalSymbolTable *symbol_table);
 void reference_resolver_free(ReferenceResolver *resolver);
-void reference_resolver_init_builtin(ReferenceResolver *resolver);
+bool reference_resolver_init_builtin(ReferenceResolver *resolver);
 
 // The real signatures for the resolve functions (based on the original API)
 typedef ResolutionStatus (*LanguageResolverFunc)(ASTNode *node, ReferenceType ref_type,
@@ -34,11 +34,11 @@ typedef void (*ResolverCleanupFunc)(void *resolver_data);
 // No need to redefine it here
 
 // Register and unregister language resolvers
-bool reference_resolver_register(ReferenceResolver *resolver, LanguageType language,
+bool reference_resolver_register(ReferenceResolver *resolver, Language language,
                                  LanguageResolverFunc resolver_func, void *resolver_data,
                                  ResolverCleanupFunc cleanup_func);
 
-bool reference_resolver_unregister(ReferenceResolver *resolver, LanguageType language);
+bool reference_resolver_unregister(ReferenceResolver *resolver, Language language);
 
 // Stats retrieval
 void reference_resolver_get_stats(const ReferenceResolver *resolver, size_t *out_total_references,
@@ -61,15 +61,8 @@ typedef ResolutionStatus (*ResolverFunction)(ASTNode *node, ReferenceType ref_ty
  */
 typedef void (*ResolverCleanupFunction)(void *resolver_data);
 
-/**
- * @brief Language-specific resolver configuration
- */
-typedef struct {
-  LanguageType language;                ///< Language this resolver handles
-  ResolverFunction resolver_func;       ///< Resolution function
-  void *resolver_data;                  ///< Custom data for the resolver
-  ResolverCleanupFunction cleanup_func; ///< Function to clean up resolver_data
-} LanguageResolver;
+// LanguageResolver is already defined in reference_resolver.h
+// No need to redefine it here
 
 // Language constants for testing
 #define LANG_RUST LANG_UNKNOWN // Use LANG_UNKNOWN for tests
@@ -101,37 +94,14 @@ typedef struct {
   char *file_path;      ///< Source file path
   unsigned int line;    ///< Line number
   unsigned int column;  ///< Column number
-  LanguageType language; ///< Language of the symbol
+  Language language;    ///< Language of the symbol
   void *data;           ///< Optional additional data
 } Symbol;
 
-// Implementation of symbol functions for tests
-static inline Symbol *symbol_new(const char *name, SymbolType type) {
-  if (!name) return NULL;
-  
-  Symbol *symbol = (Symbol *)malloc(sizeof(Symbol));
-  if (!symbol) return NULL;
-  
-  symbol->name = strdup(name);
-  symbol->qualified_name = strdup(name);
-  symbol->type = type;
-  symbol->file_path = NULL;
-  symbol->line = 0;
-  symbol->column = 0;
-  symbol->language = LANG_UNKNOWN;
-  symbol->data = NULL;
-  
-  return symbol;
-}
-
-static inline void symbol_free(Symbol *symbol) {
-  if (!symbol) return;
-  
-  free(symbol->name);
-  free(symbol->qualified_name);
-  free(symbol->file_path);
-  free(symbol);
-}
+// Symbol functions are implemented in symbol_test_helpers.c
+// Forward declarations only
+Symbol *symbol_new(const char *name, SymbolType type);
+void symbol_free(Symbol *symbol);
 
 // Function to add a symbol to a symbol table (for tests)
 static inline void symbol_table_add(GlobalSymbolTable *table, Symbol *symbol) {
@@ -146,7 +116,7 @@ static inline ResolutionStatus resolve_reference(ReferenceResolver *resolver, AS
                                                  ReferenceType ref_type) {
   // This is a mock implementation that calls the actual API
   if (!resolver || !node)
-    return RESOLVE_ERROR;
+    return RESOLUTION_ERROR;
 
   // Use direct reference resolver function
   ResolutionStatus status =
@@ -173,7 +143,7 @@ typedef struct NodeRefEntry {
 static NodeRefEntry *g_node_refs = NULL;
 
 // Functions to attach and get extension data for tests
-static inline void ast_node_set_reference(ASTNode *node, Symbol *reference) {
+static inline bool ast_node_set_reference(ASTNode *node, ReferenceType type, Symbol *reference) {
   if (!node)
     return;
 
@@ -190,12 +160,15 @@ static inline void ast_node_set_reference(ASTNode *node, Symbol *reference) {
   // Not found, add a new entry
   NodeRefEntry *entry = (NodeRefEntry *)malloc(sizeof(NodeRefEntry));
   if (!entry)
-    return;
+    log_debug("NodeRefEntry not found for AST Node.");
+  return false;
 
   entry->node = node;
   entry->reference = reference;
+  entry->reference->type = type;
   entry->next = g_node_refs;
   g_node_refs = entry;
+  return true;
 }
 
 static inline Symbol *ast_node_get_reference(ASTNode *node) {
@@ -228,8 +201,20 @@ static inline void cleanup_node_references(void) {
 #define NODE_TYPE_FUNCTION_CALL 100
 #define REF_TYPE_FUNCTION REF_CALL
 
-// Resolution status values are already defined in reference_resolver.h
-// No need to redefine them here
+/* Extended private struct for test resolver implementation */
+struct ReferenceResolver_Private {
+  GlobalSymbolTable *symbol_table_ptr;
+  int num_resolvers;
+  size_t total_references;
+  size_t resolved_references;
+  size_t unresolved_references;
+  struct {
+    Language language;
+    ResolverFunction resolver_func;
+    void *resolver_data;
+    ResolverCleanupFunc cleanup_func;
+  } language_resolvers[10];
+};
 
 #ifdef __cplusplus
 }

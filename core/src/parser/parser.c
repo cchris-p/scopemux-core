@@ -32,7 +32,7 @@
 /**
  * Parse a file and generate the AST and/or CST.
  */
-bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType language) {
+bool parser_parse_file(ParserContext *ctx, const char *filename, Language language) {
   if (!ctx || !filename) {
     log_error("Cannot parse file: %s", !ctx ? "context is NULL" : "filename is NULL");
     return false;
@@ -94,7 +94,7 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
  * Parse a string and generate the AST and/or CST.
  */
 bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
-                         const char *filename, LanguageType language) {
+                         const char *filename, Language language) {
   if (!ctx || !content) {
     log_error("Cannot parse string: %s", !ctx ? "context is NULL" : "content is NULL");
     return false;
@@ -336,7 +336,7 @@ const CSTNode *parser_get_cst_root(const ParserContext *ctx) {
 }
 
 // === Tree-sitter integration public API ===
-bool ts_init_parser(ParserContext *ctx, LanguageType language) {
+bool ts_init_parser(ParserContext *ctx, Language language) {
   if (!ctx) {
     log_error("NULL context passed to ts_init_parser");
     return false;

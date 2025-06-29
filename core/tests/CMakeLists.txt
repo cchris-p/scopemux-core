@@ -82,7 +82,7 @@ set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/memory_tracking.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
-    
+
     # Tree-sitter implementation files
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_init.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_ast_builder.c
@@ -181,14 +181,15 @@ set(INIT_PARSER_TEST_SOURCES
 # --- Interfile Resolution Tests ---
 # Define source files for reference resolver implementation stubs
 set(REFERENCE_RESOLVER_STUB_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/reference_resolver_stubs.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_test_adapter.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/reference_resolver_stubs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_test_adapter.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/project_context_stubs.c
 )
 
 # Define source files for each interfile reference resolution test target
 set(REFERENCE_RESOLVER_TEST_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolver_tests.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolver_tests.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
 )
 
 set(RESOLVER_CORE_TEST_SRCS
@@ -197,8 +198,8 @@ set(RESOLVER_CORE_TEST_SRCS
 )
 
 set(RESOLVER_REGISTRATION_TEST_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_registration_tests.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_registration_tests.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
 )
 
 set(RESOLVER_RESOLUTION_TEST_SRCS
@@ -208,8 +209,8 @@ set(RESOLVER_RESOLUTION_TEST_SRCS
 )
 
 set(LANGUAGE_RESOLVER_TEST_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/language_resolver_tests.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/language_resolver_tests.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
 )
 
 # Symbol Table and Project Context test sources for interfile testing
@@ -272,7 +273,7 @@ target_include_directories(reference_resolver_stubs PRIVATE
 add_executable(reference_resolver_tests
     ${REFERENCE_RESOLVER_TEST_SRCS}
 )
-target_link_libraries(reference_resolver_tests PRIVATE 
+target_link_libraries(reference_resolver_tests PRIVATE
     test_utilities
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
@@ -299,7 +300,7 @@ add_executable(resolver_core_tests
     ${RESOLVER_CORE_TEST_SRCS}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
-target_link_libraries(resolver_core_tests PRIVATE 
+target_link_libraries(resolver_core_tests PRIVATE
     test_utilities
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
@@ -326,7 +327,7 @@ add_executable(resolver_registration_tests
     ${RESOLVER_REGISTRATION_TEST_SRCS}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
-target_link_libraries(resolver_registration_tests PRIVATE 
+target_link_libraries(resolver_registration_tests PRIVATE
     test_utilities
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
@@ -353,7 +354,7 @@ add_executable(resolver_resolution_tests
     ${RESOLVER_RESOLUTION_TEST_SRCS}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
-target_link_libraries(resolver_resolution_tests PRIVATE 
+target_link_libraries(resolver_resolution_tests PRIVATE
     test_utilities
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
@@ -380,7 +381,7 @@ add_executable(language_resolver_tests
     ${LANGUAGE_RESOLVER_TEST_SRCS}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
-target_link_libraries(language_resolver_tests PRIVATE 
+target_link_libraries(language_resolver_tests PRIVATE
     test_utilities
     reference_resolver_stubs
     ${Criterion_LIBRARIES}
@@ -407,7 +408,7 @@ add_executable(symbol_table_tests
     ${SYMBOL_TABLE_TEST_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
-target_link_libraries(symbol_table_tests PRIVATE 
+target_link_libraries(symbol_table_tests PRIVATE
     test_utilities
     ${Criterion_LIBRARIES}
     parser_core
@@ -433,7 +434,7 @@ add_executable(project_context_tests
     ${PROJECT_CONTEXT_TEST_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
-target_link_libraries(project_context_tests PRIVATE 
+target_link_libraries(project_context_tests PRIVATE
     test_utilities
     ${Criterion_LIBRARIES}
     parser_core

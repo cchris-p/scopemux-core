@@ -37,7 +37,7 @@
  * @param language The language to initialize the parser for.
  * @return True on success, false on failure.
  */
-bool ts_init_parser(ParserContext *ctx, LanguageType language);
+bool ts_init_parser(ParserContext *ctx, Language language);
 
 /**
  * @brief Converts a raw Tree-sitter tree into a ScopeMux Abstract Syntax Tree.

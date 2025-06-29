@@ -55,103 +55,84 @@ static ASTNodeType parse_node_type(const char *enum_str) {
 }
 
 /**
- * @brief Loads the node type mapping from a JSON config file.
- * @param config_path Path to the JSON config file.
+ * @brief Loads the node type mapping from hardcoded defaults.
+ * @param config_path Path to the JSON config file (ignored).
  *
- * If the file cannot be opened, logs an error and leaves the mapping empty.
+ * This function ignores the config_path and uses hardcoded mappings instead.
+ * This is the source of truth for node type mappings in ScopeMux.
  */
 void load_node_type_mapping(const char *config_path) {
-  FILE *f = fopen(config_path, "r");
-  if (!f) {
-    fprintf(stderr, "[scopemux] ERROR: Failed to open node type mapping config: %s\n", config_path);
-    return;
+  // Log that we're using hardcoded mappings instead of loading from file
+  fprintf(stderr, "[scopemux] INFO: Using hardcoded node type mappings (ignoring path: %s)\n", 
+          config_path ? config_path : "NULL");
+  
+  printf("[scopemux] Loading hardcoded node type mappings:\n");
+  
+  // Define hardcoded mappings
+  // These are the core mappings needed for the parser to work correctly
+  struct {
+    const char *query_type;
+    const char *node_type_str;
+  } default_mappings[] = {
+    {"functions", "NODE_FUNCTION"},
+    {"classes", "NODE_CLASS"},
+    {"methods", "NODE_METHOD"},
+    {"variables", "NODE_VARIABLE"},
+    {"modules", "NODE_MODULE"},
+    {"structs", "NODE_STRUCT"},
+    {"unions", "NODE_UNION"},
+    {"enums", "NODE_ENUM"},
+    {"typedefs", "NODE_TYPEDEF"},
+    {"includes", "NODE_INCLUDE"},
+    {"macros", "NODE_MACRO"},
+    {"docstrings", "NODE_DOCSTRING"},
+    {"interfaces", "NODE_INTERFACE"},
+    {"template_specializations", "NODE_TEMPLATE_SPECIALIZATION"},
+    // Add any additional mappings here
+  };
+  
+  // Clear existing mappings
+  for (int i = 0; i < mapping_count; ++i) {
+    free(mappings[i].query_type);
+    mappings[i].query_type = NULL;
   }
-  char buf[4096];
-  size_t len = fread(buf, 1, sizeof(buf) - 1, f);
-  fclose(f);
-  buf[len] = '\0';
-  char *p = buf;
-  printf("[scopemux] Loaded node type mapping config (showing all mappings):\n");
-  // Minimal JSON object parser: expects { "key": "value", ... }
-  // Does NOT support nested objects or arrays. Only works for flat string:string mappings.
-  while (*p) {
-    // Skip whitespace and delimiters
-    while (*p && (isspace((unsigned char)*p) || *p == '{' || *p == ','))
-      p++;
-    if (*p == '"') {
-      // Parse key
-      char *key_start = ++p;
-      while (*p && *p != '"')
-        p++;
-      if (!*p)
-        break;
-      size_t klen = p - key_start;
-      char key[64];
-      strncpy(key, key_start, klen);
-      key[klen] = '\0';
-      p++; // skip closing quote
-      while (*p && (isspace((unsigned char)*p) || *p == ':'))
-        p++;
-      if (*p != '"') {
-        // Malformed JSON, skip to next
-        while (*p && *p != ',')
-          p++;
-        continue;
-      }
-      // Parse value
-      char *val_start = ++p;
-      while (*p && *p != '"')
-        p++;
-      if (!*p)
-        break;
-      size_t vlen = p - val_start;
-      char val[64];
-      strncpy(val, val_start, vlen);
-      val[vlen] = '\0';
-      p++; // skip closing quote
-      // Store mapping with comprehensive memory safety
-      if (mapping_count < MAX_MAPPINGS) {
-        // **CRITICAL FIX**: Add bounds checking for key length
-        if (klen >= sizeof(key)) {
-          fprintf(stderr, "[scopemux] ERROR: Key too long (truncated): %.*s\n", (int)klen,
-                  key_start);
-          continue;
-        }
-
-        // **CRITICAL FIX**: Add bounds checking for value length
-        if (vlen >= sizeof(val)) {
-          fprintf(stderr, "[scopemux] ERROR: Value too long (truncated): %.*s\n", (int)vlen,
-                  val_start);
-          continue;
-        }
-
-        // **CRITICAL FIX**: Safe string duplication with error checking
-        char *query_type_copy = strdup(key);
-        if (!query_type_copy) {
-          fprintf(stderr, "[scopemux] ERROR: Failed to allocate memory for query type: %s\n", key);
-          continue;
-        }
-
-        // **CRITICAL FIX**: Validate the mapping before storing
-        ASTNodeType node_type = parse_node_type(val);
-        if (node_type == NODE_UNKNOWN && strcmp(val, "NODE_UNKNOWN") != 0) {
-          fprintf(stderr, "[scopemux] WARNING: Unknown node type: %s, defaulting to NODE_UNKNOWN\n",
-                  val);
-        }
-
-        // Store the mapping
-        mappings[mapping_count].query_type = query_type_copy;
-        mappings[mapping_count].node_type = node_type;
-        printf("  %s -> %s\n", key, val);
-        mapping_count++;
-      } else {
-        fprintf(stderr, "[scopemux] ERROR: Maximum mappings (%d) exceeded, ignoring: %s\n",
-                MAX_MAPPINGS, key);
-      }
-    } else {
-      p++;
+  mapping_count = 0;
+  
+  // Load the hardcoded mappings
+  size_t num_default_mappings = sizeof(default_mappings) / sizeof(default_mappings[0]);
+  for (size_t i = 0; i < num_default_mappings && mapping_count < MAX_MAPPINGS; ++i) {
+    const char *query_type = default_mappings[i].query_type;
+    const char *node_type_str = default_mappings[i].node_type_str;
+    
+    // Skip if either is NULL
+    if (!query_type || !node_type_str) {
+      fprintf(stderr, "[scopemux] ERROR: NULL mapping entry at index %zu, skipping\n", i);
+      continue;
     }
+    
+    // Safe string duplication with error checking
+    char *query_type_copy = strdup(query_type);
+    if (!query_type_copy) {
+      fprintf(stderr, "[scopemux] ERROR: Failed to allocate memory for query type: %s\n", query_type);
+      continue;
+    }
+    
+    // Validate the mapping before storing
+    ASTNodeType node_type = parse_node_type(node_type_str);
+    if (node_type == NODE_UNKNOWN && strcmp(node_type_str, "NODE_UNKNOWN") != 0) {
+      fprintf(stderr, "[scopemux] WARNING: Unknown node type: %s, defaulting to NODE_UNKNOWN\n",
+              node_type_str);
+    }
+    
+    // Store the mapping
+    mappings[mapping_count].query_type = query_type_copy;
+    mappings[mapping_count].node_type = node_type;
+    printf("  %s -> %s\n", query_type, node_type_str);
+    mapping_count++;
   }
+  
+  // Log summary
+  fprintf(stderr, "[scopemux] Loaded %d hardcoded node type mappings\n", mapping_count);
 }
 
 /**

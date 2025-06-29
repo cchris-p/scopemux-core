@@ -19,7 +19,7 @@
 // Forward declarations for functions used in tests
 ASTNode *ast_node_get_child_at_index(ASTNode *node, size_t index);
 void parser_context_add_ast(ParserContext *ctx, ASTNode *ast, const char *file_path);
-void project_context_add_file(ProjectContext *ctx, const char *file_path, LanguageType lang);
+void project_context_add_file(ProjectContext *ctx, const char *file_path, Language lang);
 size_t reference_resolver_resolve_file(ReferenceResolver *resolver, ParserContext *ctx,
                                        const char *file_path);
 size_t reference_resolver_resolve_project(ReferenceResolver *resolver, ProjectContext *ctx,

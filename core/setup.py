@@ -95,7 +95,13 @@ ext_modules = [
             "-Wall",  # Enable all warnings
             "-Wextra",  # Enable extra warnings
             "-pedantic",  # Enforce strict ISO C compliance
+            "-fsanitize=address",  # AddressSanitizer
+            "-fno-omit-frame-pointer",  # Needed for ASan stack traces
+            "-g",  # Debug info for ASan
             # Add any other platform-specific or necessary compiler flags here
+        ],
+        extra_link_args=[
+            "-fsanitize=address",
         ],
         # For pure C extensions, 'language' is not typically needed or is 'c'
         # language="c" # Redundant for standard C extensions

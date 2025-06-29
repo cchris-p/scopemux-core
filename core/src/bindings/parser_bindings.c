@@ -19,6 +19,7 @@
 #include <string.h>
 
 /* ScopeMux header includes */
+#include "../../core/include/scopemux/ast.h"
 #include "../../core/include/scopemux/parser.h"
 #include "../../core/include/scopemux/python_bindings.h"
 #include "../../core/include/scopemux/python_utils.h"
@@ -140,7 +141,7 @@ static PyObject *ParserContext_parse_file(PyObject *self_obj, PyObject *args, Py
     return NULL;
   }
 
-  bool success = parser_parse_file(self->context, filename, (LanguageType)language);
+  bool success = parser_parse_file(self->context, filename, (Language)language);
   if (!success) {
     PyErr_SetString(PyExc_RuntimeError, parser_get_last_error(self->context));
     return NULL;
@@ -165,7 +166,7 @@ static PyObject *ParserContext_parse_string(PyObject *self_obj, PyObject *args, 
     return NULL;
   }
 
-  LanguageType language = LANG_UNKNOWN;
+  Language language = LANG_UNKNOWN;
 
   // Handle language parameter - can be string or integer
   if (language_obj != NULL) {
@@ -190,7 +191,7 @@ static PyObject *ParserContext_parse_string(PyObject *self_obj, PyObject *args, 
     } else if (PyLong_Check(language_obj)) {
       long lang_int = PyLong_AsLong(language_obj);
       if (lang_int >= LANG_UNKNOWN && lang_int <= LANG_TYPESCRIPT) {
-        language = (LanguageType)lang_int;
+        language = (Language)lang_int;
       } else {
         PyErr_SetString(PyExc_ValueError, "Invalid language integer value");
         return NULL;
@@ -677,7 +678,8 @@ static PyObject *ASTNode_get_type(ASTNodeObject *self, void *closure) {
   if (!self->node) {
     Py_RETURN_NONE;
   }
-  return PyLong_FromLong(self->node->type);
+  // Return the canonical string representation of the node type
+  return PyUnicode_FromString(ast_node_type_to_string(self->node->type));
 }
 
 /**
@@ -688,7 +690,8 @@ static PyObject *ASTNode_method_get_type(ASTNodeObject *self, PyObject *args) {
   if (!self->node) {
     Py_RETURN_NONE;
   }
-  return PyLong_FromLong(self->node->type);
+  // Return the canonical string representation of the node type
+  return PyUnicode_FromString(ast_node_type_to_string(self->node->type));
 }
 
 static PyObject *ASTNode_method_get_name(ASTNodeObject *self, PyObject *args) {
@@ -1012,7 +1015,7 @@ static PyObject *detect_language(PyObject *self, PyObject *args, PyObject *kwds)
     return NULL;
   }
 
-  LanguageType language = parser_detect_language(filename, content, content_length);
+  Language language = parser_detect_language(filename, content, content_length);
   return PyLong_FromLong((long)language);
 }
 
