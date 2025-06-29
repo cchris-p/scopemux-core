@@ -42,7 +42,7 @@ declare -A TEST_SUITE_RESULTS
 # Standardized error handling
 # Handles errors by printing a message and returning 1 (does not exit the script).
 handle_error() {
-    echo "❌ ERROR: $1"
+    echo " ERROR: $1"
     return 1
 }
 
@@ -68,7 +68,7 @@ build_test_target() {
     local build_exit_code=$?
 
     if [ $build_exit_code -ne 0 ]; then
-        echo "❌ ERROR: Failed to build test target '${display_name}'."
+        echo " ERROR: Failed to build test target '${display_name}'."
         echo "Build log output:"
         cat "$build_log"
         return 1
@@ -87,7 +87,7 @@ run_test_suite() {
     echo "[test_runner_lib] Checking for test executable: ${executable_path}"
 
     if [ ! -f "${executable_path}" ]; then
-        echo "❌ FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
+        echo " FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
         # Try to help diagnose the issue
         echo "[test_runner_lib] Searching for the missing executable..."
         find "$(dirname "${executable_path}")" -type f -executable -name "$(basename "${executable_path}")" || true
@@ -117,11 +117,11 @@ run_test_suite() {
     # Check for the summary line indicating all tests passed
     if grep -q "Failing: 0 | Crashing: 0" "$test_log"; then
         # All tests passed in suite
-        echo -e "\033[1;32m✅✅ PASS: ${test_suite_name} (All tests passed)\033[0m"
+        echo -e "\033[1;32m PASS: ${test_suite_name} (All tests passed)\033[0m"
         TEST_SUITE_RESULTS["$test_suite_name"]="PASS"
         return 0
     else
-        echo -e "\033[1;31m❌ FAIL: ${test_suite_name} (One or more tests failed)\033[0m"
+        echo -e "\033[1;31m FAIL: ${test_suite_name} (One or more tests failed)\033[0m"
         TEST_SUITE_RESULTS["$test_suite_name"]="FAIL"
         if [ "$test_exit_code" -eq 0 ]; then
             return 1 # Ensure we return failure even if binary exited with 0
@@ -231,15 +231,15 @@ process_language_tests() {
                         # Update the failure counter in the temp file atomically
                         local current_fails=$(cat "$fail_counter")
                         echo $((current_fails + 1)) >"$fail_counter"
-                        echo "❌ FAIL: $test_name ($((i + 1))/$total_tests)"
+                        echo " FAIL: $test_name ($((i + 1))/$total_tests)"
                     else
-                        echo "✅ PASS: $test_name ($((i + 1))/$total_tests)"
+                        echo " PASS: $test_name ($((i + 1))/$total_tests)"
                     fi
 
                     unset SCOPEMUX_TEST_FILE
                     unset SCOPEMUX_EXPECTED_JSON
                 else
-                    echo "❌ ERROR: Missing expected JSON for test: $test_file"
+                    echo " ERROR: Missing expected JSON for test: $test_file"
                     # Update the missing counter in the temp file atomically
                     local current_missing=$(cat "$missing_counter")
                     echo $((current_missing + 1)) >"$missing_counter"
@@ -284,11 +284,11 @@ process_language_tests() {
         local passed_tests=$((total_tests - failed_tests - missing_json))
         if [ $dir_errors -eq 0 ]; then
             # All tests passed in directory
-            echo -e "\033[1;32m✅✅ PASS: $lang/$category ($passed_tests/$total_tests tests passed)\033[0m"
+            echo -e "\033[1;32m PASS: $lang/$category ($passed_tests/$total_tests tests passed)\033[0m"
             TEST_SUITE_RESULTS["$lang/$category"]="PASS"
         else
             # Some tests failed or missing JSON
-            echo -e "\033[1;31m❌ FAIL: $lang/$category ($passed_tests/$total_tests tests passed, $dir_errors problems in directory)\033[0m"
+            echo -e "\033[1;31m FAIL: $lang/$category ($passed_tests/$total_tests tests passed, $dir_errors problems in directory)\033[0m"
             TEST_SUITE_RESULTS["$lang/$category"]="FAIL"
             TEST_FAILURES=$((TEST_FAILURES + 1))
         fi
@@ -298,7 +298,7 @@ process_language_tests() {
 # Setup CMake configuration
 setup_cmake_config() {
     local project_root_dir=$1
-    local build_dir="${project_root_dir}/build"
+    local build_dir=$2
 
     # Always run CMake configuration in the build directory
     if [ ! -d "$build_dir" ]; then
@@ -345,9 +345,9 @@ print_test_summary() {
         for suite in "${!TEST_SUITE_RESULTS[@]}"; do
             result="${TEST_SUITE_RESULTS[$suite]}"
             if [ "$result" = "PASS" ]; then
-                printf "\033[1;32m%-40s | %-8s\033[0m\n" "$suite" "✅ PASS"
+                printf "\033[1;32m%-40s | %-8s\033[0m\n" "$suite" " PASS"
             else
-                printf "\033[1;31m%-40s | %-8s\033[0m\n" "$suite" "❌ FAIL"
+                printf "\033[1;31m%-40s | %-8s\033[0m\n" "$suite" " FAIL"
             fi
         done
         echo ""
@@ -355,14 +355,14 @@ print_test_summary() {
 
     # Report on missing JSON files even if tests pass
     if [ $TOTAL_MISSING_JSON -gt 0 ]; then
-        echo "⚠️ Missing JSON files: $TOTAL_MISSING_JSON"
+        echo " Missing JSON files: $TOTAL_MISSING_JSON"
     fi
 
     if [ $TEST_FAILURES -eq 0 ]; then
-        echo "✅ ALL TESTS PASSED"
+        echo " ALL TESTS PASSED"
         exit 0
     else
-        echo "❌ TESTS FAILED: $TEST_FAILURES"
+        echo " TESTS FAILED: $TEST_FAILURES"
         exit 1
     fi
 }

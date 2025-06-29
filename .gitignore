@@ -1,6 +1,7 @@
 **/tree_sitter_*/*
 build-interfile/*
 build-misc/*
+build-python/*
 windsurf-collector/*
 run_*_tests.txt
 

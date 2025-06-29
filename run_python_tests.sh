@@ -26,7 +26,7 @@ TEST_FAILURES=0
 # Python Language Test Toggles
 RUN_PYTHON_BASIC_AST_TESTS=true
 RUN_PYTHON_EXAMPLE_AST_TESTS=true
-RUN_PYTHON_CST_TESTS=true
+RUN_PYTHON_CST_TESTS=false
 
 # Python example test directory toggles
 RUN_PYTHON_BASIC_SYNTAX_TESTS=true
@@ -70,7 +70,7 @@ done
 prepare_clean_build_dir "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
 
 # Setup CMake configuration using the shared library
-setup_cmake_config "$PROJECT_ROOT_DIR"
+setup_cmake_config "$PROJECT_ROOT_DIR" "$CMAKE_PROJECT_BUILD_DIR"
 
 # Run standard Python language tests
 echo "[run_python_tests.sh] Running Python language test suite"

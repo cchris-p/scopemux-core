@@ -37,13 +37,20 @@ ext_modules = [
             # Parser files
             "src/parser/parser.c",
             "src/parser/parser_context.c",
-
+            # Tree-sitter integration implementation files
+            "src/parser/ts_ast_builder.c",
+            "src/parser/ts_cst_builder.c",
+            "src/parser/ts_init.c",
+            "src/parser/ts_query_processor.c",
+            "src/parser/ts_diagnostic.c",
             "src/parser/query_manager.c",
             "src/parser/query_processing.c",
             "src/parser/memory_tracking.c",
             "src/parser/ast_node.c",
             "src/parser/cst_node.c",
             "src/bindings/signal_handler.c",
+            # Config files
+            "src/config/node_type_mapping_loader.c",
             # Context engine files
             "src/context_engine/context_engine.c",
             "src/context_engine/compressor.c",
@@ -59,7 +66,6 @@ ext_modules = [
             "src/processors/ast_post_processor.c",
             "src/processors/docstring_processor.c",
             # Config files
-
             # Adapter files
             "src/adapters/adapter_registry.c",
             "src/adapters/language_adapter.c",

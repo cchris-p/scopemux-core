@@ -93,6 +93,13 @@ ASTNode *ast_node_new(ASTNodeType type, const char *name);
 ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name, SourceRange range);
 
 /**
+ * Convert an ASTNodeType enum value to its canonical string representation
+ * @param type The ASTNodeType enum value
+ * @return The canonical string representation (e.g., "ROOT", "FUNCTION", etc.)
+ */
+const char *ast_node_type_to_string(ASTNodeType type);
+
+/**
  * Free an AST node and all its children recursively
  * @param node The node to free
  */
