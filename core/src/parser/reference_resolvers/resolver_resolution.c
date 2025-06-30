@@ -20,7 +20,7 @@
  * Find the appropriate resolver for a language
  */
 extern LanguageResolver *find_language_resolver_impl(ReferenceResolver *resolver,
-                                                     LanguageType language);
+                                                     Language language);
 
 /**
  * Resolve a reference in a specific node

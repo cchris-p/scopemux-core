@@ -88,6 +88,7 @@ ResolutionStatus reference_resolver_generic_resolve(ASTNode *node, ReferenceType
   }
 
   // Try scope-based lookup if direct lookup failed
+  // Lang is needed here because lookup rules are language-sensitive
   if (node->parent && node->parent->qualified_name) {
     entry = symbol_table_scope_lookup(symbol_table, name, node->parent->qualified_name, node->lang);
 
@@ -167,7 +168,7 @@ void reference_resolver_cleanup() {
 /**
  * Register a language-specific resolver
  */
-bool reference_resolver_register(LanguageType lang, ResolverFunction resolver_func,
+bool reference_resolver_register(Language lang, ResolverFunction resolver_func,
                                  void *resolver_data) {
   if (lang < 0 || lang >= LANG_MAX || !resolver_func) {
     return false;
@@ -183,7 +184,7 @@ bool reference_resolver_register(LanguageType lang, ResolverFunction resolver_fu
 /**
  * Unregister a language-specific resolver
  */
-bool reference_resolver_unregister(LanguageType lang) {
+bool reference_resolver_unregister(Language lang) {
   if (lang < 0 || lang >= LANG_MAX) {
     return false;
   }
@@ -208,7 +209,7 @@ ResolutionStatus reference_resolver_resolve(ASTNode *node, ReferenceType ref_typ
     return RESOLUTION_FAILED;
   }
 
-  LanguageType lang = node->lang;
+  Language lang = node->lang;
 
   // Use language-specific resolver if available
   if (lang >= 0 && lang < LANG_MAX && resolver_registry[lang].is_registered &&

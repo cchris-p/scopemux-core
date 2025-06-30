@@ -64,7 +64,7 @@ SymbolEntry *symbol_table_lookup(const GlobalSymbolTable *table, const char *qua
  * @return Matching symbol entry or NULL if not found
  */
 SymbolEntry *symbol_table_scope_lookup(const GlobalSymbolTable *table, const char *name,
-                                     const char *current_scope, LanguageType language) {
+                                     const char *current_scope, Language language) {
     if (!table || !name) {
         return NULL;
     }
@@ -248,7 +248,7 @@ size_t symbol_table_get_by_file(const GlobalSymbolTable *table, const char *file
  * @param max_entries Maximum number of entries to return
  * @return Number of matching entries found (may exceed max_entries)
  */
-size_t symbol_table_get_by_language(const GlobalSymbolTable *table, LanguageType language,
+size_t symbol_table_get_by_language(const GlobalSymbolTable *table, Language language,
                                   SymbolEntry **out_entries, size_t max_entries) {
     if (!table) {
         return 0;

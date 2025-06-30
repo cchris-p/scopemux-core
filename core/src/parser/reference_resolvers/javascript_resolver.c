@@ -69,12 +69,12 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
     SymbolEntry *module_entry = symbol_table_lookup(symbol_table, name);
     if (module_entry && module_entry->node->type == NODE_MODULE) {
       // Add reference to the module
-      if (node->num_references < node->references_capacity) {
-        node->references[node->num_references++] = module_entry->node;
+      /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+        ast_node_add_reference_with_metadata(node, module_entry->node, ref_type);
         return RESOLUTION_SUCCESS;
       } else {
         // Resize references array
-        size_t new_capacity = node->references_capacity * 2;
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
         if (new_capacity == 0)
           new_capacity = 4;
 
@@ -82,9 +82,9 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
             (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
 
         if (new_refs) {
-          node->references = new_refs;
-          node->references_capacity = new_capacity;
-          node->references[node->num_references++] = module_entry->node;
+          /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+          /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+          ast_node_add_reference_with_metadata(node, module_entry->node, ref_type);
           return RESOLUTION_SUCCESS;
         }
       }
@@ -113,13 +113,13 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
             SymbolEntry *prop_entry = symbol_table_lookup(symbol_table, name);
             if (prop_entry) {
               // Add reference to the property
-              if (node->num_references < node->references_capacity) {
-                node->references[node->num_references++] = prop_entry->node;
+              /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+                ast_node_add_reference_with_metadata(node, prop_entry->node, ref_type);
                 js_resolver_stats.resolved_count++;
                 return RESOLUTION_SUCCESS;
               } else {
                 // Resize references array
-                size_t new_capacity = node->references_capacity * 2;
+                /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
                 if (new_capacity == 0)
                   new_capacity = 4;
 
@@ -127,9 +127,9 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
                     (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
 
                 if (new_refs) {
-                  node->references = new_refs;
-                  node->references_capacity = new_capacity;
-                  node->references[node->num_references++] = prop_entry->node;
+                  /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+                  /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+                  ast_node_add_reference_with_metadata(node, prop_entry->node, ref_type);
                   js_resolver_stats.resolved_count++;
                   return RESOLUTION_SUCCESS;
                 }
@@ -166,21 +166,21 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
   if (entry) {
     js_resolver_stats.resolved_count++;
     // Add reference
-    if (node->num_references < node->references_capacity) {
-      node->references[node->num_references++] = entry->node;
+    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+      ast_node_add_reference_with_metadata(node, entry->node;
       return RESOLUTION_SUCCESS;
     } else {
       // Resize references array
-      size_t new_capacity = node->references_capacity * 2;
+      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
       if (new_capacity == 0)
         new_capacity = 4;
 
-      ASTNode **new_refs = (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
+      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
 
       if (new_refs) {
-        node->references = new_refs;
-        node->references_capacity = new_capacity;
-        node->references[node->num_references++] = entry->node;
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+        ast_node_add_reference_with_metadata(node, entry->node;
         return RESOLUTION_SUCCESS;
       }
     }
@@ -197,21 +197,21 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
   if (entry) {
     js_resolver_stats.resolved_count++;
     // Add reference
-    if (node->num_references < node->references_capacity) {
-      node->references[node->num_references++] = entry->node;
+    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+      ast_node_add_reference_with_metadata(node, entry->node;
       return RESOLUTION_SUCCESS;
     } else {
       // Resize references array
-      size_t new_capacity = node->references_capacity * 2;
+      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
       if (new_capacity == 0)
         new_capacity = 4;
 
-      ASTNode **new_refs = (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
+      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
 
       if (new_refs) {
-        node->references = new_refs;
-        node->references_capacity = new_capacity;
-        node->references[node->num_references++] = entry->node;
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+        ast_node_add_reference_with_metadata(node, entry->node;
         return RESOLUTION_SUCCESS;
       }
     }
@@ -227,12 +227,12 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
     if (entry) {
       js_resolver_stats.resolved_count++;
       // Add reference
-      if (node->num_references < node->references_capacity) {
-        node->references[node->num_references++] = entry->node;
+      /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+        ast_node_add_reference_with_metadata(node, entry->node;
         return RESOLUTION_SUCCESS;
       } else {
         // Resize references array
-        size_t new_capacity = node->references_capacity * 2;
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
         if (new_capacity == 0)
           new_capacity = 4;
 
@@ -240,9 +240,9 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
             (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
 
         if (new_refs) {
-          node->references = new_refs;
-          node->references_capacity = new_capacity;
-          node->references[node->num_references++] = entry->node;
+          /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+          /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+          ast_node_add_reference_with_metadata(node, entry->node;
           return RESOLUTION_SUCCESS;
         }
       }

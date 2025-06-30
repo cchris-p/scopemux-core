@@ -68,19 +68,20 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
 
   // TypeScript has special reference types
   switch (ref_type) {
-  case REFERENCE_TYPE:
+  case REF_TYPE:
     // Handle TypeScript type references (e.g., : MyType)
     ts_resolver_stats.type_resolved++;
 
     // Look up the type in the symbol table
     SymbolEntry *type_entry = symbol_table_lookup(symbol_table, name);
     if (type_entry &&
-        (type_entry->node->type == NODE_TYPE || type_entry->node->type == NODE_INTERFACE ||
+        (type_entry->node->type == NODE_TYPE ||
+         type_entry->node->type == NODE_INTERFACE || // NODE_TYPE from ast.h (AST node type)
          type_entry->node->type == NODE_CLASS)) {
 
       // Add reference to the type
       if (node->num_references < node->references_capacity) {
-        node->references[node->num_references++] = type_entry->node;
+        ast_node_add_reference_with_metadata(node, type_entry->node, ref_type);
         ts_resolver_stats.resolved_count++;
         return RESOLUTION_SUCCESS;
       } else {
@@ -95,7 +96,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
         if (new_refs) {
           node->references = new_refs;
           node->references_capacity = new_capacity;
-          node->references[node->num_references++] = type_entry->node;
+          ast_node_add_reference_with_metadata(node, type_entry->node, ref_type);
           ts_resolver_stats.resolved_count++;
           return RESOLUTION_SUCCESS;
         }
@@ -121,7 +122,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
             if (type_entry) {
               // Add reference to the type
               if (node->num_references < node->references_capacity) {
-                node->references[node->num_references++] = type_entry->node;
+                ast_node_add_reference_with_metadata(node, type_entry->node, ref_type);
                 ts_resolver_stats.resolved_count++;
                 return RESOLUTION_SUCCESS;
               } else {
@@ -136,7 +137,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
                 if (new_refs) {
                   node->references = new_refs;
                   node->references_capacity = new_capacity;
-                  node->references[node->num_references++] = type_entry->node;
+                  ast_node_add_reference_with_metadata(node, type_entry->node, ref_type);
                   ts_resolver_stats.resolved_count++;
                   return RESOLUTION_SUCCESS;
                 }
@@ -149,7 +150,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
 
     return RESOLUTION_NOT_FOUND;
 
-  case REFERENCE_INTERFACE:
+  case REF_INTERFACE:
     // Handle TypeScript interface references
     ts_resolver_stats.interface_resolved++;
 
@@ -158,7 +159,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
     if (interface_entry && interface_entry->node->type == NODE_INTERFACE) {
       // Add reference to the interface
       if (node->num_references < node->references_capacity) {
-        node->references[node->num_references++] = interface_entry->node;
+        ast_node_add_reference_with_metadata(node, interface_entry->node, ref_type);
         ts_resolver_stats.resolved_count++;
         return RESOLUTION_SUCCESS;
       } else {
@@ -173,7 +174,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
         if (new_refs) {
           node->references = new_refs;
           node->references_capacity = new_capacity;
-          node->references[node->num_references++] = interface_entry->node;
+          ast_node_add_reference_with_metadata(node, interface_entry->node, ref_type);
           ts_resolver_stats.resolved_count++;
           return RESOLUTION_SUCCESS;
         }
@@ -181,7 +182,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
     }
     return RESOLUTION_NOT_FOUND;
 
-  case REFERENCE_GENERIC:
+  case REF_GENERIC:
     // Handle generic type parameters
     ts_resolver_stats.generic_resolved++;
 
@@ -196,7 +197,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
 
     return RESOLUTION_NOT_SUPPORTED;
 
-  case REFERENCE_IMPORT:
+  case REF_IMPORT:
     // Handle ES module imports with TypeScript extensions
     ts_resolver_stats.import_resolved++;
 
@@ -206,7 +207,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
     if (module_entry && module_entry->node->type == NODE_MODULE) {
       // Add reference to the module
       if (node->num_references < node->references_capacity) {
-        node->references[node->num_references++] = module_entry->node;
+        ast_node_add_reference_with_metadata(node, module_entry->node, ref_type);
         ts_resolver_stats.resolved_count++;
         return RESOLUTION_SUCCESS;
       } else {
@@ -221,7 +222,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
         if (new_refs) {
           node->references = new_refs;
           node->references_capacity = new_capacity;
-          node->references[node->num_references++] = module_entry->node;
+          ast_node_add_reference_with_metadata(node, module_entry->node, ref_type);
           ts_resolver_stats.resolved_count++;
           return RESOLUTION_SUCCESS;
         }
@@ -229,7 +230,7 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
     }
     break;
 
-  case REFERENCE_PROPERTY:
+  case REF_PROPERTY:
     // Handle property access (obj.prop) with type information
     ts_resolver_stats.property_resolved++;
 

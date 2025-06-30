@@ -41,7 +41,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "../../core/include/scopemux/parser.h" // For LanguageType constants
+#include "../../core/include/scopemux/parser.h" // For Language constants
 #include "../../core/include/scopemux/query_manager.h"
 
 // Forward declarations for Tree-sitter language functions from vendor library
@@ -426,7 +426,7 @@ static const TSQuery *compile_query(const TSLanguage *language, const char *quer
 }
 
 /**
- * @brief Gets the language name string from a LanguageType enum.
+ * @brief Gets the language name string from a Language enum.
  *
  * @param language The language type enum.
  * @return A const string with the language name or NULL if unknown.

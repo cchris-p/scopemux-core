@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
 // Test utilities
 #define TEST_ASSERT(condition) \
@@ -299,7 +300,7 @@ static bool test_reference_resolution_simple() {
     TEST_ASSERT(reference_resolver_init_builtin(resolver));
     
     // Try to resolve the reference
-    ResolutionResult result = reference_resolver_resolve_node(
+    ResolutionStatus result = reference_resolver_resolve_node(
         resolver, &node_ref, REFERENCE_CALL, "module.test_function");
     TEST_ASSERT(result == RESOLUTION_SUCCESS);
     TEST_ASSERT(node_ref.num_references == 1);

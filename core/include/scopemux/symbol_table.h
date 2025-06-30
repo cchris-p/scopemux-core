@@ -23,11 +23,12 @@
  */
 typedef enum {
   SCOPE_UNKNOWN = 0,
-  SCOPE_LOCAL,   ///< Local to a function/method/block
-  SCOPE_FILE,    ///< File-level visibility (static in C/C++)
-  SCOPE_MODULE,  ///< Module-level visibility (export in JS/TS)
-  SCOPE_GLOBAL,  ///< Global visibility (public export)
-  SCOPE_EXTERNAL ///< From external dependency/library
+  SCOPE_LOCAL,    ///< Local to a function/method/block
+  SCOPE_FILE,     ///< File-level visibility (static in C/C++)
+  SCOPE_MODULE,   ///< Module-level visibility (export in JS/TS)
+  SCOPE_GLOBAL,   ///< Global visibility (public export)
+  SCOPE_EXTERNAL, ///< From external dependency/library
+  SCOPE_CLASS
 } SymbolScope;
 
 /**
@@ -49,6 +50,7 @@ typedef struct SymbolEntry {
   char *module_path;          ///< Import/include path (if applicable)
   bool is_definition;         ///< Whether this is a definition (vs. declaration)
   struct SymbolEntry *parent; ///< Parent symbol (if applicable, e.g., class for a method)
+  struct Symbol *symbol;
 } SymbolEntry;
 
 /**

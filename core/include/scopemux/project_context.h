@@ -25,6 +25,19 @@
 #include <stddef.h>
 
 /**
+ * @brief Error codes for ProjectContext operations
+ */
+typedef enum {
+  PROJECT_ERROR_NONE = 0,           ///< No error
+  PROJECT_ERROR_MEMORY = 1,         ///< Memory allocation failure
+  PROJECT_ERROR_TOO_MANY_FILES = 2, ///< Exceeded maximum file count
+  PROJECT_ERROR_INCLUDE_DEPTH = 3,  ///< Exceeded maximum include/import depth
+  PROJECT_ERROR_INVALID_PATH = 4,   ///< Invalid or unresolvable file path
+  PROJECT_ERROR_IO = 5,             ///< I/O error (file or directory access)
+  // Add more as needed for project context errors
+} ProjectErrorCode;
+
+/**
  * @brief Configuration options for project parsing
  */
 typedef struct {
@@ -60,9 +73,10 @@ typedef struct ProjectContext {
   size_t unresolved_references; ///< Count of references that could not be resolved
 
   // File discovery state
-  char **discovered_files;    ///< Files discovered but not yet parsed
-  size_t num_discovered;      ///< Number of discovered files
-  size_t discovered_capacity; ///< Capacity of discovered_files array
+  char **discovered_files;      ///< Files discovered but not yet parsed
+  size_t num_discovered;        ///< Number of discovered files
+  size_t discovered_capacity;   ///< Capacity of discovered_files array
+  size_t current_include_depth; ///< Current include depth during dependency resolution
 } ProjectContext;
 
 /**

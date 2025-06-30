@@ -37,12 +37,12 @@ IMPORT_FUNCTION(bool, add_scope_impl, GlobalSymbolTable *table, const char *scop
 // Import implementations from symbol_entry.c
 IMPORT_FUNCTION(void, entry_free_impl, SymbolEntry *entry);
 IMPORT_FUNCTION(SymbolEntry*, entry_create_impl, const char *qualified_name, ASTNode *node,
-                        const char *file_path, SymbolScope scope, LanguageType language);
+                        const char *file_path, SymbolScope scope, Language language);
 
 // Import implementations from symbol_lookup.c
 IMPORT_FUNCTION(SymbolEntry*, lookup_impl, const GlobalSymbolTable *table, const char *qualified_name);
 IMPORT_FUNCTION(SymbolEntry*, scope_lookup_impl, const GlobalSymbolTable *table, const char *name,
-                          const char *current_scope, LanguageType language);
+                          const char *current_scope, Language language);
 IMPORT_FUNCTION(size_t, get_by_type_impl, const GlobalSymbolTable *table, ASTNodeType type,
                     SymbolEntry **out_entries, size_t max_entries);
 IMPORT_FUNCTION(size_t, get_by_file_impl, const GlobalSymbolTable *table, const char *file_path,
@@ -50,9 +50,9 @@ IMPORT_FUNCTION(size_t, get_by_file_impl, const GlobalSymbolTable *table, const 
 
 // Import implementations from symbol_registration.c
 IMPORT_FUNCTION(SymbolEntry*, register_impl, GlobalSymbolTable *table, const char *qualified_name,
-                      ASTNode *node, const char *file_path, SymbolScope scope, LanguageType language);
+                      ASTNode *node, const char *file_path, SymbolScope scope, Language language);
 IMPORT_FUNCTION(size_t, register_from_ast_impl, GlobalSymbolTable *table, ASTNode *node,
-                             const char *current_scope, const char *file_path, LanguageType language);
+                             const char *current_scope, const char *file_path, Language language);
 
 /**
  * Create a new global symbol table
@@ -79,7 +79,7 @@ void symbol_table_free(GlobalSymbolTable *table) {
  */
 SymbolEntry *symbol_table_register(GlobalSymbolTable *table, const char *qualified_name,
                                  ASTNode *node, const char *file_path,
-                                 SymbolScope scope, LanguageType language) {
+                                 SymbolScope scope, Language language) {
     return symbol_table_register_impl(table, qualified_name, node, file_path, scope, language);
 }
 
@@ -98,7 +98,7 @@ SymbolEntry *symbol_table_lookup(const GlobalSymbolTable *table, const char *qua
  * Implemented in symbol_table/symbol_lookup.c
  */
 SymbolEntry *symbol_table_scope_lookup(const GlobalSymbolTable *table, const char *name,
-                                    const char *current_scope, LanguageType language) {
+                                    const char *current_scope, Language language) {
     return symbol_table_scope_lookup_impl(table, name, current_scope, language);
 }
 
@@ -179,6 +179,6 @@ bool symbol_table_rehash(GlobalSymbolTable *table, size_t new_capacity) {
  */
 size_t symbol_table_register_from_ast(GlobalSymbolTable *table, ASTNode *node,
                                     const char *current_scope, const char *file_path,
-                                    LanguageType language) {
+                                    Language language) {
     return symbol_table_register_from_ast_impl(table, node, current_scope, file_path, language);
 }

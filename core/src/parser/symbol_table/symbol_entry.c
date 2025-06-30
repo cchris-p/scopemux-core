@@ -64,7 +64,7 @@ char *extract_simple_name(const char *qualified_name) {
  */
 SymbolEntry *symbol_entry_create(const char *qualified_name, ASTNode *node,
                                const char *file_path, SymbolScope scope,
-                               LanguageType language) {
+                               Language language) {
     if (!qualified_name || !node || !file_path) {
         return NULL;
     }

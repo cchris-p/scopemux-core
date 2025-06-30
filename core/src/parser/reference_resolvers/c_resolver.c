@@ -110,14 +110,14 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
 
                 if (field && field->name && strcmp(field->name, field_name) == 0) {
                   // Found the field, add reference
-                  if (node->num_references < node->references_capacity) {
-                    node->references[node->num_references++] = field;
+                  /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+                    ast_node_add_reference_with_metadata(node, field;
                     c_resolver_stats.struct_fields_resolved++;
                     c_resolver_stats.resolved_count++;
                     return RESOLUTION_SUCCESS;
                   } else {
                     // Resize references array
-                    size_t new_capacity = node->references_capacity * 2;
+                    /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
                     if (new_capacity == 0)
                       new_capacity = 4;
 
@@ -125,9 +125,9 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
                         (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
 
                     if (new_refs) {
-                      node->references = new_refs;
-                      node->references_capacity = new_capacity;
-                      node->references[node->num_references++] = field;
+                      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+                      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+                      ast_node_add_reference_with_metadata(node, field;
                       c_resolver_stats.struct_fields_resolved++;
                       c_resolver_stats.resolved_count++;
                       return RESOLUTION_SUCCESS;
@@ -153,21 +153,21 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
   if (entry) {
     c_resolver_stats.resolved_count++;
     // Add reference to node
-    if (node->num_references < node->references_capacity) {
-      node->references[node->num_references++] = entry->node;
+    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+      ast_node_add_reference_with_metadata(node, entry->node, ref_type);
       return RESOLUTION_SUCCESS;
     } else {
       // Resize references array
-      size_t new_capacity = node->references_capacity * 2;
+      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
       if (new_capacity == 0)
         new_capacity = 4;
 
-      ASTNode **new_refs = (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
+      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
 
       if (new_refs) {
-        node->references = new_refs;
-        node->references_capacity = new_capacity;
-        node->references[node->num_references++] = entry->node;
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+        ast_node_add_reference_with_metadata(node, entry->node, ref_type);
         return RESOLUTION_SUCCESS;
       }
     }
@@ -184,21 +184,21 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
   if (entry) {
     c_resolver_stats.resolved_count++;
     // Add reference to node
-    if (node->num_references < node->references_capacity) {
-      node->references[node->num_references++] = entry->node;
+    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+      ast_node_add_reference_with_metadata(node, entry->node, ref_type);
       return RESOLUTION_SUCCESS;
     } else {
       // Resize references array
-      size_t new_capacity = node->references_capacity * 2;
+      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
       if (new_capacity == 0)
         new_capacity = 4;
 
-      ASTNode **new_refs = (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
+      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
 
       if (new_refs) {
-        node->references = new_refs;
-        node->references_capacity = new_capacity;
-        node->references[node->num_references++] = entry->node;
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
+        ast_node_add_reference_with_metadata(node, entry->node, ref_type);
         return RESOLUTION_SUCCESS;
       }
     }

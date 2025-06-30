@@ -128,7 +128,7 @@ Test(reference_resolver_delegation, resolve_reference_delegate, .init = setup_ma
       reference_resolver_resolve_node(resolver, node, REF_TYPE_FUNCTION, "test_symbol");
 
   // For test purposes, manually set reference data that would normally be set by resolver
-  ast_node_set_reference(node, sym);
+  ast_node_set_reference(node, REF_TYPE_FUNCTION, sym);
 
   // Verify delegation worked
   cr_assert(status == RESOLUTION_SUCCESS, "Resolution should succeed via delegation");

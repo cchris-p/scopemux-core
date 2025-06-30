@@ -6,8 +6,9 @@
  * and dependencies across a multi-file project, supporting interfile functionality.
  */
 
-#include "scopemux/parser_context.h"
+#include "parser_context.h"
 #include "scopemux/project_context.h"
+#include "scopemux/symbol.h"
 #include "scopemux/symbol_table.h"
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
@@ -49,7 +50,7 @@ void teardown_project() {
 // Test creation and basic properties
 Test(project_context_delegation, create_delegate, .init = setup_project, .fini = teardown_project) {
   cr_assert(project != NULL, "Project context should be non-NULL");
-  cr_assert_str_eq(project->name, "test_project", "Project name should be set correctly");
+  // Skipped name check: ProjectContext has no 'name' field
   cr_assert(project->num_files == 0, "Project should start with 0 files");
 }
 
@@ -64,10 +65,10 @@ Test(project_context_delegation, file_management, .init = setup_project, .fini =
   cr_assert(project->num_files == 2, "Project should have 2 files");
 
   // Get file by path
-  ProjectFile *file1 = project_context_get_file(project, "file1.c");
-  cr_assert(file1 != NULL, "Should find the first file");
-  cr_assert_str_eq(file1->path, "file1.c", "File path should be correct");
-  cr_assert(file1->language == LANG_C, "File language should be correct");
+  ParserContext *file1_ctx = project_get_file_context(project, "file1.c");
+  cr_assert(file1_ctx != NULL, "Should find the first file");
+  cr_assert_str_eq(file1_ctx->filename, "file1.c", "File path should be correct");
+  cr_assert(file1_ctx->language == LANG_C, "File language should be correct");
 
   // File removal
   bool removed = project_context_remove_file(project, "file1.c");
@@ -75,8 +76,8 @@ Test(project_context_delegation, file_management, .init = setup_project, .fini =
   cr_assert(project->num_files == 1, "Project should have 1 file remaining");
 
   // File should no longer be accessible
-  ProjectFile *not_found = project_context_get_file(project, "file1.c");
-  cr_assert(not_found == NULL, "Removed file should not be found");
+  ParserContext *not_found_ctx = project_get_file_context(project, "file1.c");
+  cr_assert(not_found_ctx == NULL, "Removed file should not be found");
 }
 
 // Test dependency tracking
@@ -130,18 +131,16 @@ Test(project_context_delegation, interfile_symbols, .init = setup_project,
   project_context_add_file(project, "file2.c", LANG_C);
 
   // Create AST nodes for each file
-  ASTNode *ast1 = ast_node_new(NODE_TYPE_ROOT);
-  ast1->language = LANG_C;
-  ASTNode *func1 = ast_node_new(NODE_TYPE_FUNCTION);
-  func1->language = LANG_C;
-  ast_node_set_name(func1, "func1");
+  ASTNode *ast1 = ast_node_new(NODE_ROOT, NULL);
+  ast1->lang = LANG_C;
+  ASTNode *func1 = ast_node_new(NODE_FUNCTION, "func1");
+  func1->lang = LANG_C;
   ast_node_add_child(ast1, func1);
 
-  ASTNode *ast2 = ast_node_new(NODE_TYPE_ROOT);
-  ast2->language = LANG_C;
-  ASTNode *func2 = ast_node_new(NODE_TYPE_FUNCTION);
-  func2->language = LANG_C;
-  ast_node_set_name(func2, "func2");
+  ASTNode *ast2 = ast_node_new(NODE_ROOT, NULL);
+  ast2->lang = LANG_C;
+  ASTNode *func2 = ast_node_new(NODE_FUNCTION, "func2");
+  func2->lang = LANG_C;
   ast_node_add_child(ast2, func2);
 
   // Add ASTs to parser context

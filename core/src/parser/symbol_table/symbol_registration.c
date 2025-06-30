@@ -18,7 +18,7 @@
 // External functions from other files
 extern SymbolEntry *symbol_entry_create(const char *qualified_name, ASTNode *node,
                                      const char *file_path, SymbolScope scope,
-                                     LanguageType language);
+                                     Language language);
 
 /**
  * Hash function for strings
@@ -57,7 +57,7 @@ uint32_t hash_string(const char *str, size_t table_size) {
  */
 SymbolEntry *symbol_table_register(GlobalSymbolTable *table, const char *qualified_name,
                                  ASTNode *node, const char *file_path,
-                                 SymbolScope scope, LanguageType language) {
+                                 SymbolScope scope, Language language) {
     if (!table || !qualified_name || !node || !file_path) {
         return NULL;
     }
@@ -114,7 +114,7 @@ SymbolEntry *symbol_table_register(GlobalSymbolTable *table, const char *qualifi
  */
 size_t symbol_table_register_from_ast(GlobalSymbolTable *table, ASTNode *node,
                                     const char *current_scope, const char *file_path,
-                                    LanguageType language) {
+                                    Language language) {
     if (!table || !node || !file_path) {
         return 0;
     }

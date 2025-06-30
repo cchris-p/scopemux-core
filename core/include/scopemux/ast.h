@@ -1,3 +1,4 @@
+#include "scopemux/language.h"
 #include "scopemux/source_range.h"
 /**
  * @file ast.h
@@ -46,16 +47,17 @@ typedef enum {
   NODE_STRUCT = 21,
   NODE_ENUM = 22,
   NODE_INTERFACE = 23,
-  NODE_UNION = 24,           // C/C++ union
-  NODE_TYPEDEF = 25,         // typedef declaration
-  NODE_MACRO = 26,           // macro definition
+  NODE_UNION = 24,   // C/C++ union
+  NODE_TYPEDEF = 25, // typedef declaration
+  NODE_MACRO = 26,   // macro definition
   NODE_CONTROL_FLOW = 27,
   NODE_TEMPLATE_SPECIALIZATION = 28,
   NODE_LAMBDA = 29,
   NODE_USING = 30,
   NODE_FRIEND = 31,
   NODE_OPERATOR = 32,
-  /* Add more node types as needed */
+  NODE_TYPE = 33,     // Type node (used in type annotations or declarations)
+  NODE_PROPERTY = 34, // Property or field inside a class or struct
   /* Add more node types as needed */
 } ASTNodeType;
 
@@ -82,6 +84,7 @@ typedef struct ASTNode {
   size_t references_capacity;  /**< Capacity of references array */
 
   void *additional_data; /**< Language-specific or analysis data */
+  Language lang;         /**< Language type */
 } ASTNode;
 
 /**
@@ -90,7 +93,8 @@ typedef struct ASTNode {
  * @return A new AST node with the given type, or NULL on allocation failure
  */
 ASTNode *ast_node_new(ASTNodeType type, const char *name);
-ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name, SourceRange range);
+ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name,
+                         SourceRange range);
 
 /**
  * Convert an ASTNodeType enum value to its canonical string representation

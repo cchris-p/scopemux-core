@@ -1,9 +1,9 @@
-#include "../../../include/scopemux/ast_node.h"
+#include "../../../include/scopemux/ast.h"
 #include "../../../include/scopemux/logging.h"
 #include "../../../include/scopemux/parser.h"
 #include "../../../include/scopemux/project_context.h"
 #include "../../../include/scopemux/reference_resolver.h"
-#include "../../../include/scopemux/source_range.h"
+
 #include "../../../include/scopemux/symbol_table.h"
 
 #include <stdio.h>
@@ -59,40 +59,23 @@ ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type
 
   // Handle special cases based on reference type
   switch (ref_type) {
-  case REFERENCE_IMPORT:
+  case REF_IMPORT:
     // Handle module import resolution
     // This would require access to the ProjectContext
     python_resolver_stats.import_resolved++;
 
     // Try to find the module in the symbol table
     SymbolEntry *module_entry = symbol_table_lookup(symbol_table, name);
-    if (module_entry &&
-        (module_entry->node->type == NODE_MODULE || module_entry->node->type == NODE_PACKAGE)) {
+    if (module_entry && (module_entry->node->type == NODE_MODULE)) {
 
       // Add reference to the module
-      if (node->num_references < node->references_capacity) {
-        node->references[node->num_references++] = module_entry->node;
-        return RESOLUTION_SUCCESS;
-      } else {
-        // Resize references array
-        size_t new_capacity = node->references_capacity * 2;
-        if (new_capacity == 0)
-          new_capacity = 4;
-
-        ASTNode **new_refs =
-            (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-        if (new_refs) {
-          node->references = new_refs;
-          node->references_capacity = new_capacity;
-          node->references[node->num_references++] = module_entry->node;
-          return RESOLUTION_SUCCESS;
-        }
-      }
+      /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+      ast_node_add_reference_with_metadata(node, module_entry->node, ref_type);
+      return RESOLUTION_SUCCESS;
     }
     return RESOLUTION_NOT_FOUND;
 
-  case REFERENCE_ATTRIBUTE:
+  case REF_USE:
     // Handle attribute access (obj.attr)
     // This is more complex and requires context about the object type
     python_resolver_stats.attribute_resolved++;
@@ -116,27 +99,10 @@ ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type
             SymbolEntry *attr_entry = symbol_table_lookup(symbol_table, name);
             if (attr_entry) {
               // Add reference to the attribute
-              if (node->num_references < node->references_capacity) {
-                node->references[node->num_references++] = attr_entry->node;
-                python_resolver_stats.resolved_count++;
-                return RESOLUTION_SUCCESS;
-              } else {
-                // Resize references array
-                size_t new_capacity = node->references_capacity * 2;
-                if (new_capacity == 0)
-                  new_capacity = 4;
-
-                ASTNode **new_refs =
-                    (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-                if (new_refs) {
-                  node->references = new_refs;
-                  node->references_capacity = new_capacity;
-                  node->references[node->num_references++] = attr_entry->node;
-                  python_resolver_stats.resolved_count++;
-                  return RESOLUTION_SUCCESS;
-                }
-              }
+              /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
+              ast_node_add_reference_with_metadata(node, attr_entry->node, ref_type);
+              python_resolver_stats.resolved_count++;
+              return RESOLUTION_SUCCESS;
             }
           }
         }
@@ -155,25 +121,8 @@ ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type
   if (entry) {
     python_resolver_stats.resolved_count++;
     // Add reference
-    if (node->num_references < node->references_capacity) {
-      node->references[node->num_references++] = entry->node;
-      return RESOLUTION_SUCCESS;
-    } else {
-      // Resize references array
-      size_t new_capacity = node->references_capacity * 2;
-      if (new_capacity == 0)
-        new_capacity = 4;
-
-      ASTNode **new_refs = (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-      if (new_refs) {
-        node->references = new_refs;
-        node->references_capacity = new_capacity;
-        node->references[node->num_references++] = entry->node;
-        return RESOLUTION_SUCCESS;
-      }
-    }
-    return RESOLUTION_FAILED; // Failed to add reference
+    ast_node_add_reference_with_metadata(node, entry->node, ref_type);
+    return RESOLUTION_SUCCESS;
   }
 
   // 2. Try in enclosing scopes
@@ -186,25 +135,8 @@ ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type
   if (entry) {
     python_resolver_stats.resolved_count++;
     // Add reference
-    if (node->num_references < node->references_capacity) {
-      node->references[node->num_references++] = entry->node;
-      return RESOLUTION_SUCCESS;
-    } else {
-      // Resize references array
-      size_t new_capacity = node->references_capacity * 2;
-      if (new_capacity == 0)
-        new_capacity = 4;
-
-      ASTNode **new_refs = (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-      if (new_refs) {
-        node->references = new_refs;
-        node->references_capacity = new_capacity;
-        node->references[node->num_references++] = entry->node;
-        return RESOLUTION_SUCCESS;
-      }
-    }
-    return RESOLUTION_FAILED; // Failed to add reference
+    ast_node_add_reference_with_metadata(node, entry->node, ref_type);
+    return RESOLUTION_SUCCESS;
   }
 
   // 3. Look in builtins (Python has a builtin scope)
@@ -216,28 +148,9 @@ ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type
     if (entry) {
       python_resolver_stats.builtin_resolved++;
       python_resolver_stats.resolved_count++;
-
       // Add reference
-      if (node->num_references < node->references_capacity) {
-        node->references[node->num_references++] = entry->node;
-        return RESOLUTION_SUCCESS;
-      } else {
-        // Resize references array
-        size_t new_capacity = node->references_capacity * 2;
-        if (new_capacity == 0)
-          new_capacity = 4;
-
-        ASTNode **new_refs =
-            (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-        if (new_refs) {
-          node->references = new_refs;
-          node->references_capacity = new_capacity;
-          node->references[node->num_references++] = entry->node;
-          return RESOLUTION_SUCCESS;
-        }
-      }
-      return RESOLUTION_FAILED; // Failed to add reference
+      ast_node_add_reference_with_metadata(node, entry->node, ref_type);
+      return RESOLUTION_SUCCESS;
     }
   }
 

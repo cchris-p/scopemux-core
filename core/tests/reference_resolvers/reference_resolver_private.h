@@ -104,12 +104,46 @@ Symbol *symbol_new(const char *name, SymbolType type);
 void symbol_free(Symbol *symbol);
 
 // Function to add a symbol to a symbol table (for tests)
-static inline void symbol_table_add(GlobalSymbolTable *table, Symbol *symbol) {
-  // This is a mock implementation for tests
-  if (!table || !symbol)
-    return;
-  // In a real implementation, this would add the symbol to the table
-  // For now, we just track that it was called
+#include <string.h>
+
+// Simple symbol entry for chaining
+static inline unsigned long hash_qualified_name(const char *qualified_name, size_t num_buckets) {
+  unsigned long hash = 5381;
+  int c;
+  while ((c = *qualified_name++))
+    hash = ((hash << 5) + hash) + c; // hash * 33 + c
+  return hash % num_buckets;
+}
+
+static inline bool symbol_table_add(GlobalSymbolTable *table, SymbolEntry *entry) {
+  if (!table || !entry || !entry->qualified_name)
+    return false;
+
+  unsigned long index = hash_qualified_name(entry->qualified_name, table->num_buckets);
+  SymbolEntry *existing = table->buckets[index];
+
+  // Check for duplicates (same qualified_name + language)
+  while (existing) {
+    if (strcmp(existing->qualified_name, entry->qualified_name) == 0 &&
+        existing->language == entry->language) {
+      // Duplicate found
+      return false;
+    }
+    existing = existing->next;
+  }
+
+  // Insert at head of chain
+  entry->next = table->buckets[index];
+  table->buckets[index] = entry;
+
+  table->num_symbols++;
+  table->count++;
+
+  if (entry->next) {
+    table->collisions++;
+  }
+
+  return true;
 }
 // Function to resolve a reference (for tests)
 static inline ResolutionStatus resolve_reference(ReferenceResolver *resolver, ASTNode *node,
@@ -137,35 +171,38 @@ typedef struct {
 typedef struct NodeRefEntry {
   ASTNode *node;
   Symbol *reference;
+  ReferenceType type;  // Add the missing type field
   struct NodeRefEntry *next;
 } NodeRefEntry;
 
-static NodeRefEntry *g_node_refs = NULL;
+extern NodeRefEntry *g_node_refs;
 
 // Functions to attach and get extension data for tests
 static inline bool ast_node_set_reference(ASTNode *node, ReferenceType type, Symbol *reference) {
   if (!node)
-    return;
+    return false;
 
   // First check if this node is already in our list
   NodeRefEntry *current = g_node_refs;
   while (current) {
     if (current->node == node) {
       current->reference = reference;
-      return;
+      current->type = type;  // Set the type field
+      return true;
     }
     current = current->next;
   }
 
   // Not found, add a new entry
   NodeRefEntry *entry = (NodeRefEntry *)malloc(sizeof(NodeRefEntry));
-  if (!entry)
+  if (!entry) {
     log_debug("NodeRefEntry not found for AST Node.");
-  return false;
+    return false;
+  }
 
   entry->node = node;
   entry->reference = reference;
-  entry->reference->type = type;
+  entry->type = type;  // Set the type field
   entry->next = g_node_refs;
   g_node_refs = entry;
   return true;

@@ -37,7 +37,12 @@ typedef enum {
   REF_OVERRIDE,       ///< Method override
   REF_USE,            ///< Variable/symbol usage
   REF_EXTENSION,      ///< Extension/trait application
-  REF_TEMPLATE        ///< Template/generic instantiation
+  REF_TEMPLATE,       ///< Template/generic instantiation
+  REF_INTERFACE,      ///< Interface reference
+  REF_GENERIC,        ///< Generic type reference
+  REF_INCLUDE,        ///< Include directive (duplicate of REF_IMPORT but for clarity)
+  REF_PROPERTY,       ///< Property/field access
+  REF_NODE_TYPE       ///< Reference to a type node (may overlap with REF_TYPE)
 } ReferenceType;
 
 /**

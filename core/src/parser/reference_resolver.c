@@ -23,10 +23,10 @@
 // From resolver_core.c
 extern ReferenceResolver *reference_resolver_create_impl(GlobalSymbolTable *symbol_table);
 extern void reference_resolver_free_impl(ReferenceResolver *resolver);
-extern bool reference_resolver_register_impl(ReferenceResolver *resolver, LanguageType language,
+extern bool reference_resolver_register_impl(ReferenceResolver *resolver, Language language,
                                              ResolverFunction resolver_func, void *resolver_data,
                                              ResolverCleanupFunction cleanup_func);
-extern bool reference_resolver_unregister_impl(ReferenceResolver *resolver, LanguageType language);
+extern bool reference_resolver_unregister_impl(ReferenceResolver *resolver, Language language);
 extern void reference_resolver_get_stats_impl(const ReferenceResolver *resolver,
                                               size_t *out_total_references,
                                               size_t *out_resolved_references,
@@ -34,7 +34,7 @@ extern void reference_resolver_get_stats_impl(const ReferenceResolver *resolver,
 
 // From resolver_registration.c
 extern LanguageResolver *find_language_resolver_impl(ReferenceResolver *resolver,
-                                                     LanguageType language);
+                                                     Language language);
 extern bool reference_resolver_init_builtin_impl(ReferenceResolver *resolver);
 
 // From resolver_resolution.c
@@ -85,7 +85,7 @@ void reference_resolver_free(ReferenceResolver *resolver) {
  *
  * @see resolver_core.c for implementation
  */
-bool reference_resolver_register(ReferenceResolver *resolver, LanguageType language,
+bool reference_resolver_register(ReferenceResolver *resolver, Language language,
                                  ResolverFunction resolver_func, void *resolver_data,
                                  ResolverCleanupFunction cleanup_func) {
   return reference_resolver_register_impl(resolver, language, resolver_func, resolver_data,
@@ -101,7 +101,7 @@ bool reference_resolver_register(ReferenceResolver *resolver, LanguageType langu
  *
  * @see resolver_core.c for implementation
  */
-bool reference_resolver_unregister(ReferenceResolver *resolver, LanguageType language) {
+bool reference_resolver_unregister(ReferenceResolver *resolver, Language language) {
   return reference_resolver_unregister_impl(resolver, language);
 }
 
@@ -114,7 +114,7 @@ bool reference_resolver_unregister(ReferenceResolver *resolver, LanguageType lan
  *
  * @see resolver_registration.c for implementation
  */
-LanguageResolver *find_language_resolver(ReferenceResolver *resolver, LanguageType language) {
+LanguageResolver *find_language_resolver(ReferenceResolver *resolver, Language language) {
   return find_language_resolver_impl(resolver, language);
 }
 

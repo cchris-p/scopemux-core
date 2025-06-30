@@ -1,42 +1,46 @@
 /**
  * @file symbol_management.c
  * @brief Symbol registration and reference resolution functionality for ProjectContext
- * 
+ *
  * Handles the registration of symbols from parsed files into the global symbol table,
  * and the resolution of references between symbols across different files.
  */
 
-#include "scopemux/project_context.h"
+#include "scopemux/ast.h"
 #include "scopemux/logging.h"
-#include "scopemux/symbol_table.h"
+#include "scopemux/project_context.h"
 #include "scopemux/reference_resolver.h"
+#include "scopemux/symbol_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "scopemux/ast.h"
 
 /**
  * Register symbols from a parsed file into the global symbol table
  *
  * Traverses the AST of a parsed file and adds all symbols to the global symbol table.
  * This makes them available for cross-file reference resolution.
- * 
+ *
  * @param project The ProjectContext
  * @param ctx The ParserContext containing the parsed AST
  * @param filepath The file path (used for logging and symbol qualification)
  */
 void register_file_symbols(ProjectContext *project, ParserContext *ctx, const char *filepath) {
-    if (!project || !ctx || !filepath || !project->symbol_table) {
-        return;
-    }
-    
-    // Start with the root nodes
-    for (size_t i = 0; i < ctx->num_nodes; i++) {
-        ASTNode *node = ctx->nodes[i];
-        if (!node) continue;
-        
-        // Only register top-level symbols
-        register_node_symbols(project->symbol_table, node, filepath);
-    }
+  if (!project || !ctx || !filepath || !project->symbol_table) {
+    return;
+  }
+
+  // Start with the root nodes
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    ASTNode *node = ctx->all_ast_nodes[i];
+    if (!node)
+      continue;
+
+    // Only register top-level symbols
+    register_node_symbols(project->symbol_table, node, filepath);
+  }
 }
 
 /**
@@ -46,37 +50,43 @@ void register_file_symbols(ProjectContext *project, ParserContext *ctx, const ch
  * @param node The ASTNode to register
  * @param filepath The file path (used for symbol qualification)
  */
-static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node, const char *filepath) {
-    if (!symbol_table || !node) {
-        return;
+static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node,
+                                  const char *filepath) {
+  if (!symbol_table || !node) {
+    return;
+  }
+
+  // Register this node if it has a name and is a significant symbol type
+  if (node->name && node->qualified_name) {
+    switch (node->type) {
+    // Register all significant, top-level symbol types
+    case NODE_FUNCTION:
+    case NODE_CLASS:
+    case NODE_STRUCT:
+    case NODE_ENUM:
+    case NODE_VARIABLE:
+    case NODE_TYPEDEF:
+    case NODE_NAMESPACE:
+    case NODE_INTERFACE:
+    case NODE_MODULE:
+    case NODE_MACRO:
+    case NODE_USING:
+    case NODE_FRIEND:
+    case NODE_OPERATOR:
+      // Add to symbol table with filepath for context
+      symbol_table_add(symbol_table, node->qualified_name, node, filepath);
+      break;
+
+    default:
+      // Other node types might not need to be in the global symbol table
+      break;
     }
-    
-    // Register this node if it has a name and is a significant symbol type
-    if (node->name && node->qualified_name) {
-        switch (node->type) {
-            case NODE_FUNCTION:
-            case NODE_CLASS:
-            case NODE_STRUCT:
-            case NODE_ENUM:
-            case NODE_VARIABLE:
-            case NODE_CONSTANT:
-            case NODE_TYPEDEF:
-            case NODE_NAMESPACE:
-            case NODE_INTERFACE:
-                // Add to symbol table with filepath for context
-                symbol_table_add(symbol_table, node->qualified_name, node, filepath);
-                break;
-                
-            default:
-                // Other node types might not need to be in the global symbol table
-                break;
-        }
-    }
-    
-    // Recursively process children
-    for (size_t i = 0; i < node->num_children; i++) {
-        register_node_symbols(symbol_table, node->children[i], filepath);
-    }
+  }
+
+  // Recursively process children
+  for (size_t i = 0; i < node->num_children; i++) {
+    register_node_symbols(symbol_table, node->children[i], filepath);
+  }
 }
 
 /**
@@ -87,12 +97,12 @@ static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node
  * @return The ASTNode for the symbol, or NULL if not found
  */
 ASTNode *project_get_symbol(const ProjectContext *project, const char *qualified_name) {
-    if (!project || !qualified_name || !project->symbol_table) {
-        return NULL;
-    }
-    
-    SymbolEntry *entry = symbol_table_lookup(project->symbol_table, qualified_name);
-    return entry ? entry->node : NULL;
+  if (!project || !qualified_name || !project->symbol_table) {
+    return NULL;
+  }
+
+  SymbolEntry *entry = symbol_table_lookup(project->symbol_table, qualified_name);
+  return entry ? entry->node : NULL;
 }
 
 /**
@@ -105,25 +115,26 @@ ASTNode *project_get_symbol(const ProjectContext *project, const char *qualified
  * @return The number of symbols found (may be greater than max_nodes if buffer is too small)
  */
 size_t project_get_symbols_by_type(const ProjectContext *project, ASTNodeType type,
-                                  const ASTNode **out_nodes, size_t max_nodes) {
-    if (!project || !out_nodes || max_nodes == 0) {
-        return 0;
+                                   const ASTNode **out_nodes, size_t max_nodes) {
+  if (!project || !out_nodes || max_nodes == 0) {
+    return 0;
+  }
+
+  size_t count = 0;
+
+  // Iterate over all files in the project
+  for (size_t i = 0; i < project->num_files; i++) {
+    ParserContext *ctx = project->file_contexts[i];
+    if (!ctx)
+      continue;
+
+    // Iterate over all nodes in the file
+    for (size_t j = 0; j < ctx->num_ast_nodes; j++) {
+      collect_nodes_by_type(ctx->all_ast_nodes[j], type, out_nodes, max_nodes, &count);
     }
-    
-    size_t count = 0;
-    
-    // Iterate over all files in the project
-    for (size_t i = 0; i < project->num_files; i++) {
-        ParserContext *ctx = project->file_contexts[i];
-        if (!ctx) continue;
-        
-        // Iterate over all nodes in the file
-        for (size_t j = 0; j < ctx->num_nodes; j++) {
-            collect_nodes_by_type(ctx->nodes[j], type, out_nodes, max_nodes, &count);
-        }
-    }
-    
-    return count;
+  }
+
+  return count;
 }
 
 /**
@@ -135,24 +146,24 @@ size_t project_get_symbols_by_type(const ProjectContext *project, ASTNodeType ty
  * @param max_nodes Maximum number of nodes to store
  * @param count Pointer to the current count of found nodes
  */
-static void collect_nodes_by_type(const ASTNode *node, ASTNodeType type,
-                                const ASTNode **out_nodes, size_t max_nodes, size_t *count) {
-    if (!node || !out_nodes || !count) {
-        return;
+static void collect_nodes_by_type(const ASTNode *node, ASTNodeType type, const ASTNode **out_nodes,
+                                  size_t max_nodes, size_t *count) {
+  if (!node || !out_nodes || !count) {
+    return;
+  }
+
+  // Check if this node matches the requested type
+  if (node->type == type) {
+    if (*count < max_nodes) {
+      out_nodes[*count] = node;
     }
-    
-    // Check if this node matches the requested type
-    if (node->type == type) {
-        if (*count < max_nodes) {
-            out_nodes[*count] = node;
-        }
-        (*count)++;
-    }
-    
-    // Recursively check children
-    for (size_t i = 0; i < node->num_children; i++) {
-        collect_nodes_by_type(node->children[i], type, out_nodes, max_nodes, count);
-    }
+    (*count)++;
+  }
+
+  // Recursively check children
+  for (size_t i = 0; i < node->num_children; i++) {
+    collect_nodes_by_type(node->children[i], type, out_nodes, max_nodes, count);
+  }
 }
 
 /**
@@ -162,38 +173,39 @@ static void collect_nodes_by_type(const ASTNode *node, ASTNodeType type,
  * @return true if successful, false otherwise
  */
 bool project_resolve_references(ProjectContext *project) {
-    if (!project) {
-        return false;
+  if (!project) {
+    return false;
+  }
+
+  log_info("Resolving references across %zu files", project->num_files);
+
+  // Initialize the reference resolver if needed
+  reference_resolver_init();
+
+  // Iterate through all files and resolve references
+  for (size_t i = 0; i < project->num_files; i++) {
+    ParserContext *ctx = project->file_contexts[i];
+    if (!ctx)
+      continue;
+
+    log_debug("Resolving references in file: %s", ctx->filename);
+
+    // Start with the root nodes
+    for (size_t j = 0; j < ctx->num_ast_nodes; j++) {
+      resolve_node_references(project, ctx->all_ast_nodes[j]);
     }
-    
-    LOG_INFO("Resolving references across %zu files", project->num_files);
-    
-    // Initialize the reference resolver if needed
-    reference_resolver_init();
-    
-    // Iterate through all files and resolve references
-    for (size_t i = 0; i < project->num_files; i++) {
-        ParserContext *ctx = project->file_contexts[i];
-        if (!ctx) continue;
-        
-        LOG_DEBUG("Resolving references in file: %s", ctx->file_path);
-        
-        // Start with the root nodes
-        for (size_t j = 0; j < ctx->num_nodes; j++) {
-            resolve_node_references(project, ctx->nodes[j]);
-        }
-    }
-    
-    // Log resolution statistics
-    size_t total_lookups = 0;
-    size_t resolved_count = 0;
-    size_t failed_count = 0;
-    reference_resolver_get_stats(&total_lookups, &resolved_count, &failed_count);
-    
-    LOG_INFO("Reference resolution complete: %zu lookups, %zu resolved, %zu failed",
-             total_lookups, resolved_count, failed_count);
-    
-    return true;
+  }
+
+  // Log resolution statistics
+  size_t total_lookups = 0;
+  size_t resolved_count = 0;
+  size_t failed_count = 0;
+  reference_resolver_get_stats(&total_lookups, &resolved_count, &failed_count);
+
+  log_info("Reference resolution complete: %zu lookups, %zu resolved, %zu failed", total_lookups,
+           resolved_count, failed_count);
+
+  return true;
 }
 
 /**
@@ -203,74 +215,66 @@ bool project_resolve_references(ProjectContext *project) {
  * @param node The ASTNode to resolve references for
  */
 static void resolve_node_references(ProjectContext *project, ASTNode *node) {
-    if (!project || !node) {
-        return;
+  if (!project || !node) {
+    return;
+  }
+
+  // Resolve references for this node based on its type
+  switch (node->type) {
+  case NODE_FUNCTION:
+    if (node->name) {
+      reference_resolver_resolve(node, REF_CALL, node->name, project->symbol_table);
     }
-    
-    // Resolve references for this node based on its type
-    switch (node->type) {
-        case NODE_FUNCTION_CALL:
-            if (node->name) {
-                reference_resolver_resolve(node, REFERENCE_CALL, node->name, project->symbol_table);
-            }
-            break;
-            
-        case NODE_VARIABLE_REF:
-            if (node->name) {
-                reference_resolver_resolve(node, REFERENCE_VARIABLE, node->name, project->symbol_table);
-            }
-            break;
-            
-        case NODE_CLASS_REF:
-        case NODE_STRUCT_REF:
-            if (node->name) {
-                reference_resolver_resolve(node, REFERENCE_TYPE, node->name, project->symbol_table);
-            }
-            break;
-            
-        case NODE_IMPORT:
-            if (node->name) {
-                reference_resolver_resolve(node, REFERENCE_IMPORT, node->name, project->symbol_table);
-            }
-            break;
-            
-        case NODE_INCLUDE:
-            if (node->raw_content) {
-                // Extract the include path
-                const char *include_path = NULL;
-                
-                // Parse include directive (simplified, should be improved)
-                char *start = strchr(node->raw_content, '"');
-                if (start) {
-                    start++;
-                    char *end = strchr(start, '"');
-                    if (end) {
-                        size_t len = end - start;
-                        char *path = malloc(len + 1);
-                        if (path) {
-                            strncpy(path, start, len);
-                            path[len] = '\0';
-                            include_path = path;
-                        }
-                    }
-                }
-                
-                if (include_path) {
-                    reference_resolver_resolve(node, REFERENCE_INCLUDE, include_path, project->symbol_table);
-                    free((void *)include_path);
-                }
-            }
-            break;
-            
-        default:
-            // Other node types might not need reference resolution at this level
-            break;
+    break;
+  case NODE_VARIABLE:
+    if (node->name) {
+      reference_resolver_resolve(node, REF_USE, node->name, project->symbol_table);
     }
-    
-    // Recursively resolve references for children
-    for (size_t i = 0; i < node->num_children; i++) {
-        resolve_node_references(project, node->children[i]);
+    break;
+  case NODE_CLASS:
+  case NODE_STRUCT:
+  case NODE_ENUM:
+  case NODE_INTERFACE:
+    if (node->name) {
+      reference_resolver_resolve(node, REF_TYPE, node->name, project->symbol_table);
     }
+    break;
+  case NODE_IMPORT:
+    if (node->name) {
+      reference_resolver_resolve(node, REF_IMPORT, node->name, project->symbol_table);
+    }
+    break;
+  case NODE_INCLUDE:
+    if (node->raw_content) {
+      char *include_path = NULL;
+      char *start = strchr(node->raw_content, '"');
+      if (start) {
+        start++;
+        char *end = strchr(start, '"');
+        if (end) {
+          size_t len = end - start;
+          include_path = malloc(len + 1);
+          if (include_path) {
+            strncpy(include_path, start, len);
+            include_path[len] = '\0';
+          }
+        }
+      }
+      if (include_path) {
+        reference_resolver_resolve(node, REF_INCLUDE, include_path, project->symbol_table);
+        free(include_path);
+      }
+    }
+    break;
+  default:
+    // Other node types might not need reference resolution at this level
+    break;
+  }
+
+  // Recursively resolve references for children
+  for (size_t i = 0; i < node->num_children; i++) {
+    resolve_node_references(project, node->children[i]);
+  }
 }
 
 /**
@@ -283,30 +287,31 @@ static void resolve_node_references(ProjectContext *project, ASTNode *node) {
  * @return The number of references found
  */
 size_t project_find_references(const ProjectContext *project, const ASTNode *node,
-                              const ASTNode **out_references, size_t max_references) {
-    if (!project || !node || !out_references || max_references == 0) {
-        return 0;
+                               const ASTNode **out_references, size_t max_references) {
+  if (!project || !node || !out_references || max_references == 0) {
+    return 0;
+  }
+
+  size_t count = 0;
+
+  // Need the qualified name to search for references
+  if (!node->qualified_name) {
+    return 0;
+  }
+
+  // Iterate over all files in the project
+  for (size_t i = 0; i < project->num_files; i++) {
+    ParserContext *ctx = project->file_contexts[i];
+    if (!ctx)
+      continue;
+
+    // Iterate over all nodes in the file
+    for (size_t j = 0; j < ctx->num_ast_nodes; j++) {
+      find_references_in_node(ctx->all_ast_nodes[j], node, out_references, max_references, &count);
     }
-    
-    size_t count = 0;
-    
-    // Need the qualified name to search for references
-    if (!node->qualified_name) {
-        return 0;
-    }
-    
-    // Iterate over all files in the project
-    for (size_t i = 0; i < project->num_files; i++) {
-        ParserContext *ctx = project->file_contexts[i];
-        if (!ctx) continue;
-        
-        // Iterate over all nodes in the file
-        for (size_t j = 0; j < ctx->num_nodes; j++) {
-            find_references_in_node(ctx->nodes[j], node, out_references, max_references, &count);
-        }
-    }
-    
-    return count;
+  }
+
+  return count;
 }
 
 /**
@@ -319,25 +324,25 @@ size_t project_find_references(const ProjectContext *project, const ASTNode *nod
  * @param count Pointer to the current count of found references
  */
 static void find_references_in_node(const ASTNode *current, const ASTNode *target,
-                                  const ASTNode **out_references, size_t max_references,
-                                  size_t *count) {
-    if (!current || !target || !out_references || !count) {
-        return;
+                                    const ASTNode **out_references, size_t max_references,
+                                    size_t *count) {
+  if (!current || !target || !out_references || !count) {
+    return;
+  }
+
+  // Check if this node references the target
+  for (size_t i = 0; i < current->num_references; i++) {
+    if (current->references[i] == target) {
+      if (*count < max_references) {
+        out_references[*count] = current;
+      }
+      (*count)++;
+      break; // Found a reference, no need to check other references of this node
     }
-    
-    // Check if this node references the target
-    for (size_t i = 0; i < current->num_references; i++) {
-        if (current->references[i] == target) {
-            if (*count < max_references) {
-                out_references[*count] = current;
-            }
-            (*count)++;
-            break; // Found a reference, no need to check other references of this node
-        }
-    }
-    
-    // Recursively check children
-    for (size_t i = 0; i < current->num_children; i++) {
-        find_references_in_node(current->children[i], target, out_references, max_references, count);
-    }
+  }
+
+  // Recursively check children
+  for (size_t i = 0; i < current->num_children; i++) {
+    find_references_in_node(current->children[i], target, out_references, max_references, count);
+  }
 }

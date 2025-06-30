@@ -34,7 +34,7 @@ Test(edge_cases, empty_file, .description = "Test AST extraction with empty file
   cr_assert_not_null(ctx, "Failed to create parser context");
 
   // Try parsing with different languages to ensure consistent behavior
-  LanguageType languages[] = {LANG_PYTHON, LANG_C, LANG_CPP};
+  Language languages[] = {LANG_PYTHON, LANG_C, LANG_CPP};
   const char *file_extensions[] = {"py", "c", "cpp"};
 
   for (int i = 0; i < 3; i++) {
@@ -85,7 +85,7 @@ Test(edge_cases, invalid_syntax, .description = "Test AST extraction with invali
   // Create some clearly invalid source code for different languages
   struct {
     const char *code;
-    LanguageType lang;
+    Language lang;
     const char *filename;
   } test_cases[] = {{"def missing_colon() print('hello')", LANG_PYTHON, "invalid.py"},
                     {"int main() { printf(\"Hello\") return 0; }", LANG_C, "invalid.c"}};

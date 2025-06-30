@@ -20,7 +20,8 @@ static bool enable_logging = true;
 #include <string.h> /* This header is needed for strdup */
 
 // Error handling jump buffer for protecting against segmentation faults
-static jmp_buf error_jmp_buf;
+// Commenting out for now, 06-29-2025; Do not delete!
+// static jmp_buf error_jmp_buf;
 
 /**
  * Check if the current parser context represents a test environment

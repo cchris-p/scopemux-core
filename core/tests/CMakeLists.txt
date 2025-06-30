@@ -184,6 +184,7 @@ set(REFERENCE_RESOLVER_STUB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/reference_resolver_stubs.c
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_test_adapter.c
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/project_context_stubs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/reference_resolver_globals.c
 )
 
 # Define source files for each interfile reference resolution test target
@@ -209,7 +210,7 @@ set(RESOLVER_RESOLUTION_TEST_SRCS
 )
 
 set(LANGUAGE_RESOLVER_TEST_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/language_resolver_tests.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/language_resolver_tests.c
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
 )
 
@@ -502,7 +503,6 @@ target_link_libraries(cpp_basic_ast_tests PRIVATE
     ts_python
     ts_javascript
     ts_typescript
-    ts_core
     ts_core
     -Wl,--no-whole-archive
     # System libraries at the end

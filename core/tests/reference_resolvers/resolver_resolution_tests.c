@@ -20,8 +20,7 @@
 ASTNode *ast_node_get_child_at_index(ASTNode *node, size_t index);
 void parser_context_add_ast(ParserContext *ctx, ASTNode *ast, const char *file_path);
 void project_context_add_file(ProjectContext *ctx, const char *file_path, Language lang);
-size_t reference_resolver_resolve_file(ReferenceResolver *resolver, ParserContext *ctx,
-                                       const char *file_path);
+
 size_t reference_resolver_resolve_project(ReferenceResolver *resolver, ProjectContext *ctx,
                                           ParserContext *parser_ctx);
 Symbol *reference_resolver_get_resolved_symbol(ReferenceResolver *resolver, ASTNode *node);
@@ -157,7 +156,7 @@ Test(resolver_resolution, file_level, .init = setup_resolution, .fini = teardown
   parser_context_add_ast(parser_context, root_node, file_path);
 
   // Resolve references in the file
-  size_t resolved = reference_resolver_resolve_file(resolver, parser_context, file_path);
+  size_t resolved = reference_resolver_resolve_file(resolver, parser_context);
 
   // We expect 1 reference to be resolved (the referenced_function call)
   cr_assert(resolved == 1, "File-level resolution should resolve 1 reference");

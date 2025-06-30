@@ -16,7 +16,7 @@
 // A simple hash map to store file paths and languages for tests
 typedef struct {
   char **paths;
-  LanguageType *languages;
+  Language *languages;
   size_t count;
   size_t capacity;
 } FileRegistry;
@@ -31,7 +31,7 @@ static void init_file_registry(void) {
   if (g_file_registry.paths == NULL) {
     g_file_registry.capacity = 8;
     g_file_registry.paths = calloc(g_file_registry.capacity, sizeof(char *));
-    g_file_registry.languages = calloc(g_file_registry.capacity, sizeof(LanguageType));
+    g_file_registry.languages = calloc(g_file_registry.capacity, sizeof(Language));
     g_file_registry.count = 0;
   }
 }
@@ -100,7 +100,7 @@ void project_context_free(ProjectContext *ctx) {
 /**
  * Add a file to the project context
  */
-bool project_context_add_file(ProjectContext *ctx, const char *file_path, LanguageType language) {
+bool project_context_add_file(ProjectContext *ctx, const char *file_path, Language language) {
   if (!ctx || !file_path) {
     return false;
   }
@@ -115,8 +115,7 @@ bool project_context_add_file(ProjectContext *ctx, const char *file_path, Langua
     }
     g_file_registry.paths = new_paths;
 
-    LanguageType *new_langs =
-        realloc(g_file_registry.languages, new_capacity * sizeof(LanguageType));
+    Language *new_langs = realloc(g_file_registry.languages, new_capacity * sizeof(Language));
     if (!new_langs) {
       return false;
     }
@@ -161,7 +160,7 @@ const char *project_context_get_file_path(const ProjectContext *ctx, size_t inde
 /**
  * Get a file language at a specific index
  */
-LanguageType project_context_get_file_language(const ProjectContext *ctx, size_t index) {
+Language project_context_get_file_language(const ProjectContext *ctx, size_t index) {
   if (!ctx || index >= g_file_registry.count) {
     return LANG_UNKNOWN;
   }

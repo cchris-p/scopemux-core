@@ -34,7 +34,7 @@ extern ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceTy
 /**
  * Find the appropriate resolver for a language
  */
-LanguageResolver *find_language_resolver_impl(ReferenceResolver *resolver, LanguageType language) {
+LanguageResolver *find_language_resolver_impl(ReferenceResolver *resolver, Language language) {
   if (!resolver) {
     return NULL;
   }

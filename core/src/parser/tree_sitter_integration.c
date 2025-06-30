@@ -55,7 +55,7 @@ extern const TSLanguage *tree_sitter_typescript(void);
  *
  * This function is implemented in ts_init.c
  */
-extern char *build_queries_dir_impl(LanguageType language);
+extern char *build_queries_dir_impl(Language language);
 
 /**
  * @brief Initialize the Tree-sitter parser for a specific language.
@@ -65,7 +65,7 @@ extern char *build_queries_dir_impl(LanguageType language);
  * @return true Parser initialized successfully
  * @return false Parser failed to initialize
  */
-bool ts_init_parser(ParserContext *ctx, LanguageType language) {
+bool ts_init_parser(ParserContext *ctx, Language language) {
   if (!ctx) {
     log_error("NULL context passed to ts_init_parser");
     return false;
@@ -73,7 +73,7 @@ bool ts_init_parser(ParserContext *ctx, LanguageType language) {
 
   // Implementation delegated to ts_init.c
   // This facade maintains the public interface
-  extern bool ts_init_parser_impl(ParserContext * ctx, LanguageType language);
+  extern bool ts_init_parser_impl(ParserContext * ctx, Language language);
   log_debug("ts_init_parser facade called, delegating to ts_init_parser_impl for language %d",
             language);
   return ts_init_parser_impl(ctx, language);
