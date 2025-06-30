@@ -187,16 +187,45 @@ static ResolutionStatus mock_resolver_func(ASTNode *node, ReferenceType ref_type
 
 // Create a global symbol table
 GlobalSymbolTable *symbol_table_create(size_t initial_capacity) {
+  // Ensure we have a reasonable capacity
+  if (initial_capacity == 0) {
+    initial_capacity = 16; // Default capacity
+  }
+  
   GlobalSymbolTable *table = calloc(1, sizeof(GlobalSymbolTable));
-  cr_assert(table != NULL, "Failed to allocate symbol table");
-  // We don't actually use initial_capacity in our stub
-  (void)initial_capacity; // Suppress unused parameter warning
+  if (!table) {
+    return NULL;
+  }
+  
+  // Allocate the buckets array
+  table->buckets = calloc(initial_capacity, sizeof(SymbolEntry *));
+  if (!table->buckets) {
+    free(table);
+    return NULL;
+  }
+  
+  // Initialize the table fields
+  table->num_buckets = initial_capacity;
+  table->capacity = initial_capacity; // For test compatibility
+  table->num_symbols = 0;
+  table->count = 0; // For test compatibility
+  table->collisions = 0;
+  
   return table;
 }
 
 // Free a symbol table
 void symbol_table_free(GlobalSymbolTable *table) {
   if (table) {
+    // Free the buckets array if it exists
+    if (table->buckets) {
+      // In a real implementation, we would also free each entry in the buckets
+      // For this stub, we'll just free the buckets array itself
+      free(table->buckets);
+      table->buckets = NULL;
+    }
+    
+    // Free the table itself
     free(table);
   }
 }
