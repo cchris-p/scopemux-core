@@ -1,4 +1,7 @@
-
+/**
+ * @file reference_resolver_stubs.c
+ * @brief Stub implementations for reference resolver tests
+ */
 
 /* Test-specific private header must come first */
 #include "reference_resolver_private.h"
@@ -10,6 +13,8 @@
 #include "scopemux/parser.h"
 #include "scopemux/reference_resolver.h"
 #include "scopemux/symbol_table.h"
+#include "../src/parser/parser_internal.h" // For ASTNODE_MAGIC
+#include "symbol_test_helpers.h" // For test_symbol_table_add
 
 /* Standard library includes */
 #include <stdio.h>
@@ -72,8 +77,8 @@
  * @return ResolutionStatus success or failure status
  */
 static ResolutionStatus create_and_attach_symbol(ASTNode *node, ReferenceType ref_type,
-                                                 const char *name, GlobalSymbolTable *symbol_table,
-                                                 Language language) {
+                                                  const char *name, GlobalSymbolTable *symbol_table,
+                                                  Language language) {
   if (!node || !symbol_table || !name) {
     log_error("Received NULL parameters in resolver");
     return RESOLUTION_FAILED;
@@ -86,14 +91,40 @@ static ResolutionStatus create_and_attach_symbol(ASTNode *node, ReferenceType re
     return RESOLUTION_FAILED;
   }
 
-  // Set symbol properties
-  sym->file_path = strdup("dummy_file.c");
-  sym->line = 10;
+  // Set symbol properties based on language
+  const char *file_path = "dummy_file.c"; // Default
+  int line_number = 10; // Default
+  
+  // Set language-specific file paths and line numbers
+  switch (language) {
+    case LANG_C:
+      file_path = "test.c";
+      line_number = 10;
+      break;
+    case LANG_PYTHON:
+      file_path = "test.py";
+      line_number = 20;
+      break;
+    case LANG_JAVASCRIPT:
+      file_path = "test.js";
+      line_number = 30;
+      break;
+    case LANG_TYPESCRIPT:
+      file_path = "test.ts";
+      line_number = 40;
+      break;
+    default:
+      file_path = "unknown.txt";
+      break;
+  }
+  
+  sym->file_path = strdup(file_path);
+  sym->line = line_number;
   sym->column = 5;
   sym->language = language;
 
-  // Add symbol to the symbol table
-  symbol_table_add(symbol_table, sym);
+  // Add symbol to the symbol table using test helper
+  test_symbol_table_add(symbol_table, sym);
 
   // Attach the symbol to the node
   ast_node_set_reference(node, ref_type, sym);

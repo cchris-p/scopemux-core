@@ -28,12 +28,13 @@
  * @brief Error codes for ProjectContext operations
  */
 typedef enum {
-  PROJECT_ERROR_NONE = 0,           ///< No error
-  PROJECT_ERROR_MEMORY = 1,         ///< Memory allocation failure
-  PROJECT_ERROR_TOO_MANY_FILES = 2, ///< Exceeded maximum file count
-  PROJECT_ERROR_INCLUDE_DEPTH = 3,  ///< Exceeded maximum include/import depth
-  PROJECT_ERROR_INVALID_PATH = 4,   ///< Invalid or unresolvable file path
-  PROJECT_ERROR_IO = 5,             ///< I/O error (file or directory access)
+  PROJECT_ERROR_NONE = 0,             ///< No error
+  PROJECT_ERROR_MEMORY = 1,           ///< Memory allocation failure
+  PROJECT_ERROR_TOO_MANY_FILES = 2,   ///< Exceeded maximum file count
+  PROJECT_ERROR_INCLUDE_DEPTH = 3,    ///< Exceeded maximum include/import depth
+  PROJECT_ERROR_INVALID_PATH = 4,     ///< Invalid or unresolvable file path
+  PROJECT_ERROR_IO = 5,               ///< I/O error (file or directory access)
+  PROJECT_ERROR_UNKNOWN_LANGUAGE = 6, ///< Unknown or unsupported language
   // Add more as needed for project context errors
 } ProjectErrorCode;
 

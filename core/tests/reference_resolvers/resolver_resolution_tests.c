@@ -15,6 +15,7 @@
 #include "reference_resolver_private.h"    // For resolution status types
 #include "scopemux/parser.h"
 #include "scopemux/reference_resolver.h"
+#include "symbol_test_helpers.h" // For test_symbol_table_add
 
 // Forward declarations for functions used in tests
 ASTNode *ast_node_get_child_at_index(ASTNode *node, size_t index);
@@ -94,7 +95,8 @@ void setup_resolution() {
   sym1->line = 42;
   sym1->column = 10;
 
-  symbol_table_add(symbol_table, sym1);
+  // Use test helper to add symbol to table
+  test_symbol_table_add(symbol_table, sym1);
 }
 
 void teardown_resolution() {

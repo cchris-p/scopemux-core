@@ -1,0 +1,55 @@
+# Scopemux-specific UML configuration
+# Save this as .uml_config.yaml in the scopemux project root to maintain the original output
+
+project_type: "scopemux"
+fallback_package: "Other"
+
+packages:
+  "ScopeMux Core":
+    patterns: ["ts_*"]
+    exact_names: ["ts_core", "ts_c", "ts_cpp", "ts_python", "ts_javascript", "ts_typescript"]
+    priority: 20
+    
+  "Tree-sitter Parsers":
+    patterns: ["tree_sitter*"]
+    types: ["STATIC_LIBRARY", "SHARED_LIBRARY"]
+    priority: 18
+    
+  "Bindings & Headers":
+    patterns: ["*::*", "pybind11*", "Eigen3*", "Boost*"]
+    exact_names: ["pybind11_headers", "Boost", "Eigen3"]
+    external: true
+    priority: 15
+    
+  "Parser & Context":
+    exact_names: ["parser_core", "context_engine"]
+    priority: 17
+    
+  "Test Libraries":
+    patterns: ["test_*", "*_test*"]
+    types: ["STATIC_LIBRARY", "SHARED_LIBRARY", "MODULE_LIBRARY", "OBJECT_LIBRARY"]
+    exact_names: ["test_embed_lib", "test_subdirectory_target", "test_installed_target", "test_cross_module_rtti_lib", "test_processor_lib", "test_utilities", "reference_resolver_stubs"]
+    priority: 10
+    
+  "Executables":
+    patterns: ["*"]
+    types: ["EXECUTABLE"]
+    priority: 5
+
+dependency_rules:
+  - show_inter_package: true
+    show_intra_package: false
+
+# Only these dependencies will be shown as arrows
+key_dependencies:
+  - "edge_case_tests -> parser_core"
+  - "parser_core -> ts_core"
+  - "reference_resolver_tests -> reference_resolver_stubs"
+  - "resolver_core_tests -> test_utilities"
+  - "symbol_table_tests -> parser_core"
+  - "test_memory_debug -> ts_core"
+
+# Legend options
+show_dependencies_legend: true
+group_legend_by_type: true
+mark_key_dependencies: true

@@ -6,7 +6,7 @@
  * and dependencies across a multi-file project, supporting interfile functionality.
  */
 
-#include "parser_context.h"
+#include "parser.h"
 #include "scopemux/project_context.h"
 #include "scopemux/symbol.h"
 #include "scopemux/symbol_table.h"
@@ -157,8 +157,12 @@ Test(project_context_delegation, interfile_symbols, .init = setup_project,
   cr_assert(sym1 != NULL, "Symbol from file1 should be found");
   cr_assert(sym2 != NULL, "Symbol from file2 should be found");
 
-  cr_assert_str_eq(sym1->file_path, "file1.c", "Symbol 1 file path should be correct");
-  cr_assert_str_eq(sym2->file_path, "file2.c", "Symbol 2 file path should be correct");
+  cr_assert(strcmp(ast_node_get_file_path(sym1->node), "file1.c") == 0,
+            "Symbol 1 file_path: expected 'file1.c', got '%s'.",
+            ast_node_get_file_path(sym1->node));
+  cr_assert(strcmp(ast_node_get_file_path(sym2->node), "file2.c") == 0,
+            "Symbol 2 file_path: expected 'file2.c', got '%s'.",
+            ast_node_get_file_path(sym2->node));
 
   // Cleanup AST nodes (parser context takes ownership)
   ast_node_free(ast1);

@@ -22,6 +22,93 @@
 #include <string.h>
 #include <sys/stat.h>
 
+// Internal static helper prototypes
+static bool normalize_file_path(const char *project_root, const char *filepath, char *out_path,
+                                size_t out_size);
+static bool add_discovered_file(ProjectContext *project, const char *filepath);
+static bool is_file_parsed(const ProjectContext *project, const char *filepath);
+static void register_file_symbols(ProjectContext *project, ParserContext *ctx,
+                                  const char *filepath);
+static void extract_and_process_includes(ProjectContext *project, ParserContext *ctx,
+                                         const char *filepath);
+
+/**
+ * Remove a file from the project
+ * Delegates to implementation in file_management.c
+ */
+bool project_remove_file(ProjectContext *project, const char *filepath) {
+  extern bool project_remove_file_impl(ProjectContext * project, const char *filepath);
+  return project_remove_file_impl(project, filepath);
+}
+
+/**
+ * Public API: Remove a file from the project
+ * Delegates to implementation
+ */
+bool project_context_remove_file(ProjectContext *project, const char *filepath) {
+  return project_remove_file(project, filepath);
+}
+
+/**
+ * Add a dependency between two files
+ * Delegates to implementation in dependency_management.c
+ */
+bool project_add_dependency(ProjectContext *project, const char *source_file,
+                            const char *target_file) {
+  extern bool project_add_dependency_impl(ProjectContext * project, const char *source_file,
+                                          const char *target_file);
+  return project_add_dependency_impl(project, source_file, target_file);
+}
+
+/**
+ * Public API: Add a dependency between two files
+ * Delegates to implementation
+ */
+bool project_context_add_dependency(ProjectContext *project, const char *source_file,
+                                    const char *target_file) {
+  return project_add_dependency(project, source_file, target_file);
+}
+
+/**
+ * Get dependencies for a file
+ * Delegates to implementation in dependency_management.c
+ */
+size_t project_get_dependencies(const ProjectContext *project, const char *filepath,
+                                char ***out_dependencies) {
+  extern size_t project_get_dependencies_impl(const ProjectContext *project, const char *filepath,
+                                              char ***out_dependencies);
+  return project_get_dependencies_impl(project, filepath, out_dependencies);
+}
+
+/**
+ * Public API: Get dependencies for a file
+ * Delegates to implementation
+ */
+size_t project_context_get_dependencies(const ProjectContext *project, const char *filepath,
+                                        char ***out_dependencies) {
+  return project_get_dependencies(project, filepath, out_dependencies);
+}
+
+/**
+ * Extract symbols from parsed files
+ * Delegates to implementation in symbol_management.c
+ */
+bool project_extract_symbols(ProjectContext *project, ParserContext *parser,
+                             GlobalSymbolTable *symbol_table) {
+  extern bool project_extract_symbols_impl(ProjectContext * project, ParserContext * parser,
+                                           GlobalSymbolTable * symbol_table);
+  return project_extract_symbols_impl(project, parser, symbol_table);
+}
+
+/**
+ * Public API: Extract symbols from parsed files
+ * Delegates to implementation
+ */
+bool project_context_extract_symbols(ProjectContext *project, ParserContext *parser,
+                                     GlobalSymbolTable *symbol_table) {
+  return project_extract_symbols(project, parser, symbol_table);
+}
+
 // External functions defined in the specialized modules
 // From project_core.c
 extern ProjectContext *project_context_create(const char *root_directory);
@@ -34,29 +121,36 @@ extern void project_get_stats(const ProjectContext *project, size_t *out_total_f
                               size_t *out_unresolved);
 
 // From file_management.c
-extern bool normalize_file_path(const char *project_root, const char *filepath, char *out_path,
-                                size_t out_size);
-extern bool add_discovered_file(ProjectContext *project, const char *filepath);
-extern bool is_file_parsed(const ProjectContext *project, const char *filepath);
-extern bool project_add_file(ProjectContext *project, const char *filepath, Language language);
-extern size_t project_add_directory(ProjectContext *project, const char *dirpath,
-                                    const char **extensions, bool recursive);
-extern ParserContext *project_get_file_context(const ProjectContext *project, const char *filepath);
+// static/internal helpers: normalize_file_path, add_discovered_file, is_file_parsed are defined
+// below as static and not used outside this file.
+extern bool project_add_file_impl(ProjectContext *project, const char *filepath, Language language);
+extern size_t project_add_directory_impl(ProjectContext *project, const char *dirpath,
+                                         const char **extensions, bool recursive);
+extern ParserContext *project_get_file_context_impl(const ProjectContext *project,
+                                                    const char *filepath);
+extern bool project_remove_file_impl(ProjectContext *project, const char *filepath);
+extern bool project_add_dependency_impl(ProjectContext *project, const char *source_file,
+                                        const char *target_file);
+extern size_t project_get_dependencies_impl(const ProjectContext *project, const char *filepath,
+                                            char ***out_dependencies);
 
 // From symbol_management.c
-extern void register_file_symbols(ProjectContext *project, ParserContext *ctx,
-                                  const char *filepath);
-extern const ASTNode *project_get_symbol(const ProjectContext *project, const char *qualified_name);
-extern size_t project_get_symbols_by_type(const ProjectContext *project, ASTNodeType type,
-                                          const ASTNode **out_nodes, size_t max_nodes);
-extern size_t project_find_references(const ProjectContext *project, const ASTNode *node,
-                                      const ASTNode **out_references, size_t max_references);
-extern bool project_resolve_references(ProjectContext *project);
+// static/internal helper: register_file_symbols is defined below as static and not used outside
+// this file.
+extern const ASTNode *project_get_symbol_impl(const ProjectContext *project,
+                                              const char *qualified_name);
+extern size_t project_get_symbols_by_type_impl(const ProjectContext *project, ASTNodeType type,
+                                               const ASTNode **out_nodes, size_t max_nodes);
+extern size_t project_find_references_impl(const ProjectContext *project, const ASTNode *node,
+                                           const ASTNode **out_references, size_t max_references);
+extern bool project_resolve_references_impl(ProjectContext *project);
+extern bool project_extract_symbols_impl(ProjectContext *project, ParserContext *parser,
+                                         GlobalSymbolTable *symbol_table);
 
 // From dependency_management.c
-extern void extract_and_process_includes(ProjectContext *project, ParserContext *ctx,
-                                         const char *filepath);
-extern bool project_parse_all_files(ProjectContext *project);
+// static/internal helper: extract_and_process_includes is defined below as static and not used
+// outside this file.
+extern bool project_parse_all_files_impl(ProjectContext *project);
 
 /**
  * Create a new project context
@@ -88,338 +182,183 @@ void project_context_set_config(ProjectContext *project, const ProjectConfig *co
 
 /**
  * Add a file to the project for parsing
+ * Delegates to implementation in file_management.c
  */
 bool project_add_file(ProjectContext *project, const char *filepath, Language language) {
-  if (!project || !filepath) {
-    return false;
-  }
+  extern bool project_add_file_impl(ProjectContext * project, const char *filepath,
+                                    Language language);
+  return project_add_file_impl(project, filepath, language);
+}
 
-  // Check for maximum files limit
-  if (project->config.max_files > 0 &&
-      project->num_files + project->num_discovered >= project->config.max_files) {
-    project_set_error(project, 1, "Maximum file limit reached");
-    return false;
-  }
+/**
+ * Public API: Add a file to the project for parsing
+ * Delegates to implementation
+ */
+bool project_context_add_file(ProjectContext *project, const char *filepath, Language language) {
+  return project_add_file(project, filepath, language);
+}
 
-  // Normalize the file path
-  char normalized_path[1024];
-  if (!normalize_file_path(project->root_directory, filepath, normalized_path,
-                           sizeof(normalized_path))) {
-    project_set_error(project, 2, "Failed to normalize file path");
-    return false;
-  }
+/**
+ * Public API: Add a dependency between two files
+ * Delegates to implementation
+ *
+ * @param project The ProjectContext
+ * @param source_file The source file that depends on the target
+ * @param target_file The target file that is depended upon
+ * @return true if successful, false otherwise
+ */
+bool project_context_add_dependency(ProjectContext *project, const char *source_file,
+                                    const char *target_file) {
+  extern bool project_add_dependency_impl(ProjectContext * project, const char *source_file,
+                                          const char *target_file);
+  return project_add_dependency_impl(project, source_file, target_file);
+}
 
-  // Check if file is already parsed or discovered
-  if (is_file_parsed(project, normalized_path)) {
-    // Already in the project, not an error
-    return true;
-  }
-
-  // Add to discovered files
-  return add_discovered_file(project, normalized_path);
+/**
+ * Public API: Extract symbols from a parser context
+ * Extracts symbols from a parser context and stores them in a symbol collection
+ *
+ * @param project The ProjectContext
+ * @param ctx The ParserContext to extract symbols from
+ * @param symbols The symbol collection to store extracted symbols in
+ * @return true if successful, false otherwise
+ */
+bool project_context_extract_symbols(ProjectContext *project, ParserContext *ctx, void *symbols) {
+  extern bool project_context_extract_symbols_impl(ProjectContext * project, ParserContext * ctx,
+                                                   void *symbols);
+  return project_context_extract_symbols_impl(project, ctx, symbols);
 }
 
 /**
  * Add all files in a directory to the project
+ * Delegates to implementation in file_management.c
  */
 size_t project_add_directory(ProjectContext *project, const char *dirpath, const char **extensions,
                              bool recursive) {
-  if (!project || !dirpath) {
-    return 0;
-  }
+  extern size_t project_add_directory_impl(ProjectContext * project, const char *dirpath,
+                                           const char **extensions, bool recursive);
+  return project_add_directory_impl(project, dirpath, extensions, recursive);
+}
 
-  size_t files_added = 0;
-  char normalized_dir[1024];
-
-  // Normalize the directory path
-  if (!normalize_file_path(project->root_directory, dirpath, normalized_dir,
-                           sizeof(normalized_dir))) {
-    project_set_error(project, 6, "Failed to normalize directory path");
-    return 0;
-  }
-
-  // Use dirent.h for directory traversal
-  DIR *dir = opendir(normalized_dir);
-  if (!dir) {
-    char err_msg[256];
-    snprintf(err_msg, sizeof(err_msg), "Failed to open directory: %s", normalized_dir);
-    project_set_error(project, 7, err_msg);
-    return 0;
-  }
-
-  // Read directory entries
-  struct dirent *entry;
-  while ((entry = readdir(dir)) != NULL) {
-    // Skip . and ..
-    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-      continue;
-    }
-
-    // Construct full path
-    char full_path[2048];
-    snprintf(full_path, sizeof(full_path), "%s/%s", normalized_dir, entry->d_name);
-
-    // Handle directories if recursive
-    if (entry->d_type == DT_DIR && recursive) {
-      files_added += project_add_directory(project, full_path, extensions, recursive);
-      continue;
-    }
-
-    // Handle files
-    if (entry->d_type == DT_REG) {
-      // Check extension if specified
-      bool extension_match = true;
-      if (extensions) {
-        extension_match = false;
-        const char **ext = extensions;
-        while (*ext) {
-          const char *file_ext = strrchr(entry->d_name, '.');
-          if (file_ext && strcmp(file_ext + 1, *ext) == 0) {
-            extension_match = true;
-            break;
-          }
-          ext++;
-        }
-      }
-
-      // Add file if extension matches
-      if (extension_match) {
-        if (project_add_file(project, full_path, LANG_UNKNOWN)) {
-          files_added++;
-        }
-      }
-    }
-  }
-
-  closedir(dir);
-  return files_added;
+/**
+ * Public API: Add all files in a directory to the project
+ * Delegates to implementation
+ */
+size_t project_context_add_directory(ProjectContext *project, const char *dirpath,
+                                     const char **extensions, bool recursive) {
+  return project_add_directory(project, dirpath, extensions, recursive);
 }
 
 /**
  * Parse all files in the project
+ * Delegates to implementation in dependency_management.c
  */
 bool project_parse_all_files(ProjectContext *project) {
-  if (!project) {
-    return false;
-  }
-
-  // Process all discovered files
-  while (project->num_discovered > 0) {
-    // Pop a file from the discovered list
-    char *filepath = project->discovered_files[--project->num_discovered];
-
-    // Initialize a parser context
-    ParserContext *ctx = parser_init();
-    if (!ctx) {
-      project_set_error(project, 3, "Failed to initialize parser context");
-      free(filepath);
-      return false;
-    }
-
-    // Set the parser logging level from project config
-    ctx->log_level = project->config.log_level;
-
-    // Parse the file
-    if (!parser_parse_file(ctx, filepath, LANG_UNKNOWN)) {
-      char error_msg[256];
-      snprintf(error_msg, sizeof(error_msg), "Failed to parse file: %s", filepath);
-      project_set_error(project, 4, error_msg);
-      parser_free(ctx);
-      free(filepath);
-      return false;
-    }
-
-    // Add the parser context to the project
-    if (project->num_files >= project->files_capacity) {
-      size_t new_capacity = project->files_capacity * 2;
-      ParserContext **new_contexts =
-          (ParserContext **)realloc(project->file_contexts, new_capacity * sizeof(ParserContext *));
-      if (!new_contexts) {
-        project_set_error(project, 5, "Failed to resize file_contexts array");
-        parser_free(ctx);
-        free(filepath);
-        return false;
-      }
-      project->file_contexts = new_contexts;
-      project->files_capacity = new_capacity;
-    }
-
-    // Store the parser context
-    project->file_contexts[project->num_files++] = ctx;
-
-    // Register all symbols from this file
-    register_file_symbols(project, ctx, filepath);
-
-    // Free the file path string
-    free(filepath);
-
-    // Process includes/imports if enabled
-    if (project->config.follow_includes) {
-      // Extract and process includes/imports
-      extract_and_process_includes(project, ctx, filepath);
-    }
-  }
-
-  return true;
+  extern bool project_parse_all_files_impl(ProjectContext * project);
+  return project_parse_all_files_impl(project);
 }
 
 /**
- * Resolve references across all files in the project
+ * Public API: Parse all files in the project
+ * Delegates to implementation
+ */
+bool project_context_parse_all_files(ProjectContext *project) {
+  return project_parse_all_files(project);
+}
+
+/**
+ * Resolve references across all files
+ * Delegates to implementation in symbol_management.c
  */
 bool project_resolve_references(ProjectContext *project) {
-  if (!project) {
-    return false;
-  }
+  extern bool project_resolve_references_impl(ProjectContext * project);
+  return project_resolve_references_impl(project);
+}
 
-  // Create a reference resolver
-  ReferenceResolver *resolver = reference_resolver_create(project->symbol_table);
-  if (!resolver) {
-    project_set_error(project, 8, "Failed to create reference resolver");
-    return false;
-  }
-
-  // Initialize built-in resolvers
-  if (!reference_resolver_init_builtin(resolver)) {
-    project_set_error(project, 9, "Failed to initialize built-in resolvers");
-    reference_resolver_free(resolver);
-    return false;
-  }
-
-  // Resolve all references
-  size_t resolved = reference_resolver_resolve_all(resolver, project);
-
-  // Update statistics
-  project->unresolved_references = project->total_references - resolved;
-
-  // Clean up
-  reference_resolver_free(resolver);
-
-  return resolved > 0; // Consider successful if at least one reference was resolved
+/**
+ * Public API: Resolve references across all files
+ * Delegates to implementation
+ */
+bool project_context_resolve_references(ProjectContext *project) {
+  return project_resolve_references(project);
 }
 
 /**
  * Get a file context by filename
+ * Delegates to implementation in file_management.c
  */
 ParserContext *project_get_file_context(const ProjectContext *project, const char *filepath) {
-  if (!project || !filepath) {
-    return NULL;
-  }
-
-  char normalized_path[1024];
-  if (!normalize_file_path(project->root_directory, filepath, normalized_path,
-                           sizeof(normalized_path))) {
-    return NULL;
-  }
-
-  // Validate all parser contexts have non-null filename before searching
-  for (size_t i = 0; i < project->num_files; i++) {
-    if (!project->file_contexts[i] || !project->file_contexts[i]->filename) {
-      log_error("Missing filename in parser context for index %zu", i);
-      return NULL;
-    }
-  }
-
-  // Linear search for the file context
-  // TODO: Consider using a hash table for faster lookup
-  for (size_t i = 0; i < project->num_files; i++) {
-    // Compare with the filepath stored in the context
-    // Note: This assumes the filepath is stored in the context
-    // which may need to be added in the future
-    if (strcmp(project->file_contexts[i]->filename, normalized_path) == 0) {
-      return project->file_contexts[i];
-    }
-  }
-
-  return NULL;
+  extern ParserContext *project_get_file_context_impl(const ProjectContext *project,
+                                                      const char *filepath);
+  return project_get_file_context_impl(project, filepath);
 }
 
 /**
- * Get a symbol by its qualified name from anywhere in the project
+ * Public API: Get a file context by filename
+ * Delegates to implementation
+ */
+ParserContext *project_context_get_file_context(const ProjectContext *project,
+                                                const char *filepath) {
+  return project_get_file_context(project, filepath);
+}
+
+/**
+ * Get a symbol by its qualified name
+ * Delegates to implementation in symbol_management.c
  */
 const ASTNode *project_get_symbol(const ProjectContext *project, const char *qualified_name) {
-  if (!project || !qualified_name || !project->symbol_table) {
-    return NULL;
-  }
-
-  SymbolEntry *entry = symbol_table_lookup(project->symbol_table, qualified_name);
-  return entry ? entry->node : NULL;
+  extern const ASTNode *project_get_symbol_impl(const ProjectContext *project,
+                                                const char *qualified_name);
+  return project_get_symbol_impl(project, qualified_name);
 }
 
 /**
- * Get all symbols of a specific type across the entire project
+ * Public API: Get a symbol by its qualified name
+ * Delegates to implementation
+ */
+const ASTNode *project_context_get_symbol(const ProjectContext *project,
+                                          const char *qualified_name) {
+  return project_get_symbol(project, qualified_name);
+}
+
+/**
+ * Get all symbols of a specific type
+ * Delegates to implementation in symbol_management.c
  */
 size_t project_get_symbols_by_type(const ProjectContext *project, ASTNodeType type,
                                    const ASTNode **out_nodes, size_t max_nodes) {
-  if (!project) {
-    return 0;
-  }
+  extern size_t project_get_symbols_by_type_impl(const ProjectContext *project, ASTNodeType type,
+                                                 const ASTNode **out_nodes, size_t max_nodes);
+  return project_get_symbols_by_type_impl(project, type, out_nodes, max_nodes);
+}
 
-  size_t count = 0;
-
-  // Temporary array for symbol entries
-  SymbolEntry **entries = NULL;
-  if (max_nodes > 0 && out_nodes) {
-    entries = (SymbolEntry **)malloc(max_nodes * sizeof(SymbolEntry *));
-    if (!entries) {
-      return 0;
-    }
-  }
-
-  // Get symbols from the table
-  if (project->symbol_table) {
-    count = symbol_table_get_by_type(project->symbol_table, type, entries, max_nodes);
-  }
-
-  // Copy nodes to output array
-  if (entries && out_nodes) {
-    for (size_t i = 0; i < count; i++) {
-      out_nodes[i] = entries[i]->node;
-    }
-  }
-
-  free(entries);
-  return count;
+/**
+ * Public API: Get all symbols of a specific type
+ * Delegates to implementation
+ */
+size_t project_context_get_symbols_by_type(const ProjectContext *project, ASTNodeType type,
+                                           const ASTNode **out_nodes, size_t max_nodes) {
+  return project_get_symbols_by_type(project, type, out_nodes, max_nodes);
 }
 
 /**
  * Find all references to a symbol across the project
+ * Delegates to implementation in symbol_management.c
  */
 size_t project_find_references(const ProjectContext *project, const ASTNode *node,
                                const ASTNode **out_references, size_t max_references) {
-  if (!project || !node) {
-    return 0;
-  }
+  extern size_t project_find_references_impl(const ProjectContext *project, const ASTNode *node,
+                                             const ASTNode **out_references, size_t max_references);
+  return project_find_references_impl(project, node, out_references, max_references);
+}
 
-  size_t count = 0;
-
-  // Traverse all AST nodes in all files
-  for (size_t i = 0; i < project->num_files && count < max_references; i++) {
-    ParserContext *ctx = project->file_contexts[i];
-    if (!ctx || !ctx->all_ast_nodes) {
-      continue;
-    }
-
-    // Check all nodes in this file
-    for (size_t j = 0; j < ctx->num_ast_nodes && count < max_references; j++) {
-      ASTNode *current = ctx->all_ast_nodes[j];
-      if (!current || !current->references) {
-        continue;
-      }
-
-      // Check all references in this node
-      for (size_t k = 0; k < current->num_references && count < max_references; k++) {
-        if (current->references[k] == node) {
-          // Found a reference to our target node
-          if (out_references) {
-            out_references[count] = current;
-          }
-          count++;
-        }
-      }
-    }
-  }
-
-  return count;
+/**
+ * Public API: Find all references to a symbol across the project
+ * Delegates to implementation
+ */
+size_t project_context_find_references(const ProjectContext *project, const ASTNode *node,
+                                       const ASTNode **out_references, size_t max_references) {
+  return project_find_references(project, node, out_references, max_references);
 }
 
 /**

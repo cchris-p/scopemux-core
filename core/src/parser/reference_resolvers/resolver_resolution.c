@@ -105,7 +105,7 @@ size_t reference_resolver_resolve_file_impl(ReferenceResolver *resolver,
   }
 
   free(queue);
-  LOG_DEBUG("Resolved %zu references in file %s", resolved_count, file_context->filename);
+  log_debug("Resolved %zu references in file %s", resolved_count, file_context->filename);
   return resolved_count;
 }
 
@@ -128,7 +128,7 @@ size_t reference_resolver_resolve_all_impl(ReferenceResolver *resolver,
     }
   }
 
-  LOG_DEBUG("Resolved %zu references total across %zu files", total_resolved, num_files);
+  log_debug("Resolved %zu references total across %zu files", total_resolved, num_files);
   return total_resolved;
 }
 
@@ -198,7 +198,7 @@ ResolutionStatus reference_resolver_generic_resolve_impl(ASTNode *node, Referenc
   }
 
   // If we get here, resolution failed
-  LOG_DEBUG("Failed to resolve reference '%s' in %s", name,
+  log_debug("Failed to resolve reference '%s' in %s", name,
             node->qualified_name ? node->qualified_name : "unknown node");
   return RESOLUTION_NOT_FOUND;
 }

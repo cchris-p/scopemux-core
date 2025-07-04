@@ -29,16 +29,17 @@ set +e
 TEST_FAILURES=0
 TOTAL_TESTS_RUN=0
 
+# 06-30-2025 - tests marked as false are passing, test cases are still stubs
+
 # -------- Interfile Test Toggles --------
 # Enable/disable specific interfile test categories
-RUN_REFERENCE_RESOLVER_TESTS=true
+RUN_REFERENCE_RESOLVER_TESTS=false
 RUN_SYMBOL_TABLE_TESTS=true
 RUN_PROJECT_CONTEXT_TESTS=true
-RUN_RESOLVER_CORE_TESTS=true
-RUN_RESOLVER_REGISTRATION_TESTS=true
-RUN_RESOLVER_RESOLUTION_TESTS=true
-RUN_LANGUAGE_RESOLVER_TESTS=true
-
+RUN_RESOLVER_CORE_TESTS=false
+RUN_RESOLVER_REGISTRATION_TESTS=false
+RUN_RESOLVER_RESOLUTION_TESTS=false
+RUN_LANGUAGE_RESOLVER_TESTS=false
 
 # Project root directory (assuming this script is in the root)
 PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)

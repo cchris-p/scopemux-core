@@ -35,7 +35,7 @@ extern void symbol_entry_free(SymbolEntry *entry);
  * @param initial_capacity Initial number of hash buckets
  * @return A newly created symbol table, or NULL if allocation failed
  */
-GlobalSymbolTable *symbol_table_create(size_t initial_capacity) {
+GlobalSymbolTable *symbol_table_create_impl(size_t initial_capacity) {
   // Ensure initial capacity is reasonable
   if (initial_capacity < 8) {
     initial_capacity = 8;
@@ -77,7 +77,7 @@ GlobalSymbolTable *symbol_table_create(size_t initial_capacity) {
  *
  * @param table Symbol table to free
  */
-void symbol_table_free(GlobalSymbolTable *table) {
+void symbol_table_free_impl(GlobalSymbolTable *table) {
   if (!table) {
     return;
   }
@@ -114,8 +114,8 @@ void symbol_table_free(GlobalSymbolTable *table) {
  * @param out_size Output parameter for number of symbols (can be NULL)
  * @param out_collisions Output parameter for number of collisions (can be NULL)
  */
-void symbol_table_get_stats(const GlobalSymbolTable *table, size_t *out_capacity, size_t *out_size,
-                            size_t *out_collisions) {
+void symbol_table_get_stats_impl(const GlobalSymbolTable *table, size_t *out_capacity,
+                                 size_t *out_size, size_t *out_collisions) {
   if (!table) {
     if (out_capacity)
       *out_capacity = 0;
@@ -144,7 +144,7 @@ void symbol_table_get_stats(const GlobalSymbolTable *table, size_t *out_capacity
  * @param table Symbol table
  * @return true if rehashing is recommended, false otherwise
  */
-bool symbol_table_should_rehash(const GlobalSymbolTable *table) {
+bool symbol_table_should_rehash_impl(const GlobalSymbolTable *table) {
   if (!table || table->num_buckets == 0) {
     return false;
   }
@@ -166,7 +166,7 @@ bool symbol_table_should_rehash(const GlobalSymbolTable *table) {
  * @param new_capacity New capacity (number of buckets)
  * @return true on success, false on failure
  */
-bool symbol_table_rehash(GlobalSymbolTable *table, size_t new_capacity) {
+bool symbol_table_rehash_impl(GlobalSymbolTable *table, size_t new_capacity) {
   if (!table || new_capacity <= table->num_symbols) {
     return false;
   }
@@ -216,7 +216,7 @@ bool symbol_table_rehash(GlobalSymbolTable *table, size_t new_capacity) {
  * @param scope_prefix Scope prefix to add (e.g., "std", "namespace1")
  * @return true on success, false on failure
  */
-bool symbol_table_add_scope(GlobalSymbolTable *table, const char *scope_prefix) {
+bool symbol_table_add_scope_impl(GlobalSymbolTable *table, const char *scope_prefix) {
   if (!table || !scope_prefix) {
     return false;
   }

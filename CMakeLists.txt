@@ -7,6 +7,9 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Write an exact compiler invocation for every TU in compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Include the ExternalProject module
 include(ExternalProject)
 
@@ -43,24 +46,24 @@ set(TS_TS_SO ${TS_LIB_DIR}/libtree-sitter-typescript.so)
 # Build the main Tree-sitter library
 ExternalProject_Add(tree_sitter_core
     SOURCE_DIR ${TS_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
+    CONFIGURE_COMMAND "" # No configure step required
     BUILD_COMMAND make -C ${TS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_DIR}/libtree-sitter.a
-        ${TS_CORE_LIB}
+    ${TS_DIR}/libtree-sitter.a
+    ${TS_CORE_LIB}
     BUILD_BYPRODUCTS ${TS_CORE_LIB}
 )
 
 # Build the Tree-sitter C grammar
 ExternalProject_Add(tree_sitter_c
     SOURCE_DIR ${TS_C_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
+    CONFIGURE_COMMAND "" # No configure step required
     BUILD_COMMAND make -C ${TS_C_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_C_DIR}/libtree-sitter-c.a
-        ${TS_C_LIB}
+    ${TS_C_DIR}/libtree-sitter-c.a
+    ${TS_C_LIB}
     BUILD_BYPRODUCTS ${TS_C_LIB}
     DEPENDS tree_sitter_core
 )
@@ -68,12 +71,12 @@ ExternalProject_Add(tree_sitter_c
 # Build the Tree-sitter C++ grammar
 ExternalProject_Add(tree_sitter_cpp
     SOURCE_DIR ${TS_CPP_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
+    CONFIGURE_COMMAND "" # No configure step required
     BUILD_COMMAND make -C ${TS_CPP_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_CPP_DIR}/libtree-sitter-cpp.a
-        ${TS_CPP_LIB}
+    ${TS_CPP_DIR}/libtree-sitter-cpp.a
+    ${TS_CPP_LIB}
     BUILD_BYPRODUCTS ${TS_CPP_LIB}
     DEPENDS tree_sitter_core
 )
@@ -81,12 +84,12 @@ ExternalProject_Add(tree_sitter_cpp
 # Build the Tree-sitter Python grammar
 ExternalProject_Add(tree_sitter_python
     SOURCE_DIR ${TS_PYTHON_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
+    CONFIGURE_COMMAND "" # No configure step required
     BUILD_COMMAND make -C ${TS_PYTHON_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_PYTHON_DIR}/libtree-sitter-python.a
-        ${TS_PYTHON_LIB}
+    ${TS_PYTHON_DIR}/libtree-sitter-python.a
+    ${TS_PYTHON_LIB}
     BUILD_BYPRODUCTS ${TS_PYTHON_LIB}
     DEPENDS tree_sitter_core
 )
@@ -94,12 +97,12 @@ ExternalProject_Add(tree_sitter_python
 # Build the Tree-sitter JavaScript grammar
 ExternalProject_Add(tree_sitter_javascript
     SOURCE_DIR ${TS_JS_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
+    CONFIGURE_COMMAND "" # No configure step required
     BUILD_COMMAND make -C ${TS_JS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_JS_DIR}/libtree-sitter-javascript.a
-        ${TS_JS_LIB}
+    ${TS_JS_DIR}/libtree-sitter-javascript.a
+    ${TS_JS_LIB}
     BUILD_BYPRODUCTS ${TS_JS_LIB}
     DEPENDS tree_sitter_core
 )
@@ -107,12 +110,12 @@ ExternalProject_Add(tree_sitter_javascript
 # Build the Tree-sitter TypeScript grammar
 ExternalProject_Add(tree_sitter_typescript
     SOURCE_DIR ${TS_TS_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
+    CONFIGURE_COMMAND "" # No configure step required
     BUILD_COMMAND make -C ${TS_TS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_TS_DIR}/libtree-sitter-typescript.a
-        ${TS_TS_LIB}
+    ${TS_TS_DIR}/libtree-sitter-typescript.a
+    ${TS_TS_LIB}
     BUILD_BYPRODUCTS ${TS_TS_LIB}
     DEPENDS tree_sitter_core
 )

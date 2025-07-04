@@ -4,6 +4,8 @@ build-misc/*
 build-python/*
 windsurf-collector/*
 run_*_tests.txt
+ts_diagnostic
+ts_language_test
 
 
 # Python

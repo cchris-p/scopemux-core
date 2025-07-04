@@ -5,6 +5,7 @@
  * Handles file discovery, tracking, and path normalization.
  */
 
+#include "project_context_internal.h"
 #include "scopemux/logging.h"
 #include "scopemux/project_context.h"
 #include <dirent.h>
@@ -103,8 +104,8 @@ bool is_file_parsed(const ProjectContext *project, const char *filepath) {
   }
 
   for (size_t i = 0; i < project->num_files; i++) {
-    if (project->file_contexts[i] && project->file_contexts[i]->file_path &&
-        strcmp(project->file_contexts[i]->file_path, filepath) == 0) {
+    if (project->file_contexts[i] && project->file_contexts[i]->filename &&
+        strcmp(project->file_contexts[i]->filename, filepath) == 0) {
       return true;
     }
   }
@@ -113,14 +114,14 @@ bool is_file_parsed(const ProjectContext *project, const char *filepath) {
 }
 
 /**
- * Add a file to the project for parsing
+ * Add a file to the project for parsing (Implementation)
  *
  * @param project The ProjectContext
  * @param filepath The file path to add
  * @param language The language of the file
  * @return true if successful, false otherwise
  */
-bool project_add_file(ProjectContext *project, const char *filepath, Language language) {
+bool project_add_file_impl(ProjectContext *project, const char *filepath, Language language) {
   if (!project || !filepath) {
     return false;
   }
@@ -163,18 +164,18 @@ bool project_add_file(ProjectContext *project, const char *filepath, Language la
 }
 
 /**
- * Add all files in a directory to the project
+ * Add all files in a directory to the project (Implementation)
  *
  * Recursively discovers files in the specified directory that match the given extensions.
  *
  * @param project The ProjectContext
  * @param dirpath The directory path
- * @param extensions Array of file extensions to include (without the dot)
+ * @param extensions Array of file extensions to include (NULL terminated)
  * @param recursive Whether to scan subdirectories recursively
  * @return The number of files added
  */
-size_t project_add_directory(ProjectContext *project, const char *dirpath, const char **extensions,
-                             bool recursive) {
+size_t project_add_directory_impl(ProjectContext *project, const char *dirpath,
+                                  const char **extensions, bool recursive) {
   if (!project || !dirpath) {
     return 0;
   }
@@ -277,13 +278,13 @@ size_t project_add_directory(ProjectContext *project, const char *dirpath, const
 }
 
 /**
- * Get a file context by filename
+ * Get a file context by filename (Implementation)
  *
  * @param project The ProjectContext
  * @param filepath The file path
  * @return The ParserContext for the file, or NULL if not found
  */
-ParserContext *project_get_file_context(const ProjectContext *project, const char *filepath) {
+ParserContext *project_get_file_context_impl(const ProjectContext *project, const char *filepath) {
   if (!project || !filepath) {
     return NULL;
   }
@@ -297,11 +298,75 @@ ParserContext *project_get_file_context(const ProjectContext *project, const cha
 
   // Find the file in the parsed files
   for (size_t i = 0; i < project->num_files; i++) {
-    if (project->file_contexts[i] && project->file_contexts[i]->file_path &&
-        strcmp(project->file_contexts[i]->file_path, normalized_path) == 0) {
+    if (project->file_contexts[i] && project->file_contexts[i]->filename &&
+        strcmp(project->file_contexts[i]->filename, normalized_path) == 0) {
       return project->file_contexts[i];
     }
   }
 
   return NULL;
+}
+
+/**
+ * Remove a file from the project (Implementation)
+ *
+ * @param project The ProjectContext
+ * @param filepath The file path to remove
+ * @return true if successful, false otherwise
+ */
+bool project_remove_file_impl(ProjectContext *project, const char *filepath) {
+  if (!project || !filepath) {
+    return false;
+  }
+
+  // Normalize the file path
+  char normalized_path[1024];
+  if (!normalize_file_path(project->root_directory, filepath, normalized_path,
+                           sizeof(normalized_path))) {
+    project_set_error(project, PROJECT_ERROR_INVALID_PATH, "Failed to normalize file path");
+    return false;
+  }
+
+  // Find the file in the parsed files
+  int found_index = -1;
+  for (size_t i = 0; i < project->num_files; i++) {
+    if (project->file_contexts[i] && project->file_contexts[i]->filename &&
+        strcmp(project->file_contexts[i]->filename, normalized_path) == 0) {
+      found_index = (int)i;
+      break;
+    }
+  }
+
+  if (found_index < 0) {
+    // File not found in project
+    return false;
+  }
+
+  // Free the parser context
+  parser_context_free(project->file_contexts[found_index]);
+  project->file_contexts[found_index] = NULL;
+
+  // Compact the array by shifting elements
+  for (size_t i = found_index; i < project->num_files - 1; i++) {
+    project->file_contexts[i] = project->file_contexts[i + 1];
+  }
+  project->num_files--;
+
+  // Also remove from discovered files if present
+  for (size_t i = 0; i < project->num_discovered; i++) {
+    if (project->discovered_files[i] &&
+        strcmp(project->discovered_files[i], normalized_path) == 0) {
+      free(project->discovered_files[i]);
+
+      // Shift remaining elements
+      for (size_t j = i; j < project->num_discovered - 1; j++) {
+        project->discovered_files[j] = project->discovered_files[j + 1];
+      }
+      project->num_discovered--;
+      break;
+    }
+  }
+
+  log_debug("Removed file from project: %s", normalized_path);
+  return true;
 }

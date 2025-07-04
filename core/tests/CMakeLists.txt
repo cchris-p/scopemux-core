@@ -25,6 +25,19 @@ find_package(PkgConfig REQUIRED)
 # Use pkg-config to find Criterion
 pkg_check_modules(Criterion REQUIRED criterion)
 
+# Add compiler flags to suppress warnings in test code
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(
+    -Wno-strict-prototypes
+    -Wno-missing-prototypes
+    -Wno-pedantic
+    -Wno-unused-parameter
+    -Wno-unused-function
+    -Wno-unused-variable
+    -Wno-incompatible-pointer-types
+  )
+endif()
+
 # Set include directories for all targets in this directory
 include_directories(
     # Project directories
@@ -78,10 +91,17 @@ set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ast_node.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser_context.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context/project_utils.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context/dependency_management.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context/file_management.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context/symbol_management.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/cst_node.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/memory_tracking.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/reference_resolver.c
 
     # Tree-sitter implementation files
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_init.c
@@ -148,6 +168,9 @@ set(CPP_EXAMPLE_AST_TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/cpp_example_ast_tests.c
 )
 
+# Add parser source directory to include path for all tests
+include_directories(${PROJECT_SOURCE_DIR}/core/src/parser)
+
 # JavaScript and TypeScript test sources
 set(JS_BASIC_AST_TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/js/js_basic_ast_tests.c
@@ -190,28 +213,23 @@ set(REFERENCE_RESOLVER_STUB_SOURCES
 # Define source files for each interfile reference resolution test target
 set(REFERENCE_RESOLVER_TEST_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolver_tests.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
 )
 
 set(RESOLVER_CORE_TEST_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_core_tests.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
 )
 
 set(RESOLVER_REGISTRATION_TEST_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_registration_tests.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
 )
 
 set(RESOLVER_RESOLUTION_TEST_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_resolution_tests.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/project_context_test_stubs.c
 )
 
 set(LANGUAGE_RESOLVER_TEST_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/language_resolver_tests.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/symbol_test_helpers.c
 )
 
 # Symbol Table and Project Context test sources for interfile testing
@@ -406,6 +424,10 @@ target_include_directories(language_resolver_tests PRIVATE
 
 # Symbol Table Tests
 add_executable(symbol_table_tests
+        ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_core.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_entry.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_lookup.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_registration.c
     ${SYMBOL_TABLE_TEST_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
@@ -432,6 +454,10 @@ target_include_directories(symbol_table_tests PRIVATE
 
 # Project Context Tests
 add_executable(project_context_tests
+        ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_core.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_entry.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_lookup.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_registration.c
     ${PROJECT_CONTEXT_TEST_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )

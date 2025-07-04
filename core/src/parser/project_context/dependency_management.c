@@ -6,6 +6,7 @@
  * This module is responsible for discovering and tracking file relationships.
  */
 
+#include "project_context_internal.h"
 #include "scopemux/logging.h"
 #include "scopemux/parser.h"
 #include "scopemux/project_context.h"
@@ -13,8 +14,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Forward declaration for functions implemented in other files
-extern bool project_add_file(ProjectContext *project, const char *filepath, Language language);
+// Static prototype for internal helper
+static void process_node_for_includes(ProjectContext *project, ASTNode *node, const char *filepath,
+                                      Language language);
 
 /**
  * Extract includes/imports from a parsed file and add them to project
@@ -188,7 +190,7 @@ static void process_node_for_includes(ProjectContext *project, ASTNode *node, co
         }
 
         // Add the file to the project for parsing
-        project_add_file(project, full_path, language);
+        project_add_file_impl(project, full_path, language);
         free(include_path);
       }
     }
@@ -201,7 +203,7 @@ static void process_node_for_includes(ProjectContext *project, ASTNode *node, co
 }
 
 /**
- * Parse all files in the project
+ * Parse all files in the project (Implementation)
  *
  * Parses all discovered files that haven't been parsed yet.
  * For each file, it extracts includes and registers symbols.
@@ -209,7 +211,7 @@ static void process_node_for_includes(ProjectContext *project, ASTNode *node, co
  * @param project The ProjectContext
  * @return true if successful, false otherwise
  */
-bool project_parse_all_files(ProjectContext *project) {
+bool project_parse_all_files_impl(ProjectContext *project) {
   if (!project) {
     return false;
   }
@@ -312,8 +314,207 @@ bool project_parse_all_files(ProjectContext *project) {
   if (project->num_files > initial_file_count) {
     // Recursively call to parse newly discovered files
     log_info("Parsing newly discovered files");
-    return project_parse_all_files(project);
+    return project_parse_all_files_impl(project);
   }
 
   return true;
+}
+
+/**
+ * Add a dependency between two files (Implementation)
+ *
+ * This function establishes a dependency relationship between two files
+ * in the project. It ensures both files are valid and tracked in the project.
+ *
+ * @param project The ProjectContext
+ * @param source_file The source file that depends on the target
+ * @param target_file The target file that is depended upon
+ * @return true if successful, false otherwise
+ */
+bool project_add_dependency_impl(ProjectContext *project, const char *source_file,
+                                 const char *target_file) {
+  if (!project || !source_file || !target_file) {
+    return false;
+  }
+
+  // Normalize both file paths
+  char normalized_source[1024];
+  char normalized_target[1024];
+
+  if (!normalize_file_path(project->root_directory, source_file, normalized_source,
+                           sizeof(normalized_source)) ||
+      !normalize_file_path(project->root_directory, target_file, normalized_target,
+                           sizeof(normalized_target))) {
+    project_set_error(project, PROJECT_ERROR_INVALID_PATH, "Failed to normalize file paths");
+    return false;
+  }
+
+  // Get the parser contexts for both files
+  ParserContext *source_ctx = project_get_file_context_impl(project, normalized_source);
+  ParserContext *target_ctx = project_get_file_context_impl(project, normalized_target);
+
+  // If either file is not in the project, try to add them
+  if (!source_ctx) {
+    log_debug("Source file not in project, attempting to add: %s", normalized_source);
+
+    // Try to detect language from extension
+    Language lang = LANG_UNKNOWN;
+    const char *dot = strrchr(normalized_source, '.');
+    if (dot) {
+      dot++; // Skip the dot
+      if (strcmp(dot, "c") == 0)
+        lang = LANG_C;
+      else if (strcmp(dot, "h") == 0)
+        lang = LANG_C;
+      else if (strcmp(dot, "cpp") == 0 || strcmp(dot, "cc") == 0)
+        lang = LANG_CPP;
+      else if (strcmp(dot, "hpp") == 0 || strcmp(dot, "hh") == 0)
+        lang = LANG_CPP;
+      else if (strcmp(dot, "py") == 0)
+        lang = LANG_PYTHON;
+      else if (strcmp(dot, "js") == 0)
+        lang = LANG_JAVASCRIPT;
+      else if (strcmp(dot, "ts") == 0)
+        lang = LANG_TYPESCRIPT;
+    }
+
+    if (lang == LANG_UNKNOWN) {
+      log_error("Cannot determine language for source file: %s", normalized_source);
+      project_set_error(project, PROJECT_ERROR_UNKNOWN_LANGUAGE,
+                        "Unknown language for source file");
+      return false;
+    }
+
+    if (!project_add_file_impl(project, normalized_source, lang)) {
+      log_error("Failed to add source file to project: %s", normalized_source);
+      return false;
+    }
+
+    source_ctx = project_get_file_context_impl(project, normalized_source);
+    if (!source_ctx) {
+      log_error("Failed to get parser context for source file after adding: %s", normalized_source);
+      return false;
+    }
+  }
+
+  if (!target_ctx) {
+    log_debug("Target file not in project, attempting to add: %s", normalized_target);
+
+    // Try to detect language from extension
+    Language lang = LANG_UNKNOWN;
+    const char *dot = strrchr(normalized_target, '.');
+    if (dot) {
+      dot++; // Skip the dot
+      if (strcmp(dot, "c") == 0)
+        lang = LANG_C;
+      else if (strcmp(dot, "h") == 0)
+        lang = LANG_C;
+      else if (strcmp(dot, "cpp") == 0 || strcmp(dot, "cc") == 0)
+        lang = LANG_CPP;
+      else if (strcmp(dot, "hpp") == 0 || strcmp(dot, "hh") == 0)
+        lang = LANG_CPP;
+      else if (strcmp(dot, "py") == 0)
+        lang = LANG_PYTHON;
+      else if (strcmp(dot, "js") == 0)
+        lang = LANG_JAVASCRIPT;
+      else if (strcmp(dot, "ts") == 0)
+        lang = LANG_TYPESCRIPT;
+    }
+
+    if (lang == LANG_UNKNOWN) {
+      log_error("Cannot determine language for target file: %s", normalized_target);
+      project_set_error(project, PROJECT_ERROR_UNKNOWN_LANGUAGE,
+                        "Unknown language for target file");
+      return false;
+    }
+
+    if (!project_add_file_impl(project, normalized_target, lang)) {
+      log_error("Failed to add target file to project: %s", normalized_target);
+      return false;
+    }
+
+    target_ctx = project_get_file_context_impl(project, normalized_target);
+    if (!target_ctx) {
+      log_error("Failed to get parser context for target file after adding: %s", normalized_target);
+      return false;
+    }
+  }
+
+  // Add dependency relationship to source file's context
+  if (!parser_context_add_dependency(source_ctx, target_ctx)) {
+    log_error("Failed to add dependency relationship between %s and %s", normalized_source,
+              normalized_target);
+    return false;
+  }
+
+  log_debug("Added dependency: %s -> %s", normalized_source, normalized_target);
+  return true;
+}
+
+/**
+ * Get dependencies for a file (Implementation)
+ *
+ * This function retrieves the list of files that the specified file depends on.
+ * It returns the number of dependencies found and populates the out_dependencies
+ * parameter with an array of file paths.
+ *
+ * @param project The ProjectContext
+ * @param filepath The file to get dependencies for
+ * @param out_dependencies Output parameter for the array of dependency file paths
+ * @return The number of dependencies found
+ */
+size_t project_get_dependencies_impl(const ProjectContext *project, const char *filepath,
+                                     char ***out_dependencies) {
+  if (!project || !filepath) {
+    if (out_dependencies) {
+      *out_dependencies = NULL;
+    }
+    return 0;
+  }
+
+  // Normalize the file path
+  char normalized_path[1024];
+  if (!normalize_file_path(project->root_directory, filepath, normalized_path,
+                           sizeof(normalized_path))) {
+    project_set_error(project, PROJECT_ERROR_INVALID_PATH, "Failed to normalize file path");
+    if (out_dependencies) {
+      *out_dependencies = NULL;
+    }
+    return 0;
+  }
+
+  // Find the file in the parsed files
+  ParserContext *ctx = project_get_file_context_impl(project, normalized_path);
+  if (!ctx) {
+    // File not found in project
+    if (out_dependencies) {
+      *out_dependencies = NULL;
+    }
+    return 0;
+  }
+
+  // Count dependencies
+  size_t num_deps = ctx->num_dependencies;
+  if (num_deps == 0 || !out_dependencies) {
+    if (out_dependencies) {
+      *out_dependencies = NULL;
+    }
+    return num_deps;
+  }
+
+  // Allocate array for dependency file paths
+  const char **deps = (const char **)malloc(num_deps * sizeof(const char *));
+  if (!deps) {
+    project_set_error(project, PROJECT_ERROR_MEMORY, "Failed to allocate memory for dependencies");
+    *out_dependencies = NULL;
+    return 0;
+  }
+
+  // Populate the array with dependency file paths
+  for (size_t i = 0; i < num_deps; i++) {
+    deps[i] = ctx->dependencies[i]->filename;
+  }
+
+  *out_dependencies = deps;
+  return num_deps;
 }

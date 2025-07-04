@@ -73,6 +73,7 @@ typedef struct ASTNode {
   char *signature;      /**< Function/method signature if applicable */
   char *docstring;      /**< Associated documentation */
   char *raw_content;    /**< Raw source code content */
+  char *file_path;      /**< Source file path (new field) */
 
   struct ASTNode *parent;    /**< Parent node (e.g., class for a method) */
   struct ASTNode **children; /**< Child nodes (e.g., methods for a class) */
@@ -132,6 +133,13 @@ bool ast_node_set_name(ASTNode *node, const char *name);
  * @return true on success, false on allocation failure
  */
 bool ast_node_set_file_path(ASTNode *node, const char *file_path);
+
+/**
+ * Get the file path of an AST node
+ * @param node The node to query
+ * @return The file path, or NULL if not set
+ */
+const char *ast_node_get_file_path(const ASTNode *node);
 
 /**
  * Set the qualified name of an AST node

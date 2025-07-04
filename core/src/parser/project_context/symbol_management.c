@@ -15,6 +15,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Static prototypes for internal helpers (must come after all includes for type visibility)
+static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node,
+                                  const char *filepath);
+static void collect_nodes_by_type(const ASTNode *node, ASTNodeType type, const ASTNode **out_nodes,
+                                  size_t max_nodes, size_t *count);
+static void resolve_node_references(ProjectContext *project, ASTNode *node);
+static void find_references_in_node(const ASTNode *current, const ASTNode *target,
+                                    const ASTNode **out_references, size_t max_references,
+                                    size_t *count);
+
 #include "scopemux/ast.h"
 
 /**
@@ -90,13 +100,13 @@ static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node
 }
 
 /**
- * Get a symbol by its qualified name from anywhere in the project
+ * Get a symbol by its qualified name from anywhere in the project (Implementation)
  *
  * @param project The ProjectContext
  * @param qualified_name The fully qualified name of the symbol
  * @return The ASTNode for the symbol, or NULL if not found
  */
-ASTNode *project_get_symbol(const ProjectContext *project, const char *qualified_name) {
+const ASTNode *project_get_symbol_impl(const ProjectContext *project, const char *qualified_name) {
   if (!project || !qualified_name || !project->symbol_table) {
     return NULL;
   }
@@ -106,7 +116,7 @@ ASTNode *project_get_symbol(const ProjectContext *project, const char *qualified
 }
 
 /**
- * Get all symbols of a specific type across the entire project
+ * Get all symbols of a specific type across the entire project (Implementation)
  *
  * @param project The ProjectContext
  * @param type The type of symbols to find
@@ -114,8 +124,8 @@ ASTNode *project_get_symbol(const ProjectContext *project, const char *qualified
  * @param max_nodes Maximum number of nodes to store
  * @return The number of symbols found (may be greater than max_nodes if buffer is too small)
  */
-size_t project_get_symbols_by_type(const ProjectContext *project, ASTNodeType type,
-                                   const ASTNode **out_nodes, size_t max_nodes) {
+size_t project_get_symbols_by_type_impl(const ProjectContext *project, ASTNodeType type,
+                                        const ASTNode **out_nodes, size_t max_nodes) {
   if (!project || !out_nodes || max_nodes == 0) {
     return 0;
   }
@@ -167,12 +177,12 @@ static void collect_nodes_by_type(const ASTNode *node, ASTNodeType type, const A
 }
 
 /**
- * Resolve references across all files in the project
+ * Resolve references across all files in the project (Implementation)
  *
  * @param project The ProjectContext
  * @return true if successful, false otherwise
  */
-bool project_resolve_references(ProjectContext *project) {
+bool project_resolve_references_impl(ProjectContext *project) {
   if (!project) {
     return false;
   }
@@ -278,7 +288,7 @@ static void resolve_node_references(ProjectContext *project, ASTNode *node) {
 }
 
 /**
- * Find all references to a symbol across the project
+ * Find all references to a symbol across the project (Implementation)
  *
  * @param project The ProjectContext
  * @param node The symbol ASTNode to find references for
@@ -286,8 +296,8 @@ static void resolve_node_references(ProjectContext *project, ASTNode *node) {
  * @param max_references Maximum number of references to store
  * @return The number of references found
  */
-size_t project_find_references(const ProjectContext *project, const ASTNode *node,
-                               const ASTNode **out_references, size_t max_references) {
+size_t project_find_references_impl(const ProjectContext *project, const ASTNode *node,
+                                    const ASTNode **out_references, size_t max_references) {
   if (!project || !node || !out_references || max_references == 0) {
     return 0;
   }

@@ -11,51 +11,83 @@
 
 /**
  * Convert an ASTNodeType enum value to its canonical string representation
- * 
+ *
  * This function maps internal enum values to their canonical schema string
  * representations as defined in the AST/CST schema documentation.
- * 
+ *
  * @param type The ASTNodeType enum value
  * @return The canonical string representation (e.g., "ROOT", "FUNCTION", etc.)
  */
 const char *ast_node_type_to_string(ASTNodeType type) {
-    switch (type) {
-        case NODE_ROOT: return "ROOT";
-        case NODE_FUNCTION: return "FUNCTION";
-        case NODE_CLASS: return "CLASS";
-        case NODE_METHOD: return "METHOD";
-        case NODE_VARIABLE: return "VARIABLE";
-        case NODE_PARAMETER: return "PARAMETER";
-        case NODE_IDENTIFIER: return "IDENTIFIER";
-        case NODE_IMPORT: return "IMPORT";
-        case NODE_INCLUDE: return "INCLUDE";
-        case NODE_MODULE: return "MODULE";
-        case NODE_VARIABLE_DECLARATION: return "VARIABLE_DECLARATION";
-        case NODE_FOR_STATEMENT: return "FOR_STATEMENT";
-        case NODE_WHILE_STATEMENT: return "WHILE_STATEMENT";
-        case NODE_DO_WHILE_STATEMENT: return "DO_WHILE_STATEMENT";
-        case NODE_IF_STATEMENT: return "IF_STATEMENT";
-        case NODE_IF_ELSE_IF_STATEMENT: return "IF_ELSE_IF_STATEMENT";
-        case NODE_SWITCH_STATEMENT: return "SWITCH_STATEMENT";
-        case NODE_COMMENT: return "COMMENT";
-        case NODE_DOCSTRING: return "DOCSTRING";
-        case NODE_NAMESPACE: return "NAMESPACE";
-        case NODE_STRUCT: return "STRUCT";
-        case NODE_ENUM: return "ENUM";
-        case NODE_INTERFACE: return "INTERFACE";
-        case NODE_UNION: return "UNION";
-        case NODE_TYPEDEF: return "TYPEDEF";
-        case NODE_MACRO: return "MACRO";
-        case NODE_CONTROL_FLOW: return "CONTROL_FLOW";
-        case NODE_TEMPLATE_SPECIALIZATION: return "TEMPLATE_SPECIALIZATION";
-        case NODE_LAMBDA: return "LAMBDA";
-        case NODE_USING: return "USING";
-        case NODE_FRIEND: return "FRIEND";
-        case NODE_OPERATOR: return "OPERATOR";
-        case NODE_UNKNOWN:
-        default:
-            return "UNKNOWN";
-    }
+  switch (type) {
+  case NODE_ROOT:
+    return "ROOT";
+  case NODE_FUNCTION:
+    return "FUNCTION";
+  case NODE_CLASS:
+    return "CLASS";
+  case NODE_METHOD:
+    return "METHOD";
+  case NODE_VARIABLE:
+    return "VARIABLE";
+  case NODE_PARAMETER:
+    return "PARAMETER";
+  case NODE_IDENTIFIER:
+    return "IDENTIFIER";
+  case NODE_IMPORT:
+    return "IMPORT";
+  case NODE_INCLUDE:
+    return "INCLUDE";
+  case NODE_MODULE:
+    return "MODULE";
+  case NODE_VARIABLE_DECLARATION:
+    return "VARIABLE_DECLARATION";
+  case NODE_FOR_STATEMENT:
+    return "FOR_STATEMENT";
+  case NODE_WHILE_STATEMENT:
+    return "WHILE_STATEMENT";
+  case NODE_DO_WHILE_STATEMENT:
+    return "DO_WHILE_STATEMENT";
+  case NODE_IF_STATEMENT:
+    return "IF_STATEMENT";
+  case NODE_IF_ELSE_IF_STATEMENT:
+    return "IF_ELSE_IF_STATEMENT";
+  case NODE_SWITCH_STATEMENT:
+    return "SWITCH_STATEMENT";
+  case NODE_COMMENT:
+    return "COMMENT";
+  case NODE_DOCSTRING:
+    return "DOCSTRING";
+  case NODE_NAMESPACE:
+    return "NAMESPACE";
+  case NODE_STRUCT:
+    return "STRUCT";
+  case NODE_ENUM:
+    return "ENUM";
+  case NODE_INTERFACE:
+    return "INTERFACE";
+  case NODE_UNION:
+    return "UNION";
+  case NODE_TYPEDEF:
+    return "TYPEDEF";
+  case NODE_MACRO:
+    return "MACRO";
+  case NODE_CONTROL_FLOW:
+    return "CONTROL_FLOW";
+  case NODE_TEMPLATE_SPECIALIZATION:
+    return "TEMPLATE_SPECIALIZATION";
+  case NODE_LAMBDA:
+    return "LAMBDA";
+  case NODE_USING:
+    return "USING";
+  case NODE_FRIEND:
+    return "FRIEND";
+  case NODE_OPERATOR:
+    return "OPERATOR";
+  case NODE_UNKNOWN:
+  default:
+    return "UNKNOWN";
+  }
 }
 
 /**
@@ -110,6 +142,12 @@ void ast_node_free_internal(ASTNode *node) {
     node->docstring = NULL;
   }
 
+  // Free the file_path if it exists
+  if (node->file_path) {
+    memory_debug_free(node->file_path, __FILE__, __LINE__);
+    node->file_path = NULL;
+  }
+
   // Free any additional data if it exists
   if (node->additional_data) {
     memory_debug_free(node->additional_data, __FILE__, __LINE__);
@@ -121,6 +159,38 @@ void ast_node_free_internal(ASTNode *node) {
 
   // Note: children and references arrays are not freed here
   // They are handled by ast_node_free to ensure proper recursion
+}
+
+/**
+ * Set the file path of an AST node
+ * @param node The node to modify
+ * @param file_path The file path to set (will be copied)
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_set_file_path(ASTNode *node, const char *file_path) {
+  if (!node)
+    return false;
+  if (node->file_path) {
+    memory_debug_free(node->file_path, __FILE__, __LINE__);
+    node->file_path = NULL;
+  }
+  if (file_path) {
+    node->file_path = strdup(file_path);
+    if (!node->file_path)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Get the file path of an AST node
+ * @param node The node to query
+ * @return The file path, or NULL if not set
+ */
+const char *ast_node_get_file_path(const ASTNode *node) {
+  if (!node)
+    return NULL;
+  return node->file_path;
 }
 
 /**
