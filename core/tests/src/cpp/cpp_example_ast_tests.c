@@ -102,7 +102,7 @@ static void test_cpp_example(const char *category, const char *filename) {
   // 3. Load the expected JSON file
   JsonValue *expected_json = load_expected_json("cpp", category, base_filename);
   if (!expected_json) {
-    cr_log_warn("No .expected.json file found for %s/%s, skipping validation", category,
+    log_warning("No .expected.json file found for %s/%s, skipping validation", category,
                 base_filename);
     free(base_filename);
     free(source);
@@ -134,7 +134,7 @@ static void process_cpp_category(const char *category) {
 
   DIR *dir = opendir(path);
   if (!dir) {
-    cr_log_warn("Could not open category directory: %s", path);
+    log_warning("Could not open category directory: %s", path);
     return;
   }
 

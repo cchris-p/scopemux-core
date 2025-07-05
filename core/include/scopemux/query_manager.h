@@ -2,7 +2,7 @@
 #define SCOPEMUX_QUERY_MANAGER_H
 
 #include "../tree_sitter/api.h"
-#include "scopemux/language.h"
+#include "language.h"
 
 // Forward declaration of the QueryManager structure.
 // The full definition will be in the .c file to hide implementation details.

@@ -6,6 +6,7 @@
  */
 
 #include "project_context_internal.h"
+#include "project_utils.h" // for project_set_error
 #include "scopemux/logging.h"
 #include "scopemux/project_context.h"
 #include <dirent.h>
@@ -205,9 +206,23 @@ size_t project_add_directory_impl(ProjectContext *project, const char *dirpath,
       continue;
     }
 
-    // Construct the full path
+    // Prepare buffer for full path
     char full_path[1024];
-    snprintf(full_path, sizeof(full_path), "%s/%s", normalized_dir, entry->d_name);
+
+    // Check if path would be too long
+    size_t dir_len = strlen(normalized_dir);
+    size_t name_len = strlen(entry->d_name);
+    if (dir_len + name_len + 2 > sizeof(full_path)) { // +2 for '/' and null terminator
+      log_warning("Path too long, skipping: %s/%s", normalized_dir, entry->d_name);
+      continue;
+    }
+
+    // Construct the full path safely
+    int written = snprintf(full_path, sizeof(full_path), "%s/%s", normalized_dir, entry->d_name);
+    if (written < 0 || (size_t)written >= sizeof(full_path)) {
+      log_warning("Path truncated, skipping: %s/%s", normalized_dir, entry->d_name);
+      continue;
+    }
 
     // Get file status
     struct stat file_stat;

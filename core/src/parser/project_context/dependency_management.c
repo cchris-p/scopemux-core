@@ -6,10 +6,13 @@
  * This module is responsible for discovering and tracking file relationships.
  */
 
+#include "../src/parser/project_context/file_management.h" // for normalize_file_path
+#include "../src/parser/project_context/project_utils.h"   // for project_set_error
 #include "project_context_internal.h"
 #include "scopemux/logging.h"
 #include "scopemux/parser.h"
 #include "scopemux/project_context.h"
+#include "scopemux/symbol_registration.h" // for register_file_symbols, project_context_extract_symbols_impl
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -476,7 +479,8 @@ size_t project_get_dependencies_impl(const ProjectContext *project, const char *
   char normalized_path[1024];
   if (!normalize_file_path(project->root_directory, filepath, normalized_path,
                            sizeof(normalized_path))) {
-    project_set_error(project, PROJECT_ERROR_INVALID_PATH, "Failed to normalize file path");
+    // Cannot use project_set_error with const ProjectContext
+    log_error("Failed to normalize file path");
     if (out_dependencies) {
       *out_dependencies = NULL;
     }
@@ -503,16 +507,30 @@ size_t project_get_dependencies_impl(const ProjectContext *project, const char *
   }
 
   // Allocate array for dependency file paths
-  const char **deps = (const char **)malloc(num_deps * sizeof(const char *));
+  char **deps = (char **)malloc(num_deps * sizeof(char *));
   if (!deps) {
-    project_set_error(project, PROJECT_ERROR_MEMORY, "Failed to allocate memory for dependencies");
+    // Cannot use project_set_error with const ProjectContext
+    log_error("Failed to allocate memory for dependencies");
     *out_dependencies = NULL;
     return 0;
   }
 
   // Populate the array with dependency file paths
   for (size_t i = 0; i < num_deps; i++) {
-    deps[i] = ctx->dependencies[i]->filename;
+    if (ctx->dependencies[i]->filename) {
+      deps[i] = strdup(ctx->dependencies[i]->filename);
+      if (!deps[i]) {
+        // Memory allocation failed, clean up
+        for (size_t j = 0; j < i; j++) {
+          free(deps[j]);
+        }
+        free(deps);
+        *out_dependencies = NULL;
+        return 0;
+      }
+    } else {
+      deps[i] = strdup("(unnamed)");
+    }
   }
 
   *out_dependencies = deps;

@@ -8,22 +8,16 @@
 #ifndef SCOPEMUX_PARSER_CONTEXT_H
 #define SCOPEMUX_PARSER_CONTEXT_H
 
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
+#include "../../include/scopemux/query_manager.h"
 #include "ast_node.h"
 #include "cst_node.h"
-#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
-#include "../../core/include/scopemux/query_manager.h"
 #include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * Frees all memory associated with a ParserContext instance.
- *
- * This should be called after parsing is complete to avoid memory leaks.
- * TODO: If ParserContext contains dynamically allocated fields, free them here.
- */
 /**
  * Frees all memory associated with a ParserContext instance.
  *

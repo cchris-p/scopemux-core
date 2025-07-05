@@ -133,8 +133,8 @@ Test(resolver_resolution, node_level, .init = setup_resolution, .fini = teardown
   ASTNode *call = ast_node_get_child_at_index(func, 1);      // referenced_function call
 
   // Resolve the reference
-  ResolutionStatus result =
-      reference_resolver_resolve_node(resolver, call, REF_TYPE_FUNCTION, "referenced_function");
+  ResolutionStatus result = reference_resolver_resolve_node(resolver, call, REF_TYPE_FUNCTION,
+                                                            "referenced_function", LANG_C);
 
   // Verify resolution was successful
   cr_assert(result == RESOLUTION_SUCCESS, "Node-level resolution should succeed");

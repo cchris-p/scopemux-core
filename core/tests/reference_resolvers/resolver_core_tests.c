@@ -74,7 +74,7 @@ Test(resolver_core, register_resolver, .init = setup_resolver, .fini = teardown_
 
   // Try resolving with the registered resolver
   ResolutionStatus status =
-      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name");
+      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name", LANG_C);
   cr_assert(status == RESOLUTION_SUCCESS, "Resolution should succeed with registered resolver");
 
   // Clean up
@@ -96,7 +96,7 @@ Test(resolver_core, register_replacement, .init = setup_resolver, .fini = teardo
   cr_assert(test_node != NULL, "Node creation should succeed");
 
   ResolutionStatus status =
-      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name");
+      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name", LANG_C);
   cr_assert(status == RESOLUTION_SUCCESS, "Resolution should still work after replacement");
 
   // Clean up
@@ -118,7 +118,7 @@ Test(resolver_core, unregister_resolver, .init = setup_resolver, .fini = teardow
 
   // With no resolver registered, we should get RESOLUTION_UNKNOWN
   ResolutionStatus status =
-      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name");
+      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name", LANG_C);
   cr_assert(status == RESOLUTION_NOT_FOUND, "Resolution should fail after unregistering resolver");
 
   // Clean up
@@ -135,7 +135,7 @@ Test(resolver_core, get_stats, .init = setup_resolver, .fini = teardown_resolver
 
   // Call resolve multiple times
   for (int i = 0; i < 5; i++) {
-    reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name");
+    reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name", LANG_C);
   }
 
   // Get the statistics

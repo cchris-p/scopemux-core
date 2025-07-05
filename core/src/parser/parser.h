@@ -6,10 +6,19 @@
  * all parser components.
  */
 
+/*
+ * INTERNAL HEADER: parser.h (src/parser/)
+ *
+ * This file contains private implementation details for the parser module.
+ * It should only be included by source files within the parser module itself.
+ *
+ * External modules, tests, or users of ScopeMux should include only the public API header:
+ *   core/include/scopemux/parser.h
+ * Do not expose internal-only types or functions outside this module.
+ */
 #ifndef SCOPEMUX_PARSER_IMPL_H
 #define SCOPEMUX_PARSER_IMPL_H
 
-#include "../../core/include/scopemux/parser.h"
 #include "ast_node.h"
 #include "cst_node.h"
 #include "memory_tracking.h"

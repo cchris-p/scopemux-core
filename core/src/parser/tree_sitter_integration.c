@@ -21,12 +21,10 @@
 // Define _POSIX_C_SOURCE to make strdup available
 #define _POSIX_C_SOURCE 200809L
 
-
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
-#include "scopemux/logging.h"
 #include "scopemux/ast.h"
+#include "scopemux/logging.h"
 #include "scopemux/parser.h"
-#include "scopemux/ts_internal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,19 +63,7 @@ extern char *build_queries_dir_impl(Language language);
  * @return true Parser initialized successfully
  * @return false Parser failed to initialize
  */
-bool ts_init_parser(ParserContext *ctx, Language language) {
-  if (!ctx) {
-    log_error("NULL context passed to ts_init_parser");
-    return false;
-  }
-
-  // Implementation delegated to ts_init.c
-  // This facade maintains the public interface
-  extern bool ts_init_parser_impl(ParserContext * ctx, Language language);
-  log_debug("ts_init_parser facade called, delegating to ts_init_parser_impl for language %d",
-            language);
-  return ts_init_parser_impl(ctx, language);
-}
+bool ts_init_parser(ParserContext *ctx, Language language);
 
 /**
  * @brief Converts a raw Tree-sitter tree into a ScopeMux Abstract Syntax Tree.
@@ -90,19 +76,7 @@ bool ts_init_parser(ParserContext *ctx, Language language) {
  * @param ctx The parser context, which contains the source code and other info.
  * @return ASTNode* The root of the generated AST, or NULL on failure.
  */
-ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
-  if (ts_node_is_null(root_node) || !ctx) {
-    if (ctx) {
-      parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
-    }
-    return NULL;
-  }
-
-  // Implementation delegated to ts_ast_builder.c
-  // This facade maintains the public interface
-  extern ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext * ctx);
-  return ts_tree_to_ast_impl(root_node, ctx);
-}
+ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx);
 
 /**
  * @brief Converts a raw Tree-sitter tree into a ScopeMux Concrete Syntax Tree.
@@ -115,14 +89,4 @@ ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
  * @param ctx The parser context, which contains the source code and other info.
  * @return CSTNode* The root of the generated CST, or NULL on failure.
  */
-CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx) {
-  if (ts_node_is_null(root_node) || !ctx || !ctx->source_code) {
-    parser_set_error(ctx, -1, "Invalid context for CST generation");
-    return NULL;
-  }
-
-  // Implementation delegated to ts_cst_builder.c
-  // This facade maintains the public interface
-  extern CSTNode *ts_tree_to_cst_impl(TSNode root_node, ParserContext * ctx);
-  return ts_tree_to_cst_impl(root_node, ctx);
-}
+CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx);

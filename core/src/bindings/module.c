@@ -6,10 +6,11 @@
  * for ScopeMux. It uses pybind11 to expose the C API to Python.
  */
 
+#include "../../core/include/scopemux/crash_handler.h"
+#include "../../core/include/scopemux/lang_compliance.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../core/include/scopemux/memory_debug.h"
-#include "../../core/include/scopemux/crash_handler.h"
 
 /* Include necessary headers for module initialization */
 #include <Python.h>
@@ -66,6 +67,9 @@ void init_scopemux_module(void *m) {
   memory_debug_configure(true, true, true);
   memory_debug_init();
   PyObject *module = (PyObject *)m;
+
+  // Register all language compliance adapters
+  register_all_language_compliance();
 
   // Set module docstring
   PyModule_AddObject(module, "__doc__", PyUnicode_FromString(module_docstring));

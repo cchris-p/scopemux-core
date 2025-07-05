@@ -9,7 +9,7 @@
 #ifndef SCOPEMUX_AST_NODE_H
 #define SCOPEMUX_AST_NODE_H
 
-#include "../../core/include/scopemux/parser.h"
+#include "../../include/scopemux/parser.h"
 
 /**
  * @brief Create a new AST node

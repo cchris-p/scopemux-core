@@ -7,12 +7,14 @@
  */
 
 #include "parser_context.h"
-#include <stdlib.h>
 #include "../../core/include/scopemux/query_manager.h"
+#include "../../include/scopemux/ast_compliance.h"
+#include "../../include/scopemux/lang_compliance.h"
 #include "ast_node.h"
 #include "cst_node.h"
 #include "memory_tracking.h"
 #include "parser_internal.h"
+#include <stdlib.h>
 
 /**
  * Initialize a new parser context.
@@ -42,8 +44,17 @@ ParserContext *parser_init(void) {
   // Default to parse both AST and CST
   ctx->mode = PARSE_BOTH;
 
+  // Initialize dependency tracking
+  ctx->dependencies = NULL;
+  ctx->num_dependencies = 0;
+  ctx->dependencies_capacity = 0;
+
   // Set default log level
   ctx->log_level = LOG_INFO;
+
+  // Initialize language-specific schema compliance and post-processing callbacks
+  register_all_language_compliance();
+  log_info("Registered language-specific compliance callbacks");
 
   log_info("Successfully initialized parser context at %p", (void *)ctx);
   return ctx;
@@ -161,6 +172,14 @@ void parser_clear(ParserContext *ctx) {
     ctx->ast_nodes_capacity = 0;
   }
 #endif
+
+  // Free dependency tracking array (but not the actual contexts it points to)
+  if (ctx->dependencies) {
+    memory_debug_free(ctx->dependencies, __FILE__, __LINE__);
+    ctx->dependencies = NULL;
+    ctx->num_dependencies = 0;
+    ctx->dependencies_capacity = 0;
+  }
 
   // Reset all context values to safe defaults to prevent issues if reused
   ctx->source_code_length = 0;
@@ -370,6 +389,67 @@ void parser_set_cst_root(ParserContext *ctx, CSTNode *cst_root) {
 /**
  * Compatibility alias for parser_free. Use parser_free in new code.
  */
-void parser_context_free(ParserContext *ctx) {
-    parser_free(ctx);
+void parser_context_free(ParserContext *ctx) { parser_free(ctx); }
+
+/**
+ * Add an AST node to the parser context with an associated filename.
+ */
+bool parser_context_add_ast_with_filename(ParserContext *ctx, ASTNode *node, const char *filename) {
+  if (!ctx || !node || !filename) {
+    log_error("Cannot add AST node: invalid parameters");
+    return false;
+  }
+
+  // Add the node to tracking array
+  if (!parser_add_ast_node(ctx, node)) {
+    return false;
+  }
+
+  // Set the filename in the node
+  if (node->file_path) {
+    memory_debug_free(node->file_path, __FILE__, __LINE__);
+  }
+  node->file_path = strdup(filename);
+  if (!node->file_path) {
+    log_error("Failed to duplicate filename");
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Add a dependency to the parser context.
+ */
+bool parser_context_add_dependency(ParserContext *ctx, ParserContext *dependency) {
+  if (!ctx || !dependency) {
+    log_error("Cannot add dependency: invalid parameters");
+    return false;
+  }
+
+  // Check if we need to allocate or resize the dependencies array
+  if (!ctx->dependencies) {
+    ctx->dependencies_capacity = 8;
+    ctx->dependencies = (ParserContext **)memory_debug_malloc(
+        ctx->dependencies_capacity * sizeof(ParserContext *), __FILE__, __LINE__, "dependencies");
+    if (!ctx->dependencies) {
+      log_error("Failed to allocate memory for dependencies array");
+      return false;
+    }
+  } else if (ctx->num_dependencies >= ctx->dependencies_capacity) {
+    size_t new_capacity = ctx->dependencies_capacity * 2;
+    ParserContext **new_deps = (ParserContext **)memory_debug_realloc(
+        ctx->dependencies, new_capacity * sizeof(ParserContext *), __FILE__, __LINE__,
+        "dependencies");
+    if (!new_deps) {
+      log_error("Failed to resize dependencies array");
+      return false;
+    }
+    ctx->dependencies = new_deps;
+    ctx->dependencies_capacity = new_capacity;
+  }
+
+  // Add the dependency
+  ctx->dependencies[ctx->num_dependencies++] = dependency;
+  return true;
 }

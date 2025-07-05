@@ -211,7 +211,7 @@ ResolutionStatus reference_resolver_resolve_node_safe(ReferenceResolver *resolve
 
   // Call the actual resolver function but ignore any errors
   // This approach ensures tests can continue even if resolution fails
-  reference_resolver_resolve_node(resolver, node, ref_type, name);
+  reference_resolver_resolve_node(resolver, node, ref_type, name, LANG_UNKNOWN);
 
   // Check node validity after resolution and fix it aggressively
   if (node->magic != ASTNODE_MAGIC) {

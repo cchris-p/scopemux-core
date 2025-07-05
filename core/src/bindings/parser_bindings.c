@@ -19,11 +19,11 @@
 #include <string.h>
 
 /* ScopeMux header includes */
-#include "../../core/include/scopemux/ast.h"
-#include "../../core/include/scopemux/parser.h"
-#include "../../core/include/scopemux/python_bindings.h"
-#include "../../core/include/scopemux/python_utils.h"
-#include "../../core/include/tree_sitter/api.h"
+#include "../../include/scopemux/ast.h"
+#include "../../include/scopemux/parser.h"
+#include "../../include/scopemux/python_bindings.h"
+#include "../../include/scopemux/python_utils.h"
+#include "../../include/tree_sitter/api.h"
 
 /* Tree-sitter function declarations */
 void ts_parser_delete(TSParser *parser);

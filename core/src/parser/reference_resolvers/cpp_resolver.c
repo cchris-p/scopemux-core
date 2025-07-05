@@ -47,252 +47,118 @@ ResolutionStatus reference_resolver_cpp(ASTNode *node, ReferenceType ref_type, c
 
   // Handle special cases based on reference type
   switch (ref_type) {
-  case REFERENCE_INCLUDE:
+  case REF_INCLUDE:
     // Similar to C, delegate to C resolver for include handling
     return reference_resolver_c(node, ref_type, name, symbol_table, NULL);
 
-  case REFERENCE_NAMESPACE:
-    // Handle C++ namespace resolution
+  case REF_TYPE: // Handles namespace and class/type references
+  {
+    // First, try to resolve as a namespace
     cpp_resolver_stats.namespace_resolved++;
-
-    // Look up the namespace in the symbol table
     SymbolEntry *namespace_entry = symbol_table_lookup(symbol_table, name);
     if (namespace_entry && namespace_entry->node->type == NODE_NAMESPACE) {
-      // Add reference to the namespace
-      /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-        ast_node_add_reference_with_metadata(node, namespace_entry->node;
-        cpp_resolver_stats.resolved_count++;
-        return RESOLUTION_SUCCESS;
-      } else {
-        // Resize references array
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        if (new_capacity == 0)
-          new_capacity = 4;
+      ast_node_add_reference_with_metadata(node, namespace_entry->node, ref_type);
+      cpp_resolver_stats.resolved_count++;
+      return RESOLUTION_SUCCESS;
+    }
 
-        ASTNode **new_refs =
-            (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
+    // Next, try to resolve as a class/struct
+    cpp_resolver_stats.class_resolved++;
+    SymbolEntry *class_entry = symbol_table_lookup(symbol_table, name);
+    if (class_entry &&
+        (class_entry->node->type == NODE_CLASS || class_entry->node->type == NODE_STRUCT)) {
+      ast_node_add_reference_with_metadata(node, class_entry->node, ref_type);
+      cpp_resolver_stats.resolved_count++;
+      return RESOLUTION_SUCCESS;
+    }
 
-        if (new_refs) {
-          /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-          /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-          ast_node_add_reference_with_metadata(node, namespace_entry->node;
-          cpp_resolver_stats.resolved_count++;
-          return RESOLUTION_SUCCESS;
+    // Handle namespaced classes (Namespace::Class)
+    char *double_colon = strstr(name, "::");
+    if (double_colon) {
+      size_t namespace_len = double_colon - name;
+      char namespace[256];
+      if (namespace_len < sizeof(namespace)) {
+        strncpy(namespace, name, namespace_len);
+        namespace[namespace_len] = '\0';
+
+        // Look up the namespace
+        SymbolEntry *ns_entry = symbol_table_lookup(symbol_table, namespace);
+        if (ns_entry && ns_entry->node->type == NODE_NAMESPACE) {
+          // Now look up the fully qualified class
+          SymbolEntry *class_entry = symbol_table_lookup(symbol_table, name);
+          if (class_entry) {
+            ast_node_add_reference_with_metadata(node, class_entry->node, ref_type);
+            cpp_resolver_stats.resolved_count++;
+            return RESOLUTION_SUCCESS;
+          }
         }
       }
     }
     return RESOLUTION_NOT_FOUND;
+  }
 
-  case REFERENCE_TEMPLATE:
+  case REF_TEMPLATE:
     // Handle template specialization
     cpp_resolver_stats.template_resolved++;
-
-    // Template resolution is complex and would require parsing the template parameters
-    // TODO: Implement template resolution logic
-    // For now, just try to find the template name without parameters
-    {
-      // Extract template name without parameters
-      char template_name[256] = {0};
-      char *lt_pos = strchr(name, '<');
-
-      if (lt_pos) {
-        size_t name_len = lt_pos - name;
-        if (name_len < sizeof(template_name)) {
-          strncpy(template_name, name, name_len);
-          template_name[name_len] = '\0';
-
-          // Look up the template
-          SymbolEntry *template_entry = symbol_table_lookup(symbol_table, template_name);
-          if (template_entry) {
-            // Add reference to the template
-            /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-              ast_node_add_reference_with_metadata(node, template_entry->node;
-              cpp_resolver_stats.resolved_count++;
-              return RESOLUTION_SUCCESS;
-            } else {
-              // Resize references array
-              /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-              if (new_capacity == 0)
-                new_capacity = 4;
-
-              ASTNode **new_refs =
-                  (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-              if (new_refs) {
-                /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                ast_node_add_reference_with_metadata(node, template_entry->node;
-                cpp_resolver_stats.resolved_count++;
-                return RESOLUTION_SUCCESS;
-              }
-            }
-          }
-        }
-      }
-    }
-    break;
-
-  case REFERENCE_CLASS:
-    // Handle class/struct references
-    cpp_resolver_stats.class_resolved++;
-
-    // Look up the class in the symbol table
-    // This needs to handle namespaces (e.g., std::vector)
-    {
-      SymbolEntry *class_entry = symbol_table_lookup(symbol_table, name);
-      if (class_entry &&
-          (class_entry->node->type == NODE_CLASS || class_entry->node->type == NODE_STRUCT)) {
-
-        // Add reference to the class
-        /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-          ast_node_add_reference_with_metadata(node, class_entry->node;
+    // Extract template name without parameters
+    char template_name[256] = {0};
+    char *lt_pos = strchr(name, '<');
+    if (lt_pos) {
+      size_t name_len = lt_pos - name;
+      if (name_len < sizeof(template_name)) {
+        strncpy(template_name, name, name_len);
+        template_name[name_len] = '\0';
+        // Look up the template
+        SymbolEntry *template_entry = symbol_table_lookup(symbol_table, template_name);
+        if (template_entry) {
+          ast_node_add_reference_with_metadata(node, template_entry->node, ref_type);
           cpp_resolver_stats.resolved_count++;
           return RESOLUTION_SUCCESS;
-        } else {
-          // Resize references array
-          /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-          if (new_capacity == 0)
-            new_capacity = 4;
-
-          ASTNode **new_refs =
-              (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-          if (new_refs) {
-            /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-            /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-            ast_node_add_reference_with_metadata(node, class_entry->node;
-            cpp_resolver_stats.resolved_count++;
-            return RESOLUTION_SUCCESS;
-          }
-        }
-      }
-
-      // Handle namespaced classes (Namespace::Class)
-      char *double_colon = strstr(name, "::");
-      if (double_colon) {
-        size_t namespace_len = double_colon - name;
-        char namespace[256]; // Reasonable limit
-
-        if (namespace_len < sizeof(namespace)) {
-          strncpy(namespace, name, namespace_len);
-          namespace[namespace_len] = '\0';
-
-          // Look up the namespace
-          SymbolEntry *ns_entry = symbol_table_lookup(symbol_table, namespace);
-          if (ns_entry && ns_entry->node->type == NODE_NAMESPACE) {
-            // Now look up the fully qualified class
-            SymbolEntry *class_entry = symbol_table_lookup(symbol_table, name);
-            if (class_entry) {
-              // Add reference to the class
-              /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-                ast_node_add_reference_with_metadata(node, class_entry->node;
-                cpp_resolver_stats.resolved_count++;
-                return RESOLUTION_SUCCESS;
-              } else {
-                // Resize references array
-                /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                if (new_capacity == 0)
-                  new_capacity = 4;
-
-                ASTNode **new_refs =
-                    (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-                if (new_refs) {
-                  /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                  /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                  ast_node_add_reference_with_metadata(node, class_entry->node;
-                  cpp_resolver_stats.resolved_count++;
-                  return RESOLUTION_SUCCESS;
-                }
-              }
-            }
-          }
         }
       }
     }
     break;
 
-  case REFERENCE_METHOD:
+  case REF_CALL: // Handles method and function call references
+  {
     // Handle method resolution, including overloaded methods
     cpp_resolver_stats.method_resolved++;
 
     // Method resolution in C++ is complex due to overloading
-    // For now, we'll just do a simple lookup without considering overloads
-    {
-      SymbolEntry *method_entry = symbol_table_lookup(symbol_table, name);
-      if (method_entry && method_entry->node->type == NODE_METHOD) {
-        // Add reference to the method
-        /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-          ast_node_add_reference_with_metadata(node, method_entry->node;
-          cpp_resolver_stats.resolved_count++;
-          return RESOLUTION_SUCCESS;
-        } else {
-          // Resize references array
-          /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-          if (new_capacity == 0)
-            new_capacity = 4;
+    // For now, resolve by looking up the fully qualified name
+    SymbolEntry *method_entry = symbol_table_lookup(symbol_table, name);
+    if (method_entry) {
+      ast_node_add_reference_with_metadata(node, method_entry->node, ref_type);
+      cpp_resolver_stats.resolved_count++;
+      return RESOLUTION_SUCCESS;
+    }
+    // Optionally, try resolving in class scope if available
+    char *double_colon = strstr(name, "::");
+    if (double_colon) {
+      size_t class_name_len = double_colon - name;
+      char class_name[256];
+      if (class_name_len < sizeof(class_name)) {
+        strncpy(class_name, name, class_name_len);
+        class_name[class_name_len] = '\0';
 
-          ASTNode **new_refs =
-              (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-          if (new_refs) {
-            /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-            /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-            ast_node_add_reference_with_metadata(node, method_entry->node;
+        // Look up the class
+        SymbolEntry *class_entry = symbol_table_lookup(symbol_table, class_name);
+        if (class_entry) {
+          // Now look up the fully qualified method
+          SymbolEntry *method_entry = symbol_table_lookup(symbol_table, name);
+          if (method_entry) {
+            ast_node_add_reference_with_metadata(node, method_entry->node, ref_type);
             cpp_resolver_stats.resolved_count++;
             return RESOLUTION_SUCCESS;
           }
         }
       }
-
-      // Handle class methods (Class::method)
-      char *double_colon = strstr(name, "::");
-      if (double_colon) {
-        size_t class_name_len = double_colon - name;
-        char class_name[256]; // Reasonable limit
-
-        if (class_name_len < sizeof(class_name)) {
-          strncpy(class_name, name, class_name_len);
-          class_name[class_name_len] = '\0';
-
-          // Look up the class
-          SymbolEntry *class_entry = symbol_table_lookup(symbol_table, class_name);
-          if (class_entry) {
-            // Now look up the fully qualified method
-            SymbolEntry *method_entry = symbol_table_lookup(symbol_table, name);
-            if (method_entry) {
-              // Add reference to the method
-              /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-                ast_node_add_reference_with_metadata(node, method_entry->node;
-                cpp_resolver_stats.resolved_count++;
-                return RESOLUTION_SUCCESS;
-              } else {
-                // Resize references array
-                /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                if (new_capacity == 0)
-                  new_capacity = 4;
-
-                ASTNode **new_refs =
-                    (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-                if (new_refs) {
-                  /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                  /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                  ast_node_add_reference_with_metadata(node, method_entry->node;
-                  cpp_resolver_stats.resolved_count++;
-                  return RESOLUTION_SUCCESS;
-                }
-              }
-            }
-          }
-        }
-      }
     }
     break;
+  }
 
   default:
-    // For standard symbol resolution, try C++ specific rules first,
-    // then fall back to C resolver for common functionality
+    // Fallback: try C++-specific rules, then fall back to C resolver
     break;
   }
 
@@ -301,26 +167,8 @@ ResolutionStatus reference_resolver_cpp(ASTNode *node, ReferenceType ref_type, c
   SymbolEntry *entry = symbol_table_lookup(symbol_table, name);
   if (entry) {
     cpp_resolver_stats.resolved_count++;
-    // Add reference
-    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-      ast_node_add_reference_with_metadata(node, entry->node;
-      return RESOLUTION_SUCCESS;
-    } else {
-      // Resize references array
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-      if (new_capacity == 0)
-        new_capacity = 4;
-
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-
-      if (new_refs) {
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        ast_node_add_reference_with_metadata(node, entry->node;
-        return RESOLUTION_SUCCESS;
-      }
-    }
-    return RESOLUTION_FAILED; // Failed to add reference
+    ast_node_add_reference_with_metadata(node, entry->node, ref_type);
+    return RESOLUTION_SUCCESS;
   }
 
   // 2. Try in current scope chain
@@ -329,68 +177,28 @@ ResolutionStatus reference_resolver_cpp(ASTNode *node, ReferenceType ref_type, c
     current_scope = node->parent->qualified_name;
   }
   entry = symbol_table_scope_lookup(symbol_table, name, current_scope, LANG_CPP);
-
   if (entry) {
     cpp_resolver_stats.resolved_count++;
-    // Add reference
-    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-      ast_node_add_reference_with_metadata(node, entry->node;
-      return RESOLUTION_SUCCESS;
-    } else {
-      // Resize references array
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-      if (new_capacity == 0)
-        new_capacity = 4;
-
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-
-      if (new_refs) {
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        ast_node_add_reference_with_metadata(node, entry->node;
-        return RESOLUTION_SUCCESS;
-      }
-    }
-    return RESOLUTION_FAILED; // Failed to add reference
+    ast_node_add_reference_with_metadata(node, entry->node, ref_type);
+    return RESOLUTION_SUCCESS;
   }
 
   // 3. Check for the symbol in the global namespace (::symbol)
   char global_name[256];
   snprintf(global_name, sizeof(global_name), "::%s", name);
   entry = symbol_table_lookup(symbol_table, global_name);
-
   if (entry) {
     cpp_resolver_stats.resolved_count++;
-    // Add reference
-    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-      ast_node_add_reference_with_metadata(node, entry->node;
-      return RESOLUTION_SUCCESS;
-    } else {
-      // Resize references array
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-      if (new_capacity == 0)
-        new_capacity = 4;
-
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-
-      if (new_refs) {
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        ast_node_add_reference_with_metadata(node, entry->node;
-        return RESOLUTION_SUCCESS;
-      }
-    }
-    return RESOLUTION_FAILED; // Failed to add reference
+    ast_node_add_reference_with_metadata(node, entry->node, ref_type);
+    return RESOLUTION_SUCCESS;
   }
 
   // 4. If not found so far, fall back to C resolver
   // Many C constructs are valid in C++ as well
   ResolutionStatus result = reference_resolver_c(node, ref_type, name, symbol_table, NULL);
-
   if (result == RESOLUTION_SUCCESS) {
     cpp_resolver_stats.resolved_count++;
   }
-
   return result;
 }
 

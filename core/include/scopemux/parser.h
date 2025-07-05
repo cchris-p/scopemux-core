@@ -8,13 +8,22 @@
  * ranges, control-flow primitives, docstrings, comments, and call expressions.
  */
 
+/*
+ * NOTE FOR MAINTAINERS:
+ * This is the public API header for the parser module. It must only contain declarations
+ * intended for use by external modules, tests, or users of the ScopeMux library.
+ *
+ * There is also an internal parser.h (or parser_internal.h) in src/parser/ which is for
+ * private implementation details. Only this file (in include/) should be included by code
+ * outside the parser module. Do not expose internal-only types or functions here.
+ */
 #ifndef SCOPEMUX_PARSER_H
 #define SCOPEMUX_PARSER_H
 
+#include "ast.h"
+#include "language.h"
 #include "logging.h"
-#include "scopemux/ast.h"
-#include "scopemux/language.h"
-#include "scopemux/source_range.h"
+#include "source_range.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -88,6 +97,14 @@ typedef struct ParserContext {
    */
   CSTNode *cst_root;
 
+  /**
+   * @brief Dependencies tracking.
+   * Array of parser contexts that this context depends on.
+   */
+  struct ParserContext **dependencies; // Array of dependencies
+  size_t num_dependencies;             // Number of dependencies
+  size_t dependencies_capacity;        // Capacity of dependencies array
+
   // Error handling
   char *last_error; // Last error message
   int error_code;   // Error code
@@ -114,6 +131,48 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node);
  * @return ParserContext* Initialized parser context or NULL on failure
  */
 ParserContext *parser_init(void);
+
+/**
+ * @brief Free a parser context and all associated resources
+ *
+ * @param ctx The parser context to free
+ */
+void parser_free(ParserContext *ctx);
+
+/**
+ * @brief Free a parser context and all associated resources (alias for parser_free)
+ *
+ * @param ctx The parser context to free
+ */
+void parser_context_free(ParserContext *ctx);
+
+/**
+ * @brief Add an AST node to the parser context's tracking list (alias for parser_add_ast_node)
+ *
+ * @param ctx Parser context
+ * @param node Node to add to tracking
+ * @return bool True on success, false on failure
+ */
+bool parser_context_add_ast(ParserContext *ctx, ASTNode *node);
+
+/**
+ * @brief Add an AST node to the parser context with associated filename
+ *
+ * @param ctx Parser context
+ * @param node Node to add to tracking
+ * @param filename The filename associated with the AST node
+ * @return bool True on success, false on failure
+ */
+bool parser_context_add_ast_with_filename(ParserContext *ctx, ASTNode *node, const char *filename);
+
+/**
+ * @brief Add a dependency relationship between two parser contexts
+ *
+ * @param source The source parser context that depends on the target
+ * @param target The target parser context that is depended upon
+ * @return bool True on success, false on failure
+ */
+bool parser_context_add_dependency(ParserContext *source, ParserContext *target);
 
 /**
  * @brief Sets the parsing mode for the context.
@@ -172,6 +231,14 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, Language langua
  */
 bool parser_parse_string(ParserContext *ctx, const char *const content, size_t content_length,
                          const char *filename, Language language);
+
+/**
+ * @brief Get the AST root node from a parser context
+ *
+ * @param ctx Parser context
+ * @return const ASTNode* Root AST node or NULL if not available
+ */
+const ASTNode *parser_context_get_ast(const ParserContext *ctx);
 
 /**
  * @brief Get the last error message

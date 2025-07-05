@@ -5,7 +5,7 @@
 # IMPORTANT TEST LINKING PATTERN
 # ============================================================================
 # This build system uses a specific pattern to avoid duplicate symbol errors:
-# 
+#
 # 1. Common test utilities (json_validation.c, test_helpers.c, etc.) are compiled
 #    into a single 'test_utilities' static library.
 #
@@ -27,16 +27,47 @@ pkg_check_modules(Criterion REQUIRED criterion)
 
 # Add compiler flags to suppress warnings in test code
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  add_compile_options(
-    -Wno-strict-prototypes
-    -Wno-missing-prototypes
-    -Wno-pedantic
-    -Wno-unused-parameter
-    -Wno-unused-function
-    -Wno-unused-variable
-    -Wno-incompatible-pointer-types
-  )
+    add_compile_options(
+        -Wno-strict-prototypes
+        -Wno-missing-prototypes
+        -Wno-pedantic
+        -Wno-unused-parameter
+        -Wno-unused-function
+        -Wno-unused-variable
+        -Wno-incompatible-pointer-types
+    )
+
+    # Specific flags for vendor code
+    set_source_files_properties(
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/scanner.c
+        PROPERTIES COMPILE_FLAGS "-Wno-unused-value"
+    )
+
+    # Disable dependency generation for vendor files to avoid filesystem errors
+    set_source_files_properties(
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/parser.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/scanner.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-javascript/src/parser.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-javascript/src/scanner.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-c/src/parser.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-cpp/src/parser.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-cpp/src/scanner.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/tsx/src/parser.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/tsx/src/scanner.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/typescript/src/parser.c
+        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/typescript/src/scanner.c
+        PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE
+    )
 endif()
+
+# =============================================================================
+# CRITICAL NOTE FOR ALL CONTRIBUTORS
+# =============================================================================
+# Common test helpers (test_helpers.c, json_validation.c, test_utils.c, tree_sitter_test_util.c)
+# MUST ONLY be linked via the test_utilities static library.
+# NEVER add these files directly to any test executable's source list.
+# Violating this will cause duplicate symbol errors and catastrophic Criterion runtime failures.
+# =============================================================================
 
 # Set include directories for all targets in this directory
 include_directories(
@@ -74,6 +105,7 @@ add_library(test_utilities STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/tree_sitter_test_util.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/test_helpers.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/json_validation.c
+    # Removed reference to symbol_table_stubs.c as we're moving away from stubs
 )
 target_include_directories(test_utilities PRIVATE
     ${CMAKE_SOURCE_DIR}/core/include
@@ -81,6 +113,20 @@ target_include_directories(test_utilities PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${Criterion_INCLUDE_DIRS}
 )
+
+# Function to set common include directories for all test targets
+function(set_common_test_includes target_name)
+    target_include_directories(${target_name} PRIVATE
+        ${CMAKE_SOURCE_DIR}/core/include
+        ${CMAKE_SOURCE_DIR}/core/include/scopemux
+        ${CMAKE_SOURCE_DIR}/core/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${Criterion_INCLUDE_DIRS}
+    )
+
+    # Disable dependency file generation to avoid directory-related errors
+    set_target_properties(${target_name} PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE)
+endfunction()
 
 # --- Criterion Test Executable ---
 
@@ -99,16 +145,24 @@ set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/cst_node.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/memory_tracking.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table/symbol_core.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table/symbol_entry.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table/symbol_lookup.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table/symbol_registration.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_processing.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/reference_resolver.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/reference_resolvers/language_resolvers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/reference_resolvers/resolver_implementation.c
 
     # Tree-sitter implementation files
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_init.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_ast_builder.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_cst_builder.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_query_processor.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_processing.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lang_compliance.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ast_compliance.c
 
     # Tree-sitter language sources
     ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-c/src/parser.c
@@ -129,6 +183,9 @@ set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/memory_management.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils/memory_debug.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/config/node_type_mapping_loader.c
+
+    # AST compliance and language-specific modules
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ast_compliance.c
 
     # Adapters for language-specific functionality
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/adapters/adapter_registry.c
@@ -202,13 +259,6 @@ set(INIT_PARSER_TEST_SOURCES
 )
 
 # --- Interfile Resolution Tests ---
-# Define source files for reference resolver implementation stubs
-set(REFERENCE_RESOLVER_STUB_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/reference_resolver_stubs.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_test_adapter.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/project_context_stubs.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/reference_resolver_globals.c
-)
 
 # Define source files for each interfile reference resolution test target
 set(REFERENCE_RESOLVER_TEST_SRCS
@@ -243,6 +293,7 @@ set(PROJECT_CONTEXT_TEST_SOURCES
 
 # Define executables
 add_executable(init_parser_tests
+    # Removed reference to test_init_parser.c - file doesn't exist
     ${INIT_PARSER_TEST_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
@@ -253,10 +304,8 @@ target_link_libraries(init_parser_tests PRIVATE
     m
     dl
 )
-target_include_directories(init_parser_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-)
+# Set common include directories
+set_common_test_includes(init_parser_tests)
 
 # Edge Case tests executable
 add_executable(edge_case_tests
@@ -270,21 +319,8 @@ target_link_libraries(edge_case_tests PRIVATE
     m
     dl
 )
-target_include_directories(edge_case_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-)
-
-# --- Reference Resolver Stub Library ---
-add_library(reference_resolver_stubs STATIC ${REFERENCE_RESOLVER_STUB_SOURCES})
-target_include_directories(reference_resolver_stubs PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${Criterion_INCLUDE_DIRS}
-)
+# Set common include directories
+set_common_test_includes(edge_case_tests)
 
 # --- Interfile Resolution Test Executables ---
 
@@ -294,7 +330,7 @@ add_executable(reference_resolver_tests
 )
 target_link_libraries(reference_resolver_tests PRIVATE
     test_utilities
-    reference_resolver_stubs
+    parser_core
     ${Criterion_LIBRARIES}
     parser_core
     ts_core
@@ -308,11 +344,8 @@ target_link_libraries(reference_resolver_tests PRIVATE
     ts_javascript
     ts_typescript
 )
-target_include_directories(reference_resolver_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    ${Criterion_INCLUDE_DIRS}
-)
+# Set common include directories
+set_common_test_includes(reference_resolver_tests)
 
 # Resolver Core Tests
 add_executable(resolver_core_tests
@@ -321,7 +354,7 @@ add_executable(resolver_core_tests
 )
 target_link_libraries(resolver_core_tests PRIVATE
     test_utilities
-    reference_resolver_stubs
+    parser_core
     ${Criterion_LIBRARIES}
     parser_core
     ts_core
@@ -335,11 +368,8 @@ target_link_libraries(resolver_core_tests PRIVATE
     ts_javascript
     ts_typescript
 )
-target_include_directories(resolver_core_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    ${Criterion_INCLUDE_DIRS}
-)
+# Set common include directories
+set_common_test_includes(resolver_core_tests)
 
 # Resolver Registration Tests
 add_executable(resolver_registration_tests
@@ -348,7 +378,7 @@ add_executable(resolver_registration_tests
 )
 target_link_libraries(resolver_registration_tests PRIVATE
     test_utilities
-    reference_resolver_stubs
+    parser_core
     ${Criterion_LIBRARIES}
     parser_core
     ts_core
@@ -362,11 +392,8 @@ target_link_libraries(resolver_registration_tests PRIVATE
     ts_javascript
     ts_typescript
 )
-target_include_directories(resolver_registration_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    ${Criterion_INCLUDE_DIRS}
-)
+# Set common include directories
+set_common_test_includes(resolver_registration_tests)
 
 # Resolver Resolution Tests
 add_executable(resolver_resolution_tests
@@ -375,7 +402,7 @@ add_executable(resolver_resolution_tests
 )
 target_link_libraries(resolver_resolution_tests PRIVATE
     test_utilities
-    reference_resolver_stubs
+    parser_core
     ${Criterion_LIBRARIES}
     parser_core
     ts_core
@@ -389,11 +416,8 @@ target_link_libraries(resolver_resolution_tests PRIVATE
     ts_javascript
     ts_typescript
 )
-target_include_directories(resolver_resolution_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    ${Criterion_INCLUDE_DIRS}
-)
+# Set common include directories
+set_common_test_includes(resolver_resolution_tests)
 
 # Language Resolver Tests
 add_executable(language_resolver_tests
@@ -402,7 +426,7 @@ add_executable(language_resolver_tests
 )
 target_link_libraries(language_resolver_tests PRIVATE
     test_utilities
-    reference_resolver_stubs
+    parser_core
     ${Criterion_LIBRARIES}
     parser_core
     ts_core
@@ -416,15 +440,12 @@ target_link_libraries(language_resolver_tests PRIVATE
     ts_javascript
     ts_typescript
 )
-target_include_directories(language_resolver_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    ${Criterion_INCLUDE_DIRS}
-)
+# Set common include directories
+set_common_test_includes(language_resolver_tests)
 
 # Symbol Table Tests
 add_executable(symbol_table_tests
-        ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_core.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_core.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_entry.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_lookup.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_registration.c
@@ -446,21 +467,39 @@ target_link_libraries(symbol_table_tests PRIVATE
     ts_javascript
     ts_typescript
 )
-target_include_directories(symbol_table_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    ${Criterion_INCLUDE_DIRS}
-)
+# Set common include directories
+set_common_test_includes(symbol_table_tests)
+
+# Disable dependency file generation to avoid directory-related errors
+set_target_properties(symbol_table_tests PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE)
 
 # Project Context Tests
 add_executable(project_context_tests
-        ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_core.c
+    # Facade files needed for the public API
+    ${PROJECT_SOURCE_DIR}/src/parser/project_context.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table.c
+    # Core implementation files needed for project_context_tests
+    ${PROJECT_SOURCE_DIR}/src/parser/project_context/project_utils.c
+    ${PROJECT_SOURCE_DIR}/src/parser/project_context/dependency_management.c
+    ${PROJECT_SOURCE_DIR}/src/parser/project_context/file_management.c
+    ${PROJECT_SOURCE_DIR}/src/parser/project_context/symbol_management.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_core.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_entry.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_lookup.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_registration.c
+    # Reference resolver implementation files
+    ${PROJECT_SOURCE_DIR}/src/parser/reference_resolver.c
+    ${PROJECT_SOURCE_DIR}/src/parser/reference_resolvers/language_resolvers.c
+    ${PROJECT_SOURCE_DIR}/src/parser/reference_resolvers/resolver_implementation.c
+    # Test sources
     ${PROJECT_CONTEXT_TEST_SOURCES}
-    ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
+    # DO NOT add test_helpers.c, json_validation.c, test_utils.c, or tree_sitter_test_util.c here
 )
+# CRITICAL: DO NOT MODIFY THE LINKING CONFIGURATION BELOW
+# The project_context_tests target depends on specific symbols from parser_core
+# and requires direct linking against the full set of libraries below.
+# Removing any of these dependencies will cause undefined reference errors.
+# This configuration was carefully set up to resolve build issues with the test suite.
 target_link_libraries(project_context_tests PRIVATE
     test_utilities
     ${Criterion_LIBRARIES}
@@ -476,11 +515,11 @@ target_link_libraries(project_context_tests PRIVATE
     ts_javascript
     ts_typescript
 )
-target_include_directories(project_context_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    ${Criterion_INCLUDE_DIRS}
-)
+# Set common include directories
+set_common_test_includes(project_context_tests)
+
+# Disable dependency file generation to avoid directory-related errors
+set_target_properties(project_context_tests PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE)
 
 # --- Macro to create test executables ---
 # Macro now takes test target and its source variable
@@ -488,21 +527,22 @@ macro(create_test_executable test_name source_var)
     add_executable(${test_name} ${${source_var}})
     target_link_libraries(${test_name} PRIVATE
         test_utilities
-        parser_core
         ${Criterion_LIBRARIES}
+        parser_core
+        ts_core
         m
         dl
-        ts_core
         ts_c
         ts_cpp
         ts_python
         ts_javascript
         ts_typescript
     )
-    target_include_directories(${test_name} PRIVATE
-        ${CMAKE_SOURCE_DIR}/core/include
-        ${CMAKE_SOURCE_DIR}/core/include/scopemux
-    )
+    # Set common include directories
+    set_common_test_includes(${test_name})
+
+    # Disable dependency file generation to avoid directory-related errors
+    set_target_properties(${test_name} PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE)
 endmacro()
 
 # --- Create Language-Specific Test Executables ---
@@ -652,7 +692,7 @@ target_link_libraries(ts_example_ast_tests PRIVATE
     ts_typescript
 )
 
-# Add tests to CTest 
+# Add tests to CTest
 add_test(NAME InitParserTests COMMAND init_parser_tests)
 add_test(NAME CBasicASTTests COMMAND c_basic_ast_tests)
 add_test(NAME PythonBasicASTTests COMMAND python_basic_ast_tests)
@@ -711,6 +751,12 @@ endforeach()
 # --- Memory Debug/Crash Handler Diagnostic Test ---
 add_executable(test_memory_debug
     ${CMAKE_CURRENT_SOURCE_DIR}/test_memory_debug.c
+)
+target_link_libraries(test_memory_debug PRIVATE parser_core m dl)
+add_test(NAME MemoryDebugTest COMMAND test_memory_debug)
+
+message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
+message(STATUS "Copied example files and expected JSON to build directory for validation.")
 )
 target_link_libraries(test_memory_debug PRIVATE parser_core m dl)
 add_test(NAME MemoryDebugTest COMMAND test_memory_debug)

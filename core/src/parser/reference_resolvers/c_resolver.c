@@ -1,10 +1,10 @@
-#include "../../../include/scopemux/ast_node.h"
 #include "../../../include/scopemux/logging.h"
 #include "../../../include/scopemux/parser.h"
 #include "../../../include/scopemux/project_context.h"
 #include "../../../include/scopemux/reference_resolver.h"
 #include "../../../include/scopemux/source_range.h"
 #include "../../../include/scopemux/symbol_table.h"
+#include "scopemux/ast.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,29 +110,10 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
 
                 if (field && field->name && strcmp(field->name, field_name) == 0) {
                   // Found the field, add reference
-                  /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-                    ast_node_add_reference_with_metadata(node, field;
-                    c_resolver_stats.struct_fields_resolved++;
-                    c_resolver_stats.resolved_count++;
-                    return RESOLUTION_SUCCESS;
-                  } else {
-                    // Resize references array
-                    /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                    if (new_capacity == 0)
-                      new_capacity = 4;
-
-                    ASTNode **new_refs =
-                        (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
-
-                    if (new_refs) {
-                      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-                      ast_node_add_reference_with_metadata(node, field;
-                      c_resolver_stats.struct_fields_resolved++;
-                      c_resolver_stats.resolved_count++;
-                      return RESOLUTION_SUCCESS;
-                    }
-                  }
+                  ast_node_add_reference_with_metadata(node, field, ref_type);
+                  c_resolver_stats.struct_fields_resolved++;
+                  c_resolver_stats.resolved_count++;
+                  return RESOLUTION_SUCCESS;
                 }
               }
             }
@@ -152,26 +133,8 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
   SymbolEntry *entry = symbol_table_lookup(symbol_table, name);
   if (entry) {
     c_resolver_stats.resolved_count++;
-    // Add reference to node
-    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-      ast_node_add_reference_with_metadata(node, entry->node, ref_type);
-      return RESOLUTION_SUCCESS;
-    } else {
-      // Resize references array
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-      if (new_capacity == 0)
-        new_capacity = 4;
-
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-
-      if (new_refs) {
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        ast_node_add_reference_with_metadata(node, entry->node, ref_type);
-        return RESOLUTION_SUCCESS;
-      }
-    }
-    return RESOLUTION_FAILED; // Failed to add reference
+    ast_node_add_reference_with_metadata(node, entry->node, ref_type);
+    return RESOLUTION_SUCCESS;
   }
 
   // 2. Try current scope lookup
@@ -183,35 +146,15 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
 
   if (entry) {
     c_resolver_stats.resolved_count++;
-    // Add reference to node
-    /* Reference capacity checks are handled by ast_node_add_reference_with_metadata */
-      ast_node_add_reference_with_metadata(node, entry->node, ref_type);
-      return RESOLUTION_SUCCESS;
-    } else {
-      // Resize references array
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-      if (new_capacity == 0)
-        new_capacity = 4;
-
-      /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-
-      if (new_refs) {
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        /* Reference array resizing is handled by ast_node_add_reference_with_metadata */
-        ast_node_add_reference_with_metadata(node, entry->node, ref_type);
-        return RESOLUTION_SUCCESS;
-      }
-    }
-    return RESOLUTION_FAILED; // Failed to add reference
+    ast_node_add_reference_with_metadata(node, entry->node, ref_type);
+    return RESOLUTION_SUCCESS;
   }
 
   // If we got this far, fallback to generic resolution
   ResolutionStatus result = reference_resolver_generic_resolve(node, ref_type, name, symbol_table);
-
   if (result == RESOLUTION_SUCCESS) {
     c_resolver_stats.resolved_count++;
   }
-
   return result;
 }
 

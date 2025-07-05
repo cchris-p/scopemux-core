@@ -1,3 +1,30 @@
+/*
+ * node_type_mapping_loader.c
+ *
+ * Node Type Mapping Loader (2025+)
+ * ---------------------------------
+ * This module provides a hardcoded, code-driven mapping from semantic query types
+ * (as used in Tree-sitter queries) to ScopeMux's internal ASTNodeType enums.
+ *
+ * Rationale:
+ *   - The previous config/JSON-based mapping was removed to eliminate runtime errors,
+ *     improve reliability, and simplify build reproducibility.
+ *   - All mappings are now managed in code, reviewed via version control, and
+ *     updated alongside the parser and query definitions.
+ *
+ * Key API:
+ *   - ASTNodeType get_node_type_for_query(const char *query_type):
+ *       Returns the ASTNodeType for a given semantic query type string.
+ *       If no mapping is found, returns NODE_UNKNOWN and logs a warning.
+ *
+ * How to extend:
+ *   - To add a new mapping, add a new branch to the mapping logic in this file.
+ *     (Usually a new strcmp or entry in a static table.)
+ *   - Recompile the project to apply the change.
+ *   - No config files or runtime dependencies are required.
+ *
+ * See also: core/include/config/node_type_mapping_loader.h
+ */
 // Define _POSIX_C_SOURCE to make strdup available
 #define _POSIX_C_SOURCE 200809L
 
@@ -63,74 +90,75 @@ static ASTNodeType parse_node_type(const char *enum_str) {
  */
 void load_node_type_mapping(const char *config_path) {
   // Log that we're using hardcoded mappings instead of loading from file
-  fprintf(stderr, "[scopemux] INFO: Using hardcoded node type mappings (ignoring path: %s)\n", 
+  fprintf(stderr, "[scopemux] INFO: Using hardcoded node type mappings (ignoring path: %s)\n",
           config_path ? config_path : "NULL");
-  
+
   printf("[scopemux] Loading hardcoded node type mappings:\n");
-  
+
   // Define hardcoded mappings
   // These are the core mappings needed for the parser to work correctly
   struct {
     const char *query_type;
     const char *node_type_str;
   } default_mappings[] = {
-    {"functions", "NODE_FUNCTION"},
-    {"classes", "NODE_CLASS"},
-    {"methods", "NODE_METHOD"},
-    {"variables", "NODE_VARIABLE"},
-    {"modules", "NODE_MODULE"},
-    {"structs", "NODE_STRUCT"},
-    {"unions", "NODE_UNION"},
-    {"enums", "NODE_ENUM"},
-    {"typedefs", "NODE_TYPEDEF"},
-    {"includes", "NODE_INCLUDE"},
-    {"macros", "NODE_MACRO"},
-    {"docstrings", "NODE_DOCSTRING"},
-    {"interfaces", "NODE_INTERFACE"},
-    {"template_specializations", "NODE_TEMPLATE_SPECIALIZATION"},
-    // Add any additional mappings here
+      {"functions", "NODE_FUNCTION"},
+      {"classes", "NODE_CLASS"},
+      {"methods", "NODE_METHOD"},
+      {"variables", "NODE_VARIABLE"},
+      {"modules", "NODE_MODULE"},
+      {"structs", "NODE_STRUCT"},
+      {"unions", "NODE_UNION"},
+      {"enums", "NODE_ENUM"},
+      {"typedefs", "NODE_TYPEDEF"},
+      {"includes", "NODE_INCLUDE"},
+      {"macros", "NODE_MACRO"},
+      {"docstrings", "NODE_DOCSTRING"},
+      {"interfaces", "NODE_INTERFACE"},
+      {"template_specializations", "NODE_TEMPLATE_SPECIALIZATION"},
+      // Add any additional mappings here
   };
-  
+
   // Clear existing mappings
   for (int i = 0; i < mapping_count; ++i) {
     free(mappings[i].query_type);
     mappings[i].query_type = NULL;
   }
   mapping_count = 0;
-  
+
   // Load the hardcoded mappings
   size_t num_default_mappings = sizeof(default_mappings) / sizeof(default_mappings[0]);
   for (size_t i = 0; i < num_default_mappings && mapping_count < MAX_MAPPINGS; ++i) {
     const char *query_type = default_mappings[i].query_type;
     const char *node_type_str = default_mappings[i].node_type_str;
-    
+
     // Skip if either is NULL
     if (!query_type || !node_type_str) {
       fprintf(stderr, "[scopemux] ERROR: NULL mapping entry at index %zu, skipping\n", i);
       continue;
     }
-    
+
     // Safe string duplication with error checking
     char *query_type_copy = strdup(query_type);
     if (!query_type_copy) {
-      fprintf(stderr, "[scopemux] ERROR: Failed to allocate memory for query type: %s\n", query_type);
+      fprintf(stderr, "[scopemux] ERROR: Failed to allocate memory for query type: %s\n",
+              query_type);
       continue;
     }
-    
+
     // Validate the mapping before storing
     ASTNodeType node_type = parse_node_type(node_type_str);
     if (node_type == NODE_UNKNOWN && strcmp(node_type_str, "NODE_UNKNOWN") != 0) {
       fprintf(stderr, "[scopemux] WARNING: Unknown node type: %s, defaulting to NODE_UNKNOWN\n",
               node_type_str);
     }
-    
+
     // Store the mapping
     mappings[mapping_count].query_type = query_type_copy;
     mappings[mapping_count].node_type = node_type;
     printf("  %s -> %s\n", query_type, node_type_str);
     mapping_count++;
   }
-  
+
   // Log summary
   fprintf(stderr, "[scopemux] Loaded %d hardcoded node type mappings\n", mapping_count);
 }

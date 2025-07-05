@@ -15,6 +15,7 @@
 #define SCOPEMUX_SYMBOL_TABLE_H
 
 #include "parser.h"
+#include "symbol.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -152,7 +153,7 @@ size_t symbol_table_get_by_type(const GlobalSymbolTable *table, ASTNodeType type
                                 SymbolEntry **out_entries, size_t max_entries);
 
 /**
- * @brief Find all symbols in a specific file
+ * @brief Get all symbols from a specific file
  *
  * @param table Symbol table
  * @param file_path File path to filter by
@@ -162,6 +163,42 @@ size_t symbol_table_get_by_type(const GlobalSymbolTable *table, ASTNodeType type
  */
 size_t symbol_table_get_by_file(const GlobalSymbolTable *table, const char *file_path,
                                 SymbolEntry **out_entries, size_t max_entries);
+
+/**
+ * @brief Add a symbol entry to the symbol table
+ *
+ * @param table Symbol table
+ * @param entry The symbol entry to add (ownership is transferred)
+ * @return bool True on success, false on failure
+ */
+bool symbol_table_add(GlobalSymbolTable *table, SymbolEntry *entry);
+
+/**
+ * @brief Create a new symbol entry
+ *
+ * Allocates and initializes a SymbolEntry structure with the
+ * provided information. The caller maintains ownership of the
+ * ASTNode, but all strings are duplicated.
+ *
+ * @param qualified_name Fully qualified name of the symbol
+ * @param node AST node representing the symbol
+ * @param file_path Path to the source file containing this symbol
+ * @param scope Symbol visibility scope
+ * @param language Language of the source file
+ * @return A new symbol entry or NULL on failure
+ */
+SymbolEntry *symbol_entry_create(const char *qualified_name, ASTNode *node, const char *file_path,
+                                 SymbolScope scope, Language language);
+
+/**
+ * @brief Free a symbol entry and all associated resources
+ *
+ * This function frees a symbol entry and all resources associated with it.
+ * Note that it does not free the AST node, as that is managed separately.
+ *
+ * @param entry The symbol entry to free
+ */
+void symbol_entry_free(SymbolEntry *entry);
 
 /**
  * @brief Get statistics about the symbol table

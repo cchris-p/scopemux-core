@@ -199,7 +199,7 @@ static void test_js_example(const char *category, const char *filename) {
       fprintf(stderr, "TESTING: No expected JSON found for %s/%s, skipping validation\n", category,
               base_filename);
     }
-    cr_log_warn("No .expected.json file found for %s/%s, skipping validation", category,
+    log_warning("No .expected.json file found for %s/%s, skipping validation", category,
                 base_filename);
     free(base_filename);
     free(source);
@@ -301,7 +301,7 @@ static void process_js_category(const char *category) {
   }
 
   // Log error if all attempts fail
-  cr_log_warn("Could not open category directory for '%s' after trying multiple paths", category);
+  log_warning("Could not open category directory for '%s' after trying multiple paths", category);
 }
 
 /**

@@ -9,11 +9,12 @@
 #ifndef SCOPEMUX_PARSER_INTERNAL_H
 #define SCOPEMUX_PARSER_INTERNAL_H
 
-#include "scopemux/ast.h"
+#include "../../core/include/scopemux/ast_compliance.h"
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/memory_debug.h"
 #include "../../core/include/scopemux/parser.h"
 #include "../../core/include/scopemux/query_manager.h"
+#include "scopemux/ast.h"
 
 #include <setjmp.h>
 #include <signal.h>
@@ -46,6 +47,19 @@ void register_cst_node(CSTNode *node, const char *type);
  * @param node Node that was freed
  */
 void mark_cst_node_freed(CSTNode *node);
+
+/**
+ * @brief Converts a Tree-sitter node tree to an AST
+ *
+ * This is the internal implementation of the Tree-sitter to AST conversion.
+ * It processes all nodes in the Tree-sitter parse tree and builds a corresponding
+ * AST structure with proper schema compliance.
+ *
+ * @param root_node The root Tree-sitter node
+ * @param ctx Parser context with language and other information
+ * @return ASTNode* The root of the constructed AST, or NULL on failure
+ */
+ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx);
 
 /**
  * @brief Register the summary function to run at program exit

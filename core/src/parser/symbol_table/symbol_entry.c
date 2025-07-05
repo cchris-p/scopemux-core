@@ -15,6 +15,70 @@
 #include <string.h>
 
 /**
+ * Free a symbol entry and all associated resources
+ *
+ * This function frees a symbol entry and all resources associated with it.
+ * Note that it does not free the AST node, as that is managed separately.
+ *
+ * @param entry The symbol entry to free
+ */
+void symbol_entry_free(SymbolEntry *entry) { symbol_table_entry_free_impl(entry); }
+
+/**
+ * Create a new symbol entry
+ *
+ * Public wrapper for symbol_table_entry_create_impl.
+ *
+ * @param qualified_name Fully qualified name of the symbol
+ * @param node AST node representing the symbol
+ * @param file_path Path to the source file containing this symbol
+ * @param scope Symbol visibility scope
+ * @param language Language of the source file
+ * @return A new symbol entry or NULL on failure
+ */
+SymbolEntry *symbol_entry_create(const char *qualified_name, ASTNode *node, const char *file_path,
+                                 SymbolScope scope, Language language) {
+  return symbol_table_entry_create_impl(qualified_name, node, file_path, scope, language);
+}
+
+/**
+ * Free a symbol entry and all associated resources (implementation)
+ *
+ * This function frees a symbol entry and all resources associated with it.
+ * Note that it does not free the AST node, as that is managed separately.
+ *
+ * @param entry The symbol entry to free
+ */
+void symbol_table_entry_free_impl(SymbolEntry *entry) {
+  if (!entry) {
+    return;
+  }
+
+  // Free the qualified name
+  if (entry->qualified_name) {
+    free(entry->qualified_name);
+  }
+
+  // Free the simple name
+  if (entry->simple_name) {
+    free(entry->simple_name);
+  }
+
+  // Free the file path
+  if (entry->file_path) {
+    free(entry->file_path);
+  }
+
+  // Free the module path
+  if (entry->module_path) {
+    free(entry->module_path);
+  }
+
+  // Free the entry itself
+  free(entry);
+}
+
+/**
  * Extract the simple name from a qualified name
  *
  * Parses a fully qualified name to extract its simple name component.
@@ -99,28 +163,10 @@ SymbolEntry *symbol_table_entry_create_impl(const char *qualified_name, ASTNode 
 }
 
 /**
- * Free a symbol entry
+ * Set the module path for a symbol (internal helper)
  *
- * Releases all memory allocated for a symbol entry, including
- * all copied strings. The associated ASTNode is not freed, as
- * its ownership remains with the caller.
- *
- * @param entry Symbol entry to free
+ * This is an internal helper function used by symbol_entry_set_module_path.
  */
-void symbol_table_entry_free_impl(SymbolEntry *entry) {
-  if (!entry) {
-    return;
-  }
-
-  // Free strings
-  free(entry->qualified_name);
-  free(entry->simple_name);
-  free(entry->file_path);
-  free(entry->module_path);
-
-  // Free the entry itself
-  free(entry);
-}
 
 /**
  * Set the module path for a symbol

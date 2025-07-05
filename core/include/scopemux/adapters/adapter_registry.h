@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCOPEMUX_ADAPTER_REGISTRY_H
+#define SCOPEMUX_ADAPTER_REGISTRY_H
 
 #include "language_adapter.h"
 
@@ -12,3 +13,5 @@ LanguageAdapter *get_adapter(Language lang);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // SCOPEMUX_ADAPTER_REGISTRY_H

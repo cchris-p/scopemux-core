@@ -49,6 +49,8 @@ GlobalSymbolTable *symbol_table_create_impl(size_t initial_capacity) {
   // Initialize fields
   memset(table, 0, sizeof(GlobalSymbolTable));
   table->num_buckets = initial_capacity;
+  table->capacity = initial_capacity; // Set capacity for test compatibility
+  table->count = 0;                   // Initialize count for test compatibility
 
   // Allocate hash buckets
   table->buckets = (SymbolEntry **)calloc(initial_capacity, sizeof(SymbolEntry *));

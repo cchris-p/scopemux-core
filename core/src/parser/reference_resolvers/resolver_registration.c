@@ -9,6 +9,7 @@
 
 #include "scopemux/logging.h"
 #include "scopemux/reference_resolver.h"
+#include "scopemux/reference_resolver_internal.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -34,60 +35,9 @@ extern ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceTy
 /**
  * Find the appropriate resolver for a language
  */
-LanguageResolver *find_language_resolver_impl(ReferenceResolver *resolver, Language language) {
-  if (!resolver) {
-    return NULL;
-  }
-
-  for (size_t i = 0; i < resolver->num_resolvers; i++) {
-    if (resolver->language_resolvers[i].language == language) {
-      return &resolver->language_resolvers[i];
-    }
-  }
-
-  return NULL;
-}
+LanguageResolver *find_language_resolver_impl(ReferenceResolver *resolver, Language language);
 
 /**
  * Initialize built-in resolvers for all supported languages
  */
-bool reference_resolver_init_builtin_impl(ReferenceResolver *resolver) {
-  if (!resolver) {
-    return false;
-  }
-
-  // Register C resolver
-  bool success =
-      reference_resolver_register_impl(resolver, LANG_C, reference_resolver_c, NULL, NULL);
-  if (!success) {
-    log_error("Failed to register C resolver");
-    return false;
-  }
-
-  // Register Python resolver
-  success = reference_resolver_register_impl(resolver, LANG_PYTHON, reference_resolver_python, NULL,
-                                             NULL);
-  if (!success) {
-    log_error("Failed to register Python resolver");
-    return false;
-  }
-
-  // Register JavaScript resolver
-  success = reference_resolver_register_impl(resolver, LANG_JAVASCRIPT,
-                                             reference_resolver_javascript, NULL, NULL);
-  if (!success) {
-    log_error("Failed to register JavaScript resolver");
-    return false;
-  }
-
-  // Register TypeScript resolver
-  success = reference_resolver_register_impl(resolver, LANG_TYPESCRIPT,
-                                             reference_resolver_typescript, NULL, NULL);
-  if (!success) {
-    log_error("Failed to register TypeScript resolver");
-    return false;
-  }
-
-  log_debug("Successfully registered all built-in language resolvers");
-  return true;
-}
+bool reference_resolver_init_builtin_impl(ReferenceResolver *resolver);

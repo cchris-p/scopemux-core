@@ -78,45 +78,44 @@ static void test_python_example(const char *category, const char *filename) {
   if (DEBUG_MODE) {
     fprintf(stderr, "TESTING: Testing Python example: %s/%s\n", category, base_filename);
   }
-  
+
   // 1. Read example Python file
   char *source = read_test_file("python", category, filename);
-  
+
   // If the standard helper function couldn't find the source file, try manual alternatives
   if (!source) {
     char source_path[1024] = "";
-    
+
     // Get current working directory for absolute path conversion
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
       // Try multiple approaches to find the file
       const char *alternatives[] = {
-        "%s/core/tests/examples/python/%s/%s",        // From project root
-        "%s/build/core/tests/examples/python/%s/%s", // From build directory
-        "/home/matrillo/apps/scopemux/core/tests/examples/python/%s/%s",  // Direct path
-        NULL
-      };
-      
+          "%s/core/tests/examples/python/%s/%s",                           // From project root
+          "%s/build/core/tests/examples/python/%s/%s",                     // From build directory
+          "/home/matrillo/apps/scopemux/core/tests/examples/python/%s/%s", // Direct path
+          NULL};
+
       for (int i = 0; alternatives[i] != NULL; i++) {
         char alt_path[1024];
-        
+
         if (i < 2) { // Using cwd
           snprintf(alt_path, sizeof(alt_path), alternatives[i], cwd, category, filename);
         } else { // Direct path
           snprintf(alt_path, sizeof(alt_path), alternatives[i], category, filename);
         }
-        
+
         if (DEBUG_MODE) {
           fprintf(stderr, "TESTING: Trying to read source file from: %s\n", alt_path);
         }
-        
+
         FILE *file = fopen(alt_path, "rb");
         if (file) {
           // Get file size
           fseek(file, 0, SEEK_END);
           long size = ftell(file);
           fseek(file, 0, SEEK_SET);
-          
+
           // Allocate and read
           source = malloc(size + 1);
           if (source) {
@@ -133,7 +132,7 @@ static void test_python_example(const char *category, const char *filename) {
       }
     }
   }
-  
+
   cr_assert(source != NULL, "Failed to read source file: %s/%s", category, filename);
 
   // 2. Parse the Python code into an AST
@@ -149,10 +148,10 @@ static void test_python_example(const char *category, const char *filename) {
   parser_set_mode(ctx, PARSE_AST);
   bool parse_ok = parser_parse_string(ctx, source, strlen(source), filename, LANG_PYTHON);
   cr_assert(parse_ok, "Failed to parse Python code into AST");
-  
+
   ASTNode *ast = ctx->ast_root;
   cr_assert(ast != NULL, "AST root is NULL after parsing");
-  
+
   if (DEBUG_MODE) {
     fprintf(stderr, "TESTING: Successfully parsed AST with %zu children\n", ast->num_children);
   }
@@ -162,27 +161,28 @@ static void test_python_example(const char *category, const char *filename) {
     fprintf(stderr, "TESTING: Loading expected JSON file for %s/%s\n", category, base_filename);
   }
   JsonValue *expected_json = load_expected_json("python", category, base_filename);
-  
+
   // Try to find the expected JSON if standard method fails
   if (!expected_json) {
     // Construct the expected JSON path ourselves and try different options
     char json_path[1024];
-    
+
     // Try with .expected.json extension
-    snprintf(json_path, sizeof(json_path), "/home/matrillo/apps/scopemux/core/tests/examples/python/%s/%s.expected.json", 
+    snprintf(json_path, sizeof(json_path),
+             "/home/matrillo/apps/scopemux/core/tests/examples/python/%s/%s.expected.json",
              category, base_filename);
-    
+
     if (DEBUG_MODE) {
       fprintf(stderr, "TESTING: Trying to load JSON manually from: %s\n", json_path);
     }
-    
+
     // Read and parse the JSON manually
     FILE *json_file = fopen(json_path, "r");
     if (json_file) {
       fseek(json_file, 0, SEEK_END);
       long size = ftell(json_file);
       fseek(json_file, 0, SEEK_SET);
-      
+
       char *json_content = malloc(size + 1);
       if (json_content) {
         fread(json_content, 1, size, json_file);
@@ -193,13 +193,13 @@ static void test_python_example(const char *category, const char *filename) {
       fclose(json_file);
     }
   }
-  
+
   if (!expected_json) {
     if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: No expected JSON found for %s/%s, skipping validation\n", 
-              category, base_filename);
+      fprintf(stderr, "TESTING: No expected JSON found for %s/%s, skipping validation\n", category,
+              base_filename);
     }
-    cr_log_warn("No .expected.json file found for %s/%s, skipping validation", category,
+    log_warning("No .expected.json file found for %s/%s, skipping validation", category,
                 base_filename);
     free(base_filename);
     free(source);
@@ -212,12 +212,12 @@ static void test_python_example(const char *category, const char *filename) {
     fprintf(stderr, "TESTING: Validating AST against expected JSON\n");
   }
   bool json_valid = validate_ast_against_json(ast, expected_json, base_filename);
-  
+
   // TEMPORARY: Bypass JSON validation errors, similar to C tests
   bool valid = true; // Force pass regardless of JSON validation result
-  
+
   if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: JSON Validation result: %s (bypassed for now)\n", 
+    fprintf(stderr, "TESTING: JSON Validation result: %s (bypassed for now)\n",
             json_valid ? "PASS" : "FAIL");
   }
 
@@ -234,10 +234,11 @@ static void test_python_example(const char *category, const char *filename) {
   if (DEBUG_MODE) {
     fprintf(stderr, "TESTING: Test completed for %s/%s\n", category, filename);
   }
-  
+
   // TEMPORARY: Currently bypassing JSON validation errors
-  cr_assert(valid, "Note: AST validation is currently bypassed. Actual JSON validation %s for %s/%s", 
-           json_valid ? "passed" : "failed", category, filename);
+  cr_assert(valid,
+            "Note: AST validation is currently bypassed. Actual JSON validation %s for %s/%s",
+            json_valid ? "passed" : "failed", category, filename);
 }
 
 /**
@@ -248,7 +249,7 @@ static void test_python_example(const char *category, const char *filename) {
 static void process_python_category(const char *category) {
   char path[512];
   DIR *dir = NULL;
-  
+
   if (DEBUG_MODE) {
     fprintf(stderr, "TESTING: Processing Python category: %s\n", category);
   }
@@ -271,12 +272,12 @@ static void process_python_category(const char *category) {
 
   // Try different relative paths
   const char *possible_paths[] = {
-      "../../../core/tests/examples/python/%s",                       // From build/core/tests/
-      "../../core/tests/examples/python/%s",                          // One level up
-      "../core/tests/examples/python/%s",                             // Two levels up
-      "../examples/python/%s",                                        // Original path
-      "./core/tests/examples/python/%s",                              // From project root
-      "/home/matrillo/apps/scopemux/core/tests/examples/python/%s"     // Absolute path
+      "../../../core/tests/examples/python/%s",                    // From build/core/tests/
+      "../../core/tests/examples/python/%s",                       // One level up
+      "../core/tests/examples/python/%s",                          // Two levels up
+      "../examples/python/%s",                                     // Original path
+      "./core/tests/examples/python/%s",                           // From project root
+      "/home/matrillo/apps/scopemux/core/tests/examples/python/%s" // Absolute path
   };
 
   for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
@@ -294,7 +295,7 @@ static void process_python_category(const char *category) {
   }
 
   // Log error if all attempts fail
-  cr_log_warn("Could not open category directory for '%s' after trying multiple paths", category);
+  log_warning("Could not open category directory for '%s' after trying multiple paths", category);
   return;
 
 directory_found:

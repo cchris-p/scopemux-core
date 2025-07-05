@@ -7,13 +7,13 @@
 #include "reference_resolver_private.h"
 
 /* ScopeMux core headers */
+#include "../src/parser/parser_internal.h" // For ASTNODE_MAGIC
 #include "scopemux/ast.h"
 #include "scopemux/language.h"
 #include "scopemux/logging.h"
 #include "scopemux/parser.h"
 #include "scopemux/reference_resolver.h"
 #include "scopemux/symbol_table.h"
-#include "../src/parser/parser_internal.h" // For ASTNODE_MAGIC
 #include "symbol_test_helpers.h" // For test_symbol_table_add
 
 /* Standard library includes */
@@ -77,8 +77,8 @@
  * @return ResolutionStatus success or failure status
  */
 static ResolutionStatus create_and_attach_symbol(ASTNode *node, ReferenceType ref_type,
-                                                  const char *name, GlobalSymbolTable *symbol_table,
-                                                  Language language) {
+                                                 const char *name, GlobalSymbolTable *symbol_table,
+                                                 Language language) {
   if (!node || !symbol_table || !name) {
     log_error("Received NULL parameters in resolver");
     return RESOLUTION_FAILED;
@@ -93,31 +93,31 @@ static ResolutionStatus create_and_attach_symbol(ASTNode *node, ReferenceType re
 
   // Set symbol properties based on language
   const char *file_path = "dummy_file.c"; // Default
-  int line_number = 10; // Default
-  
+  int line_number = 10;                   // Default
+
   // Set language-specific file paths and line numbers
   switch (language) {
-    case LANG_C:
-      file_path = "test.c";
-      line_number = 10;
-      break;
-    case LANG_PYTHON:
-      file_path = "test.py";
-      line_number = 20;
-      break;
-    case LANG_JAVASCRIPT:
-      file_path = "test.js";
-      line_number = 30;
-      break;
-    case LANG_TYPESCRIPT:
-      file_path = "test.ts";
-      line_number = 40;
-      break;
-    default:
-      file_path = "unknown.txt";
-      break;
+  case LANG_C:
+    file_path = "test.c";
+    line_number = 10;
+    break;
+  case LANG_PYTHON:
+    file_path = "test.py";
+    line_number = 20;
+    break;
+  case LANG_JAVASCRIPT:
+    file_path = "test.js";
+    line_number = 30;
+    break;
+  case LANG_TYPESCRIPT:
+    file_path = "test.ts";
+    line_number = 40;
+    break;
+  default:
+    file_path = "unknown.txt";
+    break;
   }
-  
+
   sym->file_path = strdup(file_path);
   sym->line = line_number;
   sym->column = 5;
@@ -222,26 +222,26 @@ GlobalSymbolTable *symbol_table_create(size_t initial_capacity) {
   if (initial_capacity == 0) {
     initial_capacity = 16; // Default capacity
   }
-  
+
   GlobalSymbolTable *table = calloc(1, sizeof(GlobalSymbolTable));
   if (!table) {
     return NULL;
   }
-  
+
   // Allocate the buckets array
   table->buckets = calloc(initial_capacity, sizeof(SymbolEntry *));
   if (!table->buckets) {
     free(table);
     return NULL;
   }
-  
+
   // Initialize the table fields
   table->num_buckets = initial_capacity;
   table->capacity = initial_capacity; // For test compatibility
   table->num_symbols = 0;
   table->count = 0; // For test compatibility
   table->collisions = 0;
-  
+
   return table;
 }
 
@@ -255,7 +255,7 @@ void symbol_table_free(GlobalSymbolTable *table) {
       free(table->buckets);
       table->buckets = NULL;
     }
-    
+
     // Free the table itself
     free(table);
   }
@@ -394,7 +394,8 @@ bool reference_resolver_unregister(ReferenceResolver *resolver, Language languag
 
 // Resolve a node's references
 ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, ASTNode *node,
-                                                 ReferenceType ref_type, const char *name) {
+                                                 ReferenceType ref_type, const char *name,
+                                                 Language language) {
   ReferenceResolverImpl *impl = (ReferenceResolverImpl *)resolver;
 
   // Basic validation

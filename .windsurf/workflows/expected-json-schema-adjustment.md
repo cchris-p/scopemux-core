@@ -6,6 +6,12 @@ description: Adjust .expected.json test goldens and ensure compliance with the A
 
 This workflow describes the process for updating [.expected.json](cci:7://file:///home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c.expected.json:0:0-0:0) test goldens to comply with the canonical AST/CST schema defined in [docs/ast_cst_schema.md](cci:7://file:///home/matrillo/apps/scopemux/docs/ast_cst_schema.md:0:0-0:0). It covers both reviewing and updating the schema, and ensuring the Python golden generator is correct. This is the authoritative process for all supported languages.
 
+! Most Important Note: UNDER ANY CIRCUMSTANCES, DO NOT EDIT THE `.expected.json` file directly! It must be generated via the script. !
+
+! Second Most Important note: Hardcoded adjustments to "force" the ast builder to match the .expected.json are not allowed by any means !
+
+GOAL: Apply a fix to the parser generation script that will output the correct structure for the tests that align with the canonical schema established. The solution must be a general solution, not a hardcoded one!
+
 ---
 
 ## 1. Examine the Current .expected.json Output

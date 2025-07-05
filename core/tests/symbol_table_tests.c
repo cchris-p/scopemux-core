@@ -92,17 +92,3 @@ Test(symbol_table_delegation, interfile_lookup, .init = setup_symbol_table,
   ast_node_free(node1);
   ast_node_free(node2);
 }
-
-// Test main entry point
-int main(int argc, char *argv[]) {
-  // Initialize Criterion test framework
-  struct criterion_test_set *tests = criterion_initialize();
-
-  // Run tests
-  int result = criterion_run_all_tests(tests);
-
-  // Clean up
-  criterion_finalize(tests);
-
-  return result;
-}

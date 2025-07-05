@@ -1,18 +1,28 @@
 /**
- * @file symbol_registration.c
- * @brief Symbol registration functionality for ProjectContext
+ * @file project_symbol_extraction.c
+ * @brief Symbol extraction functionality for ProjectContext
  *
- * Handles registration of symbols from parsed files into the global symbol table.
+ * Handles extraction of symbols from parsed files into the global symbol table.
  */
 
 #include "project_context_internal.h"
+#include "scopemux/ast.h"
 #include "scopemux/logging.h"
 #include "scopemux/parser.h"
 #include "scopemux/project_context.h"
+#include "scopemux/symbol.h"
+#include "scopemux/symbol_collection.h"
 #include "scopemux/symbol_table.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// --- Forward declarations for missing headers ---
+// TODO: Move these to appropriate headers when available.
+static void extract_symbols_from_ast(ASTNode *node, void *symbols);
+// symbol_collection_add is now implemented in symbol_collection.c
+void symbol_table_register_from_ast(GlobalSymbolTable *table, ASTNode *root, const char *filepath);
 
 /**
  * Register symbols from a parsed file into the global symbol table
@@ -94,38 +104,38 @@ static void extract_symbols_from_ast(ASTNode *node, void *symbols) {
 
   // Process this node based on its type
   switch (node->type) {
-  case NODE_TYPE_FUNCTION:
-  case NODE_TYPE_METHOD:
+  case NODE_FUNCTION:
+  case NODE_METHOD:
     // Add function/method symbol
     if (node->name) {
       symbol_collection_add(symbols, node->name, SYMBOL_FUNCTION, node);
     }
     break;
 
-  case NODE_TYPE_CLASS:
-  case NODE_TYPE_STRUCT:
-  case NODE_TYPE_INTERFACE:
+  case NODE_CLASS:
+  case NODE_STRUCT:
+  case NODE_INTERFACE:
     // Add class/struct/interface symbol
     if (node->name) {
       symbol_collection_add(symbols, node->name, SYMBOL_TYPE, node);
     }
     break;
 
-  case NODE_TYPE_VARIABLE:
+  case NODE_VARIABLE:
     // Add variable symbol
     if (node->name) {
       symbol_collection_add(symbols, node->name, SYMBOL_VARIABLE, node);
     }
     break;
 
-  case NODE_TYPE_ENUM:
+  case NODE_ENUM:
     // Add enum symbol
     if (node->name) {
       symbol_collection_add(symbols, node->name, SYMBOL_ENUM, node);
     }
     break;
 
-  case NODE_TYPE_NAMESPACE:
+  case NODE_NAMESPACE:
     // Add namespace symbol
     if (node->name) {
       symbol_collection_add(symbols, node->name, SYMBOL_NAMESPACE, node);

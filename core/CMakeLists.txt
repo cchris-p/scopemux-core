@@ -48,6 +48,8 @@ include_directories(
     ${TS_TS_INCLUDE_DIR}
     # Project headers
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    # Add source directory to include path
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     # Python headers
     ${Python_INCLUDE_DIRS}
     ${pybind11_INCLUDE_DIRS}
@@ -106,13 +108,23 @@ add_library(parser_core STATIC
     src/parser/memory_tracking.c
     src/parser/parser_context.c
     src/parser/query_processing.c
+    # Project context components
+    src/parser/project_context/project_context_facade.c
+    src/parser/project_context/project_utils.c
+    src/parser/project_context/project_symbol_extraction.c
+    src/parser/project_context/symbol_management.c
+    src/parser/project_context/symbol_collection.c
     # Tree-sitter integration
-
     src/parser/ts_init.c
     src/parser/ts_ast_builder.c
     src/parser/ts_cst_builder.c
     src/parser/ts_query_processor.c
     src/parser/query_manager.c
+    src/parser/reference_resolvers/language_resolvers.c
+    # Language compliance system
+    src/ast_compliance.c
+    src/parser/lang/c_compliance.c
+    src/parser/lang/lang_compliance_registry.c
     # Common files
     src/common/memory_management.c
     src/common/error_handling.c
@@ -120,20 +132,27 @@ add_library(parser_core STATIC
     # Memory debugging utilities
     src/utils/memory_debug.c
     src/utils/ts_resource_manager.c
-    # MISSING symbol implementations
+    # Configuration
     src/config/node_type_mapping_loader.c
-
+    # Processors
     src/processors/docstring_processor.c
     src/processors/ast_post_processor.c
     src/processors/test_processor.c
 )
 
-set_target_properties(parser_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(parser_core PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    # Disable dependency file generation to avoid directory-related errors
+    SKIP_DEPENDENCY_GENERATION TRUE
+)
 
 # Create a separate object library for test_processor.c to ensure it gets linked properly
 add_library(test_processor_lib OBJECT
     src/processors/test_processor.c
 )
+
+# Disable dependency file generation to avoid directory-related errors
+set_target_properties(test_processor_lib PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE)
 
 set(CONTEXT_ENGINE_SOURCES
     src/context_engine/compressor.c
@@ -191,7 +210,7 @@ target_include_directories(scopemux_core PRIVATE
 target_link_libraries(scopemux_core PRIVATE
     ${TREE_SITTER_LIBS}
     -ldl # Needed for dlopen/dlsym functions
-    parser_core # Link with the static library directly
+    parser_core # Link with the static library directly so it is built and linked
 )
 
 # Add explicit linker flags to force export of symbols and include whole archive for parser_core

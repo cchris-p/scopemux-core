@@ -1,5 +1,5 @@
 /**
- * @file symbol_registration.c
+ * @file symbol_table_registration.c
  * @brief Symbol registration and hash utility functions
  *
  * Implements functionality for registering symbols in the global table
@@ -53,8 +53,8 @@ uint32_t hash_string(const char *str, size_t table_size) {
  * @return The created entry or NULL on failure
  */
 SymbolEntry *symbol_table_register_impl(GlobalSymbolTable *table, const char *qualified_name,
-                                   ASTNode *node, const char *file_path, SymbolScope scope,
-                                   Language language) {
+                                        ASTNode *node, const char *file_path, SymbolScope scope,
+                                        Language language) {
   if (!table || !qualified_name || !node || !file_path) {
     return NULL;
   }
@@ -72,7 +72,8 @@ SymbolEntry *symbol_table_register_impl(GlobalSymbolTable *table, const char *qu
   }
 
   // Create a new symbol entry
-  SymbolEntry *entry = symbol_table_entry_create_impl(qualified_name, node, file_path, scope, language);
+  SymbolEntry *entry =
+      symbol_table_entry_create_impl(qualified_name, node, file_path, scope, language);
   if (!entry) {
     log_error("Failed to create symbol entry for %s", qualified_name);
     return NULL;
@@ -83,6 +84,7 @@ SymbolEntry *symbol_table_register_impl(GlobalSymbolTable *table, const char *qu
   entry->next = table->buckets[hash];
   table->buckets[hash] = entry;
   table->num_symbols++;
+  table->count++; // Increment count for test compatibility
 
   log_debug("Registered symbol: %s (%s)", qualified_name, file_path);
 
@@ -93,6 +95,50 @@ SymbolEntry *symbol_table_register_impl(GlobalSymbolTable *table, const char *qu
   }
 
   return entry;
+}
+
+/**
+ * Add a pre-created symbol entry to the symbol table (implementation)
+ *
+ * This function adds a pre-created SymbolEntry to the global symbol table.
+ * The entry must have been created with symbol_entry_create or equivalent.
+ * The function handles hash calculation and collision tracking.
+ *
+ * @param table Symbol table to add the entry to
+ * @param entry Pre-created symbol entry (ownership transferred to table)
+ * @return true on success, false on failure
+ */
+bool symbol_table_add_impl(GlobalSymbolTable *table, SymbolEntry *entry) {
+  if (!table || !entry || !entry->qualified_name) {
+    return false;
+  }
+
+  // Check if the symbol already exists
+  SymbolEntry *existing = symbol_table_lookup_impl(table, entry->qualified_name);
+  if (existing) {
+    // Symbol already exists - this could be a declaration/definition pair
+    // For now, track the collision and continue with registration
+    table->collisions++;
+
+    log_debug("Symbol collision detected during add: %s (existing in %s, new in %s)",
+              entry->qualified_name, existing->file_path, entry->file_path);
+  }
+
+  // Add to hash table
+  uint32_t hash = hash_string(entry->qualified_name, table->num_buckets);
+  entry->next = table->buckets[hash];
+  table->buckets[hash] = entry;
+  table->num_symbols++;
+
+  log_debug("Added symbol: %s (%s)", entry->qualified_name, entry->file_path);
+
+  // Check if rehashing is needed
+  if (symbol_table_should_rehash(table)) {
+    log_debug("Rehashing symbol table due to high load factor");
+    symbol_table_rehash(table, table->num_buckets * 2);
+  }
+
+  return true;
 }
 
 /**
@@ -110,8 +156,8 @@ SymbolEntry *symbol_table_register_impl(GlobalSymbolTable *table, const char *qu
  * @return Number of symbols registered
  */
 size_t symbol_table_register_from_ast_impl(GlobalSymbolTable *table, ASTNode *node,
-                                      const char *current_scope, const char *file_path,
-                                      Language language) {
+                                           const char *current_scope, const char *file_path,
+                                           Language language) {
   if (!table || !node || !file_path) {
     return 0;
   }
@@ -205,41 +251,11 @@ size_t symbol_table_register_from_ast_impl(GlobalSymbolTable *table, ASTNode *no
   // Recursively process children
   for (size_t i = 0; i < node->num_children; i++) {
     count += symbol_table_register_from_ast_impl(table, node->children[i], current_scope, file_path,
-                                            language);
+                                                 language);
   }
 
   return count;
 }
 
-/**
- * Add a symbol entry directly to the symbol table
- *
- * This function adds a pre-created symbol entry to the table.
- * It's useful when creating entries manually or when
- * migrating symbols from another source.
- *
- * @param table Symbol table to add to
- * @param entry The symbol entry to add (ownership is transferred)
- * @return true if added successfully, false otherwise
- */
-bool symbol_table_add_impl(GlobalSymbolTable *table, SymbolEntry *entry) {
-  if (!table || !entry || !entry->qualified_name) {
-    return false;
-  }
-
-  // Add to hash table
-  uint32_t hash = hash_string(entry->qualified_name, table->num_buckets);
-  entry->next = table->buckets[hash];
-  table->buckets[hash] = entry;
-  table->num_symbols++;
-
-  log_debug("Added symbol to table: %s", entry->qualified_name);
-
-  // Check if rehashing is needed
-  if (symbol_table_should_rehash_impl(table)) {
-    log_debug("Rehashing symbol table due to high load factor");
-    symbol_table_rehash_impl(table, table->num_buckets * 2);
-  }
-
-  return true;
-}
+// NOTE: The public API function symbol_table_add is defined in symbol_table.c
+// and delegates to symbol_table_add_impl defined in this file.

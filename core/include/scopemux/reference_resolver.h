@@ -119,9 +119,9 @@ typedef struct ReferenceResolver {
  * @brief Registry of language-specific reference resolvers
  */
 typedef struct {
-  ReferenceResolver **resolvers; ///< Array of language-specific resolvers
-  size_t num_resolvers;          ///< Number of registered resolvers
-  size_t capacity;               ///< Capacity of resolvers array
+  LanguageResolver **resolvers; ///< Array of language-specific resolvers
+  size_t num_resolvers;         ///< Number of registered resolvers
+  size_t capacity;              ///< Capacity of resolvers array
 } ResolverRegistry;
 
 /**
@@ -132,109 +132,28 @@ typedef struct {
  */
 ResolverRegistry *resolver_registry_create(size_t initial_capacity);
 
-/**
- * @brief Free all resources associated with a resolver registry
- *
- * @param registry Registry to free
- */
 void resolver_registry_free(ResolverRegistry *registry);
 
-/**
- * @brief Register a language-specific resolver
- *
- * @param registry Resolver registry
- * @param resolver Reference resolver to register (will be copied)
- * @return bool True on success, false on failure
- */
-bool resolver_registry_add(ResolverRegistry *registry, const ReferenceResolver *resolver);
+bool resolver_registry_add(ResolverRegistry *registry, const LanguageResolver *resolver);
 
-/**
- * @brief Get a reference resolver for a specific language
- *
- * @param registry Resolver registry
- * @param language Language to get resolver for
- * @return const ReferenceResolver* Matching resolver or NULL if not found
- */
-const ReferenceResolver *resolver_registry_get(const ResolverRegistry *registry, Language language);
+const LanguageResolver *resolver_registry_get(const ResolverRegistry *registry, Language language);
 
-/**
- * @brief Initialize the built-in reference resolvers
- *
- * This function registers the default resolvers for all supported languages.
- *
- * @param registry Resolver registry
- * @return bool True if all built-in resolvers were registered successfully
- */
 bool resolver_registry_init_defaults(ResolverRegistry *registry);
 
-/**
- * @brief Resolve all cross-file references in a parser context
- *
- * This function uses the appropriate language-specific resolver to
- * establish relationships between ASTNodes across different files.
- *
- * @param ctx Parser context to resolve references for
- * @param project Project context
- * @param resolver Reference resolver
- * @return bool True if all references were resolved successfully
- */
 bool resolve_cross_file_references(ParserContext *ctx, ProjectContext *project,
                                    ReferenceResolver *resolver);
 
-/**
- * @brief Add a reference between two ASTNodes with metadata
- *
- * @param from Source node
- * @param to Target node
- * @param ref_type Type of reference
- * @return bool True on success, false on failure
- */
 bool ast_node_add_reference_with_metadata(ASTNode *from, ASTNode *to, ReferenceType ref_type);
 
-/**
- * @brief Get reference metadata for a relationship between two nodes
- *
- * @param from Source node
- * @param to Target node
- * @return ReferenceMetadata* Metadata or NULL if no relationship exists
- */
 const ReferenceMetadata *ast_node_get_reference_metadata(const ASTNode *from, const ASTNode *to);
 
-/**
- * @brief Create a new reference resolver
- *
- * @param symbol_table The global symbol table to use for resolution
- * @return A newly allocated reference resolver, or NULL on failure
- */
 ReferenceResolver *reference_resolver_create(GlobalSymbolTable *symbol_table);
 
-/**
- * @brief Free all resources associated with a reference resolver
- *
- * @param resolver The reference resolver to free
- */
 void reference_resolver_free(ReferenceResolver *resolver);
 
-/**
- * @brief Register a language-specific resolver
- *
- * @param resolver The reference resolver
- * @param language The language type to register for
- * @param resolver_func The function to call for resolving references
- * @param resolver_data Optional data for the resolver function
- * @param cleanup_func Optional function to clean up resolver data
- * @return true if registration succeeded, false otherwise
- */
-bool reference_resolver_register(ReferenceResolver *resolver, Language language,
-                                 ResolverFunction resolver_func, void *resolver_data,
-                                 ResolverCleanupFunction cleanup_func);
+bool reference_resolver_register(Language language, ResolverFunction resolver_func,
+                                 void *resolver_data, ResolverCleanupFunction cleanup_func);
 
-/**
- * @brief Initialize built-in resolvers for all supported languages
- *
- * @param resolver The reference resolver to initialize
- * @return True if all built-in resolvers were successfully registered
- */
 bool reference_resolver_init_builtin(ReferenceResolver *resolver);
 
 /**
@@ -244,11 +163,12 @@ bool reference_resolver_init_builtin(ReferenceResolver *resolver);
  * @param node The AST node containing the reference
  * @param ref_type The type of reference
  * @param qualified_name The qualified name to resolve
+ * @param language The language of the reference
  * @return Resolution status
  */
 ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, ASTNode *node,
-                                                 ReferenceType ref_type,
-                                                 const char *qualified_name);
+                                                 ReferenceType ref_type, const char *qualified_name,
+                                                 Language language);
 
 /**
  * @brief Resolve all references in a file

@@ -19,6 +19,7 @@
 #ifndef SCOPEMUX_PROJECT_CONTEXT_H
 #define SCOPEMUX_PROJECT_CONTEXT_H
 
+#include "../src/parser/parser_context.h"
 #include "parser.h"
 #include "symbol_table.h"
 #include <stdbool.h>
@@ -192,6 +193,23 @@ size_t project_find_references(const ProjectContext *project, const ASTNode *nod
                                const ASTNode **out_references, size_t max_references);
 
 /**
+ * @brief Get the number of files in the project
+ *
+ * @param project Project context
+ * @return size_t Number of files
+ */
+size_t project_context_get_file_count(const ProjectContext *project);
+
+/**
+ * @brief Get a file context by index
+ *
+ * @param project Project context
+ * @param index File index
+ * @return ParserContext* File context or NULL if not found
+ */
+ParserContext *project_context_get_file_by_index(const ProjectContext *project, size_t index);
+
+/**
  * @brief Get project statistics
  *
  * @param project Project context
@@ -205,21 +223,57 @@ void project_get_stats(const ProjectContext *project, size_t *out_total_files,
                        size_t *out_unresolved);
 
 /**
- * @brief Set an error message in the project context
+ * @brief Add a file to the project context
  *
  * @param project Project context
- * @param code Error code
- * @param message Error message (will be copied)
+ * @param filepath Path to the file
+ * @param language Language of the file
+ * @return bool True if file was added successfully, false otherwise
  */
-void project_set_error(ProjectContext *project, int code, const char *message);
+bool project_context_add_file(ProjectContext *project, const char *filepath, Language language);
 
 /**
- * @brief Get the last error message
+ * @brief Remove a file from the project context
  *
  * @param project Project context
- * @param out_code Output parameter for error code
- * @return const char* Error message or NULL if no error
+ * @param filepath Path to the file
+ * @return bool True if file was removed successfully, false otherwise
  */
-const char *project_get_error(const ProjectContext *project, int *out_code);
+bool project_context_remove_file(ProjectContext *project, const char *filepath);
 
+/**
+ * @brief Add a dependency between two files
+ *
+ * @param project Project context
+ * @param source_file Source file path
+ * @param target_file Target file path
+ * @return bool True if dependency was added successfully, false otherwise
+ */
+bool project_context_add_dependency(ProjectContext *project, const char *source_file,
+                                    const char *target_file);
+
+/**
+ * @brief Get dependencies for a file
+ *
+ * @param project Project context
+ * @param filepath Path to the file
+ * @param out_dependencies Output array for dependencies
+ * @return size_t Number of dependencies
+ */
+size_t project_context_get_dependencies(ProjectContext *project, const char *filepath,
+                                        const char ***out_dependencies);
+
+/**
+ * @brief Extract symbols from a parser context into the project's global symbol table
+ *
+ * @param project Project context
+ * @param parser Parser context containing AST nodes
+ * @param symbol_table Global symbol table
+ * @return bool True if symbols were extracted successfully, false otherwise
+ */
+bool project_context_extract_symbols(ProjectContext *project, ParserContext *parser,
+                                     GlobalSymbolTable *symbol_table);
+
+bool extract_symbols_from_parser_context(ProjectContext *project, ParserContext *ctx,
+                                         void *symbols);
 #endif /* SCOPEMUX_PROJECT_CONTEXT_H */

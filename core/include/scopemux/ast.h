@@ -1,5 +1,5 @@
-#include "scopemux/language.h"
-#include "scopemux/source_range.h"
+#include "language.h"
+#include "source_range.h"
 /**
  * @file ast.h
  * @brief Abstract Syntax Tree (AST) definitions for ScopeMux

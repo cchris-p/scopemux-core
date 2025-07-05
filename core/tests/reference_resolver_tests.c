@@ -125,7 +125,7 @@ Test(reference_resolver_delegation, resolve_reference_delegate, .init = setup_ma
 
   // Resolve via public API (should delegate to implementation)
   ResolutionStatus status =
-      reference_resolver_resolve_node(resolver, node, REF_TYPE_FUNCTION, "test_symbol");
+      reference_resolver_resolve_node(resolver, node, REF_TYPE_FUNCTION, "test_symbol", LANG_C);
 
   // For test purposes, manually set reference data that would normally be set by resolver
   ast_node_set_reference(node, REF_TYPE_FUNCTION, sym);
