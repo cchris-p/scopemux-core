@@ -145,15 +145,15 @@ def process_file(file_path, args):
     language = None
 
     if ext in [".c", ".h"]:
-        language = scopemux_core.Language.C
+        language = scopemux_core.LANG_C
     elif ext in [".cpp", ".hpp"]:
-        language = scopemux_core.Language.CPP
+        language = scopemux_core.LANG_CPP
     elif ext == ".py":
-        language = scopemux_core.Language.PYTHON
+        language = scopemux_core.LANG_PYTHON
     elif ext == ".js":
-        language = scopemux_core.Language.JAVASCRIPT
+        language = scopemux_core.LANG_JAVASCRIPT
     elif ext == ".ts":
-        language = scopemux_core.Language.TYPESCRIPT
+        language = scopemux_core.LANG_TYPESCRIPT
     else:
         print(f"Unsupported file extension: {ext}")
         return

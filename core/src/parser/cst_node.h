@@ -11,6 +11,16 @@
 
 #include "../../include/scopemux/parser.h"
 
+// Full definition of CSTNode
+struct CSTNode {
+  const char *type;
+  char *content;
+  SourceRange range;
+  struct CSTNode **children;
+  unsigned int children_count;
+  int is_freed; // DEBUG: Set to 1 when node is freed
+};
+
 /**
  * @brief Create a new CST node
  *

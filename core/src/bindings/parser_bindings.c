@@ -19,6 +19,7 @@
 #include <string.h>
 
 /* ScopeMux header includes */
+#include "../../core/src/parser/cst_node.h"
 #include "../../include/scopemux/ast.h"
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/python_bindings.h"

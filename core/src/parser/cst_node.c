@@ -6,9 +6,10 @@
  * and memory management to ensure proper handling of concrete syntax trees.
  */
 
-#include "cst_node.h"
-#include "memory_tracking.h"
-#include "parser_internal.h"
+#include "../../core/src/parser/cst_node.h"
+#include "../../core/src/parser/memory_tracking.h"
+#include "../../core/src/parser/parser_internal.h"
+#include <assert.h>
 
 /**
  * Creates a new CST node with the specified type and content.
@@ -32,9 +33,13 @@ CSTNode *cst_node_new(const char *type, char *content) {
   memset(&node->range, 0, sizeof(SourceRange));
   node->children = NULL;
   node->children_count = 0;
+  node->is_freed = 0; // DEBUG: Not freed yet
 
   // Register the node for tracking
   register_cst_node(node, type);
+
+  log_debug("[CSTNode NEW] node=%p type=%s content=%p", (void *)node, SAFE_STR(type),
+            (void *)content);
 
   return node;
 }
@@ -112,6 +117,16 @@ void cst_node_free(CSTNode *node) {
     return;
   }
 
+  log_debug("[CSTNode FREE] node=%p type=%s content=%p is_freed=%d", (void *)node,
+            SAFE_STR(node->type), (void *)node->content, node->is_freed);
+
+  // DEBUG: Assert not already freed
+  if (node->is_freed) {
+    log_error("[CSTNode DOUBLE FREE DETECTED] node=%p type=%s", (void *)node, SAFE_STR(node->type));
+    assert(0 && "Double free detected for CSTNode");
+  }
+  node->is_freed = 1;
+
   // Track this free operation
   mark_cst_node_freed(node);
 
@@ -145,6 +160,8 @@ bool cst_node_add_child(CSTNode *parent, CSTNode *child) {
     log_error("Cannot add child to CST node: %s", !parent ? "parent is NULL" : "child is NULL");
     return false;
   }
+
+  log_debug("[CSTNode ADD_CHILD] parent=%p child=%p", (void *)parent, (void *)child);
 
   // Allocate or reallocate the children array
   unsigned int new_count = parent->children_count + 1;

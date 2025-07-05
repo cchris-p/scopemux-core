@@ -11,12 +11,11 @@
  */
 
 #include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/parser.h"
+#include "cst_node.h"
 #include <setjmp.h>
 #include <signal.h>
 #include <stdlib.h>
-
-#include "../../core/include/scopemux/logging.h"
-#include "../../core/include/scopemux/parser.h"
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <stdio.h>

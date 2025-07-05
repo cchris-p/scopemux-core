@@ -38,16 +38,9 @@ typedef struct QueryManager QueryManager;
 
 typedef enum { PARSE_AST, PARSE_CST, PARSE_BOTH } ParseMode;
 
-/**
- * @brief Represents a generic node in the Concrete Syntax Tree (CST).
- */
-typedef struct CSTNode {
-  const char *type; ///< The syntax type of the node (e.g., "function_definition", "identifier").
-  char *content;    ///< The source code content of the node.
-  SourceRange range;
-  struct CSTNode **children; ///< Array of child nodes.
-  unsigned int children_count;
-} CSTNode;
+// Forward declaration of CSTNode
+struct CSTNode;
+typedef struct CSTNode CSTNode;
 
 // CST Node lifecycle functions
 CSTNode *cst_node_new(const char *type, char *content);
