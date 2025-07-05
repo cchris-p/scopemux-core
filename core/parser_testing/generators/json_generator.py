@@ -72,17 +72,11 @@ class JSONGenerator:
         if self._scopemux_core is not None:
             return self._scopemux_core
 
-        # Try multiple possible build paths
+        # Try only the new build/core path
         possible_paths = [
-            # Standard build path
             os.path.abspath(
-                os.path.join(
-                    os.path.dirname(__file__), "../../../build/lib.linux-x86_64-3.10"
-                )
+                os.path.join(os.path.dirname(__file__), "../../../build/core")
             ),
-            # Direct core path for development
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../core")),
-            # Site-packages path for installed module
             None,  # None will use the default Python path
         ]
 
@@ -134,11 +128,7 @@ class JSONGenerator:
         )
         possible_so_paths = [
             os.path.join(
-                project_root, "core/scopemux_core.cpython-310-x86_64-linux-gnu.so"
-            ),
-            os.path.join(
-                project_root,
-                "build/lib.linux-x86_64-3.10/scopemux_core.cpython-310-x86_64-linux-gnu.so",
+                project_root, "build/core/scopemux_core.cpython-310-x86_64-linux-gnu.so"
             ),
         ]
 

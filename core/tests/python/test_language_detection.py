@@ -11,7 +11,9 @@ from pathlib import Path
 
 # Add the project root directory to sys.path to import scopemux_core
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
+core_build_path = os.path.join(project_root, "build/core")
+if core_build_path not in sys.path:
+    sys.path.insert(0, core_build_path)
 
 try:
     import scopemux_core as sm

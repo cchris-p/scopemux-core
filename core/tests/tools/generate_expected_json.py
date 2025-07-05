@@ -36,7 +36,6 @@ core_build_path = os.path.join(project_root, "build/core")
 
 # Ensure build/core is first in sys.path
 if core_build_path in sys.path:
-    # Remove it first to ensure it will be inserted at the beginning
     sys.path.remove(core_build_path)
 sys.path.insert(0, core_build_path)
 
