@@ -57,8 +57,14 @@ void symbol_collection_add(void *symbols, const char *name, int symbol_type, AST
   // or table of some kind.
 
   // For now, we'll implement a basic version that assumes 'symbols' is a
-  // GlobalSymbolTable pointer
+  // Cast the void pointer to the correct type
   GlobalSymbolTable *table = (GlobalSymbolTable *)symbols;
+
+  // Validate the symbol table
+  if (!table) {
+    log_error("symbol_collection_add: Invalid symbol table pointer");
+    return;
+  }
 
   // Get the file path from the node
   const char *file_path = "unknown";

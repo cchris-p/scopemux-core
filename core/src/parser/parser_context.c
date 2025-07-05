@@ -87,7 +87,11 @@ void parser_clear(ParserContext *ctx) {
 
   // Free the source code
   if (ctx->source_code) {
+    log_debug("parser_clear: freeing ctx->source_code pointer=%p, preview='%.20s%s'",
+              (void *)ctx->source_code, ctx->source_code,
+              strlen(ctx->source_code) > 20 ? "..." : "");
     safe_free_field((void **)&ctx->source_code, "source_code", &encountered_error);
+    log_debug("parser_clear: after free, ctx->source_code pointer=%p", (void *)ctx->source_code);
   }
 
   // Free the filename

@@ -19,6 +19,9 @@
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <dlfcn.h>
+#ifndef RTLD_DEFAULT
+#define RTLD_DEFAULT ((void *)0)
+#endif
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -125,58 +128,18 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
   fprintf(stderr, "\n***** PARSER INITIALIZATION DIAGNOSTIC *****\n");
   fprintf(stderr, "Test executable pid: %d\n", (int)getpid());
 
-// Explicitly load the Tree-sitter shared libraries before using dlsym
+// We have static declarations for the Tree-sitter language functions
+// Instead of trying to load shared libraries that don't exist, use the statically linked functions
 #if defined(__GNUC__)
-  // Path to the shared libraries
-  const char *lib_path = "/home/matrillo/apps/scopemux/build/tree-sitter-libs";
+  // Log that we're using statically linked Tree-sitter libraries
+  fprintf(stderr, "Using statically linked Tree-sitter libraries\n");
 
-  // Construct full paths to each shared library
-  char c_lib_path[512], cpp_lib_path[512], python_lib_path[512], js_lib_path[512], ts_lib_path[512];
-  snprintf(c_lib_path, sizeof(c_lib_path), "%s/libtree-sitter-c.so", lib_path);
-  snprintf(cpp_lib_path, sizeof(cpp_lib_path), "%s/libtree-sitter-cpp.so", lib_path);
-  snprintf(python_lib_path, sizeof(python_lib_path), "%s/libtree-sitter-python.so", lib_path);
-  snprintf(js_lib_path, sizeof(js_lib_path), "%s/libtree-sitter-javascript.so", lib_path);
-  snprintf(ts_lib_path, sizeof(ts_lib_path), "%s/libtree-sitter-typescript.so", lib_path);
-
-  // Open each shared library with RTLD_GLOBAL to make symbols available to dlsym(NULL, ...)
-  fprintf(stderr, "Loading Tree-sitter shared libraries from: %s\n", lib_path);
-
-  void *c_handle = dlopen(c_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!c_handle)
-    fprintf(stderr, "  Failed to load %s: %s\n", c_lib_path, dlerror());
-  else
-    fprintf(stderr, "  Loaded %s successfully\n", c_lib_path);
-
-  void *cpp_handle = dlopen(cpp_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!cpp_handle)
-    fprintf(stderr, "  Failed to load %s: %s\n", cpp_lib_path, dlerror());
-  else
-    fprintf(stderr, "  Loaded %s successfully\n", cpp_lib_path);
-
-  void *python_handle = dlopen(python_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!python_handle)
-    fprintf(stderr, "  Failed to load %s: %s\n", python_lib_path, dlerror());
-  else
-    fprintf(stderr, "  Loaded %s successfully\n", python_lib_path);
-
-  void *js_handle = dlopen(js_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!js_handle)
-    fprintf(stderr, "  Failed to load %s: %s\n", js_lib_path, dlerror());
-  else
-    fprintf(stderr, "  Loaded %s successfully\n", js_lib_path);
-
-  void *ts_handle = dlopen(ts_lib_path, RTLD_LAZY | RTLD_GLOBAL);
-  if (!ts_handle)
-    fprintf(stderr, "  Failed to load %s: %s\n", ts_lib_path, dlerror());
-  else
-    fprintf(stderr, "  Loaded %s successfully\n", ts_lib_path);
-
-  // Now check symbol resolution after loading the libraries
-  void *c_sym = dlsym(NULL, "tree_sitter_c");
-  void *cpp_sym = dlsym(NULL, "tree_sitter_cpp");
-  void *python_sym = dlsym(NULL, "tree_sitter_python");
-  void *js_sym = dlsym(NULL, "tree_sitter_javascript");
-  void *ts_sym = dlsym(NULL, "tree_sitter_typescript");
+  // Get function pointers to the statically linked functions
+  void *c_sym = (void *)&tree_sitter_c;
+  void *cpp_sym = (void *)&tree_sitter_cpp;
+  void *python_sym = (void *)&tree_sitter_python;
+  void *js_sym = (void *)&tree_sitter_javascript;
+  void *ts_sym = (void *)&tree_sitter_typescript;
 
   fprintf(stderr, "SYMBOL RESOLUTION CHECK:\n");
   fprintf(stderr, "  dlsym(tree_sitter_c): %p\n", c_sym);

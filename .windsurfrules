@@ -1,7 +1,5 @@
 # Most Important Notes
 
-* ALWAYS use grep when searching for files, not the search tool.
-
 * Do not write "you" or "your" in the code. Write comments with a standard documentation tone. In the comments, note useful information, caveats, and todo/action items. If you see commented code that do not follow this best practice, update them at the spot. Also clarify vague messages whenever possible.
 
 * Build the python bindings with this shell script ran from the project root directory: `build_all_and_pybind.sh `
@@ -13,12 +11,9 @@ Best Practice in C
 - Always include the header that defines the typedef if you want to use the typedef name in function signatures or struct fields.
 
 Here are the shell scripts
-- run_cpp_tests.sh
-- run_c_tests.sh
-- run_js_tests.sh
+- run_<some_programming_language>_tests.sh
 - run_misc_tests.sh <- Tests basic functionality for parsing
-- run_python_tests.sh
-- run_ts_tests.sh
+- run_interfile_tests.sh
 
 # 🔍 Tree-sitter Parsing in ScopeMux
 

@@ -21,43 +21,30 @@
 # ============================================================================
 
 # Find PkgConfig for locating Criterion via .pc file
-find_package(PkgConfig REQUIRED)
-# Use pkg-config to find Criterion
-pkg_check_modules(Criterion REQUIRED criterion)
+# find_package(PkgConfig REQUIRED)
+# # Use pkg-config to find Criterion
+# pkg_check_modules(Criterion REQUIRED criterion)
 
 # Add compiler flags to suppress warnings in test code
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(
-        -Wno-strict-prototypes
-        -Wno-missing-prototypes
-        -Wno-pedantic
-        -Wno-unused-parameter
-        -Wno-unused-function
-        -Wno-unused-variable
-        -Wno-incompatible-pointer-types
-    )
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Wmissing-prototypes")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit-function-declaration -Wformat-security")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpointer-arith -Wunused-variable")
 
-    # Specific flags for vendor code
-    set_source_files_properties(
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/scanner.c
-        PROPERTIES COMPILE_FLAGS "-Wno-unused-value"
-    )
+    # Memory safety flags (enable in debug builds)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=undefined")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -g")
+        message(STATUS "Memory sanitizers enabled for debug build")
+    endif()
+endif()
 
-    # Disable dependency generation for vendor files to avoid filesystem errors
-    set_source_files_properties(
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/parser.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/scanner.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-javascript/src/parser.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-javascript/src/scanner.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-c/src/parser.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-cpp/src/parser.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-cpp/src/scanner.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/tsx/src/parser.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/tsx/src/scanner.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/typescript/src/parser.c
-        ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/typescript/src/scanner.c
-        PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE
-    )
+# Option to enable memory debugging features
+option(SCOPEMUX_DEBUG_MEMORY "Enable memory debugging and tracking" OFF)
+if(SCOPEMUX_DEBUG_MEMORY)
+    add_definitions(-DSCOPEMUX_DEBUG_MEMORY)
+    message(STATUS "Memory debugging enabled: detailed tracking and validation will be active")
 endif()
 
 # =============================================================================
@@ -71,207 +58,239 @@ endif()
 
 # Set include directories for all targets in this directory
 include_directories(
-    # Project directories
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities
-
-    # Core include directories - the main one contains the scopemux/ directory
-    ${CMAKE_SOURCE_DIR}/core/include
-
-    # Tree-sitter include directories (from root CMakeLists.txt)
+    # Tree-sitter headers (defined in the root CMakeLists.txt)
     ${TS_CORE_INCLUDE_DIR}
     ${TS_C_INCLUDE_DIR}
     ${TS_CPP_INCLUDE_DIR}
     ${TS_PYTHON_INCLUDE_DIR}
     ${TS_JS_INCLUDE_DIR}
     ${TS_TS_INCLUDE_DIR}
-
-    # Criterion
-    ${Criterion_INCLUDE_DIRS}
-)
-# Removed duplicate include_directories line
-
-# --- Test Utilities and Common Test Helpers ---
-# IMPORTANT: This static library pattern prevents duplicate symbol errors
-# Files included here (especially json_validation.c) should NOT be:
-# 1. Added to individual test executable source lists
-# 2. Directly linked via target_link_libraries
-# 3. Included in SCOPEMUX_CORE_C_SOURCES_FOR_TESTS variable
-#
-# Instead, all test targets should link against this library using target_link_libraries
-add_library(test_utilities STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/test_utils.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/tree_sitter_test_util.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/test_helpers.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/json_validation.c
-    # Removed reference to symbol_table_stubs.c as we're moving away from stubs
-)
-target_include_directories(test_utilities PRIVATE
-    ${CMAKE_SOURCE_DIR}/core/include
-    ${CMAKE_SOURCE_DIR}/core/include/scopemux
+    # Project headers
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${Criterion_INCLUDE_DIRS}
+    # Add source directory to include path
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    # Python headers
+    ${Python_INCLUDE_DIRS}
+    ${pybind11_INCLUDE_DIRS}
 )
 
-# Function to set common include directories for all test targets
-function(set_common_test_includes target_name)
-    target_include_directories(${target_name} PRIVATE
-        ${CMAKE_SOURCE_DIR}/core/include
-        ${CMAKE_SOURCE_DIR}/core/include/scopemux
-        ${CMAKE_SOURCE_DIR}/core/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${Criterion_INCLUDE_DIRS}
-    )
+# Add preprocessor defines for proper compilation
+add_compile_definitions(
+    SCOPEMUX_BUILDING=1
+    PY_SSIZE_T_CLEAN
+)
 
+# Configure Valgrind support when requested
+option(SCOPEMUX_VALGRIND_COMPATIBLE "Build with Valgrind compatibility" OFF)
+if(SCOPEMUX_VALGRIND_COMPATIBLE)
+    add_definitions(-DSCOPEMUX_VALGRIND_COMPATIBLE)
+    message(STATUS "Building with Valgrind compatibility")
+endif()
+
+# Add compiler flags for Python C API
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>)
+
+# Get the Python include directories explicitly
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_path('include'))"
+    OUTPUT_VARIABLE PYTHON_INCLUDE_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message(STATUS "Python include path from sysconfig: ${PYTHON_INCLUDE_PATH}")
+
+# Configure Python includes directly
+# First use sysconfig path, fallback to CMake's Python_INCLUDE_DIRS if that fails
+if(NOT PYTHON_INCLUDE_PATH)
+    set(PYTHON_INCLUDE_PATH "${Python_INCLUDE_DIRS}")
+    message(STATUS "Using CMake's Python_INCLUDE_DIRS as fallback")
+endif()
+
+# Add custom compiler options to enforce include path and Python macro definitions
+add_compile_options(
+    $<$<COMPILE_LANGUAGE:C>:-I${PYTHON_INCLUDE_PATH}>
+    $<$<COMPILE_LANGUAGE:C>:-DPY_SSIZE_T_CLEAN>
+    $<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>
+)
+
+# Output Python information for debugging
+message(STATUS "Python include dirs: ${Python_INCLUDE_DIRS}")
+message(STATUS "Python libraries: ${Python_LIBRARIES}")
+
+# pybind11 is already loaded above
+
+# Build parser core static library
+add_library(parser_core STATIC
+    # Refactored parser components
+    src/parser/parser.c
+    src/parser/ast_node.c
+    src/parser/cst_node.c
+    src/parser/memory_tracking.c
+    src/parser/parser_context.c
+    src/parser/query_processing.c
+    # Project context components
+    src/parser/project_context/project_context_facade.c
+    src/parser/project_context/project_utils.c
+    src/parser/project_context/project_symbol_extraction.c
+    src/parser/project_context/symbol_management.c
+    src/parser/project_context/symbol_collection.c
+    # Tree-sitter integration
+    src/parser/ts_init.c
+    src/parser/ts_ast_builder.c
+    src/parser/ts_cst_builder.c
+    src/parser/ts_query_processor.c
+    src/parser/query_manager.c
+    src/parser/reference_resolvers/language_resolvers.c
+    # Language compliance system
+    src/ast_compliance.c
+    src/parser/lang/c_compliance.c
+    src/parser/lang/lang_compliance_registry.c
+    # Common files
+    src/common/memory_management.c
+    src/common/error_handling.c
+    src/common/logging.c
+    # Memory debugging utilities
+    src/utils/memory_debug.c
+    src/utils/ts_resource_manager.c
+    # Configuration
+    src/config/node_type_mapping_loader.c
+    # Processors
+    src/processors/docstring_processor.c
+    src/processors/ast_post_processor.c
+    src/processors/test_processor.c
+)
+
+set_target_properties(parser_core PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
     # Disable dependency file generation to avoid directory-related errors
-    set_target_properties(${target_name} PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE)
-endfunction()
-
-# --- Criterion Test Executable ---
-
-# Define the core C source files from the main project needed for these tests
-# These are compiled directly into the test executable.
-set(SCOPEMUX_CORE_C_SOURCES_FOR_TESTS
-    # Parser core components
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ast_node.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/parser_context.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context/project_utils.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context/dependency_management.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context/file_management.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/project_context/symbol_management.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/cst_node.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/memory_tracking.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table/symbol_core.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table/symbol_entry.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table/symbol_lookup.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/symbol_table/symbol_registration.c
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_manager.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/query_processing.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/reference_resolver.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/reference_resolvers/language_resolvers.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/reference_resolvers/resolver_implementation.c
-
-    # Tree-sitter implementation files
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_init.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_ast_builder.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_cst_builder.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ts_query_processor.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lang_compliance.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ast_compliance.c
-
-    # Tree-sitter language sources
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-c/src/parser.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-cpp/src/parser.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-cpp/src/scanner.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/parser.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-python/src/scanner.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-javascript/src/parser.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-javascript/src/scanner.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/tsx/src/parser.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/tsx/src/scanner.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/typescript/src/parser.c
-    ${CMAKE_SOURCE_DIR}/vendor/tree-sitter-typescript/typescript/src/scanner.c
-
-    # Common utilities
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/error_handling.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/logging.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/common/memory_management.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/utils/memory_debug.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/config/node_type_mapping_loader.c
-
-    # AST compliance and language-specific modules
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/parser/ast_compliance.c
-
-    # Adapters for language-specific functionality
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/adapters/adapter_registry.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/adapters/language_adapter.c
-
-    # Processors that post-process the AST
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/processors/ast_post_processor.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/processors/docstring_processor.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/processors/test_processor.c
-
-    # Configuration modules
-
+    SKIP_DEPENDENCY_GENERATION TRUE
 )
 
-# --- Language-specific Test Sources ---
-set(C_BASIC_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/c/c_basic_ast_tests.c
+# Create a separate object library for test_processor.c to ensure it gets linked properly
+add_library(test_processor_lib OBJECT
+    src/processors/test_processor.c
 )
 
-set(PYTHON_BASIC_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/python/python_basic_ast_tests.c
+# Disable dependency file generation to avoid directory-related errors
+set_target_properties(test_processor_lib PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE)
+
+set(CONTEXT_ENGINE_SOURCES
+    src/context_engine/compressor.c
+    src/context_engine/expander.c
+    src/context_engine/token_budgeter.c
 )
 
-set(CPP_BASIC_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/cpp_basic_ast_tests.c
+set(COMMON_SOURCES
+    src/common/error_handling.c
+    src/common/memory_management.c
+    src/common/logging.c
 )
 
-set(C_EXAMPLE_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/c/c_example_ast_tests.c
+set(UTILS_SOURCES
+    src/utils/memory_debug.c
+    src/utils/ts_resource_manager.c
 )
 
-set(PYTHON_EXAMPLE_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/python/python_example_ast_tests.c
+# Add library targets
+add_library(context_engine STATIC ${CONTEXT_ENGINE_SOURCES} ${COMMON_SOURCES})
+
+# Set include directories for each target
+target_include_directories(parser_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(context_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Link parser_core with Tree-sitter libraries
+target_link_libraries(parser_core PRIVATE
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
-set(CPP_EXAMPLE_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/cpp_example_ast_tests.c
+# Python bindings module with test_processor bindings and implementation
+pybind11_add_module(scopemux_core MODULE
+    # Binding files
+    src/bindings/module.c
+    src/bindings/parser_bindings.c
+    src/bindings/context_engine_bindings.c
+    src/bindings/test_processor_bindings.c
+    src/bindings/signal_handler.c
 )
 
-# Add parser source directory to include path for all tests
-include_directories(${PROJECT_SOURCE_DIR}/core/src/parser)
-
-# JavaScript and TypeScript test sources
-set(JS_BASIC_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/js/js_basic_ast_tests.c
+# Set include directories for the Python bindings module
+target_include_directories(scopemux_core PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/bindings
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
 )
 
-set(TS_BASIC_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ts/ts_basic_ast_tests.c
+# Link the module with necessary libraries
+target_link_libraries(scopemux_core PRIVATE
+    ${TREE_SITTER_LIBS}
+    -ldl # Needed for dlopen/dlsym functions
+    parser_core # Link with the static library directly so it is built and linked
 )
 
-set(JS_EXAMPLE_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/js/js_example_ast_tests.c
+# Add explicit linker flags to force export of symbols and include whole archive for parser_core
+# This ensures all symbols from parser_core (including segfault_handler) are included
+# regardless of whether they're directly referenced
+target_link_options(scopemux_core PRIVATE
+    -Wl,--export-dynamic
+    -Wl,--whole-archive
+    -Wl,$<TARGET_FILE:parser_core>
+    -Wl,--no-whole-archive
 )
 
-set(TS_EXAMPLE_AST_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ts/ts_example_ast_tests.c
+# Ensure all symbols from our implementation are accessible
+set_target_properties(scopemux_core PROPERTIES
+    ENABLE_EXPORTS TRUE
 )
 
-# --- Common Test Sources ---
-# (Previously contained ast_extraction_tests.c which has been migrated to language-specific files)
-
-# --- Edge Case Tests ---
-set(EDGE_CASE_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/edge_case_tests.c
+# Link libraries to the Python module
+target_link_libraries(scopemux_core PRIVATE
+    parser_core
+    context_engine
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
-# --- Init Parser Tests ---
-set(INIT_PARSER_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/init_parser_tests.c
+# Set compiler flags to export all symbols
+target_compile_options(scopemux_core PRIVATE "-rdynamic")
+set_target_properties(scopemux_core PROPERTIES ENABLE_EXPORTS ON)
+set_target_properties(scopemux_core PROPERTIES LINK_FLAGS "-Wl,--export-dynamic")
+
+
+# Set include directories for the Python module
+target_include_directories(scopemux_core PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
+    ${PYTHON_INCLUDE_PATH}
+    ${Python_INCLUDE_DIRS}
+    ${pybind11_INCLUDE_DIRS}
 )
 
-# --- Interfile Resolution Tests ---
+# Installation rules
+install(TARGETS scopemux_core DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-# Define source files for each interfile reference resolution test target
-set(REFERENCE_RESOLVER_TEST_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolver_tests.c
-)
+# Add subdirectories for tests if they exist
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    add_subdirectory(tests)
+    add_subdirectory(src/adapters)
+    add_subdirectory(src/config)
+endif()
 
-set(RESOLVER_CORE_TEST_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_core_tests.c
-)
-
-set(RESOLVER_REGISTRATION_TEST_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_registration_tests.c
-)
+# Print configuration summary
+message(STATUS "Configuration summary:")
+message(STATUS "  C Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
+message(STATUS "  Python: ${Python_VERSION}")
+message(STATUS "  Installation prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  Memory debugging: ${SCOPEMUX_DEBUG_MEMORY}")
+message(STATUS "  Valgrind compatibility: ${SCOPEMUX_VALGRIND_COMPATIBLE}")
 
 set(RESOLVER_RESOLUTION_TEST_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/reference_resolvers/resolver_resolution_tests.c
@@ -448,7 +467,7 @@ add_executable(symbol_table_tests
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_core.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_entry.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_lookup.c
-    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_registration.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_table_registration.c
     ${SYMBOL_TABLE_TEST_SOURCES}
     ${SCOPEMUX_CORE_C_SOURCES_FOR_TESTS}
 )
@@ -486,7 +505,7 @@ add_executable(project_context_tests
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_core.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_entry.c
     ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_lookup.c
-    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_registration.c
+    ${PROJECT_SOURCE_DIR}/src/parser/symbol_table/symbol_table_registration.c
     # Reference resolver implementation files
     ${PROJECT_SOURCE_DIR}/src/parser/reference_resolver.c
     ${PROJECT_SOURCE_DIR}/src/parser/reference_resolvers/language_resolvers.c
@@ -751,12 +770,6 @@ endforeach()
 # --- Memory Debug/Crash Handler Diagnostic Test ---
 add_executable(test_memory_debug
     ${CMAKE_CURRENT_SOURCE_DIR}/test_memory_debug.c
-)
-target_link_libraries(test_memory_debug PRIVATE parser_core m dl)
-add_test(NAME MemoryDebugTest COMMAND test_memory_debug)
-
-message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
-message(STATUS "Copied example files and expected JSON to build directory for validation.")
 )
 target_link_libraries(test_memory_debug PRIVATE parser_core m dl)
 add_test(NAME MemoryDebugTest COMMAND test_memory_debug)

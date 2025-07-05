@@ -26,9 +26,15 @@
 #include "ast_node.h"
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
+#include <setjmp.h>
+#include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// External declaration for segfault handler
+extern void segfault_handler(int sig);
 
 // Forward declaration of functions defined in ts_query_processor.c
 void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root);
@@ -418,12 +424,37 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
   log_debug("ts_tree_to_ast_impl: Entered with root_node_is_null=%d, ctx=%p",
             ts_node_is_null(root_node), (void *)ctx);
 
-  if (ts_node_is_null(root_node) || !ctx) {
+  // Validate input parameters with detailed logging
+  if (ts_node_is_null(root_node)) {
+    log_error("ts_tree_to_ast_impl: Root node is null");
     if (ctx) {
-      parser_set_error(ctx, -1, "Invalid parameters for AST generation");
+      parser_set_error(ctx, -1, "Root node is null for AST generation");
     }
     return NULL;
   }
+
+  if (!ctx) {
+    log_error("ts_tree_to_ast_impl: Parser context is null");
+    return NULL;
+  }
+
+  // Set up protection against segfaults during AST generation
+  jmp_buf ast_recovery;
+  if (setjmp(ast_recovery) != 0) {
+    log_error("ts_tree_to_ast_impl: Recovered from crash in AST generation");
+    parser_set_error(ctx, 8, "Parser crashed during AST generation");
+
+    // Create a minimal fallback root node to prevent NULL returns
+    ASTNode *fallback_root = create_ast_root_node(ctx);
+    if (!fallback_root) {
+      log_error("ts_tree_to_ast_impl: Emergency fallback: Creating basic AST root node");
+      fallback_root = ast_node_new(NODE_ROOT, ctx->filename ? ctx->filename : "unknown_file");
+    }
+    return fallback_root;
+  }
+
+  // Install signal handler for this operation
+  void (*prev_handler)(int) = signal(SIGSEGV, segfault_handler);
 
   if (ctx->log_level <= LOG_DEBUG) {
     log_debug("Starting AST generation for %s", ctx->filename ? ctx->filename : "unknown file");
@@ -543,6 +574,9 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
   if (ctx->log_level <= LOG_DEBUG) {
     log_debug("AST generation complete with %zu nodes", final_root ? final_root->num_children : 0);
   }
+
+  // Restore the previous signal handler
+  signal(SIGSEGV, prev_handler);
 
   return final_root;
 }
