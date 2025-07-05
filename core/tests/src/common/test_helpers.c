@@ -1,8 +1,6 @@
 #include "config/node_type_mapping_loader.h"
 #include "scopemux/ast.h"
 #include "scopemux/logging.h"
-#include <criterion/criterion.h>
-#include <criterion/logging.h>
 
 // Centralized logging toggle for all test executables
 int logging_enabled = 0;

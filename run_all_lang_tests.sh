@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ScopeMux All Language Tests Runner
+# ScopeMux Parallel Test Runner
 # Executes all language tests in parallel with comprehensive logging and reporting
 #
 # This script runs the following test suites in parallel:

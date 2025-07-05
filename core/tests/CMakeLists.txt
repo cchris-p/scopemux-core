@@ -156,6 +156,7 @@ add_executable(cpp_example_ast_tests
 )
 target_include_directories(cpp_example_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
 target_link_libraries(cpp_example_ast_tests PRIVATE
+    test_parser
     test_utilities
     parser_core
     context_engine
@@ -170,6 +171,7 @@ add_executable(cpp_basic_ast_tests
 )
 target_include_directories(cpp_basic_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
 target_link_libraries(cpp_basic_ast_tests PRIVATE
+    test_parser
     test_utilities
     parser_core
     context_engine
@@ -238,10 +240,102 @@ target_link_libraries(python_example_ast_tests PRIVATE
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(python_example_ast_tests)
 
+# Add interfile test targets
+# Symbol Table Tests
+add_executable(symbol_table_tests
+    symbol_table_tests.c
+)
+target_include_directories(symbol_table_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(symbol_table_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+
+# Project Context Tests
+add_executable(project_context_tests
+    project_context_tests.c
+)
+target_include_directories(project_context_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(project_context_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+
+# Reference Resolver Tests
+add_executable(reference_resolver_tests
+    reference_resolver_tests.c
+)
+target_include_directories(reference_resolver_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(reference_resolver_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+
+# Resolver Core Tests
+add_executable(resolver_core_tests
+    resolver_core_tests.c
+)
+target_include_directories(resolver_core_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(resolver_core_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+
+# Resolver Registration Tests
+add_executable(resolver_registration_tests
+    resolver_registration_tests.c
+)
+target_include_directories(resolver_registration_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(resolver_registration_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+
+# Resolver Resolution Tests
+add_executable(resolver_resolution_tests
+    resolver_resolution_tests.c
+)
+target_include_directories(resolver_resolution_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(resolver_resolution_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+
+# Language Resolver Tests
+add_executable(language_resolver_tests
+    language_resolver_tests.c
+)
+target_include_directories(language_resolver_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(language_resolver_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+
 # Installation rules
 install(TARGETS run_tests DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
 message(STATUS "Copied example files and expected JSON to build directory for validation.")
 
-target_include_directories(test_utilities PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_include_directories(test_utilities PRIVATE ${CRITERION_INCLUDE_DIRS}) 

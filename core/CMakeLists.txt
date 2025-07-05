@@ -114,6 +114,9 @@ add_library(parser_core STATIC
     src/parser/project_context/project_symbol_extraction.c
     src/parser/project_context/symbol_management.c
     src/parser/project_context/symbol_collection.c
+    src/parser/project_context/file_management.c
+    src/parser/project_context/dependency_management.c
+    src/parser/project_context.c
     # Tree-sitter integration
     src/parser/ts_init.c
     src/parser/ts_ast_builder.c

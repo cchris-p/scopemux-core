@@ -117,7 +117,7 @@ echo "[run_interfile_tests.sh] Running interfile resolution test suite"
 # Build and run Reference Resolver Tests (main module)
 if [ "${RUN_REFERENCE_RESOLVER_TESTS}" = true ]; then
     cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "reference_resolver_tests" "Reference Resolver Tests"
+    build_test_target "reference_resolver_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Reference Resolver Tests"
     run_test_suite "Reference Resolver Tests" "${CMAKE_PROJECT_BUILD_DIR}/${REFERENCE_RESOLVER_EXECUTABLE_RELPATH}"
     if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
 fi
@@ -125,7 +125,7 @@ fi
 # Build and run Symbol Table Tests
 if [ "${RUN_SYMBOL_TABLE_TESTS}" = true ]; then
     cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "symbol_table_tests" "Symbol Table Tests"
+    build_test_target "symbol_table_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Symbol Table Tests"
     run_test_suite "Symbol Table Tests" "${CMAKE_PROJECT_BUILD_DIR}/${SYMBOL_TABLE_EXECUTABLE_RELPATH}"
     if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
 fi
@@ -133,7 +133,7 @@ fi
 # Build and run Project Context Tests
 if [ "${RUN_PROJECT_CONTEXT_TESTS}" = true ]; then
     cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "project_context_tests" "Project Context Tests"
+    build_test_target "project_context_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Project Context Tests"
     run_test_suite "Project Context Tests" "${CMAKE_PROJECT_BUILD_DIR}/${PROJECT_CONTEXT_EXECUTABLE_RELPATH}"
     if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
 fi
@@ -141,7 +141,7 @@ fi
 # Build and run Resolver Core Tests (modular component)
 if [ "${RUN_RESOLVER_CORE_TESTS}" = true ]; then
     cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "resolver_core_tests" "Resolver Core Tests"
+    build_test_target "resolver_core_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Resolver Core Tests"
     run_test_suite "Resolver Core Tests" "${CMAKE_PROJECT_BUILD_DIR}/${RESOLVER_CORE_EXECUTABLE_RELPATH}"
     if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
 fi
@@ -238,7 +238,7 @@ fi
 # Build and run Language Resolver Tests
 if [ "${RUN_LANGUAGE_RESOLVER_TESTS}" = true ]; then
     cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "language_resolver_tests" "Language Resolver Tests"
+    build_test_target "language_resolver_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Language Resolver Tests"
     run_test_suite "Language Resolver Tests" "${CMAKE_PROJECT_BUILD_DIR}/${LANGUAGE_RESOLVER_EXECUTABLE_RELPATH}"
     if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
 fi

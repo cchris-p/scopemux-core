@@ -10,7 +10,7 @@
 #include <string.h>
 
 // Fix include paths to correctly reference the header files
-#include "../../../include/scopemux/parser.h"
+#include "../../../core/include/scopemux/parser.h"
 
 #include "../../include/test_helpers.h"
 

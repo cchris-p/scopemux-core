@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../include/scopemux/parser.h"
+#include "../../../core/include/scopemux/parser.h"
 
 #include "../../include/test_helpers.h"
 

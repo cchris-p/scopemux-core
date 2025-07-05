@@ -17,7 +17,7 @@
 #define DEBUG_MODE true
 
 // Include the proper headers first to get access to all required types
-#include "../../../include/scopemux/parser.h"
+#include "../../core/include/scopemux/parser.h"
 #include "../../include/json_validation.h"
 
 // The language enum is already defined in parser.h as LANG_C

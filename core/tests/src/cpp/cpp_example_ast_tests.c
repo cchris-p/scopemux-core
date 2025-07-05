@@ -27,7 +27,7 @@
  */
 
 // NOTE: The following include path is correct for this test file location.
-#include "../../../include/scopemux/parser.h"
+#include "../../../core/include/scopemux/parser.h"
 #include "../../include/json_validation.h"
 #include "../../include/test_helpers.h"
 #include <criterion/criterion.h>

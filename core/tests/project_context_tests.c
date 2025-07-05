@@ -16,22 +16,25 @@
  * handle test discovery and execution automatically.
  */
 
-#include "parser.h"
+#include "scopemux/parser.h"
 #include "scopemux/project_context.h"
 #include "scopemux/symbol.h"
 #include "scopemux/symbol_table.h"
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
 #include <criterion/options.h>
+#include <libgen.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 // Test fixture setup
 static ProjectContext *project = NULL;
 static ParserContext *parser = NULL;
 static GlobalSymbolTable *symbols = NULL;
-
-// Utility: Create a file with minimal content
-#include <sys/stat.h>
-#include <unistd.h>
 
 // Utility: Create a file with minimal content inside test_project directory
 static char test_project_abspath[512];
@@ -59,10 +62,7 @@ static void remove_dummy_file(const char *filename) {
   remove(path);
 }
 
-#include <libgen.h>
-#include <limits.h>
-
-void setup_project() {
+void setup_project(void) {
   // Determine the directory of the running executable robustly
   char exe_path[PATH_MAX];
   ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
@@ -111,38 +111,8 @@ void setup_project() {
   symbols = symbol_table_create(16);
   cr_assert(symbols != NULL, "Failed to create symbol table for tests");
 }
-// Ensure test_project directory exists and get its absolute path
-mkdir("test_project", 0777);
-realpath("test_project", test_project_abspath);
 
-// Create dummy files for all test cases using absolute path
-create_dummy_file("file1.c", "int main() { return 0; }\n");
-create_dummy_file("file2.py", "print('hello')\n");
-create_dummy_file("main.c", "int main() { return 0; }\n");
-create_dummy_file("helper.c", "int helper() { return 1; }\n");
-create_dummy_file("utils.c", "int util() { return 2; }\n");
-create_dummy_file("file2.c", "int func2() { return 0; }\n");
-
-// Debug: Print current working directory and absolute path of test_project/file1.c
-char cwd[512];
-if (getcwd(cwd, sizeof(cwd))) {
-  printf("[DEBUG] CWD: %s\n", cwd);
-}
-char abspath[512];
-realpath("test_project/file1.c", abspath);
-printf("[DEBUG] test_project/file1.c absolute path: %s\n", abspath);
-
-project = project_context_create("test_project");
-cr_assert(project != NULL, "Failed to create project context for tests");
-
-parser = parser_init();
-cr_assert(parser != NULL, "Failed to create parser context for tests");
-
-symbols = symbol_table_create(16);
-cr_assert(symbols != NULL, "Failed to create symbol table for tests");
-}
-
-void teardown_project() {
+void teardown_project(void) {
   // Remove dummy files after tests (from test_project directory)
   remove_dummy_file("file1.c");
   remove_dummy_file("file2.py");

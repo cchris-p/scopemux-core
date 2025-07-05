@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ScopeMux Simple All Language Tests Runner
+# ScopeMux Simple Parallel Test Runner
 # Executes all language tests in parallel with basic logging
 
 set -euo pipefail
@@ -186,7 +186,7 @@ main() {
     trap cleanup EXIT INT TERM
 
     echo -e "${BLUE}========================================${NC}"
-    echo -e "${BLUE}  ScopeMux All Language Tests Runner${NC}"
+    echo -e "${BLUE}  ScopeMux Parallel Test Runner${NC}"
     echo -e "${BLUE}========================================${NC}"
     echo -e "Project Root: ${PROJECT_ROOT_DIR}"
     echo -e "Parallel Jobs: ${PARALLEL_JOBS}"
