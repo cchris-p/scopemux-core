@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 // External declaration for segfault handler
 extern void segfault_handler(int sig);
 
@@ -85,7 +87,7 @@ static char *ts_node_to_string(TSNode node, const char *source_code) {
   memcpy(result, source_code + start_byte, length);
   result[length] = '\0';
 
-  log_debug("ts_node_to_string: successfully copied node text: '%.20s%s'", result,
+  log_debug("ts_node_to_string: successfully copied node text: '%.20s%s'", SAFE_STR(result),
             length > 20 ? "..." : "");
 
   return result;
@@ -116,7 +118,7 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
     return NULL;
   }
 
-  log_debug("Creating CST node for type: %s", type);
+  log_debug("Creating CST node for type: %s", SAFE_STR(type));
 
   // Get node content with validation
   char *content = NULL;
@@ -130,7 +132,8 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
   // in ts_node_to_string which might occur with invalid nodes
   jmp_buf node_content_recovery;
   if (setjmp(node_content_recovery) != 0) {
-    log_error("Recovered from potential crash in ts_node_to_string for node type: %s", type);
+    log_error("Recovered from potential crash in ts_node_to_string for node type: %s",
+              SAFE_STR(type));
     return NULL;
   }
 
@@ -144,14 +147,14 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
   signal(SIGSEGV, prev_handler);
 
   if (!content) {
-    log_error("Failed to get content for node type: %s", type);
+    log_error("Failed to get content for node type: %s", SAFE_STR(type));
     return NULL;
   }
 
   // Create the CST node
   CSTNode *cst_node = cst_node_new(type, content);
   if (!cst_node) {
-    log_error("Failed to create CST node for type: %s", type);
+    log_error("Failed to create CST node for type: %s", SAFE_STR(type));
     if (content) {
       free(content);
     }
@@ -164,7 +167,7 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
 
   // Validate points to avoid invalid memory access
   if (start_point.row < 0 || end_point.row < 0 || start_point.column < 0 || end_point.column < 0) {
-    log_error("Invalid source range for node type: %s", type);
+    log_error("Invalid source range for node type: %s", SAFE_STR(type));
     cst_node_free(cst_node);
     return NULL;
   }
@@ -175,18 +178,18 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
   cst_node->range.end.column = end_point.column;
 
   log_debug("CST node range: (%d:%d) - (%d:%d) for type: %s", start_point.row, start_point.column,
-            end_point.row, end_point.column, type);
+            end_point.row, end_point.column, SAFE_STR(type));
 
   // 3. Recursively process all children with validation
   uint32_t child_count = ts_node_child_count(ts_node);
 
   if (child_count > 1000) { // Sanity check for unreasonable child counts
     log_warning("Unusually high child count (%u) for node type: %s - limiting to 1000", child_count,
-                type);
+                SAFE_STR(type));
     child_count = 1000; // Cap to avoid excessive recursion
   }
 
-  log_debug("Processing %u children for node type: %s", child_count, type);
+  log_debug("Processing %u children for node type: %s", child_count, SAFE_STR(type));
 
   for (uint32_t i = 0; i < child_count; ++i) {
     // Get child with validation
@@ -254,7 +257,7 @@ CSTNode *ts_tree_to_cst_impl(TSNode root_node, ParserContext *ctx) {
 
   // Log detailed information about the root node
   const char *root_type = ts_node_type(root_node);
-  log_debug("ts_tree_to_cst_impl: Root node type: %s", root_type ? root_type : "(null)");
+  log_debug("ts_tree_to_cst_impl: Root node type: %s", SAFE_STR(root_type));
 
   // Attempt to create CST from root node with crash protection
   CSTNode *result = NULL;

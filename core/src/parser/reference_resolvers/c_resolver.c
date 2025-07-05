@@ -96,7 +96,7 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
 
           // Field name starts after separator
           size_t field_start = separator - name + (arrow ? 2 : 1);
-          if (field_start < strlen(name)) {
+          if (name && field_start < strlen(name)) {
             strcpy(field_name, name + field_start);
 
             // Look up struct type

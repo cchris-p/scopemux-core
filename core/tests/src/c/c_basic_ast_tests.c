@@ -142,7 +142,7 @@ Test(ast_extraction, c_functions, .description = "Test AST extraction of C funct
     // Check function signature
     cr_assert_not_null(main_func->signature, "Function should have signature populated");
     if (DEBUG_MODE) {
-      cr_log_info("Main function signature: %s", main_func->signature);
+      cr_log_info("Main function signature: %s", SAFE_STR(main_func->signature));
     }
 
     // Check function content
@@ -276,7 +276,7 @@ Test(ast_extraction, c_basic_syntax, .description = "Test AST extraction of basi
   // Check function signature
   cr_assert_not_null(main_func->signature, "Function should have signature populated");
   if (DEBUG_MODE) {
-    cr_log_info("Main function signature: %s", main_func->signature);
+    cr_log_info("Main function signature: %s", SAFE_STR(main_func->signature));
   }
 
   // Clean up

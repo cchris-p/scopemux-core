@@ -18,6 +18,8 @@ static bool enable_logging = false;
 #include <stdlib.h>
 #include <string.h> /* This header is needed for strdup */
 
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 /**
  * Extracts a clean docstring from a JavaDoc-style comment
  *
@@ -80,7 +82,8 @@ void associate_docstrings_with_nodes(ASTNode *ast_root, ASTNode **docstring_node
   // Create array to hold docstring info
   DocstringInfo *docstrings = malloc(sizeof(DocstringInfo) * count);
   if (!docstrings) {
-    if (enable_logging) log_error("Failed to allocate memory for docstring association");
+    if (enable_logging)
+      log_error("Failed to allocate memory for docstring association");
     return;
   }
 
@@ -163,14 +166,16 @@ void process_docstrings(ASTNode *ast_root, ParserContext *ctx) {
     return;
   }
 
-  if (enable_logging) log_debug("Processing docstrings");
+  if (enable_logging)
+    log_debug("Processing docstrings");
 
   // Find and separate docstring nodes
   size_t doc_count = 0;
   ASTNode **docstring_nodes = malloc(sizeof(ASTNode *) * ast_root->num_children);
 
   if (!docstring_nodes) {
-    if (enable_logging) log_error("Failed to allocate memory for docstring processing");
+    if (enable_logging)
+      log_error("Failed to allocate memory for docstring processing");
     return;
   }
 
@@ -183,10 +188,12 @@ void process_docstrings(ASTNode *ast_root, ParserContext *ctx) {
   }
 
   if (doc_count > 0) {
-    if (enable_logging) log_debug("Found %zu docstrings to process", doc_count);
+    if (enable_logging)
+      log_debug("Found %zu docstrings to process", doc_count);
     associate_docstrings_with_nodes(ast_root, docstring_nodes, doc_count);
   } else {
-    if (enable_logging) log_debug("No docstrings found to process");
+    if (enable_logging)
+      log_debug("No docstrings found to process");
   }
 
   free(docstring_nodes);

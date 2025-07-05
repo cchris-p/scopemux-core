@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+// Safely handle NULL strings in format specifiers
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 // Log levels
 typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR } LogLevel;
 

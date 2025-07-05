@@ -95,8 +95,7 @@ bool project_extract_symbols_impl(ProjectContext *project, ParserContext *parser
     return false;
   }
 
-  log_debug("Extracting symbols from parser context: %s",
-            parser->filename ? parser->filename : "(unnamed)");
+  log_debug("Extracting symbols from parser context: %s", SAFE_STR(parser->filename));
 
   // Process each AST node in the file
   for (size_t i = 0; i < parser->num_ast_nodes; i++) {
@@ -297,7 +296,7 @@ bool project_resolve_references_impl(ProjectContext *project) {
     if (!ctx)
       continue;
 
-    log_debug("Resolving references in file: %s", ctx->filename);
+    log_debug("Resolving references in file: %s", SAFE_STR(ctx->filename));
 
     // Start with the root nodes
     for (size_t j = 0; j < ctx->num_ast_nodes; j++) {

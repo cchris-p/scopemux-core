@@ -67,7 +67,7 @@ Test(ast_extraction, ts_functions, .description = "Test AST extraction of TypeSc
 
     // Check function signature
     cr_assert_not_null(main_func->signature, "Function should have signature populated");
-    cr_log_info("Main function signature: %s", main_func->signature);
+    cr_log_info("Main function signature: %s", SAFE_STR(main_func->signature));
 
     // Check function content
     cr_assert_not_null(main_func->raw_content, "Function should have content populated");

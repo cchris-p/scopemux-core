@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 /**
  * Add a symbol to a symbol collection
  *
@@ -32,11 +34,11 @@
  */
 void symbol_collection_add(void *symbols, const char *name, int symbol_type, ASTNode *node) {
   log_debug("symbol_collection_add: Entry point (symbols=%p, name=%s, symbol_type=%d, node=%p)",
-            symbols, name ? name : "NULL", symbol_type, (void *)node);
+            symbols, SAFE_STR(name), symbol_type, (void *)node);
 
   if (!symbols || !name || !node) {
-    log_error("symbol_collection_add: Invalid parameters (symbols=%p, name=%p, node=%p)", symbols,
-              name, node);
+    log_error("symbol_collection_add: Invalid parameters (symbols=%p, name=%s, node=%p)", symbols,
+              SAFE_STR(name), node);
     return;
   }
 
@@ -50,7 +52,7 @@ void symbol_collection_add(void *symbols, const char *name, int symbol_type, AST
   log_debug("symbol_collection_add: Valid ASTNode magic number confirmed");
 
   // Log the symbol being added
-  log_debug("Adding symbol to collection: %s (type: %d)", name, symbol_type);
+  log_debug("Adding symbol to collection: %s (type: %d)", SAFE_STR(name), symbol_type);
 
   // The actual implementation would depend on what the 'symbols' void pointer
   // is expected to be. Based on the project context, it's likely a collection
@@ -71,13 +73,14 @@ void symbol_collection_add(void *symbols, const char *name, int symbol_type, AST
   log_debug("symbol_collection_add: Checking node->file_path: %p", node->file_path);
   if (node->file_path) {
     file_path = node->file_path;
-    log_debug("symbol_collection_add: Using file_path from node: %s", file_path);
+    log_debug("symbol_collection_add: Using file_path from node: %s", SAFE_STR(file_path));
   } else {
-    log_debug("symbol_collection_add: No file_path in node, using default: %s", file_path);
+    log_debug("symbol_collection_add: No file_path in node, using default: %s",
+              SAFE_STR(file_path));
   }
 
   // Log the file path for debugging
-  log_debug("Symbol %s from file: %s", name, file_path);
+  log_debug("Symbol %s from file: %s", SAFE_STR(name), SAFE_STR(file_path));
 
   // Map the symbol_type to a SymbolScope
   SymbolScope scope = SCOPE_UNKNOWN;
@@ -119,7 +122,7 @@ void symbol_collection_add(void *symbols, const char *name, int symbol_type, AST
   if (language <= LANG_UNKNOWN || language > LANG_MAX) {
     log_warning("symbol_collection_add: Invalid language value %d for symbol %s, defaulting to "
                 "LANG_UNKNOWN",
-                language, name);
+                language, SAFE_STR(name));
     language = LANG_UNKNOWN;
   }
   log_debug("symbol_collection_add: Using language: %d", language);
@@ -127,15 +130,15 @@ void symbol_collection_add(void *symbols, const char *name, int symbol_type, AST
   // Register the symbol in the table
   log_debug("symbol_collection_add: Registering symbol %s with table=%p, file_path=%s, scope=%d, "
             "language=%d",
-            name, (void *)table, file_path, scope, language);
+            SAFE_STR(name), (void *)table, SAFE_STR(file_path), scope, language);
   SymbolEntry *entry = symbol_table_register(table, name, node, file_path, scope, language);
   if (!entry) {
-    log_error("Failed to register symbol %s", name);
+    log_error("Failed to register symbol %s", SAFE_STR(name));
     return;
   }
-  log_debug("symbol_collection_add: Successfully registered symbol %s, entry=%p", name,
+  log_debug("symbol_collection_add: Successfully registered symbol %s, entry=%p", SAFE_STR(name),
             (void *)entry);
 
   // Symbol successfully added
-  log_debug("Successfully added symbol %s to collection", name);
+  log_debug("Successfully added symbol %s to collection", SAFE_STR(name));
 }

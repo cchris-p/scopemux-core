@@ -457,7 +457,7 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
   void (*prev_handler)(int) = signal(SIGSEGV, segfault_handler);
 
   if (ctx->log_level <= LOG_DEBUG) {
-    log_debug("Starting AST generation for %s", ctx->filename ? ctx->filename : "unknown file");
+    log_debug("Starting AST generation for %s", SAFE_STR(ctx->filename));
   }
 
   // 1. Create an AST root node

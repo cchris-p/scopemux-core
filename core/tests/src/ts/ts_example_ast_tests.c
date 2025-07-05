@@ -199,8 +199,8 @@ static void test_ts_example(const char *category, const char *filename) {
       fprintf(stderr, "TESTING: No expected JSON found for %s/%s, skipping validation\n", category,
               base_filename);
     }
-    log_warning("No .expected.json file found for %s/%s, skipping validation", category,
-                base_filename);
+    log_warning("No .expected.json file found for %s/%s, skipping validation", SAFE_STR(category),
+                SAFE_STR(base_filename));
     free(base_filename);
     free(source);
     parser_free(ctx);
@@ -301,7 +301,7 @@ static void process_ts_category(const char *category) {
   }
 
   // Log error if all attempts fail
-  log_warning("Could not open category directory for '%s' after trying multiple paths", category);
+  log_warning("Could not open category directory for '%s' after trying multiple paths", SAFE_STR(category));
 }
 
 /**

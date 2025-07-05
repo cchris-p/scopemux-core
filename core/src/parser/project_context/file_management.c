@@ -210,17 +210,20 @@ size_t project_add_directory_impl(ProjectContext *project, const char *dirpath,
     char full_path[1024];
 
     // Check if path would be too long
-    size_t dir_len = strlen(normalized_dir);
-    size_t name_len = strlen(entry->d_name);
+    #ifndef SAFE_LEN
+    #define SAFE_LEN(x) ((x) ? strlen(x) : 0)
+    #endif
+    size_t dir_len = SAFE_LEN(normalized_dir);
+    size_t name_len = SAFE_LEN(entry->d_name);
     if (dir_len + name_len + 2 > sizeof(full_path)) { // +2 for '/' and null terminator
-      log_warning("Path too long, skipping: %s/%s", normalized_dir, entry->d_name);
+      log_warning("Path too long, skipping: %s/%s", SAFE_STR(normalized_dir), SAFE_STR(entry->d_name));
       continue;
     }
 
     // Construct the full path safely
     int written = snprintf(full_path, sizeof(full_path), "%s/%s", normalized_dir, entry->d_name);
     if (written < 0 || (size_t)written >= sizeof(full_path)) {
-      log_warning("Path truncated, skipping: %s/%s", normalized_dir, entry->d_name);
+      log_warning("Path truncated, skipping: %s/%s", SAFE_STR(normalized_dir), SAFE_STR(entry->d_name));
       continue;
     }
 
@@ -382,6 +385,6 @@ bool project_remove_file_impl(ProjectContext *project, const char *filepath) {
     }
   }
 
-  log_debug("Removed file from project: %s", normalized_path);
+  log_debug("Removed file from project: %s", SAFE_STR(normalized_path));
   return true;
 }

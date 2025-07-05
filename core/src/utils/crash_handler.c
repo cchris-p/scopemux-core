@@ -56,14 +56,14 @@ static void crash_handler_signal(int signo, siginfo_t *info, void *context) {
         signo == SIGFPE  ? "SIGFPE"  :
         signo == SIGBUS  ? "SIGBUS"  :
         signo == SIGILL  ? "SIGILL"  : "UNKNOWN";
-    log_error("Caught signal %s (%d) at address %p", signame, signo, info ? info->si_addr : NULL);
+    log_error("Caught signal %s (%d) at address %p", SAFE_STR(signame), signo, info ? info->si_addr : NULL);
 
     // Print context stack
     pthread_mutex_lock(&crash_state.lock);
     if (crash_state.context_count > 0) {
         log_error("Crash context stack:");
         for (size_t i = 0; i < crash_state.context_count; i++) {
-            log_error("  [%u] %s", crash_state.context_ids[i], crash_state.contexts[i]);
+            log_error("  [%u] %s", crash_state.context_ids[i], SAFE_STR(crash_state.contexts[i]));
         }
     }
     pthread_mutex_unlock(&crash_state.lock);
@@ -166,7 +166,7 @@ void crash_handler_print_backtrace(int max_frames) {
     if (strings) {
         log_error("Backtrace:");
         for (int i = 0; i < nptrs; i++) {
-            log_error("  %s", strings[i]);
+            log_error("  %s", SAFE_STR(strings[i]));
         }
         free(strings);
     }

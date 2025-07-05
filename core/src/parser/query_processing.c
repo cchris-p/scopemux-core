@@ -123,7 +123,7 @@ bool parser_execute_query(ParserContext *ctx, const char *query_name) {
   // Get the query from the query manager
   const struct TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_name);
   if (!query) {
-    log_error("Failed to get query '%s' for language %d", query_name, ctx->language);
+    log_error("Failed to get query '%s' for language %d", SAFE_STR(query_name), ctx->language);
     return false;
   }
 
@@ -139,7 +139,7 @@ bool parser_execute_query(ParserContext *ctx, const char *query_name) {
   // Create a query cursor
   TSQueryCursor *cursor = ts_query_cursor_new();
   if (!cursor) {
-    log_error("Failed to create query cursor for query '%s'", query_name);
+    log_error("Failed to create query cursor for query '%s'", SAFE_STR(query_name));
     return false;
   }
 
@@ -170,7 +170,7 @@ bool process_query_results(ParserContext *ctx, void *results, const char *query_
 
   // Get the number of matches
   size_t match_count = ts_query_results_match_count(results);
-  log_debug("Query '%s' returned %zu matches", query_name, match_count);
+  log_debug("Query '%s' returned %zu matches", SAFE_STR(query_name), match_count);
 
   // Process each match
   for (size_t i = 0; i < match_count; i++) {
@@ -195,7 +195,7 @@ bool process_query_results(ParserContext *ctx, void *results, const char *query_
     // Add more query types as needed
   }
 
-  log_debug("Processed %zu matches for query '%s'", match_count, query_name);
+  log_debug("Processed %zu matches for query '%s'", match_count, SAFE_STR(query_name));
   return true;
 }
 

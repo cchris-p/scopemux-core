@@ -86,7 +86,7 @@ static void test_cpp_example(const char *category, const char *filename) {
     *dot = '\0';
   }
 
-  cr_log_info("Testing C++ example: %s/%s", category, base_filename);
+  cr_log_info("Testing C++ example: %s/%s", SAFE_STR(category), SAFE_STR(base_filename));
 
   // 1. Read example C++ file
   char *source = read_test_file("cpp", category, filename);
@@ -102,8 +102,8 @@ static void test_cpp_example(const char *category, const char *filename) {
   // 3. Load the expected JSON file
   JsonValue *expected_json = load_expected_json("cpp", category, base_filename);
   if (!expected_json) {
-    log_warning("No .expected.json file found for %s/%s, skipping validation", category,
-                base_filename);
+    log_warning("No .expected.json file found for %s/%s, skipping validation", SAFE_STR(category),
+                SAFE_STR(base_filename));
     free(base_filename);
     free(source);
     parser_context_free(ctx);

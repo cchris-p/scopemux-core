@@ -35,13 +35,16 @@ cd ..
 
 echo "[build_all_and_pybind.sh] Running pybind in core/ directory..."
 cd core
-rm -rf ./build && python3 setup.py build_ext --inplace
+# Clean any previous build artifacts
+rm -rf build
+# Run setup.py to build directly to ../build/core/
+python3 setup.py build_ext
 cd ..
 
 echo "[build_all_and_pybind.sh] Build and Python binding complete."
 
 # Diagnostic: Check that the Python extension exports the expected symbol
-SO_FILE=$(find core -maxdepth 1 -name "scopemux_core*.so" | head -n 1)
+SO_FILE=$(find build/core -maxdepth 1 -name "scopemux_core*.so" | head -n 1)
 if [ -z "$SO_FILE" ]; then
   echo "[ERROR] Could not find scopemux_core .so after build. Python bindings will not work."
   exit 1
@@ -66,7 +69,16 @@ echo "[build_all_and_pybind.sh] Attempting to uninstall scopemux_core via pip (i
 pip uninstall -y scopemux_core || true
 
 # Copy the .so file to scopemux_core.so for import compatibility
-cp build/core/scopemux_core.cpython-310-x86_64-linux-gnu.so build/core/scopemux_core.so
+# Make sure build/core directory exists
+mkdir -p build/core
+# Copy the .so file from core/ to build/core/ if needed
+if [ -f core/scopemux_core.cpython-*.so ] && [ ! -f build/core/scopemux_core.so ]; then
+  cp core/scopemux_core.cpython-*.so build/core/scopemux_core.so
+fi
+
+# Show where all .so files are located for debugging
+echo "[build_all_and_pybind.sh] Checking all scopemux_core*.so files in the project:"
+find . -name "scopemux_core*.so" -exec ls -la {} \;
 
 # Ensure build directory is first in PYTHONPATH for local testing
 export PYTHONPATH="$(pwd)/build/core:$PYTHONPATH"

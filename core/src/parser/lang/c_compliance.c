@@ -33,6 +33,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 /**
  * CANONICAL SCHEMA STRUCTURE FOR C LANGUAGE
  * =======================================
@@ -121,9 +123,9 @@ static void debug_print_ast_structure(ASTNode *node, int depth, int *index) {
     break;
   }
 
-  log_debug("%s[%d] %s (type: %s, name: '%s', qualified_name: '%s')", indent, *index,
-            node->name ? node->name : "(null)", type_str, node->name ? node->name : "(null)",
-            node->qualified_name ? node->qualified_name : "(null)");
+  log_debug("%s[%d] %s (type: %s, name: '%s', qualified_name: '%s')", SAFE_STR(indent), *index,
+            SAFE_STR(node->name), SAFE_STR(type_str), SAFE_STR(node->name),
+            SAFE_STR(node->qualified_name));
 
   (*index)++;
 
@@ -199,7 +201,7 @@ static void set_node_attributes(ASTNode *node, ASTNodeType type, const char *nam
 }
 
 /**
- * TREE-SITTER TO AST NODE TYPE MAPPING
+ * TREE-Sitter TO AST NODE TYPE MAPPING
  * ==================================
  *
  * ScopeMux uses Tree-sitter for parsing C code, then transforms the raw CST (Concrete Syntax Tree)
@@ -363,7 +365,7 @@ static int c_schema_compliance(ASTNode *node, ParserContext *ctx) {
     }
 
     set_node_attributes(node, NODE_INCLUDE, include_name, include_name, NULL);
-    log_debug("Set include node with name: %s", include_name);
+    log_debug("Set include node with name: %s", SAFE_STR(include_name));
     return 1;
   }
 

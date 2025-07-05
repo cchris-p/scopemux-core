@@ -240,7 +240,7 @@ bool project_parse_all_files_impl(ProjectContext *project) {
       break;
     }
 
-    log_info("Parsing file: %s", filepath);
+    log_info("Parsing file: %s", SAFE_STR(filepath));
 
     // Try to detect the language if not specified
     Language lang = LANG_UNKNOWN;
@@ -267,21 +267,21 @@ bool project_parse_all_files_impl(ProjectContext *project) {
     }
 
     if (lang == LANG_UNKNOWN) {
-      log_warning("Unknown language for file: %s", filepath);
+      log_warning("Unknown language for file: %s", SAFE_STR(filepath));
       continue;
     }
 
     // Allocate a new parser context
     ParserContext *ctx = parser_init();
     if (!ctx) {
-      log_error("Failed to create parser context for file: %s", filepath);
+      log_error("Failed to create parser context for file: %s", SAFE_STR(filepath));
       project_set_error(project, PROJECT_ERROR_MEMORY, "Failed to allocate parser context");
       continue;
     }
 
     // Parse the file
     if (!parser_parse_file(ctx, filepath, lang)) {
-      log_error("Failed to parse file: %s", filepath);
+      log_error("Failed to parse file: %s", SAFE_STR(filepath));
       parser_free(ctx);
       continue;
     }
@@ -358,7 +358,7 @@ bool project_add_dependency_impl(ProjectContext *project, const char *source_fil
 
   // If either file is not in the project, try to add them
   if (!source_ctx) {
-    log_debug("Source file not in project, attempting to add: %s", normalized_source);
+    log_debug("Source file not in project, attempting to add: %s", SAFE_STR(normalized_source));
 
     // Try to detect language from extension
     Language lang = LANG_UNKNOWN;
@@ -382,26 +382,26 @@ bool project_add_dependency_impl(ProjectContext *project, const char *source_fil
     }
 
     if (lang == LANG_UNKNOWN) {
-      log_error("Cannot determine language for source file: %s", normalized_source);
+      log_error("Cannot determine language for source file: %s", SAFE_STR(normalized_source));
       project_set_error(project, PROJECT_ERROR_UNKNOWN_LANGUAGE,
                         "Unknown language for source file");
       return false;
     }
 
     if (!project_add_file_impl(project, normalized_source, lang)) {
-      log_error("Failed to add source file to project: %s", normalized_source);
+      log_error("Failed to add source file to project: %s", SAFE_STR(normalized_source));
       return false;
     }
 
     source_ctx = project_get_file_context_impl(project, normalized_source);
     if (!source_ctx) {
-      log_error("Failed to get parser context for source file after adding: %s", normalized_source);
+      log_error("Failed to get parser context for source file after adding: %s", SAFE_STR(normalized_source));
       return false;
     }
   }
 
   if (!target_ctx) {
-    log_debug("Target file not in project, attempting to add: %s", normalized_target);
+    log_debug("Target file not in project, attempting to add: %s", SAFE_STR(normalized_target));
 
     // Try to detect language from extension
     Language lang = LANG_UNKNOWN;
@@ -425,32 +425,32 @@ bool project_add_dependency_impl(ProjectContext *project, const char *source_fil
     }
 
     if (lang == LANG_UNKNOWN) {
-      log_error("Cannot determine language for target file: %s", normalized_target);
+      log_error("Cannot determine language for target file: %s", SAFE_STR(normalized_target));
       project_set_error(project, PROJECT_ERROR_UNKNOWN_LANGUAGE,
                         "Unknown language for target file");
       return false;
     }
 
     if (!project_add_file_impl(project, normalized_target, lang)) {
-      log_error("Failed to add target file to project: %s", normalized_target);
+      log_error("Failed to add target file to project: %s", SAFE_STR(normalized_target));
       return false;
     }
 
     target_ctx = project_get_file_context_impl(project, normalized_target);
     if (!target_ctx) {
-      log_error("Failed to get parser context for target file after adding: %s", normalized_target);
+      log_error("Failed to get parser context for target file after adding: %s", SAFE_STR(normalized_target));
       return false;
     }
   }
 
   // Add dependency relationship to source file's context
   if (!parser_context_add_dependency(source_ctx, target_ctx)) {
-    log_error("Failed to add dependency relationship between %s and %s", normalized_source,
-              normalized_target);
+    log_error("Failed to add dependency relationship between %s and %s", SAFE_STR(normalized_source),
+              SAFE_STR(normalized_target));
     return false;
   }
 
-  log_debug("Added dependency: %s -> %s", normalized_source, normalized_target);
+  log_debug("Added dependency: %s -> %s", SAFE_STR(normalized_source), SAFE_STR(normalized_target));
   return true;
 }
 
@@ -480,7 +480,7 @@ size_t project_get_dependencies_impl(const ProjectContext *project, const char *
   if (!normalize_file_path(project->root_directory, filepath, normalized_path,
                            sizeof(normalized_path))) {
     // Cannot use project_set_error with const ProjectContext
-    log_error("Failed to normalize file path");
+    log_error("Failed to normalize file path for %s", SAFE_STR(filepath));
     if (out_dependencies) {
       *out_dependencies = NULL;
     }
@@ -510,7 +510,7 @@ size_t project_get_dependencies_impl(const ProjectContext *project, const char *
   char **deps = (char **)malloc(num_deps * sizeof(char *));
   if (!deps) {
     // Cannot use project_set_error with const ProjectContext
-    log_error("Failed to allocate memory for dependencies");
+    log_error("Failed to allocate memory for dependencies of %s", SAFE_STR(normalized_path));
     *out_dependencies = NULL;
     return 0;
   }

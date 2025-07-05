@@ -29,6 +29,8 @@
 #include "scopemux/logging.h"
 #include "scopemux/ts_internal.h"
 
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 /**
  * Parse a file and generate the AST and/or CST.
  */
@@ -38,7 +40,7 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, Language langua
     return false;
   }
 
-  log_info("Parsing file: %s", filename);
+  log_info("Parsing file: %s", SAFE_STR(filename));
 
   // Open and read the file
   FILE *f = fopen(filename, "rb");
@@ -91,14 +93,14 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, Language langua
 }
 
 /**
- * Parse a string and generate the AST and/or CST.
+ * Parse a string of source code.
  */
 bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
                          const char *filename, Language language) {
   fprintf(stderr,
           "[DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=%p, content=%p, content_length=%zu, "
           "filename=%s, language=%d\n",
-          (void *)ctx, (void *)content, content_length, filename ? filename : "(null)", language);
+          (void *)ctx, (void *)content, content_length, SAFE_STR(filename), language);
   if (!ctx || !content) {
     log_error("Cannot parse string: %s", !ctx ? "context is NULL" : "content is NULL");
     return false;
@@ -117,7 +119,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
   // Defensive logging: check for NULL before using %.20s
   if (ctx->source_code) {
     log_debug("parser_parse_string: ctx->source_code pointer=%p, length=%zu, preview='%.20s%s'",
-              (void *)ctx->source_code, ctx->source_code_length, ctx->source_code,
+              (void *)ctx->source_code, ctx->source_code_length, SAFE_STR(ctx->source_code),
               ctx->source_code_length > 20 ? "..." : "");
   } else {
     log_debug("parser_parse_string: ctx->source_code pointer=NULL, length=%zu",
@@ -191,7 +193,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 
   // Log debugging information
   if (ctx->log_level <= LOG_DEBUG) {
-    log_debug("Parsing %s with Tree-sitter, content length: %zu, language: %d", filename,
+    log_debug("Parsing %s with Tree-sitter, content length: %zu, language: %d", SAFE_STR(filename),
               content_length, language);
     log_debug("Tree-sitter parser at %p, language object at %p", (void *)ts_parser,
               (void *)ts_parser_language(ts_parser));
@@ -213,22 +215,28 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 
   // Additional validation - check if the content appears valid by examining first few bytes
   if (content_length > 0) {
-    log_debug("Content starts with: '%.10s%s'", content, content_length > 10 ? "..." : "");
+    const char *content_preview = content ? content : "(null)";
+    const char *content_suffix = (!content || strlen(content) <= 10) ? "" : "...";
+    log_debug("Content starts with: '%.10s%s'", content_preview, content_suffix);
   }
 
   // Parse the content
   TSTree *ts_tree = ts_parser_parse_string(ts_parser, NULL, content, (uint32_t)content_length);
+
+  // Use local variables to ensure NULL safety
+  const char *preview = ctx->source_code ? ctx->source_code : "(null)";
+  const char *suffix = (!ctx->source_code || strlen(ctx->source_code) <= 20) ? "" : "...";
+
   log_debug("parser_parse_string: after ts_parser_parse_string, ctx->source_code pointer=%p, "
             "preview='%.20s%s'",
-            (void *)ctx->source_code, ctx->source_code ? ctx->source_code : "(null)",
-            (ctx->source_code && strlen(ctx->source_code) > 20) ? "..." : "");
+            (void *)ctx->source_code, preview, suffix);
 
   // Check result with detailed logging
   if (!ts_tree) {
     char error_msg[256];
     snprintf(error_msg, sizeof(error_msg), "Tree-sitter parsing failed for language %d", language);
     parser_set_error(ctx, 9, error_msg);
-    log_error("Tree-sitter parsing failed for %s (language %d)", filename, language);
+    log_error("Tree-sitter parsing failed for %s (language %d)", SAFE_STR(filename), language);
     return false;
   }
 
@@ -239,9 +247,12 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 
   // Generate CST if requested
   if (ctx->mode == PARSE_CST || ctx->mode == PARSE_BOTH) {
+    // Use local variables to ensure NULL safety for string formatting
+    const char *cst_preview = ctx->source_code ? ctx->source_code : "(null)";
+    const char *cst_suffix = (!ctx->source_code || strlen(ctx->source_code) <= 20) ? "" : "...";
+
     log_debug("parser_parse_string: before CST, ctx->source_code pointer=%p, preview='%.20s%s'",
-              (void *)ctx->source_code, ctx->source_code ? ctx->source_code : "(null)",
-              (ctx->source_code && strlen(ctx->source_code) > 20) ? "..." : "");
+              (void *)ctx->source_code, cst_preview, cst_suffix);
     log_debug("Generating CST from Tree-sitter tree");
 
     // Basic validation of Tree-sitter tree pointer

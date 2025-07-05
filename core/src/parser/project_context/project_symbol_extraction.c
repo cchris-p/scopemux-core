@@ -40,7 +40,7 @@ void register_file_symbols(ProjectContext *project, ParserContext *ctx, const ch
     return;
   }
 
-  log_debug("Registering symbols from file: %s", filepath);
+  log_debug("Registering symbols from file: %s", SAFE_STR(filepath));
 
   // Process each AST node in the file
   for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
@@ -53,7 +53,7 @@ void register_file_symbols(ProjectContext *project, ParserContext *ctx, const ch
     symbol_table_register_from_ast(project->symbol_table, root, filepath);
   }
 
-  log_debug("Completed symbol registration for file: %s", filepath);
+  log_debug("Completed symbol registration for file: %s", SAFE_STR(filepath));
 }
 
 /**
@@ -73,8 +73,7 @@ bool project_context_extract_symbols_impl(ProjectContext *project, ParserContext
     return false;
   }
 
-  log_debug("Extracting symbols from parser context: %s",
-            ctx->filename ? ctx->filename : "(unnamed)");
+  log_debug("Extracting symbols from parser context: %s", SAFE_STR(ctx->filename));
 
   // Process each AST node in the file
   for (size_t i = 0; i < ctx->num_ast_nodes; i++) {

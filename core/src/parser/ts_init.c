@@ -67,7 +67,10 @@ char *build_queries_dir_impl(Language language) {
   }
 
   // Calculate length and allocate memory
-  size_t len = strlen(base) + 1 + strlen(subdir) + 1;
+  #ifndef SAFE_LEN
+  #define SAFE_LEN(x) ((x) ? strlen(x) : 0)
+  #endif
+  size_t len = SAFE_LEN(base) + 1 + SAFE_LEN(subdir) + 1;
   char *result = (char *)malloc(len);
   if (!result) {
     fprintf(stderr, "ERROR: Failed to allocate memory for queries directory path\n");
@@ -265,7 +268,7 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
     struct stat st;
     if (stat(queries_dir, &st) != 0 || !S_ISDIR(st.st_mode)) {
       log_error("CRITICAL ERROR: Queries directory does not exist or is not accessible: %s",
-                queries_dir);
+                SAFE_STR(queries_dir));
       parser_set_error(ctx, -1, "Queries directory does not exist or is not accessible");
       free(queries_dir);
       ts_parser_delete(ctx->ts_parser);
@@ -278,9 +281,9 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
     snprintf(docstrings_path, sizeof(docstrings_path), "%s/docstrings.scm", queries_dir);
 
     if (stat(docstrings_path, &st) != 0) {
-      log_error("WARNING: docstrings.scm not found at: %s", docstrings_path);
+      log_error("WARNING: docstrings.scm not found at: %s", SAFE_STR(docstrings_path));
     } else {
-      log_error("Found docstrings.scm at: %s", docstrings_path);
+      log_error("Found docstrings.scm at: %s", SAFE_STR(docstrings_path));
     }
 
     // Load hardcoded node type mappings
@@ -289,7 +292,7 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
 
     // Initialize query manager with the queries directory
     ctx->q_manager = query_manager_init(queries_dir);
-    log_error("Initialized query manager with queries directory: %s", queries_dir);
+    log_error("Initialized query manager with queries directory: %s", SAFE_STR(queries_dir));
     free(queries_dir);
 
     if (!ctx->q_manager) {

@@ -15,47 +15,33 @@ Options:
     --update            Update existing .expected.json files instead of creating new ones
     --review            Print diff before updating (implies --update)
     --dry-run           Do not write files, just print what would be done
-    --verbose, -v       Verbose output
-    --help, -h          Show this help message and exit
-
-Examples:
-    # Generate for a single C file (output will be hello_world.c.expected.json)
-    python generate_expected_json.py core/tests/examples/c/basic_syntax/hello_world.c
-
-    # Generate for all example files in a specific language directory
-    python generate_expected_json.py core/tests/examples/c/
-
-    # Generate for a specific directory with output files in a different location
-    python generate_expected_json.py --output-dir core/tests/examples/c core/tests/examples/c/basic_syntax/
-
-    # Generate for all test examples, updating existing files
-    python generate_expected_json.py --update core/tests/examples/
-
-    # Generate only AST output for Python files with review
-    python generate_expected_json.py --mode ast --review core/tests/examples/python/
+    --verbose           Print detailed information during processing
 """
-
-# This is a bridge script that redirects to the new refactored module
-# It maintains the same interface as the original script for backward compatibility
 
 import sys
 import os
 import gc
 import signal
 
-# Set up Python path to find both the core module and the parser_testing module
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-core_build_path = os.path.join(project_root, "build/lib.linux-x86_64-3.10")
-core_direct_path = os.path.join(project_root)
+# Print debugging information about the Python environment
+print("DEBUG: Python sys.path:")
+for i, path in enumerate(sys.path):
+    print(f"  [{i}] {path}")
+print(f"DEBUG: PYTHONPATH = {os.environ.get('PYTHONPATH', '')}")
+print(f"DEBUG: LD_LIBRARY_PATH = {os.environ.get('LD_LIBRARY_PATH', '')}")
 
-# Add paths to sys.path if they're not already there
-for path in [core_direct_path, core_build_path]:
-    if path not in sys.path:
-        sys.path.insert(0, path)
+# Set up Python path to find the core module - ensure build/core is first
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+core_build_path = os.path.join(project_root, "build/core")
+
+# Ensure build/core is first in sys.path
+if core_build_path in sys.path:
+    # Remove it first to ensure it will be inserted at the beginning
+    sys.path.remove(core_build_path)
+sys.path.insert(0, core_build_path)
+
 
 # Define a dummy segfault handler that can be used in case the real one isn't available
-
-
 def dummy_segfault_handler(signum, frame):
     print("Warning: Using dummy segfault handler")
     raise RuntimeError("Segmentation fault detected (dummy handler)")
@@ -64,49 +50,208 @@ def dummy_segfault_handler(signum, frame):
 # Register the dummy handler
 signal.signal(signal.SIGSEGV, dummy_segfault_handler)
 
+# Import the scopemux_core module
 try:
-    # Try to import the core module to ensure it's available
-    try:
-        # First clear any previous import attempts
-        if "scopemux_core" in sys.modules:
-            del sys.modules["scopemux_core"]
+    import scopemux_core
 
-        # Try to import the module
-        import scopemux_core
-
-        print("Successfully imported scopemux_core module")
-    except ImportError as e:
-        print(f"Warning: Failed to preload scopemux_core: {e}")
-        print("Will try again through the parser_testing module")
-
-    # Import the new CLI module
-    from core.parser_testing.cli import main
+    print(f"Loaded scopemux_core from: {scopemux_core.__file__}")
 except ImportError as e:
-    print(f"Error importing modules: {e}")
-    print("\nTroubleshooting steps:")
-    print(
-        "1. Make sure the core.parser_testing module is installed or in the Python path"
-    )
-    print("2. Run 'build_all_and_pybind.sh' from the project root directory")
-    print("3. Ensure the scopemux_core Python binding is properly built and accessible")
-    print("\nPython path:")
-    for p in sys.path:
-        print(f"  {p}")
+    print(f"ERROR: Failed to import scopemux_core: {e}")
+    print("Check that the module is built and in the correct location.")
     sys.exit(1)
 
-if __name__ == "__main__":
-    try:
-        # Run the main function from the new CLI module
-        exit_code = main()
-        sys.exit(exit_code)
-    except Exception as e:
-        print(f"Error in main execution: {e}")
-        import traceback
+# Try to get the segfault handler from the module
+try:
+    segfault_handler = scopemux_core.register_segfault_handler
+    print(f"Found segfault_handler in {scopemux_core.__file__}")
+except AttributeError:
+    print(
+        "Warning: scopemux_core.register_segfault_handler not found, using dummy handler"
+    )
+    segfault_handler = lambda: None
 
-        traceback.print_exc()
-        sys.exit(1)
-    finally:
-        # Always run cleanup
-        print("Performing final cleanup before exit...")
-        gc.collect()
-        print("Program exiting")
+# Rest of the imports
+import json
+import argparse
+import glob
+import difflib
+from pathlib import Path
+
+
+def main():
+    print("Starting main()")
+    parser = argparse.ArgumentParser(
+        description="Generate expected JSON output for test cases"
+    )
+    parser.add_argument("source_path", help="Source file or directory to process")
+    parser.add_argument(
+        "--output-dir", help="Directory to write output files (default: same as input)"
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["ast", "cst", "both"],
+        default="both",
+        help="Parse mode: ast, cst, or both (default: both)",
+    )
+    parser.add_argument(
+        "--update", action="store_true", help="Update existing .expected.json files"
+    )
+    parser.add_argument(
+        "--review",
+        action="store_true",
+        help="Print diff before updating (implies --update)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Do not write files, just print what would be done",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print detailed information during processing",
+    )
+
+    args = parser.parse_args()
+
+    # If --review is specified, --update is implied
+    if args.review:
+        args.update = True
+
+    # Register the segfault handler
+    segfault_handler()
+
+    # Process the source path
+    source_path = os.path.abspath(args.source_path)
+    if os.path.isdir(source_path):
+        print(f"Processing directory: {args.source_path}")
+        process_directory(source_path, args)
+    else:
+        print(f"Processing file: {args.source_path}")
+        process_file(source_path, args)
+
+
+def process_directory(directory, args):
+    # Process all supported file types in the directory
+    for ext in [".c", ".h", ".cpp", ".hpp", ".py", ".js", ".ts"]:
+        for file_path in glob.glob(
+            os.path.join(directory, f"**/*{ext}"), recursive=True
+        ):
+            process_file(file_path, args)
+
+
+def process_file(file_path, args):
+    # Determine the language based on file extension
+    ext = os.path.splitext(file_path)[1].lower()
+    language = None
+
+    if ext in [".c", ".h"]:
+        language = scopemux_core.Language.C
+    elif ext in [".cpp", ".hpp"]:
+        language = scopemux_core.Language.CPP
+    elif ext == ".py":
+        language = scopemux_core.Language.PYTHON
+    elif ext == ".js":
+        language = scopemux_core.Language.JAVASCRIPT
+    elif ext == ".ts":
+        language = scopemux_core.Language.TYPESCRIPT
+    else:
+        print(f"Unsupported file extension: {ext}")
+        return
+
+    # Read the file content
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Create a parser context
+    ctx = scopemux_core.ParserContext()
+
+    # Parse the file
+    if args.mode in ["ast", "both"]:
+        try:
+            ast_result = ctx.parse_string(content, file_path, language)
+            if ast_result:
+                ast_json = ctx.get_ast_json()
+                output_path = get_output_path(file_path, "ast", args)
+                write_or_update_json(ast_json, output_path, args)
+            else:
+                print(f"Failed to parse AST for {file_path}")
+        except Exception as e:
+            print(f"Error parsing AST for {file_path}: {e}")
+
+    if args.mode in ["cst", "both"]:
+        try:
+            cst_result = ctx.parse_string(content, file_path, language)
+            if cst_result:
+                cst_json = ctx.get_cst_json()
+                output_path = get_output_path(file_path, "cst", args)
+                write_or_update_json(cst_json, output_path, args)
+            else:
+                print(f"Failed to parse CST for {file_path}")
+        except Exception as e:
+            print(f"Error parsing CST for {file_path}: {e}")
+
+    # Clean up
+    ctx.clear()
+
+
+def get_output_path(file_path, mode, args):
+    if args.output_dir:
+        base_name = os.path.basename(file_path)
+        return os.path.join(args.output_dir, f"{base_name}.{mode}.expected.json")
+    else:
+        return f"{file_path}.{mode}.expected.json"
+
+
+def write_or_update_json(json_data, output_path, args):
+    # Format the JSON with indentation for readability
+    formatted_json = json.dumps(json_data, indent=2)
+
+    if args.update and os.path.exists(output_path):
+        if args.review:
+            try:
+                with open(output_path, "r", encoding="utf-8") as f:
+                    existing_json = f.read()
+
+                diff = list(
+                    difflib.unified_diff(
+                        existing_json.splitlines(),
+                        formatted_json.splitlines(),
+                        fromfile=f"a/{os.path.basename(output_path)}",
+                        tofile=f"b/{os.path.basename(output_path)}",
+                        lineterm="",
+                    )
+                )
+
+                if diff:
+                    print(f"\nDiff for {output_path}:")
+                    for line in diff:
+                        print(line)
+
+                    if not args.dry_run:
+                        print(f"Updating {output_path}")
+                        with open(output_path, "w", encoding="utf-8") as f:
+                            f.write(formatted_json)
+                else:
+                    print(f"No changes needed for {output_path}")
+            except Exception as e:
+                print(f"Error comparing files: {e}")
+        else:
+            if not args.dry_run:
+                print(f"Updating {output_path}")
+                with open(output_path, "w", encoding="utf-8") as f:
+                    f.write(formatted_json)
+            else:
+                print(f"Would update {output_path} (dry run)")
+    else:
+        if not args.dry_run:
+            print(f"Writing {output_path}")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(formatted_json)
+        else:
+            print(f"Would write {output_path} (dry run)")
+
+
+if __name__ == "__main__":
+    main()

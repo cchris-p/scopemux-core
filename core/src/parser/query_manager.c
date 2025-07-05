@@ -391,7 +391,7 @@ static const TSQuery *compile_query(const TSLanguage *language, const char *quer
   uint32_t preview_len = query_len < 40 ? query_len : 40;
   memcpy(preview, query_str, preview_len);
   preview[preview_len] = '\0';
-  log_debug("Query preview: '%s%s'", preview, query_len > 40 ? "..." : "");
+  log_debug("Query preview: '%s%s'", SAFE_STR(preview), query_len > 40 ? "..." : "");
 
   // Compile the query using Tree-sitter
   uint32_t error_type = 0;
@@ -543,7 +543,7 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
                                        const char *query_name) {
   // Log entry into this function for debugging
   log_debug("ENTERING query_manager_get_query with language=%d, query_name='%s'", language,
-            query_name ? query_name : "NULL");
+            SAFE_STR(query_name));
 
   // Validate query manager
   if (!q_manager) {

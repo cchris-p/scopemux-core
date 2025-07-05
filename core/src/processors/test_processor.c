@@ -23,6 +23,8 @@ static bool enable_logging = true;
 // Commenting out for now, 06-29-2025; Do not delete!
 // static jmp_buf error_jmp_buf;
 
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 /**
  * Check if the current parser context represents a test environment
  *
@@ -86,7 +88,7 @@ bool is_variables_loops_conditions_test(ParserContext *ctx) {
     strncpy(snippet, ctx->source_code, 100);
     snippet[100] = '\0';
     if (enable_logging)
-      log_debug("variables_loops_conditions.c source code snippet: %.100s", snippet);
+      log_debug("variables_loops_conditions.c source code snippet: %.100s", SAFE_STR(snippet));
   }
 
   // Check for a robust marker in the source code
@@ -403,11 +405,13 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   if (enable_logging)
     log_debug("variables_loops_conditions.c test AST: root type=%d, name=%s, qualified_name=%s, "
               "num_children=%zu",
-              ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
+              ast_root->type, SAFE_STR(ast_root->name), SAFE_STR(ast_root->qualified_name),
+              ast_root->num_children);
   for (size_t i = 0; i < ast_root->num_children; ++i) {
     if (enable_logging)
       log_debug("  child[%zu]: type=%d, name=%s, qualified_name=%s", i, ast_root->children[i]->type,
-                ast_root->children[i]->name, ast_root->children[i]->qualified_name);
+                SAFE_STR(ast_root->children[i]->name),
+                SAFE_STR(ast_root->children[i]->qualified_name));
   }
 
   // Update the docstring with same consistent format
@@ -1000,7 +1004,7 @@ ASTNode *apply_test_adaptations(ASTNode *ast_root, ParserContext *ctx) {
 
   if (!source_code) {
     if (enable_logging)
-      log_warning("Cannot apply test adaptations: source_code is NULL for %s", filename);
+      log_warning("Cannot apply test adaptations: source_code is NULL for %s", SAFE_STR(filename));
     return ast_root;
   }
 
@@ -1019,7 +1023,7 @@ ASTNode *apply_test_adaptations(ASTNode *ast_root, ParserContext *ctx) {
 
   // Removing redeclaration of filename which could cause undefined behavior
   if (enable_logging)
-    log_debug("Checking for test adaptations in file: %s", filename);
+    log_debug("Checking for test adaptations in file: %s", SAFE_STR(filename));
 
   // Apply test-specific modifications with detailed error handling
   if (is_hello_world_test(ctx)) {
@@ -1046,7 +1050,7 @@ ASTNode *apply_test_adaptations(ASTNode *ast_root, ParserContext *ctx) {
   }
 
   if (enable_logging)
-    log_debug("No test adaptation rule matched for %s", filename);
+    log_debug("No test adaptation rule matched for %s", SAFE_STR(filename));
   return ast_root;
 }
 
@@ -1084,7 +1088,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
     if (last_slash) {
       base_filename = last_slash + 1;
       if (enable_logging)
-        log_debug("Extracted base filename: %s", base_filename);
+        log_debug("Extracted base filename: %s", SAFE_STR(base_filename));
     }
   }
 
@@ -1213,10 +1217,10 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
 
   if (enable_logging)
     log_debug("hello_world.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu",
-              ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
+              ast_root->type, SAFE_STR(ast_root->name), SAFE_STR(ast_root->qualified_name), ast_root->num_children);
   if (enable_logging)
     log_debug("hello_world.c test AST: main node type=%d, name=%s, qualified_name=%s",
-              main_func->type, main_func->name, main_func->qualified_name);
+              main_func->type, SAFE_STR(main_func->name), SAFE_STR(main_func->qualified_name));
 
   return ast_root;
 }

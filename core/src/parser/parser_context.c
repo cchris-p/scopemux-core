@@ -16,6 +16,8 @@
 #include "parser_internal.h"
 #include <stdlib.h>
 
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 /**
  * Initialize a new parser context.
  */
@@ -88,8 +90,8 @@ void parser_clear(ParserContext *ctx) {
   // Free the source code
   if (ctx->source_code) {
     log_debug("parser_clear: freeing ctx->source_code pointer=%p, preview='%.20s%s'",
-              (void *)ctx->source_code, ctx->source_code,
-              strlen(ctx->source_code) > 20 ? "..." : "");
+              (void *)ctx->source_code, SAFE_STR(ctx->source_code),
+              (!ctx->source_code || strlen(ctx->source_code) <= 20) ? "" : "...");
     safe_free_field((void **)&ctx->source_code, "source_code", &encountered_error);
     log_debug("parser_clear: after free, ctx->source_code pointer=%p", (void *)ctx->source_code);
   }
@@ -153,7 +155,7 @@ void parser_clear(ParserContext *ctx) {
   }
 
   log_info("AST node cleanup summary: freed %zu of %zu nodes, errors: %s", freed_nodes,
-           ctx->num_ast_nodes, encountered_error ? "YES" : "NO");
+           ctx->num_ast_nodes, SAFE_STR(encountered_error ? "YES" : "NO"));
 
   // Free the array of AST nodes with extra validation
 #ifdef _MSC_VER
@@ -336,7 +338,7 @@ void parser_set_error(ParserContext *ctx, int code, const char *message) {
     }
   }
 
-  log_error("Parser error set: [%d] %s", code, message ? message : "(no message)");
+  log_error("Parser error set: [%d] %s", code, SAFE_STR(message));
 }
 
 /**
@@ -374,8 +376,7 @@ void parser_set_cst_root(ParserContext *ctx, CSTNode *cst_root) {
 
   // Free the old root if it exists
   if (old_root) {
-    log_debug("Freeing old CST root at %p (type=%s)", (void *)old_root,
-              old_root->type ? old_root->type : "unknown");
+    log_debug("Freeing old CST root at %p (type=%s)", (void *)old_root, SAFE_STR(old_root->type));
 
     cst_node_free(old_root);
     log_debug("Old CST root freed successfully");
@@ -383,8 +384,7 @@ void parser_set_cst_root(ParserContext *ctx, CSTNode *cst_root) {
 
   // Log the new state
   if (cst_root) {
-    log_debug("CST root set to %p (type=%s)", (void *)cst_root,
-              cst_root->type ? cst_root->type : "unknown");
+    log_debug("CST root set to %p (type=%s)", (void *)cst_root, SAFE_STR(cst_root->type));
   } else {
     log_debug("CST root cleared (set to NULL)");
   }

@@ -84,8 +84,8 @@ void memory_debug_cleanup(void) {
                 leak_bytes += allocations[i].size;
                 log_error("MEMORY LEAK: %zu bytes at %p allocated in %s:%d [%s]",
                          allocations[i].size, allocations[i].ptr,
-                         allocations[i].file, allocations[i].line,
-                         allocations[i].tag);
+                         SAFE_STR(allocations[i].file), allocations[i].line,
+                         SAFE_STR(allocations[i].tag));
             }
         }
         
@@ -165,7 +165,7 @@ void memory_debug_untrack(void *ptr, const char *file, int line) {
     
     if (!found) {
         log_error("Attempt to free untracked memory at %p in %s:%d",
-                 ptr, file, line);
+                 ptr, SAFE_STR(file), line);
     }
     
     pthread_mutex_unlock(&memory_debug_mutex);
@@ -242,8 +242,8 @@ void memory_debug_dump_allocations(void) {
             log_info("  %p: %zu bytes [%s] at %s:%d",
                     allocations[i].ptr,
                     allocations[i].size,
-                    allocations[i].tag,
-                    allocations[i].file,
+                    SAFE_STR(allocations[i].tag),
+                    SAFE_STR(allocations[i].file),
                     allocations[i].line);
         }
     }
@@ -317,7 +317,7 @@ void *memory_debug_malloc(size_t size, const char *file, int line, const char *t
     
     void *ptr = malloc(alloc_size);
     if (!ptr) {
-        log_error("malloc failed for %zu bytes at %s:%d", size, file, line);
+        log_error("malloc failed for %zu bytes at %s:%d", size, SAFE_STR(file), line);
         return NULL;
     }
     
@@ -338,7 +338,7 @@ void *memory_debug_calloc(size_t nmemb, size_t size, const char *file, int line,
     
     void *ptr = calloc(1, alloc_size);  // Use calloc(1, size) to handle overflow checking
     if (!ptr) {
-        log_error("calloc failed for %zu elements of %zu bytes at %s:%d", nmemb, size, file, line);
+        log_error("calloc failed for %zu elements of %zu bytes at %s:%d", nmemb, size, SAFE_STR(file), line);
         return NULL;
     }
     
@@ -366,7 +366,7 @@ void *memory_debug_realloc(void *ptr, size_t size, const char *file, int line, c
     
     void *new_ptr = realloc(ptr, alloc_size);
     if (!new_ptr) {
-        log_error("realloc failed for %zu bytes at %s:%d", size, file, line);
+        log_error("realloc failed for %zu bytes at %s:%d", size, SAFE_STR(file), line);
         return NULL;
     }
     
