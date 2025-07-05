@@ -1,0 +1,40 @@
+---
+globs: ["**/*.c", "**/*.h", "**/*.cpp", "**/*.cmake", "**/CMakeLists.txt"]
+alwaysApply: false
+---
+- Do **not** delete or modify important comments, such as:
+  - Documentation headers
+  - Licensing blocks
+  - Build system notes in `CMakeLists.txt` or `.cmake` files
+  - Code annotations marked with: `// INFO`, `// DOC`, `/** ... */`, `# CRITICAL`, `# NOTE`, etc.
+  - Comments that describe configuration, linking constraints, file structure, or safety warnings
+
+- Even during refactoring or file restructuring, **preserve**:
+  - Docstrings, headers, block-level rationale
+  - Warnings to contributors about symbol linkage, test constraints, or architecture rules
+  - Comments with `TODO`, `FIXME`, or special flags used by tooling or documentation generators
+
+- Do not remove or collapse multi-line comments that explain project structure, build logic, or include path behavior — especially in `CMakeLists.txt`.
+
+- Only modify comments if the user **explicitly requests** it.
+
+Example (preserve this in `CMakeLists.txt`):
+```cmake
+# ==============================================================================
+# CRITICAL NOTE FOR ALL CONTRIBUTORS
+# 
+# MUST ONLY be linked via the test_utilities static library.
+# NEVER add these files directly to any test executable's source list.
+# Violating this will cause duplicate symbol errors and runtime failures.
+# ==============================================================================
+````
+
+Example (preserve this in C code):
+
+```c
+/**
+ * Initializes subsystem with memory tracking hooks.
+ * Required for debug mode builds.
+ */
+void init_debug_hooks(void);
+```

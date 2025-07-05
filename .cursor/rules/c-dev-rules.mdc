@@ -1,0 +1,29 @@
+---
+description: Core C development rules to prevent common issues
+globs: ["**/*.c", "**/*.h"]
+type: Auto Attached
+---
+
+C Development Standards:
+
+- Do not define duplicate functions, macros, structs, or variables — always check for existing declarations in headers or other modules.
+- Use `#ifndef / #define / #endif` include guards in all header files (or `#pragma once` if your toolchain supports it).
+- Avoid global variables unless absolutely necessary; prefer static/internal linkage when appropriate.
+- Keep function signatures consistent between `.h` and `.c` files.
+- Separate logic and declarations: headers should declare, source files should define.
+- Include meaningful inline comments for complex logic or unsafe behavior (e.g., pointer arithmetic, system calls).
+- Never use `gets()` or other unsafe functions — prefer `fgets()`, `snprintf()`, etc.
+- Avoid implicit function declarations — always include the appropriate header or forward declaration.
+- Use `const` where possible to protect data and improve compiler checks.
+- Every non-trivial function should have an associated unit or integration test (unless explicitly excluded).
+
+Example violation (to avoid):
+```c
+// header.h
+void log_event();
+
+// another_header.h
+void log_event(); // Duplicate declaration from another module
+
+// bad.c
+gets(input); // Unsafe

@@ -208,6 +208,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 
   // Parse the content
   TSTree *ts_tree = ts_parser_parse_string(ts_parser, NULL, content, (uint32_t)content_length);
+  log_debug("parser_parse_string: after ts_parser_parse_string, ctx->source_code pointer=%p, preview='%.20s%s'", (void*)ctx->source_code, ctx->source_code ? ctx->source_code : "(null)", (ctx->source_code && strlen(ctx->source_code) > 20) ? "..." : "");
 
   // Check result with detailed logging
   if (!ts_tree) {

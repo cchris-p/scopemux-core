@@ -39,7 +39,6 @@
     ".gitmodules": true,
     ".python-version": true,
     "build": true,
-    "vendor": true,
     "core/build": true,
     "core/scopemux_core.egg-info": true,
     "core/vendor/pybind11": true,

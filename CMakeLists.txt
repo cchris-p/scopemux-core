@@ -165,8 +165,20 @@ set(TS_PYTHON_INCLUDE_DIR ${TS_PYTHON_DIR}/src CACHE FILEPATH "Tree-sitter Pytho
 set(TS_JS_INCLUDE_DIR ${TS_JS_DIR}/src CACHE FILEPATH "Tree-sitter JavaScript include directory")
 set(TS_TS_INCLUDE_DIR ${TS_TS_DIR}/src CACHE FILEPATH "Tree-sitter TypeScript include directory")
 
-# Finally add the main project subdirectory
+# Find Python packages needed for the project
+find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
+
+# Fetch pybind11 first, before we use any of its variables
+include(FetchContent)
+FetchContent_Declare(
+    pybind11
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/pybind11
+)
+FetchContent_MakeAvailable(pybind11)
+
+# Finally add the main project subdirectories
 add_subdirectory(core)
+add_subdirectory(core/tests)
 
 # Print configuration summary
 message(STATUS "Configuration summary:")

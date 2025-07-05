@@ -208,7 +208,6 @@ target_include_directories(scopemux_core PRIVATE
 
 # Link the module with necessary libraries
 target_link_libraries(scopemux_core PRIVATE
-    ${TREE_SITTER_LIBS}
     -ldl # Needed for dlopen/dlsym functions
     parser_core # Link with the static library directly so it is built and linked
 )
@@ -258,10 +257,11 @@ target_include_directories(scopemux_core PRIVATE
 # Installation rules
 install(TARGETS scopemux_core DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-# Add subdirectories for tests if they exist
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-    add_subdirectory(tests)
+# Add subdirectories for other components if they exist
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/adapters)
     add_subdirectory(src/adapters)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/config)
     add_subdirectory(src/config)
 endif()
 

@@ -1,27 +1,18 @@
-/*
+/**
  * node_type_mapping_loader.c
  *
- * Node Type Mapping Loader (2025+)
- * ---------------------------------
- * This module provides a hardcoded, code-driven mapping from semantic query types
- * (as used in Tree-sitter queries) to ScopeMux's internal ASTNodeType enums.
+ * Hardcoded node type mapping system for ScopeMux.
  *
- * Rationale:
- *   - The previous config/JSON-based mapping was removed to eliminate runtime errors,
- *     improve reliability, and simplify build reproducibility.
- *   - All mappings are now managed in code, reviewed via version control, and
- *     updated alongside the parser and query definitions.
+ * This module provides a simple, reliable mapping from semantic query types
+ * (e.g., "functions", "classes") to ASTNodeType enums. All mappings are
+ * hardcoded in the source code for maximum reliability and build reproducibility.
  *
- * Key API:
- *   - ASTNodeType get_node_type_for_query(const char *query_type):
- *       Returns the ASTNodeType for a given semantic query type string.
- *       If no mapping is found, returns NODE_UNKNOWN and logs a warning.
- *
- * How to extend:
- *   - To add a new mapping, add a new branch to the mapping logic in this file.
- *     (Usually a new strcmp or entry in a static table.)
- *   - Recompile the project to apply the change.
- *   - No config files or runtime dependencies are required.
+ * Key features:
+ *   - No external dependencies or config files
+ *   - All mappings are hardcoded in the source code
+ *   - Simple string comparison for lookups
+ *   - Memory-safe with proper error handling
+ *   - Thread-safe (read-only after initialization)
  *
  * See also: core/include/config/node_type_mapping_loader.h
  */
@@ -83,15 +74,12 @@ static ASTNodeType parse_node_type(const char *enum_str) {
 
 /**
  * @brief Loads the node type mapping from hardcoded defaults.
- * @param config_path Path to the JSON config file (ignored).
  *
- * This function ignores the config_path and uses hardcoded mappings instead.
+ * This function uses hardcoded mappings instead of loading from any external files.
  * This is the source of truth for node type mappings in ScopeMux.
  */
-void load_node_type_mapping(const char *config_path) {
-  // Log that we're using hardcoded mappings instead of loading from file
-  fprintf(stderr, "[scopemux] INFO: Using hardcoded node type mappings (ignoring path: %s)\n",
-          config_path ? config_path : "NULL");
+void load_node_type_mapping(void) {
+  fprintf(stderr, "[scopemux] INFO: Loading hardcoded node type mappings\n");
 
   printf("[scopemux] Loading hardcoded node type mappings:\n");
 

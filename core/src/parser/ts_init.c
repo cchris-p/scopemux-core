@@ -310,10 +310,8 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
     }
 
     // Load hardcoded node type mappings
-    // Note: We're passing NULL to indicate we want to use hardcoded mappings
-    // instead of loading from a JSON file
     log_error("Loading hardcoded node type mappings (source of truth)...");
-    load_node_type_mapping(NULL);
+    load_node_type_mapping();
 
     // Initialize query manager with the queries directory
     ctx->q_manager = query_manager_init(queries_dir);

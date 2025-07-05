@@ -3,9 +3,10 @@ build-interfile/*
 build-misc/*
 build-python/*
 windsurf-collector/*
-run_*_tests.txt
+#run_*_tests.txt
 ts_diagnostic
 ts_language_test
+!core/tests/**
 
 
 # Python
@@ -211,3 +212,11 @@ $RECYCLE.BIN/
 scopemux_core.cpython-*.so
 test_scopemux.cpython-*.so
 hello_scopemux.so
+!core/src/**
+!core/include/**
+*.cmake
+*.ts
+*.make
+*.c.o*
+Makefile
+*.marks
