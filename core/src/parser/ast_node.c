@@ -113,10 +113,12 @@ void ast_node_free_internal(ASTNode *node) {
       log_error("Invalid magic number in ASTNode at %p: expected 0x%X, found 0x%X", (void *)node,
                 ASTNODE_MAGIC, node->magic);
     }
+    // NOTE: Defensive: Do not proceed with freeing if magic is invalid
+    return;
   }
 
-  // Reset the magic number to prevent double-free
-  node->magic = 0;
+  // Set the magic number to a known bad value after freeing
+  node->magic = 0xDEADBEEF;
 
   // Free the name if it exists
   if (node->name) {
@@ -140,6 +142,12 @@ void ast_node_free_internal(ASTNode *node) {
   if (node->docstring) {
     memory_debug_free(node->docstring, __FILE__, __LINE__);
     node->docstring = NULL;
+  }
+
+  // Free the raw_content if it exists
+  if (node->raw_content) {
+    memory_debug_free(node->raw_content, __FILE__, __LINE__);
+    node->raw_content = NULL;
   }
 
   // Free the file_path if it exists
@@ -242,12 +250,12 @@ void ast_node_free(ASTNode *node) {
   if (node->magic != ASTNODE_MAGIC) {
     if (node->magic == 0) {
       log_error("Double-free detected: attempt to free already freed ASTNode at %p", (void *)node);
-      return; // Skip further processing to avoid crashes
     } else {
       log_error("Invalid magic number in ASTNode at %p: expected 0x%X, found 0x%X", (void *)node,
                 ASTNODE_MAGIC, node->magic);
-      // Continue with caution
     }
+    // NOTE: Defensive: Do not proceed with freeing if magic is invalid
+    return;
   }
 
   // Free internal resources (name, signature, etc.)
@@ -274,6 +282,9 @@ void ast_node_free(ASTNode *node) {
     node->num_references = 0;
     node->references_capacity = 0;
   }
+
+  // Set the magic number to a known bad value after freeing
+  node->magic = 0xDEADBEEF;
 
   // Finally free the node itself
   memory_debug_free(node, __FILE__, __LINE__);

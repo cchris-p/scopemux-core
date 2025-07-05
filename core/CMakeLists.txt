@@ -120,11 +120,28 @@ add_library(parser_core STATIC
     src/parser/ts_cst_builder.c
     src/parser/ts_query_processor.c
     src/parser/query_manager.c
+    # Reference resolver system (add all .c files)
     src/parser/reference_resolvers/language_resolvers.c
-    # Language compliance system
+    src/parser/reference_resolvers/resolver_registration.c
+    src/parser/reference_resolvers/resolver_implementation.c
+    src/parser/reference_resolvers/resolver_core.c
+    src/parser/reference_resolvers/reference_resolver_facade.c
+    src/parser/reference_resolvers/reference_resolver_core.c
+    src/parser/reference_resolvers/c_resolver.c
+    src/parser/reference_resolvers/cpp_resolver.c
+    src/parser/reference_resolvers/typescript_resolver.c
+    src/parser/reference_resolvers/python_resolver.c
+    src/parser/reference_resolvers/javascript_resolver.c
+    # Add the main reference_resolver.c
+    src/parser/reference_resolver.c
+    # Language compliance system (add all .c files)
     src/ast_compliance.c
     src/parser/lang/c_compliance.c
     src/parser/lang/lang_compliance_registry.c
+    src/parser/lang/python_ast_compliance.c
+    src/parser/lang/javascript_ast_compliance.c
+    src/parser/lang/typescript_ast_compliance.c
+    src/parser/lang/c_ast_compliance.c
     # Common files
     src/common/memory_management.c
     src/common/error_handling.c
@@ -138,6 +155,12 @@ add_library(parser_core STATIC
     src/processors/docstring_processor.c
     src/processors/ast_post_processor.c
     src/processors/test_processor.c
+    # Symbol table components
+    src/parser/symbol_table.c
+    src/parser/symbol_table/symbol_core.c
+    src/parser/symbol_table/symbol_entry.c
+    src/parser/symbol_table/symbol_lookup.c
+    src/parser/symbol_table/symbol_table_registration.c
 )
 
 set_target_properties(parser_core PROPERTIES
@@ -158,6 +181,7 @@ set(CONTEXT_ENGINE_SOURCES
     src/context_engine/compressor.c
     src/context_engine/expander.c
     src/context_engine/token_budgeter.c
+    src/context_engine/context_engine.c
 )
 
 set(COMMON_SOURCES
@@ -244,7 +268,6 @@ target_compile_options(scopemux_core PRIVATE "-rdynamic")
 set_target_properties(scopemux_core PROPERTIES ENABLE_EXPORTS ON)
 set_target_properties(scopemux_core PROPERTIES LINK_FLAGS "-Wl,--export-dynamic")
 
-
 # Set include directories for the Python module
 target_include_directories(scopemux_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -252,6 +275,24 @@ target_include_directories(scopemux_core PRIVATE
     ${PYTHON_INCLUDE_PATH}
     ${Python_INCLUDE_DIRS}
     ${pybind11_INCLUDE_DIRS}
+)
+
+# Add target_link_options block for scopemux_core to force --whole-archive inclusion of all Tree-sitter static libraries (ts_c, ts_cpp, ts_python, ts_javascript, ts_typescript)
+target_link_options(scopemux_core PRIVATE
+    -Wl,--whole-archive
+    -Wl,$<TARGET_FILE:ts_c>
+    -Wl,$<TARGET_FILE:ts_cpp>
+    -Wl,$<TARGET_FILE:ts_python>
+    -Wl,$<TARGET_FILE:ts_javascript>
+    -Wl,$<TARGET_FILE:ts_typescript>
+    -Wl,--no-whole-archive
+)
+
+# Add target_link_options block for scopemux_core to force --whole-archive inclusion of context_engine
+target_link_options(scopemux_core PRIVATE
+    -Wl,--whole-archive
+    -Wl,$<TARGET_FILE:context_engine>
+    -Wl,--no-whole-archive
 )
 
 # Installation rules

@@ -28,6 +28,7 @@ from .utils import (
 # Try to register a segfault handler if one isn't already set
 # This helps prevent crashes if the scopemux_core module has issues
 if signal.getsignal(signal.SIGSEGV) == signal.SIG_DFL:
+
     def cli_segfault_handler(signum, frame):
         print("Error: Segmentation fault detected in CLI")
         sys.exit(1)
@@ -45,11 +46,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generate expected JSON output for ScopeMux test cases",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__
+        epilog=__doc__,
     )
 
-    parser.add_argument(
-        "source_path", help="Source file or directory to process")
+    parser.add_argument("source_path", help="Source file or directory to process")
     parser.add_argument("--output-dir", help="Directory to write output files")
     parser.add_argument(
         "--mode",
@@ -68,10 +68,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--dry-run", action="store_true", help="Don't actually write files"
     )
-    parser.add_argument("--verbose", "-v",
-                        action="store_true", help="Verbose output")
-    parser.add_argument("--rebuild", action="store_true",
-                        help="Run build_all_and_pybind.sh before starting")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "--rebuild",
+        action="store_true",
+        help="Run build_all_and_pybind.sh before starting",
+    )
 
     args = parser.parse_args()
 
@@ -93,8 +95,7 @@ def rebuild_bindings():
     import os
 
     # Get the project root directory
-    project_root = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../.."))
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
     # Check if the build script exists
     build_script = os.path.join(project_root, "build_all_and_pybind.sh")
@@ -111,7 +112,7 @@ def rebuild_bindings():
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
         )
         print("Build completed successfully")
         return True
@@ -162,15 +163,15 @@ def process_file(
     # Check if output file exists
     file_exists = os.path.exists(output_path)
     if file_exists and not update:
-        print(
-            f"Output file {output_path} already exists. Use --update to overwrite.")
+        print(f"Output file {output_path} already exists. Use --update to overwrite.")
         return False
 
     # Generate JSON representation
     try:
         # Use the memory-safe processing function
         result_dict = safe_process_with_gc(
-            generator.generate_from_file, file_path, mode)
+            generator.generate_from_file, file_path, mode
+        )
 
         # If no result, return failure
         if not result_dict:
@@ -178,7 +179,11 @@ def process_file(
             return False
 
         # Check if there was an error during processing
-        if "error" in result_dict and result_dict.get("ast") is None and result_dict.get("cst") is None:
+        if (
+            "error" in result_dict
+            and result_dict.get("ast") is None
+            and result_dict.get("cst") is None
+        ):
             print(f"Error processing {file_path}: {result_dict['error']}")
             return False
 
@@ -188,6 +193,7 @@ def process_file(
                 existing_data = {}
                 with open(output_path, "r") as f:
                     import json
+
                     existing_data = json.load(f)
 
                 diff = generate_json_diff(existing_data, result_dict)
@@ -219,6 +225,7 @@ def process_file(
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -268,7 +275,7 @@ def process_directory(
             review=review,
             dry_run=dry_run,
             verbose=verbose,
-            root_dir=dir_path
+            root_dir=dir_path,
         )
 
         if result:
@@ -286,6 +293,7 @@ def main() -> int:
     Returns:
         Exit code (0 for success, non-zero for failure)
     """
+    print("Starting main()")
     # Parse command-line arguments
     args = parse_args()
 
@@ -314,7 +322,8 @@ def main() -> int:
             verbose=args.verbose,
         )
         print(
-            f"Processed {success + failure} files: {success} succeeded, {failure} failed.")
+            f"Processed {success + failure} files: {success} succeeded, {failure} failed."
+        )
         return 0 if failure == 0 else 1
     else:
         # Process a single file
@@ -331,6 +340,10 @@ def main() -> int:
         print("Success" if result else "Failed")
         return 0 if result else 1
 
+    print("Before cleanup")
+    # cleanup code
+    print("After cleanup")
+
 
 if __name__ == "__main__":
     try:
@@ -338,6 +351,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error in main execution: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
     finally:

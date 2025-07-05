@@ -29,7 +29,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-// Forward declarations for Tree-sitter language functions from vendor library
 extern const TSLanguage *tree_sitter_c(void);
 extern const TSLanguage *tree_sitter_cpp(void);
 extern const TSLanguage *tree_sitter_python(void);
@@ -103,6 +102,8 @@ char *build_queries_dir_impl(Language language) {
  */
 // Ensure this is properly exported for linking
 bool ts_init_parser_impl(ParserContext *ctx, Language language) {
+  fprintf(stderr, "[DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=%p, language=%d\n",
+          (void *)ctx, language);
   log_debug("ts_init_parser_impl called with language: %d, ctx: %p", language, (void *)ctx);
   if (!ctx) {
     log_error("NULL context passed to ts_init_parser");
@@ -149,83 +150,56 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
   fprintf(stderr, "  dlsym(tree_sitter_typescript): %p\n", ts_sym);
 #endif
 
-  // Set language
-  const TSLanguage *ts_language = NULL;
-
-  fprintf(stderr, "\n===== TS_INIT_PARSER: LANGUAGE FUNCTION DIAGNOSTICS =====\n");
-  fprintf(stderr, "Language type: %d (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)\n",
-          language);
-  fprintf(stderr, "  tree_sitter_c function address: %p\n", (void *)&tree_sitter_c);
-  fprintf(stderr, "  tree_sitter_cpp function address: %p\n", (void *)&tree_sitter_cpp);
-  fprintf(stderr, "  tree_sitter_python function address: %p\n", (void *)&tree_sitter_python);
-  fprintf(stderr, "  tree_sitter_javascript function address: %p\n",
-          (void *)&tree_sitter_javascript);
-  fprintf(stderr, "  tree_sitter_typescript function address: %p\n",
-          (void *)&tree_sitter_typescript);
-
-  // ADVANCED DIAGNOSTICS: Test direct function pointer usage
-  typedef const TSLanguage *(*LangFunc)(void);
-  LangFunc c_func_ptr = &tree_sitter_c;
-  LangFunc cpp_func_ptr = &tree_sitter_cpp;
-  LangFunc python_func_ptr = &tree_sitter_python;
-  LangFunc js_func_ptr = &tree_sitter_javascript;
-  LangFunc ts_func_ptr = &tree_sitter_typescript;
-
-  // Use printf directly to ensure output is visible regardless of log level
-  fprintf(stderr, "\n==== TREE-SITTER LANGUAGE FUNCTION DIAGNOSTICS ====\n");
-  fprintf(stderr, "Function pointers from language libraries:\n");
-  fprintf(stderr, "  C function pointer:          %p\n", (void *)c_func_ptr);
-  fprintf(stderr, "  C++ function pointer:        %p\n", (void *)cpp_func_ptr);
-  fprintf(stderr, "  Python function pointer:     %p\n", (void *)python_func_ptr);
-  fprintf(stderr, "  JavaScript function pointer: %p\n", (void *)js_func_ptr);
-  fprintf(stderr, "  TypeScript function pointer: %p\n", (void *)ts_func_ptr);
-
-  // Try calling C++ function pointer directly
-  if (language == LANG_CPP) {
-    fprintf(stderr, "\nCalling C++ function pointer directly:\n");
-    const TSLanguage *direct_result = NULL;
-    if (cpp_func_ptr) {
-      direct_result = (*cpp_func_ptr)();
-      fprintf(stderr, "  Direct function pointer call result: %p\n", (void *)direct_result);
-    } else {
-      fprintf(stderr, "  ERROR: C++ function pointer is NULL, cannot call\n");
-    }
-  }
-
-  fprintf(stderr, "\nAttempting to call appropriate language function...\n");
+  // DIAGNOSTIC: Print language enum and adapter lookup
+  fprintf(stderr, "[DIAGNOSTIC] ts_init_parser_impl: language enum: %d\n", language);
+  const char *lang_name = NULL;
   switch (language) {
   case LANG_C:
-    fprintf(stderr, "  Using tree_sitter_c()\n");
-    ts_language = tree_sitter_c();
-    fprintf(stderr, "  tree_sitter_c() returned: %p\n", (void *)ts_language);
+    lang_name = "C";
     break;
   case LANG_CPP:
-    fprintf(stderr, "  Using tree_sitter_cpp()\n");
-    ts_language = tree_sitter_cpp();
-    fprintf(stderr, "  tree_sitter_cpp() returned: %p\n", (void *)ts_language);
+    lang_name = "C++";
     break;
   case LANG_PYTHON:
-    fprintf(stderr, "  Using tree_sitter_python()\n");
-    ts_language = tree_sitter_python();
-    fprintf(stderr, "  tree_sitter_python() returned: %p\n", (void *)ts_language);
+    lang_name = "Python";
     break;
   case LANG_JAVASCRIPT:
-    fprintf(stderr, "  Using tree_sitter_javascript()\n");
-    ts_language = tree_sitter_javascript();
-    fprintf(stderr, "  tree_sitter_javascript() returned: %p\n", (void *)ts_language);
+    lang_name = "JavaScript";
     break;
   case LANG_TYPESCRIPT:
-    fprintf(stderr, "  Using tree_sitter_typescript()\n");
-    ts_language = tree_sitter_typescript();
-    fprintf(stderr, "  tree_sitter_typescript() returned: %p\n", (void *)ts_language);
+    lang_name = "TypeScript";
     break;
   default:
+    lang_name = "UNKNOWN";
+    break;
+  }
+  fprintf(stderr, "[DIAGNOSTIC] Language name: %s\n", lang_name);
+
+  LanguageAdapter *adapter = get_adapter_by_language(language);
+  fprintf(stderr, "[DIAGNOSTIC] Adapter lookup result: %p\n", (void *)adapter);
+  if (adapter) {
+    fprintf(stderr, "[DIAGNOSTIC] Adapter language_name: %s\n", adapter->language_name);
+    fprintf(stderr, "[DIAGNOSTIC] Adapter get_ts_language pointer: %p\n",
+            (void *)adapter->get_ts_language);
+    if (adapter->get_ts_language) {
+      const TSLanguage *ts_lang_ptr = adapter->get_ts_language();
+      fprintf(stderr, "[DIAGNOSTIC] Result of get_ts_language(): %p\n", (void *)ts_lang_ptr);
+    } else {
+      fprintf(stderr, "[DIAGNOSTIC] Adapter get_ts_language is NULL!\n");
+    }
+  } else {
+    fprintf(stderr, "[DIAGNOSTIC] Adapter is NULL!\n");
+  }
+
+  // Set language
+  if (!adapter || !adapter->get_ts_language) {
     log_error("CRITICAL ERROR: Unsupported language type: %d", language);
     parser_set_error(ctx, -1, "Unsupported language type");
     ts_parser_delete(ctx->ts_parser);
     ctx->ts_parser = NULL;
     return false;
   }
+  const TSLanguage *ts_language = adapter->get_ts_language();
 
   if (ts_language == NULL) {
     log_error("CRITICAL ERROR: Language function returned NULL for language type: %d", language);

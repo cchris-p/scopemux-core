@@ -95,6 +95,10 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, Language langua
  */
 bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
                          const char *filename, Language language) {
+  fprintf(stderr,
+          "[DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=%p, content=%p, content_length=%zu, "
+          "filename=%s, language=%d\n",
+          (void *)ctx, (void *)content, content_length, filename ? filename : "(null)", language);
   if (!ctx || !content) {
     log_error("Cannot parse string: %s", !ctx ? "context is NULL" : "content is NULL");
     return false;
@@ -110,9 +114,15 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     return false;
   }
   ctx->source_code_length = content_length;
-  log_debug("parser_parse_string: ctx->source_code pointer=%p, length=%zu, preview='%.20s%s'",
-            (void *)ctx->source_code, ctx->source_code_length, ctx->source_code,
-            ctx->source_code_length > 20 ? "..." : "");
+  // Defensive logging: check for NULL before using %.20s
+  if (ctx->source_code) {
+    log_debug("parser_parse_string: ctx->source_code pointer=%p, length=%zu, preview='%.20s%s'",
+              (void *)ctx->source_code, ctx->source_code_length, ctx->source_code,
+              ctx->source_code_length > 20 ? "..." : "");
+  } else {
+    log_debug("parser_parse_string: ctx->source_code pointer=NULL, length=%zu",
+              ctx->source_code_length);
+  }
 
   if (filename) {
     ctx->filename = strdup(filename);
@@ -208,7 +218,10 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 
   // Parse the content
   TSTree *ts_tree = ts_parser_parse_string(ts_parser, NULL, content, (uint32_t)content_length);
-  log_debug("parser_parse_string: after ts_parser_parse_string, ctx->source_code pointer=%p, preview='%.20s%s'", (void*)ctx->source_code, ctx->source_code ? ctx->source_code : "(null)", (ctx->source_code && strlen(ctx->source_code) > 20) ? "..." : "");
+  log_debug("parser_parse_string: after ts_parser_parse_string, ctx->source_code pointer=%p, "
+            "preview='%.20s%s'",
+            (void *)ctx->source_code, ctx->source_code ? ctx->source_code : "(null)",
+            (ctx->source_code && strlen(ctx->source_code) > 20) ? "..." : "");
 
   // Check result with detailed logging
   if (!ts_tree) {
@@ -445,6 +458,8 @@ const CSTNode *parser_get_cst_root(const ParserContext *ctx) {
 
 // === Tree-sitter integration public API ===
 bool ts_init_parser(ParserContext *ctx, Language language) {
+  fprintf(stderr, "[DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=%p, language=%d\n", (void *)ctx,
+          language);
   if (!ctx) {
     log_error("NULL context passed to ts_init_parser");
     return false;

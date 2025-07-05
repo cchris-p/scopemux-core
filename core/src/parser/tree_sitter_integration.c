@@ -41,13 +41,6 @@
  * - ts_query_processor.c: Handles Tree-sitter query execution
  */
 
-// Forward declarations for Tree-sitter language functions
-extern const TSLanguage *tree_sitter_c(void);
-extern const TSLanguage *tree_sitter_cpp(void);
-extern const TSLanguage *tree_sitter_python(void);
-extern const TSLanguage *tree_sitter_javascript(void);
-extern const TSLanguage *tree_sitter_typescript(void);
-
 /**
  * @brief Builds a queries directory path for the given language
  *

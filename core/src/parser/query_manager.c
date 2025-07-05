@@ -43,13 +43,7 @@
 
 #include "../../core/include/scopemux/parser.h" // For Language constants
 #include "../../core/include/scopemux/query_manager.h"
-
-// Forward declarations for Tree-sitter language functions from vendor library
-extern const TSLanguage *tree_sitter_c(void);
-extern const TSLanguage *tree_sitter_cpp(void);
-extern const TSLanguage *tree_sitter_python(void);
-extern const TSLanguage *tree_sitter_javascript(void);
-extern const TSLanguage *tree_sitter_typescript(void);
+#include "scopemux/adapters/language_adapter.h"
 
 /**
  * @brief Structure to represent a cached query.
@@ -134,11 +128,14 @@ QueryManager *query_manager_init(const char *queries_dir) {
   manager->language_types[5] = LANG_TYPESCRIPT;
 
   // Initialize language objects
-  manager->languages[1] = tree_sitter_c();
-  manager->languages[2] = tree_sitter_cpp();
-  manager->languages[3] = tree_sitter_python();
-  manager->languages[4] = tree_sitter_javascript();
-  manager->languages[5] = tree_sitter_typescript();
+  for (int lang = LANG_C; lang < LANG_MAX; ++lang) {
+    LanguageAdapter *adapter = get_adapter_by_language((Language)lang);
+    if (adapter && adapter->get_ts_language) {
+      manager->languages[lang] = adapter->get_ts_language();
+    } else {
+      manager->languages[lang] = NULL;
+    }
+  }
 
   // Initialize all query counts to 0
   for (size_t i = 0; i < MAX_LANGUAGES; i++) {
