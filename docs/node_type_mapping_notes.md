@@ -1,46 +1,80 @@
-# Config-Driven Node Type Mapping in ScopeMux
+# Node Type Mapping in ScopeMux (2025+)
 
 ## Overview
-ScopeMux now uses a configuration-driven approach for mapping semantic query types (from Tree-sitter queries) to internal AST node type enums. This allows for easy extension and maintenance without recompiling the codebase.
+ScopeMux now uses a **hardcoded, code-driven** approach for mapping semantic query types (from Tree-sitter queries) to internal AST node type enums. This replaces the previous config/JSON-based system for improved reliability, simplicity, and build reproducibility.
 
-## Config File
-- **Location:** `core/config/node_type_mapping.json`
-- **Format:** JSON object mapping query type strings (e.g., "functions") to enum names (e.g., "NODE_FUNCTION").
-- **Example:**
-  ```json
-  {
-    "functions": "NODE_FUNCTION",
-    "classes": "NODE_CLASS",
-    "variables": "NODE_VARIABLE"
-  }
-  ```
-- To add support for a new query type, simply add a new entry to this file.
+## How It Works
+- Semantic query types (e.g., "functions", "classes") are mapped to `ASTNodeType` enums **directly in C code**.
+- The mapping logic lives in:
+  - **Header:** `core/include/config/node_type_mapping_loader.h`
+  - **Source:** `core/src/config/node_type_mapping_loader.c`
+- The function `ASTNodeType get_node_type_for_query(const char *query_type);` provides the mapping at runtime.
 
-## Loader Implementation
-- **Header:** `core/include/scopemux/config/node_type_mapping_loader.h`
-- **Source:** `core/src/config/node_type_mapping_loader.c`
-- Provides:
-  - `void load_node_type_mapping(const char *config_path);`
-  - `ASTNodeType get_node_type_for_query(const char *query_type);`
-  - `void free_node_type_mapping(void);`
-- The loader is initialized at parser startup and cleaned up at shutdown.
+## Rationale for the Change
+- **No external dependencies:** Eliminates runtime errors due to missing or out-of-sync config files.
+- **Performance:** No file I/O or parsing overhead.
+- **Build reproducibility:** Mapping is version-controlled and updated with the codebase.
+- **Simplicity:** Adding a new mapping is a single-line code change.
 
-## Parser Integration
-- The parser uses `get_node_type_for_query` to map query types to AST node types.
-- If a mapping is missing, a warning is logged and `NODE_UNKNOWN` is returned.
+## How to Add or Change a Mapping
+1. **Edit the C source:**
+   - Open `core/src/config/node_type_mapping_loader.c`.
+   - Locate the static mapping table or the logic in `get_node_type_for_query`.
+   - Add or modify an entry for your new query type and corresponding enum.
+2. **Recompile the project.**
+3. **(Optional)**: Update `core/include/config/node_type_mapping_loader.h` if you add new enums.
+
+## Example
+```c
+// In node_type_mapping_loader.c:
+if (strcmp(query_type, "functions") == 0)
+    return NODE_FUNCTION;
+if (strcmp(query_type, "classes") == 0)
+    return NODE_CLASS;
+// ...
+```
 
 ## Error Handling
-- Missing config files or unmapped query types are logged as errors or warnings.
-- The system falls back to `NODE_UNKNOWN` for unmapped types.
+- If a mapping is missing, a warning is logged and `NODE_UNKNOWN` is returned.
+- No config file errors can occur.
 
 ## Extensibility
-- No code changes are required to add new mappings—just update the JSON config.
-- If you add new semantic types to queries, update the config file accordingly.
+- To add support for a new semantic query type, just add a new `strcmp` branch or entry in the mapping logic.
+- All mappings are now tracked and reviewed through code review/version control.
 
 ## Maintenance Notes
-- If the config format becomes more complex, consider using a full JSON parser.
-- The loader is currently optimized for a small, flat mapping.
+- The code-based mapping is optimized for a small, flat set of semantic types.
+- If the mapping grows large, consider using a hash table or macro table for maintainability.
 
 ---
 
-*See code comments in loader and parser files for further details on integration and usage.*
+## AST Schema Compliance and Test Requirements
+
+### Source of Truth
+
+**The canonical source of truth for AST schema requirements is the `.expected.json` files in the test directory (`core/tests/parser/interfile_tests/expected/`).** These files define the exact schema structure that must be matched by the parser output.
+
+### Critical Schema Requirements
+
+Some tests have very specific requirements for node structure and ordering:
+
+- **variables_loops_conditions.c test:**
+  - Node at index 0 (root): Must have empty name and qualified_name
+  - Node at index 4: Must be DOCSTRING with empty name and qualified_name
+  - Node at index 12: Must be FUNCTION with name and qualified_name "main"
+
+### Compliance Implementation
+
+The schema compliance logic is implemented in language-specific compliance handlers:
+
+- C language: `core/src/parser/lang/c_compliance.c`
+- Python language: `core/src/parser/lang/python_compliance.c`
+- etc.
+
+### Modifying Compliance Logic
+
+WARNING: Changes to compliance logic MUST be synchronized with updates to the corresponding `.expected.json` test files. Failure to maintain this synchronization will result in test failures.
+
+---
+
+*See code comments in `core/src/config/node_type_mapping_loader.c` for further details on integration and extension.*

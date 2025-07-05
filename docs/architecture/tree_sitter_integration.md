@@ -61,6 +61,12 @@ The AST is built by executing a series of semantic queries against the Tree-sitt
 3.  Each query match corresponds to a semantic element (e.g., a function definition, a class).
 4.  An `ASTNode` is created for each match and added to the tree, forming a hierarchical, semantic representation of the code.
 
+### Mapping Query Types to ASTNodeType
+- Semantic query types (e.g., "functions", "classes") captured by Tree-sitter queries are mapped to `ASTNodeType` enums **directly in C code**.
+- This mapping is implemented in `core/src/config/node_type_mapping_loader.c` via the function `get_node_type_for_query(const char *query_type)`.
+- There is **no config file or JSON**; all mappings are hardcoded for reliability and reproducibility.
+- To add a new mapping, simply update the mapping logic in the loader source and recompile.
+
 Conceptually, queries are often ordered to build the tree logically, for example:
 1.  `classes.scm` / `structs.scm` to establish container scopes.
 2.  `functions.scm` / `methods.scm` to define callable units.
@@ -98,7 +104,13 @@ queries/
    - Create `.scm` files for each semantic construct
 
 3. **Update Node Type Mappings**:
-   - Add language-specific mappings to `node_type_mapping.json`
+   - Add a new mapping for your query type in `core/src/config/node_type_mapping_loader.c` (see the function `get_node_type_for_query`).
+   - Example:
+     ```c
+     if (strcmp(query_type, "my_new_construct") == 0)
+         return NODE_MY_NEW_CONSTRUCT;
+     ```
+   - Recompile the project.
 
 4. **Add Test Coverage**:
    - Create example test files in `core/tests/examples/<language>/`
@@ -107,7 +119,7 @@ queries/
 ### Adding New Semantic Queries
 
 1. **Create a new `.scm` query file** for the semantic construct
-2. **Add the query type** to the node type mapping JSON
+2. **Add the query type mapping** in `core/src/config/node_type_mapping_loader.c` as described above
 3. **Update the query execution order** in `process_all_ast_queries`
 4. **Add test cases** that utilize the new semantic construct
 
