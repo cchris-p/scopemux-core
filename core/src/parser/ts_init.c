@@ -13,6 +13,7 @@
 #include "../../include/scopemux/adapters/adapter_registry.h"
 #include "../../include/scopemux/adapters/language_adapter.h"
 #include "../../include/scopemux/logging.h"
+#include "../../include/scopemux/memory_debug.h"
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/query_manager.h"
 #include "config/node_type_mapping_loader.h"
@@ -66,12 +67,12 @@ char *build_queries_dir_impl(Language language) {
     break;
   }
 
-  // Calculate length and allocate memory
-  #ifndef SAFE_LEN
-  #define SAFE_LEN(x) ((x) ? strlen(x) : 0)
-  #endif
+// Calculate length and allocate memory
+#ifndef SAFE_LEN
+#define SAFE_LEN(x) ((x) ? strlen(x) : 0)
+#endif
   size_t len = SAFE_LEN(base) + 1 + SAFE_LEN(subdir) + 1;
-  char *result = (char *)malloc(len);
+  char *result = (char *)MALLOC(len, "queries_dir_path");
   if (!result) {
     fprintf(stderr, "ERROR: Failed to allocate memory for queries directory path\n");
     return NULL;
@@ -270,7 +271,7 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
       log_error("CRITICAL ERROR: Queries directory does not exist or is not accessible: %s",
                 SAFE_STR(queries_dir));
       parser_set_error(ctx, -1, "Queries directory does not exist or is not accessible");
-      free(queries_dir);
+      FREE(queries_dir);
       ts_parser_delete(ctx->ts_parser);
       ctx->ts_parser = NULL;
       return false;
@@ -293,7 +294,7 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
     // Initialize query manager with the queries directory
     ctx->q_manager = query_manager_init(queries_dir);
     log_error("Initialized query manager with queries directory: %s", SAFE_STR(queries_dir));
-    free(queries_dir);
+    FREE(queries_dir);
 
     if (!ctx->q_manager) {
       log_error("CRITICAL ERROR: Failed to initialize query manager");

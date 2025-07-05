@@ -7,6 +7,9 @@
  * kept separate from main stubs to avoid linker conflicts.
  */
 
+#include "../../core/include/scopemux/ast.h"
+#include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include "scopemux/parser.h"
 #include "scopemux/project_context.h"
 #include <criterion/criterion.h>
@@ -27,30 +30,30 @@ static FileRegistry g_file_registry = {NULL, NULL, 0, 0};
 /**
  * Initialize the file registry for tests
  */
-static void init_file_registry(void) {
-  if (g_file_registry.paths == NULL) {
-    g_file_registry.capacity = 8;
-    g_file_registry.paths = calloc(g_file_registry.capacity, sizeof(char *));
-    g_file_registry.languages = calloc(g_file_registry.capacity, sizeof(Language));
-    g_file_registry.count = 0;
-  }
+void init_file_registry(void) {
+  g_file_registry.capacity = 10;
+  g_file_registry.count = 0;
+  g_file_registry.paths =
+      (char **)CALLOC(g_file_registry.capacity, sizeof(char *), "file_registry_paths");
+  g_file_registry.languages =
+      (Language *)CALLOC(g_file_registry.capacity, sizeof(Language), "file_registry_languages");
 }
 
 /**
  * Free the file registry
  */
-static void free_file_registry(void) {
-  if (g_file_registry.paths) {
-    for (size_t i = 0; i < g_file_registry.count; i++) {
-      free(g_file_registry.paths[i]);
+void cleanup_file_registry(void) {
+  for (size_t i = 0; i < g_file_registry.count; i++) {
+    if (g_file_registry.paths[i]) {
+      FREE(g_file_registry.paths[i]);
     }
-    free(g_file_registry.paths);
-    free(g_file_registry.languages);
-    g_file_registry.paths = NULL;
-    g_file_registry.languages = NULL;
-    g_file_registry.count = 0;
-    g_file_registry.capacity = 0;
   }
+  FREE(g_file_registry.paths);
+  FREE(g_file_registry.languages);
+  g_file_registry.paths = NULL;
+  g_file_registry.languages = NULL;
+  g_file_registry.count = 0;
+  g_file_registry.capacity = 0;
 }
 
 /**
@@ -171,4 +174,4 @@ Language project_context_get_file_language(const ProjectContext *ctx, size_t ind
 /**
  * Release resources on program exit
  */
-__attribute__((destructor)) static void cleanup_test_resources(void) { free_file_registry(); }
+__attribute__((destructor)) static void cleanup_test_resources(void) { cleanup_file_registry(); }

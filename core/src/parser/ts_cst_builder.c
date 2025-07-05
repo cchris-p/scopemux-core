@@ -12,6 +12,7 @@
 
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/parser.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include "cst_node.h"
 #include <setjmp.h>
 #include <signal.h>
@@ -71,13 +72,13 @@ static char *ts_node_to_string(TSNode node, const char *source_code) {
     log_warning("ts_node_to_string: zero-length node (start_byte=%u, end_byte=%u)", start_byte,
                 end_byte);
     // Allow zero-length but return empty string
-    char *result = (char *)malloc(1);
+    char *result = (char *)MALLOC(1, "ts_node_empty_string");
     if (result)
       result[0] = '\0';
     return result;
   }
 
-  char *result = (char *)malloc(length + 1);
+  char *result = (char *)MALLOC(length + 1, "ts_node_string_content");
   if (!result) {
     log_error("ts_node_to_string: malloc failed for length %u", length);
     return NULL;
@@ -155,7 +156,7 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
   if (!cst_node) {
     log_error("Failed to create CST node for type: %s", SAFE_STR(type));
     if (content) {
-      free(content);
+      FREE(content);
     }
     return NULL;
   }

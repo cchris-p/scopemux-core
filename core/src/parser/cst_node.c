@@ -7,6 +7,7 @@
  */
 
 #include "../../core/src/parser/cst_node.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include "../../core/src/parser/memory_tracking.h"
 #include "../../core/src/parser/parser_internal.h"
 #include <assert.h>
@@ -55,7 +56,7 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
   // Create a new node with the same type
   char *content_copy = NULL;
   if (node->content) {
-    content_copy = strdup(node->content);
+    content_copy = STRDUP(node->content, "cst_node_content_copy");
     if (!content_copy) {
       log_error("Failed to duplicate CST node content");
       return NULL;
@@ -71,7 +72,7 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
   }
   if (!new_node) {
     if (content_copy) {
-      free(content_copy);
+      FREE(content_copy);
     }
     return NULL;
   }

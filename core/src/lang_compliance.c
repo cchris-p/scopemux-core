@@ -9,6 +9,7 @@
 #include "../include/scopemux/lang_compliance.h"
 #include "../include/scopemux/ast_compliance.h"
 #include "../include/scopemux/logging.h"
+#include "../include/scopemux/memory_debug.h"
 #include "../include/scopemux/parser.h"
 #include <string.h>
 
@@ -27,11 +28,11 @@ static int c_schema_compliance(ASTNode *node, ParserContext *ctx) {
     // Fix for identifier node that should be COMMENT
     if (strcmp(node->name, "identifier") == 0) {
       node->type = NODE_COMMENT;
-      free(node->name);
-      node->name = strdup("");
+      FREE(node->name);
+      node->name = STRDUP("", "identifier_node_name");
       if (node->qualified_name) {
-        free(node->qualified_name);
-        node->qualified_name = strdup("");
+        FREE(node->qualified_name);
+        node->qualified_name = STRDUP("", "identifier_node_qualified_name");
       }
       return 1;
     }
@@ -39,11 +40,11 @@ static int c_schema_compliance(ASTNode *node, ParserContext *ctx) {
     // Fix for number_literal node that should be main function
     else if (strcmp(node->name, "number_literal") == 0) {
       node->type = NODE_FUNCTION;
-      free(node->name);
-      node->name = strdup("main");
+      FREE(node->name);
+      node->name = STRDUP("main", "main_node_name");
       if (node->qualified_name) {
-        free(node->qualified_name);
-        node->qualified_name = strdup("main");
+        FREE(node->qualified_name);
+        node->qualified_name = STRDUP("main", "main_node_qualified_name");
       }
       return 1;
     }
@@ -51,11 +52,11 @@ static int c_schema_compliance(ASTNode *node, ParserContext *ctx) {
     // Fix for compound_statement nodes that should be COMMENT
     else if (strcmp(node->name, "compound_statement") == 0) {
       node->type = NODE_COMMENT;
-      free(node->name);
-      node->name = strdup("");
+      FREE(node->name);
+      node->name = STRDUP("", "compound_statement_node_name");
       if (node->qualified_name) {
-        free(node->qualified_name);
-        node->qualified_name = strdup("");
+        FREE(node->qualified_name);
+        node->qualified_name = STRDUP("", "compound_statement_node_qualified_name");
       }
       return 1;
     }
@@ -63,11 +64,11 @@ static int c_schema_compliance(ASTNode *node, ParserContext *ctx) {
     // Fix for primitive_type nodes that should be COMMENT
     else if (strcmp(node->name, "primitive_type") == 0) {
       node->type = NODE_COMMENT;
-      free(node->name);
-      node->name = strdup("");
+      FREE(node->name);
+      node->name = STRDUP("", "primitive_type_node_name");
       if (node->qualified_name) {
-        free(node->qualified_name);
-        node->qualified_name = strdup("");
+        FREE(node->qualified_name);
+        node->qualified_name = STRDUP("", "primitive_type_node_qualified_name");
       }
       return 1;
     }
@@ -75,11 +76,11 @@ static int c_schema_compliance(ASTNode *node, ParserContext *ctx) {
     // Fix for parameter_list nodes that should be COMMENT
     else if (strcmp(node->name, "parameter_list") == 0) {
       node->type = NODE_COMMENT;
-      free(node->name);
-      node->name = strdup("");
+      FREE(node->name);
+      node->name = STRDUP("", "parameter_list_node_name");
       if (node->qualified_name) {
-        free(node->qualified_name);
-        node->qualified_name = strdup("");
+        FREE(node->qualified_name);
+        node->qualified_name = STRDUP("", "parameter_list_node_qualified_name");
       }
       return 1;
     }
@@ -87,11 +88,11 @@ static int c_schema_compliance(ASTNode *node, ParserContext *ctx) {
     // Fix for function_definition nodes that should be DOCSTRING
     else if (strcmp(node->name, "function_definition") == 0) {
       node->type = NODE_DOCSTRING;
-      free(node->name);
-      node->name = strdup("");
+      FREE(node->name);
+      node->name = STRDUP("", "function_definition_node_name");
       if (node->qualified_name) {
-        free(node->qualified_name);
-        node->qualified_name = strdup("");
+        FREE(node->qualified_name);
+        node->qualified_name = STRDUP("", "function_definition_node_qualified_name");
       }
       return 1;
     }

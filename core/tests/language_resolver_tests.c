@@ -10,6 +10,7 @@
 
 #include "reference_resolvers/reference_resolver_private.h"
 #include "scopemux/ast.h"
+#include "scopemux/memory_debug.h"
 #include "scopemux/reference_resolver.h"
 #include "scopemux/symbol_table.h"
 
@@ -83,7 +84,7 @@ void setup_language_resolvers() {
   printf("[DEBUG] Set language for C symbol\n");
   // Create a node for the symbol
   ASTNode *c_node = ast_node_new(NODE_FUNCTION, "c_function");
-  c_node->file_path = strdup("test.c");
+  c_node->file_path = STRDUP("test.c", "test_c_file_path");
   SourceRange range = {.start = {.line = 10, .column = 0, .offset = 0},
                        .end = {.line = 15, .column = 0, .offset = 0}};
   c_node->range = range;
@@ -102,7 +103,7 @@ void setup_language_resolvers() {
   py_sym->language = LANG_PYTHON;
   // Create a node for the symbol
   ASTNode *py_node = ast_node_new(NODE_FUNCTION, "python_function");
-  py_node->file_path = strdup("test.py");
+  py_node->file_path = STRDUP("test.py", "test_py_file_path");
   SourceRange py_range = {.start = {.line = 20, .column = 0, .offset = 0},
                           .end = {.line = 25, .column = 0, .offset = 0}};
   py_node->range = py_range;
@@ -117,7 +118,7 @@ void setup_language_resolvers() {
   js_sym->language = LANG_JAVASCRIPT;
   // Create a node for the symbol
   ASTNode *js_node = ast_node_new(NODE_FUNCTION, "js_function");
-  js_node->file_path = strdup("test.js");
+  js_node->file_path = STRDUP("test.js", "test_js_file_path");
   SourceRange js_range = {.start = {.line = 30, .column = 0, .offset = 0},
                           .end = {.line = 35, .column = 0, .offset = 0}};
   js_node->range = js_range;
@@ -132,7 +133,7 @@ void setup_language_resolvers() {
   ts_sym->language = LANG_TYPESCRIPT;
   // Create a node for the symbol
   ASTNode *ts_node = ast_node_new(NODE_FUNCTION, "ts_function");
-  ts_node->file_path = strdup("test.ts");
+  ts_node->file_path = STRDUP("test.ts", "test_ts_file_path");
   SourceRange ts_range = {.start = {.line = 40, .column = 0, .offset = 0},
                           .end = {.line = 45, .column = 0, .offset = 0}};
   ts_node->range = ts_range;

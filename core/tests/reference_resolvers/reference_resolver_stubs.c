@@ -11,6 +11,7 @@
 #include "scopemux/ast.h"
 #include "scopemux/language.h"
 #include "scopemux/logging.h"
+#include "scopemux/memory_debug.h"
 #include "scopemux/parser.h"
 #include "scopemux/reference_resolver.h"
 #include "scopemux/symbol_table.h"
@@ -118,7 +119,7 @@ static ResolutionStatus create_and_attach_symbol(ASTNode *node, ReferenceType re
     break;
   }
 
-  sym->file_path = strdup(file_path);
+  sym->file_path = STRDUP(file_path, "symbol_file_path");
   sym->line = line_number;
   sym->column = 5;
   sym->language = language;
@@ -223,15 +224,15 @@ GlobalSymbolTable *symbol_table_create(size_t initial_capacity) {
     initial_capacity = 16; // Default capacity
   }
 
-  GlobalSymbolTable *table = calloc(1, sizeof(GlobalSymbolTable));
+  GlobalSymbolTable *table = CALLOC(1, sizeof(GlobalSymbolTable), "symbol_table");
   if (!table) {
     return NULL;
   }
 
   // Allocate the buckets array
-  table->buckets = calloc(initial_capacity, sizeof(SymbolEntry *));
+  table->buckets = CALLOC(initial_capacity, sizeof(SymbolEntry *), "symbol_table_buckets");
   if (!table->buckets) {
-    free(table);
+    FREE(table);
     return NULL;
   }
 
@@ -248,22 +249,16 @@ GlobalSymbolTable *symbol_table_create(size_t initial_capacity) {
 // Free a symbol table
 void symbol_table_free(GlobalSymbolTable *table) {
   if (table) {
-    // Free the buckets array if it exists
     if (table->buckets) {
-      // In a real implementation, we would also free each entry in the buckets
-      // For this stub, we'll just free the buckets array itself
-      free(table->buckets);
-      table->buckets = NULL;
+      FREE(table->buckets);
     }
-
-    // Free the table itself
-    free(table);
+    FREE(table);
   }
 }
 
 // Create a reference resolver
 ReferenceResolver *reference_resolver_create(GlobalSymbolTable *symbol_table) {
-  ReferenceResolverImpl *resolver = calloc(1, sizeof(ReferenceResolverImpl));
+  ReferenceResolverImpl *resolver = CALLOC(1, sizeof(ReferenceResolverImpl), "reference_resolver");
   cr_assert(resolver != NULL, "Failed to allocate reference resolver");
   // Store the symbol table in our test resolver
   resolver->symbol_table_ptr = symbol_table;
@@ -286,7 +281,7 @@ void reference_resolver_free(ReferenceResolver *resolver) {
       }
     }
 
-    free(impl);
+    FREE(impl);
   }
 }
 

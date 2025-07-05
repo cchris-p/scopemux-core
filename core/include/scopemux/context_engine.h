@@ -204,6 +204,18 @@ size_t context_engine_update_focus(ContextEngine *engine, const char **node_qual
  */
 void context_engine_reset_compression(ContextEngine *engine);
 
+/**
+ * @brief Get the names of AST nodes in a given file
+ *
+ * @param engine Context engine
+ * @param file_path File path to filter nodes
+ * @param node_names Output array of node names (allocated by caller, or NULL to query count)
+ * @param num_nodes Input: capacity of node_names if not NULL; Output: number of nodes found
+ * @return true on success, false on failure
+ */
+bool context_engine_get_node_names(ContextEngine *engine, const char *file_path,
+                                   const char **node_names, size_t *num_nodes);
+
 #ifdef __cplusplus
 }
 #endif

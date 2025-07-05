@@ -7,7 +7,12 @@
  */
 
 #include "ast_node.h"
+#include "../../core/include/scopemux/ast.h"
+#include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include "parser_internal.h"
+#include <stdlib.h>
+#include <string.h>
 
 /**
  * Convert an ASTNodeType enum value to its canonical string representation
@@ -425,4 +430,60 @@ bool ast_node_set_property(ASTNode *node, const char *key, const char *value) {
  */
 bool ast_node_set_attribute(ASTNode *node, const char *key, const char *value) {
   return ast_node_set_property(node, key, value);
+}
+
+static void ast_node_free_data(ASTNode *node) {
+  if (!node) {
+    return;
+  }
+
+  if (node->name) {
+    FREE(node->name);
+    node->name = NULL;
+  }
+
+  if (node->signature) {
+    FREE(node->signature);
+    node->signature = NULL;
+  }
+
+  if (node->qualified_name) {
+    FREE(node->qualified_name);
+    node->qualified_name = NULL;
+  }
+
+  if (node->docstring) {
+    FREE(node->docstring);
+    node->docstring = NULL;
+  }
+
+  if (node->raw_content) {
+    FREE(node->raw_content);
+    node->raw_content = NULL;
+  }
+
+  if (node->file_path) {
+    FREE(node->file_path);
+    node->file_path = NULL;
+  }
+
+  if (node->additional_data) {
+    FREE(node->additional_data);
+    node->additional_data = NULL;
+  }
+}
+
+static bool ast_node_init_additional_data(ASTNode *node) {
+  if (!node) {
+    return false;
+  }
+
+  if (!node->additional_data) {
+    node->additional_data = MALLOC(1, "ast_property_placeholder");
+    if (!node->additional_data) {
+      return false;
+    }
+  }
+
+  return true;
 }

@@ -8,6 +8,9 @@
  * where available.
  */
 
+#include "../../core/include/scopemux/ast.h"
+#include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include "../../src/parser/parser_internal.h"
 #include "reference_resolvers/reference_resolver_private.h"
 #include "scopemux/parser.h"
@@ -77,10 +80,6 @@ ASTNode *test_ast_node_new(ASTNodeType type, const char *name) {
 }
 
 /**
- * Override ast_node_free for test safety.
- * This ensures we don't crash during cleanup if the magic numbers get corrupted.
- */
-/**
  * Test helper function to verify if a node is in our tracked list
  */
 static int find_test_node(ASTNode *node) {
@@ -124,18 +123,33 @@ static void safe_ast_node_free(ASTNode *node) {
         safe_ast_node_free(node->children[i]);
       }
     }
-    free(node->children);
+    FREE(node->children);
   }
 
   // Free string fields
-  free(node->name);
-  free(node->qualified_name);
-  free(node->signature);
-  free(node->docstring);
-  free(node->raw_content);
+  if (node->name) {
+    FREE(node->name);
+    node->name = NULL;
+  }
+  if (node->qualified_name) {
+    FREE(node->qualified_name);
+    node->qualified_name = NULL;
+  }
+  if (node->signature) {
+    FREE(node->signature);
+    node->signature = NULL;
+  }
+  if (node->docstring) {
+    FREE(node->docstring);
+    node->docstring = NULL;
+  }
+  if (node->raw_content) {
+    FREE(node->raw_content);
+    node->raw_content = NULL;
+  }
 
   // Finally free the node itself
-  free(node);
+  FREE(node);
 }
 
 /**
@@ -206,7 +220,7 @@ ResolutionStatus reference_resolver_resolve_node_safe(ReferenceResolver *resolve
   // For test resilience, ensure other required fields are initialized
   // This helps tests pass even with memory corruption issues
   if (!node->name) {
-    node->name = strdup("recovered_node");
+    node->name = STRDUP("recovered_node", "recovered_node_name");
   }
 
   // Call the actual resolver function but ignore any errors

@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../../core/include/scopemux/ast.h"
+#include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include "../src/parser/parser_internal.h" // For ASTNODE_MAGIC
 #include "reference_resolver_private.h"    // For resolution status types
 #include "scopemux/parser.h"
@@ -91,7 +94,7 @@ void setup_resolution() {
 
   // Add some symbols to the symbol table for resolution tests
   Symbol *sym1 = symbol_new("referenced_function", SYMBOL_FUNCTION);
-  sym1->file_path = strdup("test_file.c");
+  sym1->file_path = STRDUP("test_file.c", "test_file_path");
   sym1->line = 42;
   sym1->column = 10;
 

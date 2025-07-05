@@ -9,6 +9,7 @@
 
 #include "scopemux/ast.h"
 #include "scopemux/logging.h"
+#include "scopemux/memory_debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,8 +35,8 @@ bool ast_node_set_property(ASTNode *node, const char *name, const char *value) {
   for (size_t i = 0; i < node->num_properties; i++) {
     if (node->property_names[i] && strcmp(node->property_names[i], name) == 0) {
       // Update existing property
-      free(node->property_values[i]);
-      node->property_values[i] = strdup(value);
+      FREE(node->property_values[i]);
+      node->property_values[i] = STRDUP(value, "ast_property_value_update");
       return node->property_values[i] != NULL;
     }
   }
@@ -48,18 +49,20 @@ bool ast_node_set_property(ASTNode *node, const char *name, const char *value) {
       new_capacity = 4; // Initial capacity
     }
 
-    char **new_names = (char **)realloc(node->property_names, new_capacity * sizeof(char *));
+    char **new_names = (char **)REALLOC(node->property_names, new_capacity * sizeof(char *),
+                                        "ast_property_names_resize");
     if (!new_names) {
       log_error("Failed to resize property names array");
       return false;
     }
 
-    char **new_values = (char **)realloc(node->property_values, new_capacity * sizeof(char *));
+    char **new_values = (char **)REALLOC(node->property_values, new_capacity * sizeof(char *),
+                                         "ast_property_values_resize");
     if (!new_values) {
       log_error("Failed to resize property values array");
       // Roll back the first realloc
-      node->property_names =
-          (char **)realloc(new_names, node->properties_capacity * sizeof(char *));
+      node->property_names = (char **)REALLOC(new_names, node->properties_capacity * sizeof(char *),
+                                              "ast_property_names_rollback");
       return false;
     }
 
@@ -69,16 +72,16 @@ bool ast_node_set_property(ASTNode *node, const char *name, const char *value) {
   }
 
   // Add the new property
-  node->property_names[node->num_properties] = strdup(name);
+  node->property_names[node->num_properties] = STRDUP(name, "ast_property_name_new");
   if (!node->property_names[node->num_properties]) {
     log_error("Failed to allocate memory for property name");
     return false;
   }
 
-  node->property_values[node->num_properties] = strdup(value);
+  node->property_values[node->num_properties] = STRDUP(value, "ast_property_value_new");
   if (!node->property_values[node->num_properties]) {
     log_error("Failed to allocate memory for property value");
-    free(node->property_names[node->num_properties]);
+    FREE(node->property_names[node->num_properties]);
     node->property_names[node->num_properties] = NULL;
     return false;
   }
@@ -127,8 +130,8 @@ bool ast_node_remove_property(ASTNode *node, const char *name) {
   for (size_t i = 0; i < node->num_properties; i++) {
     if (node->property_names[i] && strcmp(node->property_names[i], name) == 0) {
       // Free the memory
-      free(node->property_names[i]);
-      free(node->property_values[i]);
+      FREE(node->property_names[i]);
+      FREE(node->property_values[i]);
 
       // Shift remaining properties
       for (size_t j = i; j < node->num_properties - 1; j++) {

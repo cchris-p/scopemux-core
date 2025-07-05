@@ -7,6 +7,7 @@
  * parser implementation.
  */
 
+#include "scopemux/memory_debug.h"
 #include "scopemux/parser.h"
 #include <stdlib.h>
 #include <string.h>
@@ -21,7 +22,7 @@ typedef struct ParserContextImpl {
 
 // Create a new parser context
 ParserContext *parser_init(void) {
-  ParserContextImpl *ctx = malloc(sizeof(ParserContextImpl));
+  ParserContextImpl *ctx = MALLOC(sizeof(ParserContextImpl), "parser_context_impl");
   if (!ctx) {
     return NULL;
   }
@@ -44,12 +45,12 @@ void parser_free(ParserContext *ctx) {
   // Free owned resources
   for (size_t i = 0; i < impl->num_asts; i++) {
     // Don't free ASTs as they're owned elsewhere in tests
-    free(impl->file_paths[i]);
+    FREE(impl->file_paths[i]);
   }
 
-  free(impl->asts);
-  free(impl->file_paths);
-  free(impl);
+  FREE(impl->asts);
+  FREE(impl->file_paths);
+  FREE(impl);
 }
 
 // Add AST to parser context
@@ -62,14 +63,16 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
   // Grow arrays if needed
   if (impl->num_asts >= impl->capacity) {
     size_t new_capacity = impl->capacity == 0 ? 4 : impl->capacity * 2;
-    ASTNode **new_asts = realloc(impl->asts, new_capacity * sizeof(ASTNode *));
-    char **new_paths = realloc(impl->file_paths, new_capacity * sizeof(char *));
+    ASTNode **new_asts =
+        REALLOC(impl->asts, new_capacity * sizeof(ASTNode *), "parser_context_asts");
+    char **new_paths =
+        REALLOC(impl->file_paths, new_capacity * sizeof(char *), "parser_context_paths");
 
     if (!new_asts || !new_paths) {
       if (new_asts)
-        free(new_asts);
+        FREE(new_asts);
       if (new_paths)
-        free(new_paths);
+        FREE(new_paths);
       return false;
     }
 
@@ -80,7 +83,8 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
 
   // Add the AST (file path is now handled separately)
   impl->asts[impl->num_asts] = node;
-  impl->file_paths[impl->num_asts] = strdup("unknown_file"); // Default for stub implementation
+  impl->file_paths[impl->num_asts] =
+      STRDUP("unknown_file", "parser_context_unknown_file"); // Default for stub implementation
   impl->num_asts++;
 
   return true;
@@ -96,14 +100,16 @@ void parser_context_add_ast(ParserContext *ctx, ASTNode *ast, const char *file_p
   // Grow arrays if needed
   if (impl->num_asts >= impl->capacity) {
     size_t new_capacity = impl->capacity == 0 ? 4 : impl->capacity * 2;
-    ASTNode **new_asts = realloc(impl->asts, new_capacity * sizeof(ASTNode *));
-    char **new_paths = realloc(impl->file_paths, new_capacity * sizeof(char *));
+    ASTNode **new_asts =
+        REALLOC(impl->asts, new_capacity * sizeof(ASTNode *), "parser_context_asts");
+    char **new_paths =
+        REALLOC(impl->file_paths, new_capacity * sizeof(char *), "parser_context_paths");
 
     if (!new_asts || !new_paths) {
       if (new_asts)
-        free(new_asts);
+        FREE(new_asts);
       if (new_paths)
-        free(new_paths);
+        FREE(new_paths);
       return;
     }
 
@@ -114,7 +120,7 @@ void parser_context_add_ast(ParserContext *ctx, ASTNode *ast, const char *file_p
 
   // Add the AST and file path
   impl->asts[impl->num_asts] = ast;
-  impl->file_paths[impl->num_asts] = strdup(file_path);
+  impl->file_paths[impl->num_asts] = STRDUP(file_path, "parser_context_file_path");
   impl->num_asts++;
 }
 

@@ -10,6 +10,7 @@
 #define _GNU_SOURCE /* Required for strdup() function */
 
 #include "../../core/include/scopemux/processors/docstring_processor.h"
+#include "../../core/include/scopemux/memory_debug.h"
 
 // File-level logging toggle. Set to true to enable logs for this file.
 static bool enable_logging = false;
@@ -36,7 +37,7 @@ char *extract_doc_comment(const char *comment) {
     start++;
 
   // Allocate space for the cleaned comment
-  char *result = malloc(strlen(comment) + 1);
+  char *result = MALLOC(strlen(comment) + 1, "doc_comment_result");
   if (!result)
     return NULL;
 
@@ -80,7 +81,7 @@ void associate_docstrings_with_nodes(ASTNode *ast_root, ASTNode **docstring_node
   }
 
   // Create array to hold docstring info
-  DocstringInfo *docstrings = malloc(sizeof(DocstringInfo) * count);
+  DocstringInfo *docstrings = MALLOC(sizeof(DocstringInfo) * count, "docstring_info_array");
   if (!docstrings) {
     if (enable_logging)
       log_error("Failed to allocate memory for docstring association");
@@ -135,12 +136,12 @@ void associate_docstrings_with_nodes(ASTNode *ast_root, ASTNode **docstring_node
     // Associate the best match docstring with this node
     if (best_match && best_match->content) {
       if (node->docstring) {
-        free(node->docstring);
+        FREE(node->docstring);
       }
-      node->docstring = strdup(best_match->content);
+      node->docstring = STRDUP(best_match->content, "node_docstring");
 
       // Mark this docstring as used
-      free(best_match->content);
+      FREE(best_match->content);
       best_match->content = NULL;
     }
   }
@@ -148,11 +149,11 @@ void associate_docstrings_with_nodes(ASTNode *ast_root, ASTNode **docstring_node
   // Clean up remaining docstring info
   for (size_t i = 0; i < count; i++) {
     if (docstrings[i].content) {
-      free(docstrings[i].content);
+      FREE(docstrings[i].content);
     }
   }
 
-  free(docstrings);
+  FREE(docstrings);
 }
 
 /**
@@ -171,7 +172,8 @@ void process_docstrings(ASTNode *ast_root, ParserContext *ctx) {
 
   // Find and separate docstring nodes
   size_t doc_count = 0;
-  ASTNode **docstring_nodes = malloc(sizeof(ASTNode *) * ast_root->num_children);
+  ASTNode **docstring_nodes =
+      MALLOC(sizeof(ASTNode *) * ast_root->num_children, "docstring_nodes_array");
 
   if (!docstring_nodes) {
     if (enable_logging)
@@ -196,5 +198,5 @@ void process_docstrings(ASTNode *ast_root, ParserContext *ctx) {
       log_debug("No docstrings found to process");
   }
 
-  free(docstring_nodes);
+  FREE(docstring_nodes);
 }
