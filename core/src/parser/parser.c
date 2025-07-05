@@ -310,8 +310,14 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 
     // Create root AST node with validation
     log_debug("Creating AST root node");
-    ASTNode *root = ast_node_create(NODE_ROOT, filename ? filename : "unknown", NULL,
-                                    (SourceRange){{0, 0, 0}, {0, 0, 0}});
+    // Always use the basename of the filename for the root node name for schema compliance
+    const char *basename = filename ? filename : "unknown";
+    if (filename && strlen(filename) > 0) {
+      const char *slash = strrchr(filename, '/');
+      if (slash)
+        basename = slash + 1;
+    }
+    ASTNode *root = ast_node_create(NODE_ROOT, basename, NULL, (SourceRange){{0, 0, 0}, {0, 0, 0}});
     if (!root) {
       parser_set_error(ctx, 11, "Failed to create AST root node");
       return false;

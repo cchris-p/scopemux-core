@@ -17,6 +17,7 @@
 #define DEBUG_MODE true
 
 // Include the proper headers first to get access to all required types
+#include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/parser.h"
 #include "../../include/json_validation.h"
 
@@ -41,6 +42,7 @@ static char *read_file_contents(const char *path);
  * Run a test for the specified C example file
  */
 static void test_c_example() {
+  log_set_level(LOG_DEBUG);
   const char *test_file = getenv("SCOPEMUX_TEST_FILE");
   const char *json_file = getenv("SCOPEMUX_EXPECTED_JSON");
   char absolute_test_file[1024] = "";

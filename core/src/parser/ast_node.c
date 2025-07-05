@@ -224,8 +224,18 @@ ASTNode *ast_node_new(ASTNodeType type, const char *name) {
   node->magic = ASTNODE_MAGIC;
   node->type = type;
 
-  // Copy the name if provided
-  if (name) {
+  // IMPORTANT: Root node naming must be enforced at the call site, not here.
+  // ast_node_new does not have access to the parser context, so the caller must
+  // provide a correct filename as name for NODE_ROOT. This fallback is for robustness only.
+  if (type == NODE_ROOT && (!name || strlen(name) == 0 || strcmp(name, "ROOT") == 0)) {
+    node->name = strdup("unknown_file");
+    if (!node->name) {
+      log_error("Failed to set default name for ROOT node");
+      memory_debug_free(node, __FILE__, __LINE__);
+      return NULL;
+    }
+  } else if (name) {
+    // Copy the name if provided
     node->name = strdup(name);
     if (!node->name) {
       log_error("Failed to duplicate AST node name");
@@ -233,6 +243,7 @@ ASTNode *ast_node_new(ASTNodeType type, const char *name) {
       return NULL;
     }
   }
+  // If name is NULL and it's not a ROOT node, leave node->name as NULL
 
   return node;
 }

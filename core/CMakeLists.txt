@@ -122,6 +122,7 @@ add_library(parser_core STATIC
     src/parser/ts_ast_builder.c
     src/parser/ts_cst_builder.c
     src/parser/ts_query_processor.c
+    src/parser/tree_sitter_integration.c
     src/parser/query_manager.c
     # Reference resolver system (add all .c files)
     src/parser/reference_resolvers/language_resolvers.c

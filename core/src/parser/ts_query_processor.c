@@ -175,8 +175,7 @@ static int create_node_from_match(uint32_t node_type, const char *name, TSNode t
   }
 
   // Create the AST node
-  log_debug("Calling ast_node_new with node_type=%u, node_name=%s", node_type,
-            SAFE_STR(node_name));
+  log_debug("Calling ast_node_new with node_type=%u, node_name=%s", node_type, SAFE_STR(node_name));
   *ast_node = ast_node_new(node_type, node_name);
   log_debug("ast_node_new returned %p", (void *)(*ast_node));
   assert(*ast_node != NULL && "ast_node_new must not return NULL");
@@ -291,8 +290,8 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
 void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
                    ASTNode **node_map) {
   log_debug("process_query: query_type=%s, root_node_is_null=%d, ctx=%p, ast_root=%p, node_map=%p",
-            SAFE_STR(query_type), ts_node_is_null(root_node), (void *)ctx,
-            (void *)ast_root, (void *)node_map);
+            SAFE_STR(query_type), ts_node_is_null(root_node), (void *)ctx, (void *)ast_root,
+            (void *)node_map);
   assert(query_type != NULL && "query_type must not be NULL");
   assert(ctx != NULL && "ParserContext must not be NULL");
   assert(ast_root != NULL && "ast_root must not be NULL");
@@ -367,6 +366,12 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
   TSQueryMatch match;
   bool had_error = false;
 
+  // FUTURE-PROOF: Disambiguate docstring vs comment captures
+  // If a node is captured as both docstring and comment, treat as DOCSTRING
+  static const char *last_doc_comment_node_id = NULL;
+  static uint32_t last_doc_comment_node_type = NODE_UNKNOWN;
+  char node_id_buf[64] = {0};
+
   while (!had_error) {
     // Try to get the next match safely
     bool has_match = false;
@@ -387,6 +392,24 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
     }
     match_count++;
 
+    // --- Diagnostic logging: print all captures in this match ---
+    char capture_log_buf[1024] = {0};
+    size_t pos = 0;
+    pos += snprintf(capture_log_buf + pos, sizeof(capture_log_buf) - pos, "Match captures: [");
+    for (uint32_t i = 0; i < match.capture_count; i++) {
+      uint32_t cap_idx = match.captures[i].index;
+      uint32_t cap_len;
+      const char *cap_name = ts_query_capture_name_for_id(query, cap_idx, &cap_len);
+      const char *node_type_str = ts_node_type(match.captures[i].node);
+      pos += snprintf(capture_log_buf + pos, sizeof(capture_log_buf) - pos, "%s%s(type=%s)",
+                      (i > 0 ? ", " : ""), cap_name ? cap_name : "(none)",
+                      node_type_str ? node_type_str : "(null)");
+    }
+    snprintf(capture_log_buf + pos, sizeof(capture_log_buf) - pos, "]");
+    log_debug("[DIAG] Query '%s' match #%d: %s", SAFE_STR(query_type), match_count,
+              capture_log_buf);
+    // --- End diagnostic logging ---
+
     // Process each match based on its pattern
     for (uint32_t i = 0; i < match.capture_count; i++) {
       TSNode captured_node = match.captures[i].node;
@@ -403,44 +426,141 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         continue;
       }
 
-      // Map to a standard node type
-      uint32_t node_type = map_query_type_to_node_type(query_type);
-      if (node_type == NODE_UNKNOWN) {
-        if (ctx->log_level <= LOG_DEBUG) {
-          log_debug("Unknown node type for query '%s'", SAFE_STR(query_type));
+      // Robust DOCSTRING vs COMMENT disambiguation:
+      // For each match, if any capture is a docstring, do NOT create a COMMENT node for the same
+      // node.
+      bool match_has_docstring = false;
+      for (uint32_t j = 0; j < match.capture_count; j++) {
+        uint32_t idx = match.captures[j].index;
+        uint32_t len2;
+        const char *cap2 = ts_query_capture_name_for_id(query, idx, &len2);
+        if (cap2 && (strcmp(cap2, "docstring") == 0 || strstr(cap2, "docstring"))) {
+          match_has_docstring = true;
+          break;
         }
+      }
+      // If this capture is a comment and the match has a docstring, skip creating the comment node
+      if (capture_name && strcmp(capture_name, "comment") == 0 && match_has_docstring) {
+        log_debug("[DIAG] Skipping COMMENT node because DOCSTRING is present in the same match. %s",
+                  capture_log_buf);
         continue;
       }
-
-      // Create and populate a new AST node
-      ASTNode *ast_node = NULL;
-      ParseStatus status = create_node_from_match(node_type, NULL, captured_node, &ast_node, ctx);
-
-      if (status == 0 && ast_node) {
-        // Set node metadata with robust error handling
-        if (ctx->source_code) {
-          ast_node->raw_content = extract_raw_content(captured_node, ctx->source_code);
-          if (!ast_node->raw_content && ctx->log_level <= LOG_DEBUG) {
-            log_debug("Failed to extract raw content for node type %u", node_type);
+      // Determine node type and name assignment based on capture name
+      uint32_t node_type = NODE_UNKNOWN;
+      bool assign_name = false;
+      if (capture_name) {
+        if (strcmp(capture_name, "docstring") == 0 || strstr(capture_name, "docstring")) {
+          node_type = NODE_DOCSTRING;
+        } else if (strcmp(capture_name, "comment") == 0) {
+          node_type = NODE_COMMENT;
+        } else if (strcmp(capture_name, "function") == 0) {
+          node_type = NODE_FUNCTION;
+        } else if (strcmp(capture_name, "name") == 0) {
+          // Only assign name if parent node is a function (handled below)
+          node_type = NODE_UNKNOWN; // Will not create a node for @name itself
+          assign_name = true;
+        } else {
+          node_type = map_query_type_to_node_type(query_type);
+          // FUTURE-PROOF: Warn if unknown capture type
+          if (node_type == NODE_UNKNOWN) {
+            log_warning("Unknown capture type '%s' in query '%s' (node id %s)", capture_name,
+                        query_type, node_id_buf);
           }
-        } else {
-          log_warning("Source code is NULL, cannot extract raw content");
-          ast_node->raw_content = NULL;
         }
+      } else {
+        node_type = map_query_type_to_node_type(query_type);
+      }
 
-        // Add to the node hierarchy
-        ASTNode *parent = NULL;
-        // Find parent logic would be here
-
-        if (parent) {
-          ast_node_add_child(parent, ast_node);
-        } else {
-          ast_node_add_child(ast_root, ast_node);
-        }
-
-        // Add to node map
-        if (node_map) {
-          // Node map update logic would be here
+      // Only create AST node if node_type is known and not just a @name capture
+      if (node_type != NODE_UNKNOWN) {
+        ASTNode *ast_node = NULL;
+        ParseStatus status = create_node_from_match(node_type, NULL, captured_node, &ast_node, ctx);
+        if (status == 0 && ast_node) {
+          // Only assign name/qualified_name for function nodes with a @name capture
+          if (node_type == NODE_FUNCTION) {
+            // Always set the name/qualified_name from a @name capture if present, else set to ""
+            bool found_name = false;
+            for (uint32_t j = 0; j < match.capture_count; j++) {
+              uint32_t idx = match.captures[j].index;
+              uint32_t len2;
+              const char *cap2 = ts_query_capture_name_for_id(query, idx, &len2);
+              if (cap2 && strcmp(cap2, "name") == 0) {
+                char *ident = ts_node_text(match.captures[j].node, ctx->source_code);
+                if (ident) {
+                  if (ast_node->name)
+                    free(ast_node->name);
+                  ast_node->name = strdup(ident);
+                  if (ast_node->qualified_name)
+                    free(ast_node->qualified_name);
+                  ast_node->qualified_name = strdup(ident);
+                  free(ident);
+                  found_name = true;
+                }
+                break;
+              }
+            }
+            if (!found_name) {
+              if (ast_node->name)
+                free(ast_node->name);
+              ast_node->name = strdup("");
+              if (ast_node->qualified_name)
+                free(ast_node->qualified_name);
+              ast_node->qualified_name = strdup("");
+              log_debug(
+                  "[DIAG] Function node created without a name (no @name capture in match). %s",
+                  capture_log_buf);
+            }
+          } else if (node_type == NODE_COMMENT || node_type == NODE_DOCSTRING) {
+            // Never assign name/qualified_name for COMMENT or DOCSTRING nodes
+            if (ast_node->name) {
+              free(ast_node->name);
+              ast_node->name = NULL;
+            }
+            if (ast_node->qualified_name) {
+              free(ast_node->qualified_name);
+              ast_node->qualified_name = NULL;
+            }
+          }
+          // Never assign name/qualified_name for docstring or comment nodes
+          if (node_type == NODE_DOCSTRING || node_type == NODE_COMMENT) {
+            if (ast_node->name) {
+              free(ast_node->name);
+              ast_node->name = NULL;
+            }
+            if (ast_node->qualified_name) {
+              free(ast_node->qualified_name);
+              ast_node->qualified_name = NULL;
+            }
+          }
+          // Set node metadata
+          if (ctx->source_code) {
+            ast_node->raw_content = extract_raw_content(captured_node, ctx->source_code);
+            if (!ast_node->raw_content && ctx->log_level <= LOG_DEBUG) {
+              log_debug("Failed to extract raw content for node type %u", node_type);
+            }
+          } else {
+            log_warning("Source code is NULL, cannot extract raw content");
+            ast_node->raw_content = NULL;
+          }
+          // Add to the node hierarchy
+          ASTNode *parent = NULL;
+          // Find parent logic would be here
+          if (parent) {
+            ast_node_add_child(parent, ast_node);
+          } else {
+            ast_node_add_child(ast_root, ast_node);
+          }
+          // Add to node map
+          if (node_map) {
+            // Node map update logic would be here
+          }
+          // --- Diagnostic logging for each node processed ---
+          log_debug("[DIAG] AST node created: type=%s, name='%s', qualified_name='%s', "
+                    "capture='%s', all_captures=%s",
+                    ast_node_type_to_string(node_type), ast_node->name ? ast_node->name : "(none)",
+                    ast_node->qualified_name ? ast_node->qualified_name : "(none)", capture_name,
+                    capture_log_buf);
+          // --- End diagnostic logging ---
         }
       }
     }

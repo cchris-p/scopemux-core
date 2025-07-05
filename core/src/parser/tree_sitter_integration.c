@@ -83,3 +83,21 @@ ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx);
  * @return CSTNode* The root of the generated CST, or NULL on failure.
  */
 CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx);
+
+#include "scopemux/tree_sitter_integration.h"
+#include <stdlib.h>
+#include <string.h>
+
+char *ts_node_text(TSNode node, const char *source_code) {
+    uint32_t start = ts_node_start_byte(node);
+    uint32_t end = ts_node_end_byte(node);
+    if (!source_code || end <= start)
+        return NULL;
+    size_t len = end - start;
+    char *text = (char *)malloc(len + 1);
+    if (!text)
+        return NULL;
+    memcpy(text, source_code + start, len);
+    text[len] = '\0';
+    return text;
+}
