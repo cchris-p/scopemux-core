@@ -14,6 +14,9 @@
 
 #include "../../include/test_helpers.h"
 
+// Function prototypes for non-static functions defined in this file
+// (none needed; all test cases are declared with the Criterion Test macro)
+
 //=================================
 // C++ AST Extraction Tests
 //=================================

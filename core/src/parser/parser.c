@@ -240,6 +240,15 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     return false;
   }
 
+  // Detect syntax errors in the produced Tree-sitter tree. If any `ERROR`
+  // nodes are present, flag this situation via `parser_set_error`. The parse
+  // may still proceed, but callers can inspect the error state to determine
+  // that the input contained invalid syntax.
+  TSNode ts_root_tmp = ts_tree_root_node(ts_tree);
+  if (ts_node_has_error(ts_root_tmp)) {
+    parser_set_error(ctx, 20, "Syntax error detected while parsing source");
+  }
+
   log_debug("Successfully parsed content with Tree-sitter, tree=%p", (void *)ts_tree);
 
   // Restore original signal handler

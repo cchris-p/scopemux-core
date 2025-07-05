@@ -1,0 +1,1214 @@
+[test_runner_lib] Shared libraries missing, running scripts/build_shared_libs.sh...
+Building shared libraries in /home/matrillo/apps/scopemux/build/tree-sitter-libs
+Converting static libraries to shared libraries...
+Created shared libraries:
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul  5 20:43 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul  5 20:43 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul  5 20:43 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul  5 20:43 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  237264 Jul  5 20:43 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul  5 20:43 libtree-sitter-typescript.so
+Done building shared libraries.
+[test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux/build/tree-sitter-libs
+DEBUG: prepare_clean_build_dir received build_dir='/home/matrillo/apps/scopemux/build-misc'
+[test_runner_lib] Creating build directory: '/home/matrillo/apps/scopemux/build-misc'
+[run_misc_tests.sh] Configuring CMake in build directory: /home/matrillo/apps/scopemux/build-misc
+[run_misc_tests.sh] Running miscellaneous test suite
+[run_misc_tests.sh] Building init_parser_tests directly (for debugging)...
+/usr/bin/cmake -S/home/matrillo/apps/scopemux -B/home/matrillo/apps/scopemux/build-misc --check-build-system CMakeFiles/Makefile.cmake 0
+make  -f CMakeFiles/Makefile2 init_parser_tests
+make[1]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+/usr/bin/cmake -S/home/matrillo/apps/scopemux -B/home/matrillo/apps/scopemux/build-misc --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/matrillo/apps/scopemux/build-misc/CMakeFiles 81
+make  -f CMakeFiles/Makefile2 core/tests/CMakeFiles/init_parser_tests.dir/all
+make[2]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f CMakeFiles/tree_sitter_core.dir/build.make CMakeFiles/tree_sitter_core.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_core.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f CMakeFiles/tree_sitter_core.dir/build.make CMakeFiles/tree_sitter_core.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[  1%] Creating directories for 'tree_sitter_core'
+/usr/bin/cmake -Dcfgdir= -P /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/tmp/tree_sitter_core-mkdirs.cmake
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/src/tree_sitter_core-stamp/tree_sitter_core-mkdir
+[  1%] No download step for 'tree_sitter_core'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/src/tree_sitter_core-stamp/tree_sitter_core-download
+[  1%] No update step for 'tree_sitter_core'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/src/tree_sitter_core-stamp/tree_sitter_core-update
+[  2%] No patch step for 'tree_sitter_core'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/src/tree_sitter_core-stamp/tree_sitter_core-patch
+[  3%] No configure step for 'tree_sitter_core'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter && /usr/bin/cmake -E echo_append
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/src/tree_sitter_core-stamp/tree_sitter_core-configure
+[  4%] Performing build step for 'tree_sitter_core'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter && make -C /home/matrillo/apps/scopemux/vendor/tree-sitter CFLAGS=\"-fPIC\"
+make[4]: Entering directory '/home/matrillo/apps/scopemux/vendor/tree-sitter'
+make[4]: Nothing to be done for 'all'.
+make[4]: Leaving directory '/home/matrillo/apps/scopemux/vendor/tree-sitter'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/src/tree_sitter_core-stamp/tree_sitter_core-build
+[  6%] Performing install step for 'tree_sitter_core'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter && /usr/bin/cmake -E copy /home/matrillo/apps/scopemux/vendor/tree-sitter/libtree-sitter.a /home/matrillo/apps/scopemux/build-misc/tree-sitter-libs/libtree-sitter.a
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/src/tree_sitter_core-stamp/tree_sitter_core-install
+[  6%] Completed 'tree_sitter_core'
+/usr/bin/cmake -E make_directory /home/matrillo/apps/scopemux/build-misc/CMakeFiles
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_core-complete
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_core-prefix/src/tree_sitter_core-stamp/tree_sitter_core-done
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[  6%] Built target tree_sitter_core
+make  -f CMakeFiles/tree_sitter_typescript.dir/build.make CMakeFiles/tree_sitter_typescript.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_typescript.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f CMakeFiles/tree_sitter_typescript.dir/build.make CMakeFiles/tree_sitter_typescript.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[  7%] Creating directories for 'tree_sitter_typescript'
+/usr/bin/cmake -Dcfgdir= -P /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/tmp/tree_sitter_typescript-mkdirs.cmake
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/src/tree_sitter_typescript-stamp/tree_sitter_typescript-mkdir
+[  7%] No download step for 'tree_sitter_typescript'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/src/tree_sitter_typescript-stamp/tree_sitter_typescript-download
+[  8%] No update step for 'tree_sitter_typescript'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/src/tree_sitter_typescript-stamp/tree_sitter_typescript-update
+[  8%] No patch step for 'tree_sitter_typescript'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/src/tree_sitter_typescript-stamp/tree_sitter_typescript-patch
+[  9%] No configure step for 'tree_sitter_typescript'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript && /usr/bin/cmake -E echo_append
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/src/tree_sitter_typescript-stamp/tree_sitter_typescript-configure
+[ 11%] Performing build step for 'tree_sitter_typescript'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript && make -C /home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript CFLAGS=\"-fPIC\"
+make[4]: Entering directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript'
+make[4]: Nothing to be done for 'all'.
+make[4]: Leaving directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/src/tree_sitter_typescript-stamp/tree_sitter_typescript-build
+[ 12%] Performing install step for 'tree_sitter_typescript'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript && /usr/bin/cmake -E copy /home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/libtree-sitter-typescript.a /home/matrillo/apps/scopemux/build-misc/tree-sitter-libs/libtree-sitter-typescript.a
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/src/tree_sitter_typescript-stamp/tree_sitter_typescript-install
+[ 13%] Completed 'tree_sitter_typescript'
+/usr/bin/cmake -E make_directory /home/matrillo/apps/scopemux/build-misc/CMakeFiles
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_typescript-complete
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_typescript-prefix/src/tree_sitter_typescript-stamp/tree_sitter_typescript-done
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[ 13%] Built target tree_sitter_typescript
+make  -f CMakeFiles/tree_sitter_c.dir/build.make CMakeFiles/tree_sitter_c.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_c.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f CMakeFiles/tree_sitter_c.dir/build.make CMakeFiles/tree_sitter_c.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[ 14%] Creating directories for 'tree_sitter_c'
+/usr/bin/cmake -Dcfgdir= -P /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/tmp/tree_sitter_c-mkdirs.cmake
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/src/tree_sitter_c-stamp/tree_sitter_c-mkdir
+[ 16%] No download step for 'tree_sitter_c'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/src/tree_sitter_c-stamp/tree_sitter_c-download
+[ 17%] No update step for 'tree_sitter_c'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/src/tree_sitter_c-stamp/tree_sitter_c-update
+[ 18%] No patch step for 'tree_sitter_c'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/src/tree_sitter_c-stamp/tree_sitter_c-patch
+[ 19%] No configure step for 'tree_sitter_c'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-c && /usr/bin/cmake -E echo_append
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-c && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/src/tree_sitter_c-stamp/tree_sitter_c-configure
+[ 19%] Performing build step for 'tree_sitter_c'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-c && make -C /home/matrillo/apps/scopemux/vendor/tree-sitter-c CFLAGS=\"-fPIC\"
+make[4]: Entering directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-c'
+make[4]: Nothing to be done for 'all'.
+make[4]: Leaving directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-c'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-c && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/src/tree_sitter_c-stamp/tree_sitter_c-build
+[ 19%] Performing install step for 'tree_sitter_c'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-c && /usr/bin/cmake -E copy /home/matrillo/apps/scopemux/vendor/tree-sitter-c/libtree-sitter-c.a /home/matrillo/apps/scopemux/build-misc/tree-sitter-libs/libtree-sitter-c.a
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-c && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/src/tree_sitter_c-stamp/tree_sitter_c-install
+[ 20%] Completed 'tree_sitter_c'
+/usr/bin/cmake -E make_directory /home/matrillo/apps/scopemux/build-misc/CMakeFiles
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_c-complete
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_c-prefix/src/tree_sitter_c-stamp/tree_sitter_c-done
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[ 20%] Built target tree_sitter_c
+make  -f CMakeFiles/tree_sitter_cpp.dir/build.make CMakeFiles/tree_sitter_cpp.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_cpp.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f CMakeFiles/tree_sitter_cpp.dir/build.make CMakeFiles/tree_sitter_cpp.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[ 22%] Creating directories for 'tree_sitter_cpp'
+/usr/bin/cmake -Dcfgdir= -P /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/tmp/tree_sitter_cpp-mkdirs.cmake
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/src/tree_sitter_cpp-stamp/tree_sitter_cpp-mkdir
+[ 23%] No download step for 'tree_sitter_cpp'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/src/tree_sitter_cpp-stamp/tree_sitter_cpp-download
+[ 24%] No update step for 'tree_sitter_cpp'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/src/tree_sitter_cpp-stamp/tree_sitter_cpp-update
+[ 24%] No patch step for 'tree_sitter_cpp'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/src/tree_sitter_cpp-stamp/tree_sitter_cpp-patch
+[ 24%] No configure step for 'tree_sitter_cpp'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-cpp && /usr/bin/cmake -E echo_append
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-cpp && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/src/tree_sitter_cpp-stamp/tree_sitter_cpp-configure
+[ 25%] Performing build step for 'tree_sitter_cpp'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-cpp && make -C /home/matrillo/apps/scopemux/vendor/tree-sitter-cpp CFLAGS=\"-fPIC\"
+make[4]: Entering directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp'
+make[4]: Nothing to be done for 'all'.
+make[4]: Leaving directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-cpp && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/src/tree_sitter_cpp-stamp/tree_sitter_cpp-build
+[ 27%] Performing install step for 'tree_sitter_cpp'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-cpp && /usr/bin/cmake -E copy /home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/libtree-sitter-cpp.a /home/matrillo/apps/scopemux/build-misc/tree-sitter-libs/libtree-sitter-cpp.a
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-cpp && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/src/tree_sitter_cpp-stamp/tree_sitter_cpp-install
+[ 28%] Completed 'tree_sitter_cpp'
+/usr/bin/cmake -E make_directory /home/matrillo/apps/scopemux/build-misc/CMakeFiles
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_cpp-complete
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_cpp-prefix/src/tree_sitter_cpp-stamp/tree_sitter_cpp-done
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[ 28%] Built target tree_sitter_cpp
+make  -f CMakeFiles/tree_sitter_python.dir/build.make CMakeFiles/tree_sitter_python.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_python.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f CMakeFiles/tree_sitter_python.dir/build.make CMakeFiles/tree_sitter_python.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[ 29%] Creating directories for 'tree_sitter_python'
+/usr/bin/cmake -Dcfgdir= -P /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/tmp/tree_sitter_python-mkdirs.cmake
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/src/tree_sitter_python-stamp/tree_sitter_python-mkdir
+[ 30%] No download step for 'tree_sitter_python'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/src/tree_sitter_python-stamp/tree_sitter_python-download
+[ 30%] No update step for 'tree_sitter_python'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/src/tree_sitter_python-stamp/tree_sitter_python-update
+[ 32%] No patch step for 'tree_sitter_python'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/src/tree_sitter_python-stamp/tree_sitter_python-patch
+[ 33%] No configure step for 'tree_sitter_python'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-python && /usr/bin/cmake -E echo_append
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-python && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/src/tree_sitter_python-stamp/tree_sitter_python-configure
+[ 34%] Performing build step for 'tree_sitter_python'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-python && make -C /home/matrillo/apps/scopemux/vendor/tree-sitter-python CFLAGS=\"-fPIC\"
+make[4]: Entering directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-python'
+make[4]: Nothing to be done for 'all'.
+make[4]: Leaving directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-python'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-python && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/src/tree_sitter_python-stamp/tree_sitter_python-build
+[ 34%] Performing install step for 'tree_sitter_python'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-python && /usr/bin/cmake -E copy /home/matrillo/apps/scopemux/vendor/tree-sitter-python/libtree-sitter-python.a /home/matrillo/apps/scopemux/build-misc/tree-sitter-libs/libtree-sitter-python.a
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-python && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/src/tree_sitter_python-stamp/tree_sitter_python-install
+[ 34%] Completed 'tree_sitter_python'
+/usr/bin/cmake -E make_directory /home/matrillo/apps/scopemux/build-misc/CMakeFiles
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_python-complete
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_python-prefix/src/tree_sitter_python-stamp/tree_sitter_python-done
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[ 34%] Built target tree_sitter_python
+make  -f CMakeFiles/tree_sitter_javascript.dir/build.make CMakeFiles/tree_sitter_javascript.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_javascript.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f CMakeFiles/tree_sitter_javascript.dir/build.make CMakeFiles/tree_sitter_javascript.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[ 34%] Creating directories for 'tree_sitter_javascript'
+/usr/bin/cmake -Dcfgdir= -P /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/tmp/tree_sitter_javascript-mkdirs.cmake
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/src/tree_sitter_javascript-stamp/tree_sitter_javascript-mkdir
+[ 35%] No download step for 'tree_sitter_javascript'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/src/tree_sitter_javascript-stamp/tree_sitter_javascript-download
+[ 37%] No update step for 'tree_sitter_javascript'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/src/tree_sitter_javascript-stamp/tree_sitter_javascript-update
+[ 38%] No patch step for 'tree_sitter_javascript'
+/usr/bin/cmake -E echo_append
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/src/tree_sitter_javascript-stamp/tree_sitter_javascript-patch
+[ 39%] No configure step for 'tree_sitter_javascript'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-javascript && /usr/bin/cmake -E echo_append
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-javascript && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/src/tree_sitter_javascript-stamp/tree_sitter_javascript-configure
+[ 39%] Performing build step for 'tree_sitter_javascript'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-javascript && make -C /home/matrillo/apps/scopemux/vendor/tree-sitter-javascript CFLAGS=\"-fPIC\"
+make[4]: Entering directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript'
+make[4]: Nothing to be done for 'all'.
+make[4]: Leaving directory '/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-javascript && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/src/tree_sitter_javascript-stamp/tree_sitter_javascript-build
+[ 40%] Performing install step for 'tree_sitter_javascript'
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-javascript && /usr/bin/cmake -E copy /home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/libtree-sitter-javascript.a /home/matrillo/apps/scopemux/build-misc/tree-sitter-libs/libtree-sitter-javascript.a
+cd /home/matrillo/apps/scopemux/vendor/tree-sitter-javascript && /usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/src/tree_sitter_javascript-stamp/tree_sitter_javascript-install
+[ 41%] Completed 'tree_sitter_javascript'
+/usr/bin/cmake -E make_directory /home/matrillo/apps/scopemux/build-misc/CMakeFiles
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/CMakeFiles/tree_sitter_javascript-complete
+/usr/bin/cmake -E touch /home/matrillo/apps/scopemux/build-misc/tree_sitter_javascript-prefix/src/tree_sitter_javascript-stamp/tree_sitter_javascript-done
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[ 41%] Built target tree_sitter_javascript
+make  -f core/CMakeFiles/parser_core.dir/build.make core/CMakeFiles/parser_core.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/core /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/core /home/matrillo/apps/scopemux/build-misc/core/CMakeFiles/parser_core.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f core/CMakeFiles/parser_core.dir/build.make core/CMakeFiles/parser_core.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[ 43%] Building C object core/CMakeFiles/parser_core.dir/src/parser/parser.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/parser.c.o -MF CMakeFiles/parser_core.dir/src/parser/parser.c.o.d -o CMakeFiles/parser_core.dir/src/parser/parser.c.o -c /home/matrillo/apps/scopemux/core/src/parser/parser.c
+[ 43%] Building C object core/CMakeFiles/parser_core.dir/src/parser/ast_node.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/ast_node.c.o -MF CMakeFiles/parser_core.dir/src/parser/ast_node.c.o.d -o CMakeFiles/parser_core.dir/src/parser/ast_node.c.o -c /home/matrillo/apps/scopemux/core/src/parser/ast_node.c
+/home/matrillo/apps/scopemux/core/src/parser/ast_node.c:476:13: warning: ‘ast_node_init_additional_data’ defined but not used [-Wunused-function]
+  476 | static bool ast_node_init_additional_data(ASTNode *node) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ast_node.c:435:13: warning: ‘ast_node_free_data’ defined but not used [-Wunused-function]
+  435 | static void ast_node_free_data(ASTNode *node) {
+      |             ^~~~~~~~~~~~~~~~~~
+[ 44%] Building C object core/CMakeFiles/parser_core.dir/src/parser/cst_node.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/cst_node.c.o -MF CMakeFiles/parser_core.dir/src/parser/cst_node.c.o.d -o CMakeFiles/parser_core.dir/src/parser/cst_node.c.o -c /home/matrillo/apps/scopemux/core/src/parser/cst_node.c
+[ 45%] Building C object core/CMakeFiles/parser_core.dir/src/parser/memory_tracking.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/memory_tracking.c.o -MF CMakeFiles/parser_core.dir/src/parser/memory_tracking.c.o.d -o CMakeFiles/parser_core.dir/src/parser/memory_tracking.c.o -c /home/matrillo/apps/scopemux/core/src/parser/memory_tracking.c
+[ 45%] Building C object core/CMakeFiles/parser_core.dir/src/parser/parser_context.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/parser_context.c.o -MF CMakeFiles/parser_core.dir/src/parser/parser_context.c.o.d -o CMakeFiles/parser_core.dir/src/parser/parser_context.c.o -c /home/matrillo/apps/scopemux/core/src/parser/parser_context.c
+[ 46%] Building C object core/CMakeFiles/parser_core.dir/src/parser/query_processing.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/query_processing.c.o -MF CMakeFiles/parser_core.dir/src/parser/query_processing.c.o.d -o CMakeFiles/parser_core.dir/src/parser/query_processing.c.o -c /home/matrillo/apps/scopemux/core/src/parser/query_processing.c
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c: In function ‘parser_execute_query’:
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c:131:10: warning: unused variable ‘root_node’ [-Wunused-variable]
+  131 |   TSNode root_node;
+      |          ^~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c: In function ‘process_function_match’:
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c:272:51: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+  272 | static bool process_function_match(ParserContext *ctx, TSQueryMatch *match) {
+      |                                    ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c:272:70: warning: unused parameter ‘match’ [-Wunused-parameter]
+  272 | static bool process_function_match(ParserContext *ctx, TSQueryMatch *match) {
+      |                                                        ~~~~~~~~~~~~~~^~~~~
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c: In function ‘process_class_match’:
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c:288:48: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+  288 | static bool process_class_match(ParserContext *ctx, TSQueryMatch *match) {
+      |                                 ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c:288:67: warning: unused parameter ‘match’ [-Wunused-parameter]
+  288 | static bool process_class_match(ParserContext *ctx, TSQueryMatch *match) {
+      |                                                     ~~~~~~~~~~~~~~^~~~~
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c: In function ‘process_variable_match’:
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c:304:51: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+  304 | static bool process_variable_match(ParserContext *ctx, TSQueryMatch *match) {
+      |                                    ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/query_processing.c:304:70: warning: unused parameter ‘match’ [-Wunused-parameter]
+  304 | static bool process_variable_match(ParserContext *ctx, TSQueryMatch *match) {
+      |                                                        ~~~~~~~~~~~~~~^~~~~
+[ 48%] Building C object core/CMakeFiles/parser_core.dir/src/parser/project_context/project_context_facade.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/project_context/project_context_facade.c.o -MF CMakeFiles/parser_core.dir/src/parser/project_context/project_context_facade.c.o.d -o CMakeFiles/parser_core.dir/src/parser/project_context/project_context_facade.c.o -c /home/matrillo/apps/scopemux/core/src/parser/project_context/project_context_facade.c
+[ 49%] Building C object core/CMakeFiles/parser_core.dir/src/parser/project_context/project_utils.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/project_context/project_utils.c.o -MF CMakeFiles/parser_core.dir/src/parser/project_context/project_utils.c.o.d -o CMakeFiles/parser_core.dir/src/parser/project_context/project_utils.c.o -c /home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c: In function ‘symbol_new’:
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:24:57: warning: unused parameter ‘type’ [-Wunused-parameter]
+   24 | static Symbol *symbol_new(const char *name, ASTNodeType type) {
+      |                                             ~~~~~~~~~~~~^~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:54:17: warning: no previous prototype for ‘project_context_create_impl’ [-Wmissing-prototypes]
+   54 | ProjectContext *project_context_create_impl(const char *root_directory) {
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:120:6: warning: no previous prototype for ‘project_context_free_impl’ [-Wmissing-prototypes]
+  120 | void project_context_free_impl(ProjectContext *project) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:158:6: warning: no previous prototype for ‘project_context_set_config_impl’ [-Wmissing-prototypes]
+  158 | void project_context_set_config_impl(ProjectContext *project, const ProjectConfig *config) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:173:6: warning: no previous prototype for ‘project_set_error_impl’ [-Wmissing-prototypes]
+  173 | void project_set_error_impl(ProjectContext *project, int code, const char *message) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:193:13: warning: no previous prototype for ‘project_get_error_impl’ [-Wmissing-prototypes]
+  193 | const char *project_get_error_impl(const ProjectContext *project, int *out_code) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:224:6: warning: no previous prototype for ‘project_set_error’ [-Wmissing-prototypes]
+  224 | void project_set_error(const ProjectContext *project, int code, const char *message) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:292:6: warning: no previous prototype for ‘project_get_stats_impl’ [-Wmissing-prototypes]
+  292 | void project_get_stats_impl(const ProjectContext *project, size_t *out_total_files,
+      |      ^~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_utils.c:24:16: warning: ‘symbol_new’ defined but not used [-Wunused-function]
+   24 | static Symbol *symbol_new(const char *name, ASTNodeType type) {
+      |                ^~~~~~~~~~
+[ 49%] Building C object core/CMakeFiles/parser_core.dir/src/parser/project_context/project_symbol_extraction.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/project_context/project_symbol_extraction.c.o -MF CMakeFiles/parser_core.dir/src/parser/project_context/project_symbol_extraction.c.o.d -o CMakeFiles/parser_core.dir/src/parser/project_context/project_symbol_extraction.c.o -c /home/matrillo/apps/scopemux/core/src/parser/project_context/project_symbol_extraction.c
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_symbol_extraction.c:38:6: warning: no previous prototype for ‘register_file_symbols’ [-Wmissing-prototypes]
+   38 | void register_file_symbols(ProjectContext *project, ParserContext *ctx, const char *filepath) {
+      |      ^~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/project_symbol_extraction.c:70:6: warning: no previous prototype for ‘project_context_extract_symbols_impl’ [-Wmissing-prototypes]
+   70 | bool project_context_extract_symbols_impl(ProjectContext *project, ParserContext *ctx,
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 50%] Building C object core/CMakeFiles/parser_core.dir/src/parser/project_context/symbol_management.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/project_context/symbol_management.c.o -MF CMakeFiles/parser_core.dir/src/parser/project_context/symbol_management.c.o.d -o CMakeFiles/parser_core.dir/src/parser/project_context/symbol_management.c.o -c /home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c: In function ‘register_node_symbols’:
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c:61:7: warning: a label can only be part of a statement and a declaration is not a statement [-Wpedantic]
+   61 |       SymbolEntry *entry =
+      |       ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c: In function ‘project_resolve_references_impl’:
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c:311:32: warning: passing argument 1 of ‘reference_resolver_get_stats’ from incompatible pointer type [-Wincompatible-pointer-types]
+  311 |   reference_resolver_get_stats(&total_lookups, &resolved_count, &failed_count);
+      |                                ^~~~~~~~~~~~~~
+      |                                |
+      |                                size_t * {aka long unsigned int *}
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c:28:40: note: expected ‘int *’ but argument is of type ‘size_t *’ {aka ‘long unsigned int *’}
+   28 | void reference_resolver_get_stats(int *total_lookups, int *resolved_count, int *failed_count);
+      |                                   ~~~~~^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c:311:48: warning: passing argument 2 of ‘reference_resolver_get_stats’ from incompatible pointer type [-Wincompatible-pointer-types]
+  311 |   reference_resolver_get_stats(&total_lookups, &resolved_count, &failed_count);
+      |                                                ^~~~~~~~~~~~~~~
+      |                                                |
+      |                                                size_t * {aka long unsigned int *}
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c:28:60: note: expected ‘int *’ but argument is of type ‘size_t *’ {aka ‘long unsigned int *’}
+   28 | void reference_resolver_get_stats(int *total_lookups, int *resolved_count, int *failed_count);
+      |                                                       ~~~~~^~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c:311:65: warning: passing argument 3 of ‘reference_resolver_get_stats’ from incompatible pointer type [-Wincompatible-pointer-types]
+  311 |   reference_resolver_get_stats(&total_lookups, &resolved_count, &failed_count);
+      |                                                                 ^~~~~~~~~~~~~
+      |                                                                 |
+      |                                                                 size_t * {aka long unsigned int *}
+/home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_management.c:28:81: note: expected ‘int *’ but argument is of type ‘size_t *’ {aka ‘long unsigned int *’}
+   28 | void reference_resolver_get_stats(int *total_lookups, int *resolved_count, int *failed_count);
+      |                                                                            ~~~~~^~~~~~~~~~~~
+[ 51%] Building C object core/CMakeFiles/parser_core.dir/src/parser/project_context/symbol_collection.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/project_context/symbol_collection.c.o -MF CMakeFiles/parser_core.dir/src/parser/project_context/symbol_collection.c.o.d -o CMakeFiles/parser_core.dir/src/parser/project_context/symbol_collection.c.o -c /home/matrillo/apps/scopemux/core/src/parser/project_context/symbol_collection.c
+[ 51%] Building C object core/CMakeFiles/parser_core.dir/src/parser/ts_init.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/ts_init.c.o -MF CMakeFiles/parser_core.dir/src/parser/ts_init.c.o.d -o CMakeFiles/parser_core.dir/src/parser/ts_init.c.o -c /home/matrillo/apps/scopemux/core/src/parser/ts_init.c
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:45:7: warning: no previous prototype for ‘build_queries_dir_impl’ [-Wmissing-prototypes]
+   45 | char *build_queries_dir_impl(Language language) {
+      |       ^~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:108:6: warning: no previous prototype for ‘ts_init_parser_impl’ [-Wmissing-prototypes]
+  108 | bool ts_init_parser_impl(ParserContext *ctx, Language language) {
+      |      ^~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c: In function ‘ts_init_parser_impl’:
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:143:17: warning: ISO C forbids conversion of function pointer to object pointer type [-Wpedantic]
+  143 |   void *c_sym = (void *)&tree_sitter_c;
+      |                 ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:144:19: warning: ISO C forbids conversion of function pointer to object pointer type [-Wpedantic]
+  144 |   void *cpp_sym = (void *)&tree_sitter_cpp;
+      |                   ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:145:22: warning: ISO C forbids conversion of function pointer to object pointer type [-Wpedantic]
+  145 |   void *python_sym = (void *)&tree_sitter_python;
+      |                      ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:146:18: warning: ISO C forbids conversion of function pointer to object pointer type [-Wpedantic]
+  146 |   void *js_sym = (void *)&tree_sitter_javascript;
+      |                  ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:147:18: warning: ISO C forbids conversion of function pointer to object pointer type [-Wpedantic]
+  147 |   void *ts_sym = (void *)&tree_sitter_typescript;
+      |                  ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:187:13: warning: ISO C forbids conversion of function pointer to object pointer type [-Wpedantic]
+  187 |             (void *)adapter->get_ts_language);
+      |             ^
+In file included from /home/matrillo/apps/scopemux/core/src/parser/../../include/scopemux/adapters/../parser.h:25,
+                 from /home/matrillo/apps/scopemux/core/src/parser/../../include/scopemux/adapters/language_adapter.h:4,
+                 from /home/matrillo/apps/scopemux/core/src/parser/../../include/scopemux/adapters/adapter_registry.h:4,
+                 from /home/matrillo/apps/scopemux/core/src/parser/ts_init.c:13:
+/home/matrillo/apps/scopemux/core/src/parser/../../include/scopemux/adapters/../logging.h:8:26: warning: the address of ‘docstrings_path’ will always evaluate as ‘true’ [-Waddress]
+    8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
+      |                          ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:285:61: note: in expansion of macro ‘SAFE_STR’
+  285 |       log_error("WARNING: docstrings.scm not found at: %s", SAFE_STR(docstrings_path));
+      |                                                             ^~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/../../include/scopemux/adapters/../logging.h:8:26: warning: the address of ‘docstrings_path’ will always evaluate as ‘true’ [-Waddress]
+    8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
+      |                          ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_init.c:287:48: note: in expansion of macro ‘SAFE_STR’
+  287 |       log_error("Found docstrings.scm at: %s", SAFE_STR(docstrings_path));
+      |                                                ^~~~~~~~
+[ 53%] Building C object core/CMakeFiles/parser_core.dir/src/parser/ts_ast_builder.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/ts_ast_builder.c.o -MF CMakeFiles/parser_core.dir/src/parser/ts_ast_builder.c.o.d -o CMakeFiles/parser_core.dir/src/parser/ts_ast_builder.c.o -c /home/matrillo/apps/scopemux/core/src/parser/ts_ast_builder.c
+/home/matrillo/apps/scopemux/core/src/parser/ts_ast_builder.c:423:10: warning: no previous prototype for ‘ts_tree_to_ast_impl’ [-Wmissing-prototypes]
+  423 | ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
+      |          ^~~~~~~~~~~~~~~~~~~
+[ 54%] Building C object core/CMakeFiles/parser_core.dir/src/parser/ts_cst_builder.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/ts_cst_builder.c.o -MF CMakeFiles/parser_core.dir/src/parser/ts_cst_builder.c.o.d -o CMakeFiles/parser_core.dir/src/parser/ts_cst_builder.c.o -c /home/matrillo/apps/scopemux/core/src/parser/ts_cst_builder.c
+/home/matrillo/apps/scopemux/core/src/parser/ts_cst_builder.c: In function ‘create_cst_from_ts_node’:
+/home/matrillo/apps/scopemux/core/src/parser/ts_cst_builder.c:169:23: warning: comparison of unsigned expression in ‘< 0’ is always false [-Wtype-limits]
+  169 |   if (start_point.row < 0 || end_point.row < 0 || start_point.column < 0 || end_point.column < 0) {
+      |                       ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_cst_builder.c:169:44: warning: comparison of unsigned expression in ‘< 0’ is always false [-Wtype-limits]
+  169 |   if (start_point.row < 0 || end_point.row < 0 || start_point.column < 0 || end_point.column < 0) {
+      |                                            ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_cst_builder.c:169:70: warning: comparison of unsigned expression in ‘< 0’ is always false [-Wtype-limits]
+  169 |   if (start_point.row < 0 || end_point.row < 0 || start_point.column < 0 || end_point.column < 0) {
+      |                                                                      ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_cst_builder.c:169:94: warning: comparison of unsigned expression in ‘< 0’ is always false [-Wtype-limits]
+  169 |   if (start_point.row < 0 || end_point.row < 0 || start_point.column < 0 || end_point.column < 0) {
+      |                                                                                              ^
+/home/matrillo/apps/scopemux/core/src/parser/ts_cst_builder.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/ts_cst_builder.c:226:10: warning: no previous prototype for ‘ts_tree_to_cst_impl’ [-Wmissing-prototypes]
+  226 | CSTNode *ts_tree_to_cst_impl(TSNode root_node, ParserContext *ctx) {
+      |          ^~~~~~~~~~~~~~~~~~~
+[ 55%] Building C object core/CMakeFiles/parser_core.dir/src/parser/ts_query_processor.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/ts_query_processor.c.o -MF CMakeFiles/parser_core.dir/src/parser/ts_query_processor.c.o.d -o CMakeFiles/parser_core.dir/src/parser/ts_query_processor.c.o -c /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:291:6: warning: no previous prototype for ‘process_query’ [-Wmissing-prototypes]
+  291 | void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
+      |      ^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:475:6: warning: no previous prototype for ‘process_all_ast_queries’ [-Wmissing-prototypes]
+  475 | bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c: In function ‘process_all_ast_queries’:
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:517:5: warning: ‘return’ with no value, in function returning non-void [-Wreturn-type]
+  517 |     return;
+      |     ^~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:475:6: note: declared here
+  475 | bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~
+At top level:
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:97:20: warning: ‘determine_capture_name’ defined but not used [-Wunused-function]
+   97 | static const char *determine_capture_name(const char *node_type, const char *query_type) {
+      |                    ^~~~~~~~~~~~~~~~~~~~~~
+[ 55%] Building C object core/CMakeFiles/parser_core.dir/src/parser/query_manager.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/query_manager.c.o -MF CMakeFiles/parser_core.dir/src/parser/query_manager.c.o.d -o CMakeFiles/parser_core.dir/src/parser/query_manager.c.o -c /home/matrillo/apps/scopemux/core/src/parser/query_manager.c
+In file included from /home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/parser.h:25,
+                 from /home/matrillo/apps/scopemux/core/src/parser/query_manager.c:44:
+/home/matrillo/apps/scopemux/core/src/parser/query_manager.c: In function ‘compile_query’:
+/home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/logging.h:8:26: warning: the address of ‘preview’ will always evaluate as ‘true’ [-Waddress]
+    8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
+      |                          ^
+/home/matrillo/apps/scopemux/core/src/parser/query_manager.c:394:38: note: in expansion of macro ‘SAFE_STR’
+  394 |   log_debug("Query preview: '%s%s'", SAFE_STR(preview), query_len > 40 ? "..." : "");
+      |                                      ^~~~~~~~
+[ 56%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:863:25: warning: ‘resolve_javascript_property’ defined but not used [-Wunused-function]
+  863 | static ResolutionStatus resolve_javascript_property(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:782:25: warning: ‘resolve_javascript_import’ defined but not used [-Wunused-function]
+  782 | static ResolutionStatus resolve_javascript_import(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:721:25: warning: ‘resolve_javascript_class’ defined but not used [-Wunused-function]
+  721 | static ResolutionStatus resolve_javascript_class(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:680:25: warning: ‘resolve_javascript_variable’ defined but not used [-Wunused-function]
+  680 | static ResolutionStatus resolve_javascript_variable(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:593:25: warning: ‘resolve_javascript_function’ defined but not used [-Wunused-function]
+  593 | static ResolutionStatus resolve_javascript_function(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:507:25: warning: ‘resolve_typescript_type’ defined but not used [-Wunused-function]
+  507 | static ResolutionStatus resolve_typescript_type(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:465:25: warning: ‘resolve_typescript_generic’ defined but not used [-Wunused-function]
+  465 | static ResolutionStatus resolve_typescript_generic(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:402:25: warning: ‘resolve_typescript_interface’ defined but not used [-Wunused-function]
+  402 | static ResolutionStatus resolve_typescript_interface(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:353:25: warning: ‘resolve_python_import’ defined but not used [-Wunused-function]
+  353 | static ResolutionStatus resolve_python_import(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:292:25: warning: ‘resolve_python_class’ defined but not used [-Wunused-function]
+  292 | static ResolutionStatus resolve_python_class(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:251:25: warning: ‘resolve_python_variable’ defined but not used [-Wunused-function]
+  251 | static ResolutionStatus resolve_python_variable(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:184:25: warning: ‘resolve_python_function’ defined but not used [-Wunused-function]
+  184 | static ResolutionStatus resolve_python_function(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:143:25: warning: ‘resolve_c_type’ defined but not used [-Wunused-function]
+  143 | static ResolutionStatus resolve_c_type(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:102:25: warning: ‘resolve_c_variable’ defined but not used [-Wunused-function]
+  102 | static ResolutionStatus resolve_c_variable(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c:71:25: warning: ‘resolve_c_function’ defined but not used [-Wunused-function]
+   71 | static ResolutionStatus resolve_c_function(ASTNode *node, const char *name,
+      |                         ^~~~~~~~~~~~~~~~~~
+[ 58%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_registration.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_registration.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_registration.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_registration.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/resolver_registration.c
+[ 58%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_implementation.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_implementation.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_implementation.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_implementation.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/resolver_implementation.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/resolver_implementation.c:72:6: warning: no previous prototype for ‘reference_resolver_register_impl’ [-Wmissing-prototypes]
+   72 | bool reference_resolver_register_impl(ReferenceResolver *resolver, Language language,
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/resolver_implementation.c: In function ‘reference_resolver_resolve_node_impl’:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/resolver_implementation.c:161:64: warning: unused parameter ‘language’ [-Wunused-parameter]
+  161 |                                                       Language language) {
+      |                                                       ~~~~~~~~~^~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/resolver_implementation.c: In function ‘reference_resolver_generic_resolve_impl’:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/resolver_implementation.c:277:87: warning: unused parameter ‘ref_type’ [-Wunused-parameter]
+  277 | ResolutionStatus reference_resolver_generic_resolve_impl(ASTNode *node, ReferenceType ref_type,
+      |                                                                         ~~~~~~~~~~~~~~^~~~~~~~
+[ 59%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_core.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_core.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_core.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_core.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/resolver_core.c
+[ 60%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_facade.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_facade.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_facade.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_facade.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_facade.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_facade.c:28:20: warning: no previous prototype for ‘reference_resolver_create_and_init’ [-Wmissing-prototypes]
+   28 | ReferenceResolver *reference_resolver_create_and_init(GlobalSymbolTable *symbol_table) {
+      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_facade.c:71:18: warning: no previous prototype for ‘reference_resolver_resolve’ [-Wmissing-prototypes]
+   71 | ResolutionStatus reference_resolver_resolve(ReferenceResolver *resolver, ASTNode *node,
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_facade.c:129:6: warning: no previous prototype for ‘reference_resolver_get_stats’ [-Wmissing-prototypes]
+  129 | void reference_resolver_get_stats(const ReferenceResolver *resolver, size_t *out_total_references,
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_facade.c:177:6: warning: no previous prototype for ‘reference_resolver_unregister’ [-Wmissing-prototypes]
+  177 | bool reference_resolver_unregister(ReferenceResolver *resolver, Language language) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_facade.c:188:19: warning: no previous prototype for ‘find_language_resolver’ [-Wmissing-prototypes]
+  188 | LanguageResolver *find_language_resolver(ReferenceResolver *resolver, Language language) {
+      |                   ^~~~~~~~~~~~~~~~~~~~~~
+[ 61%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_core.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_core.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_core.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_core.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_core.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_core.c:86:1: warning: "/*" within comment [-Wcomment]
+   86 | /**
+      |  
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_core.c:93:6: warning: function declaration isn’t a prototype [-Wstrict-prototypes]
+   93 | bool reference_resolver_init() {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/reference_resolver_core.c:119:6: warning: function declaration isn’t a prototype [-Wstrict-prototypes]
+  119 | void reference_resolver_cleanup() {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 61%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/c_resolver.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/c_resolver.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/c_resolver.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/c_resolver.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/c_resolver.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/c_resolver.c:21:18: warning: no previous prototype for ‘c_resolver_impl’ [-Wmissing-prototypes]
+   21 | ResolutionStatus c_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+      |                  ^~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/c_resolver.c: In function ‘reference_resolver_c’:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/c_resolver.c:52:78: warning: unused parameter ‘resolver_data’ [-Wunused-parameter]
+   52 |                                       GlobalSymbolTable *symbol_table, void *resolver_data) {
+      |                                                                        ~~~~~~^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/c_resolver.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/c_resolver.c:164:6: warning: no previous prototype for ‘c_resolver_get_stats’ [-Wmissing-prototypes]
+  164 | void c_resolver_get_stats(size_t *total, size_t *resolved, size_t *macro_resolved,
+      |      ^~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/c_resolver.c:181:6: warning: function declaration isn’t a prototype [-Wstrict-prototypes]
+  181 | void c_resolver_reset_stats() { memset(&c_resolver_stats, 0, sizeof(c_resolver_stats)); }
+      |      ^~~~~~~~~~~~~~~~~~~~~~
+[ 62%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/cpp_resolver.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/cpp_resolver.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/cpp_resolver.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/cpp_resolver.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/cpp_resolver.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/cpp_resolver.c:39:18: warning: no previous prototype for ‘reference_resolver_cpp’ [-Wmissing-prototypes]
+   39 | ResolutionStatus reference_resolver_cpp(ASTNode *node, ReferenceType ref_type, const char *name,
+      |                  ^~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/cpp_resolver.c: In function ‘reference_resolver_cpp’:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/cpp_resolver.c:40:80: warning: unused parameter ‘resolver_data’ [-Wunused-parameter]
+   40 |                                         GlobalSymbolTable *symbol_table, void *resolver_data) {
+      |                                                                          ~~~~~~^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/cpp_resolver.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/cpp_resolver.c:208:6: warning: no previous prototype for ‘cpp_resolver_get_stats’ [-Wmissing-prototypes]
+  208 | void cpp_resolver_get_stats(size_t *total, size_t *resolved, size_t *namespace_resolved,
+      |      ^~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/cpp_resolver.c:228:6: warning: function declaration isn’t a prototype [-Wstrict-prototypes]
+  228 | void cpp_resolver_reset_stats() { memset(&cpp_resolver_stats, 0, sizeof(cpp_resolver_stats)); }
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~
+[ 64%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/typescript_resolver.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/typescript_resolver.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/typescript_resolver.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/typescript_resolver.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/typescript_resolver.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/typescript_resolver.c:32:18: warning: no previous prototype for ‘typescript_resolver_impl’ [-Wmissing-prototypes]
+   32 | ResolutionStatus typescript_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/typescript_resolver.c: In function ‘reference_resolver_typescript’:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/typescript_resolver.c:192:16: warning: unused variable ‘parent’ [-Wunused-variable]
+  192 |       ASTNode *parent = node->parent;
+      |                ^~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/typescript_resolver.c:61:54: warning: unused parameter ‘resolver_data’ [-Wunused-parameter]
+   61 |                                                void *resolver_data) {
+      |                                                ~~~~~~^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/typescript_resolver.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/typescript_resolver.c:260:6: warning: no previous prototype for ‘typescript_resolver_get_stats’ [-Wmissing-prototypes]
+  260 | void typescript_resolver_get_stats(size_t *total, size_t *resolved, size_t *import_resolved,
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/typescript_resolver.c:282:6: warning: function declaration isn’t a prototype [-Wstrict-prototypes]
+  282 | void typescript_resolver_reset_stats() { memset(&ts_resolver_stats, 0, sizeof(ts_resolver_stats)); }
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 64%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/python_resolver.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/python_resolver.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/python_resolver.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/python_resolver.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/python_resolver.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/python_resolver.c:26:18: warning: no previous prototype for ‘python_resolver_impl’ [-Wmissing-prototypes]
+   26 | ResolutionStatus python_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+      |                  ^~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/python_resolver.c: In function ‘reference_resolver_python’:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/python_resolver.c:52:83: warning: unused parameter ‘resolver_data’ [-Wunused-parameter]
+   52 |                                            GlobalSymbolTable *symbol_table, void *resolver_data) {
+      |                                                                             ~~~~~~^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/python_resolver.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/python_resolver.c:170:6: warning: no previous prototype for ‘python_resolver_get_stats’ [-Wmissing-prototypes]
+  170 | void python_resolver_get_stats(size_t *total, size_t *resolved, size_t *import_resolved,
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/python_resolver.c:187:6: warning: function declaration isn’t a prototype [-Wstrict-prototypes]
+  187 | void python_resolver_reset_stats() {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 65%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/javascript_resolver.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/javascript_resolver.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/javascript_resolver.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/javascript_resolver.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/javascript_resolver.c
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/javascript_resolver.c:27:18: warning: no previous prototype for ‘javascript_resolver_impl’ [-Wmissing-prototypes]
+   27 | ResolutionStatus javascript_resolver_impl(ASTNode *node, ReferenceType ref_type, const char *name,
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/javascript_resolver.c: In function ‘reference_resolver_javascript’:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/javascript_resolver.c:54:54: warning: unused parameter ‘resolver_data’ [-Wunused-parameter]
+   54 |                                                void *resolver_data) {
+      |                                                ~~~~~~^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/javascript_resolver.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/javascript_resolver.c:111:6: warning: no previous prototype for ‘javascript_resolver_get_stats’ [-Wmissing-prototypes]
+  111 | void javascript_resolver_get_stats(size_t *total, size_t *resolved, size_t *import_resolved,
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/javascript_resolver.c:128:6: warning: function declaration isn’t a prototype [-Wstrict-prototypes]
+  128 | void javascript_resolver_reset_stats() { memset(&js_resolver_stats, 0, sizeof(js_resolver_stats)); }
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 66%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolver.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolver.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolver.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolver.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolver.c
+[ 67%] Building C object core/CMakeFiles/parser_core.dir/src/ast_compliance.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/ast_compliance.c.o -MF CMakeFiles/parser_core.dir/src/ast_compliance.c.o.d -o CMakeFiles/parser_core.dir/src/ast_compliance.c.o -c /home/matrillo/apps/scopemux/core/src/ast_compliance.c
+[ 67%] Building C object core/CMakeFiles/parser_core.dir/src/parser/lang/c_compliance.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/lang/c_compliance.c.o -MF CMakeFiles/parser_core.dir/src/parser/lang/c_compliance.c.o.d -o CMakeFiles/parser_core.dir/src/parser/lang/c_compliance.c.o -c /home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c: In function ‘debug_print_ast_structure’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c:36:26: warning: the address of ‘indent’ will always evaluate as ‘true’ [-Waddress]
+   36 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
+      |                          ^
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c:126:71: note: in expansion of macro ‘SAFE_STR’
+  126 |   log_debug("%s[%d] %s (type: %s, name: '%s', qualified_name: '%s')", SAFE_STR(indent), *index,
+      |                                                                       ^~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c:134:23: warning: comparison of integer expressions of different signedness: ‘int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+  134 |     for (int i = 0; i < node->num_children; i++) {
+      |                       ^
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c: In function ‘c_schema_compliance’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c:309:25: warning: comparison of integer expressions of different signedness: ‘int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+  309 |       for (int i = 0; i < node->num_children; i++) {
+      |                         ^
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c:314:31: warning: comparison of integer expressions of different signedness: ‘int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+  314 |             for (int j = 0; j < child->num_children; j++) {
+      |                               ^
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_compliance.c:448:6: warning: no previous prototype for ‘register_c_compliance’ [-Wmissing-prototypes]
+  448 | void register_c_compliance(void) {
+      |      ^~~~~~~~~~~~~~~~~~~~~
+[ 69%] Building C object core/CMakeFiles/parser_core.dir/src/parser/lang/lang_compliance_registry.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/lang/lang_compliance_registry.c.o -MF CMakeFiles/parser_core.dir/src/parser/lang/lang_compliance_registry.c.o.d -o CMakeFiles/parser_core.dir/src/parser/lang/lang_compliance_registry.c.o -c /home/matrillo/apps/scopemux/core/src/parser/lang/lang_compliance_registry.c
+[ 70%] Building C object core/CMakeFiles/parser_core.dir/src/parser/lang/python_ast_compliance.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/lang/python_ast_compliance.c.o -MF CMakeFiles/parser_core.dir/src/parser/lang/python_ast_compliance.c.o.d -o CMakeFiles/parser_core.dir/src/parser/lang/python_ast_compliance.c.o -c /home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c:26:5: warning: no previous prototype for ‘python_ensure_schema_compliance’ [-Wmissing-prototypes]
+   26 | int python_ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c: In function ‘python_ensure_schema_compliance’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c:26:67: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+   26 | int python_ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
+      |                                                    ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c:63:10: warning: no previous prototype for ‘python_ast_post_process’ [-Wmissing-prototypes]
+   63 | ASTNode *python_ast_post_process(ASTNode *root_node, ParserContext *ctx) {
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c: In function ‘python_ast_post_process’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c:63:69: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+   63 | ASTNode *python_ast_post_process(ASTNode *root_node, ParserContext *ctx) {
+      |                                                      ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/lang/python_ast_compliance.c:82:6: warning: no previous prototype for ‘register_python_ast_compliance’ [-Wmissing-prototypes]
+   82 | void register_python_ast_compliance(void) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 70%] Building C object core/CMakeFiles/parser_core.dir/src/parser/lang/javascript_ast_compliance.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/lang/javascript_ast_compliance.c.o -MF CMakeFiles/parser_core.dir/src/parser/lang/javascript_ast_compliance.c.o.d -o CMakeFiles/parser_core.dir/src/parser/lang/javascript_ast_compliance.c.o -c /home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c:26:5: warning: no previous prototype for ‘javascript_ensure_schema_compliance’ [-Wmissing-prototypes]
+   26 | int javascript_ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c: In function ‘javascript_ensure_schema_compliance’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c:26:71: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+   26 | int javascript_ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
+      |                                                        ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c:67:10: warning: no previous prototype for ‘javascript_ast_post_process’ [-Wmissing-prototypes]
+   67 | ASTNode *javascript_ast_post_process(ASTNode *root_node, ParserContext *ctx) {
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c: In function ‘javascript_ast_post_process’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c:67:73: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+   67 | ASTNode *javascript_ast_post_process(ASTNode *root_node, ParserContext *ctx) {
+      |                                                          ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/lang/javascript_ast_compliance.c:86:6: warning: no previous prototype for ‘register_javascript_ast_compliance’ [-Wmissing-prototypes]
+   86 | void register_javascript_ast_compliance(void) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 71%] Building C object core/CMakeFiles/parser_core.dir/src/parser/lang/typescript_ast_compliance.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/lang/typescript_ast_compliance.c.o -MF CMakeFiles/parser_core.dir/src/parser/lang/typescript_ast_compliance.c.o.d -o CMakeFiles/parser_core.dir/src/parser/lang/typescript_ast_compliance.c.o -c /home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c:26:5: warning: no previous prototype for ‘typescript_ensure_schema_compliance’ [-Wmissing-prototypes]
+   26 | int typescript_ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c: In function ‘typescript_ensure_schema_compliance’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c:26:71: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+   26 | int typescript_ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
+      |                                                        ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c:74:10: warning: no previous prototype for ‘typescript_ast_post_process’ [-Wmissing-prototypes]
+   74 | ASTNode *typescript_ast_post_process(ASTNode *root_node, ParserContext *ctx) {
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c: In function ‘typescript_ast_post_process’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c:74:73: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+   74 | ASTNode *typescript_ast_post_process(ASTNode *root_node, ParserContext *ctx) {
+      |                                                          ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/lang/typescript_ast_compliance.c:93:6: warning: no previous prototype for ‘register_typescript_ast_compliance’ [-Wmissing-prototypes]
+   93 | void register_typescript_ast_compliance(void) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 72%] Building C object core/CMakeFiles/parser_core.dir/src/parser/lang/c_ast_compliance.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/lang/c_ast_compliance.c.o -MF CMakeFiles/parser_core.dir/src/parser/lang/c_ast_compliance.c.o.d -o CMakeFiles/parser_core.dir/src/parser/lang/c_ast_compliance.c.o -c /home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c: In function ‘c_schema_compliance_callback’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c:26:72: warning: unused parameter ‘ctx’ [-Wunused-parameter]
+   26 | static bool c_schema_compliance_callback(ASTNode *node, ParserContext *ctx) {
+      |                                                         ~~~~~~~~~~~~~~~^~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c: In function ‘c_post_process_callback’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c:120:7: warning: implicit declaration of function ‘ast_node_set_property’; did you mean ‘ast_node_set_name’? [-Wimplicit-function-declaration]
+  120 |       ast_node_set_property(ast_root, "is_header", "true");
+      |       ^~~~~~~~~~~~~~~~~~~~~
+      |       ast_node_set_name
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c: At top level:
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c:133:6: warning: no previous prototype for ‘register_c_ast_compliance’ [-Wmissing-prototypes]
+  133 | void register_c_ast_compliance(void) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c: In function ‘register_c_ast_compliance’:
+/home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c:134:47: warning: passing argument 2 of ‘register_schema_compliance_callback’ from incompatible pointer type [-Wincompatible-pointer-types]
+  134 |   register_schema_compliance_callback(LANG_C, c_schema_compliance_callback);
+      |                                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                               |
+      |                                               _Bool (*)(ASTNode *, ParserContext *) {aka _Bool (*)(struct ASTNode *, ParserContext *)}
+In file included from /home/matrillo/apps/scopemux/core/src/parser/lang/c_ast_compliance.c:10:
+/home/matrillo/apps/scopemux/core/include/scopemux/ast_compliance.h:50:85: note: expected ‘SchemaComplianceCallback’ {aka ‘int (*)(struct ASTNode *, ParserContext *)’} but argument is of type ‘_Bool (*)(ASTNode *, ParserContext *)’ {aka ‘_Bool (*)(struct ASTNode *, ParserContext *)’}
+   50 | int register_schema_compliance_callback(Language language, SchemaComplianceCallback callback);
+      |                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+[ 74%] Building C object core/CMakeFiles/parser_core.dir/src/common/memory_management.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/common/memory_management.c.o -MF CMakeFiles/parser_core.dir/src/common/memory_management.c.o.d -o CMakeFiles/parser_core.dir/src/common/memory_management.c.o -c /home/matrillo/apps/scopemux/core/src/common/memory_management.c
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:18:7: warning: no previous prototype for ‘safe_malloc’ [-Wmissing-prototypes]
+   18 | void *safe_malloc(size_t size) {
+      |       ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:34:7: warning: no previous prototype for ‘safe_realloc’ [-Wmissing-prototypes]
+   34 | void *safe_realloc(void *ptr, size_t size) {
+      |       ^~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:51:6: warning: no previous prototype for ‘safe_free’ [-Wmissing-prototypes]
+   51 | void safe_free(void *ptr) {
+      |      ^~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:63:7: warning: no previous prototype for ‘safe_strdup’ [-Wmissing-prototypes]
+   63 | char *safe_strdup(const char *str) {
+      |       ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:82:7: warning: no previous prototype for ‘memory_pool_init’ [-Wmissing-prototypes]
+   82 | void *memory_pool_init(size_t size) {
+      |       ^~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:95:7: warning: no previous prototype for ‘memory_pool_alloc’ [-Wmissing-prototypes]
+   95 | void *memory_pool_alloc(void *pool, size_t size) {
+      |       ^~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:107:6: warning: no previous prototype for ‘memory_pool_free’ [-Wmissing-prototypes]
+  107 | void memory_pool_free(void *pool) {
+      |      ^~~~~~~~~~~~~~~~
+[ 74%] Building C object core/CMakeFiles/parser_core.dir/src/common/error_handling.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/common/error_handling.c.o -MF CMakeFiles/parser_core.dir/src/common/error_handling.c.o.d -o CMakeFiles/parser_core.dir/src/common/error_handling.c.o -c /home/matrillo/apps/scopemux/core/src/common/error_handling.c
+[ 75%] Building C object core/CMakeFiles/parser_core.dir/src/common/logging.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/common/logging.c.o -MF CMakeFiles/parser_core.dir/src/common/logging.c.o.d -o CMakeFiles/parser_core.dir/src/common/logging.c.o -c /home/matrillo/apps/scopemux/core/src/common/logging.c
+/home/matrillo/apps/scopemux/core/src/common/logging.c:42:6: warning: no previous prototype for ‘log_init’ [-Wmissing-prototypes]
+   42 | bool log_init(LogLevel level, const char *log_path) {
+      |      ^~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:59:6: warning: no previous prototype for ‘log_cleanup’ [-Wmissing-prototypes]
+   59 | void log_cleanup(void) {
+      |      ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:71:6: warning: no previous prototype for ‘log_set_level’ [-Wmissing-prototypes]
+   71 | void log_set_level(LogLevel level) { current_log_level = level; }
+      |      ^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:80:6: warning: no previous prototype for ‘log_message’ [-Wmissing-prototypes]
+   80 | void log_message(LogLevel level, const char *format, ...) {
+      |      ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:135:6: warning: no previous prototype for ‘log_debug’ [-Wmissing-prototypes]
+  135 | void log_debug(const char *format, ...) {
+      |      ^~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:172:6: warning: no previous prototype for ‘log_info’ [-Wmissing-prototypes]
+  172 | void log_info(const char *format, ...) {
+      |      ^~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:209:6: warning: no previous prototype for ‘log_warning’ [-Wmissing-prototypes]
+  209 | void log_warning(const char *format, ...) {
+      |      ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:246:6: warning: no previous prototype for ‘log_error’ [-Wmissing-prototypes]
+  246 | void log_error(const char *format, ...) {
+      |      ^~~~~~~~~
+[ 76%] Building C object core/CMakeFiles/parser_core.dir/src/utils/memory_debug.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/utils/memory_debug.c.o -MF CMakeFiles/parser_core.dir/src/utils/memory_debug.c.o.d -o CMakeFiles/parser_core.dir/src/utils/memory_debug.c.o -c /home/matrillo/apps/scopemux/core/src/utils/memory_debug.c
+[ 76%] Building C object core/CMakeFiles/parser_core.dir/src/utils/ts_resource_manager.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/utils/ts_resource_manager.c.o -MF CMakeFiles/parser_core.dir/src/utils/ts_resource_manager.c.o.d -o CMakeFiles/parser_core.dir/src/utils/ts_resource_manager.c.o -c /home/matrillo/apps/scopemux/core/src/utils/ts_resource_manager.c
+[ 77%] Building C object core/CMakeFiles/parser_core.dir/src/config/node_type_mapping_loader.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/config/node_type_mapping_loader.c.o -MF CMakeFiles/parser_core.dir/src/config/node_type_mapping_loader.c.o.d -o CMakeFiles/parser_core.dir/src/config/node_type_mapping_loader.c.o -c /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c
+[ 79%] Building C object core/CMakeFiles/parser_core.dir/src/processors/docstring_processor.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/processors/docstring_processor.c.o -MF CMakeFiles/parser_core.dir/src/processors/docstring_processor.c.o.d -o CMakeFiles/parser_core.dir/src/processors/docstring_processor.c.o -c /home/matrillo/apps/scopemux/core/src/processors/docstring_processor.c
+[ 80%] Building C object core/CMakeFiles/parser_core.dir/src/processors/ast_post_processor.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/processors/ast_post_processor.c.o -MF CMakeFiles/parser_core.dir/src/processors/ast_post_processor.c.o.d -o CMakeFiles/parser_core.dir/src/processors/ast_post_processor.c.o -c /home/matrillo/apps/scopemux/core/src/processors/ast_post_processor.c
+[ 80%] Building C object core/CMakeFiles/parser_core.dir/src/processors/test_processor.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/processors/test_processor.c.o -MF CMakeFiles/parser_core.dir/src/processors/test_processor.c.o.d -o CMakeFiles/parser_core.dir/src/processors/test_processor.c.o -c /home/matrillo/apps/scopemux/core/src/processors/test_processor.c
+/home/matrillo/apps/scopemux/core/src/processors/test_processor.c:34:6: warning: no previous prototype for ‘is_test_environment’ [-Wmissing-prototypes]
+   34 | bool is_test_environment(void) { return getenv("SCOPEMUX_RUNNING_C_EXAMPLE_TESTS") != NULL; }
+      |      ^~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/processors/test_processor.c: In function ‘is_variables_loops_conditions_test’:
+/home/matrillo/apps/scopemux/core/src/processors/test_processor.c:27:26: warning: the address of ‘snippet’ will always evaluate as ‘true’ [-Waddress]
+   27 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
+      |                          ^
+/home/matrillo/apps/scopemux/core/src/processors/test_processor.c:92:77: note: in expansion of macro ‘SAFE_STR’
+   92 |       log_debug("variables_loops_conditions.c source code snippet: %.100s", SAFE_STR(snippet));
+      |                                                                             ^~~~~~~~
+[ 81%] Building C object core/CMakeFiles/parser_core.dir/src/parser/symbol_table.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/symbol_table.c.o -MF CMakeFiles/parser_core.dir/src/parser/symbol_table.c.o.d -o CMakeFiles/parser_core.dir/src/parser/symbol_table.c.o -c /home/matrillo/apps/scopemux/core/src/parser/symbol_table.c
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table.c:183:8: warning: no previous prototype for ‘symbol_table_register_from_ast’ [-Wmissing-prototypes]
+  183 | size_t symbol_table_register_from_ast(GlobalSymbolTable *table, ASTNode *node,
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 82%] Building C object core/CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_core.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_core.c.o -MF CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_core.c.o.d -o CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_core.c.o -c /home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_core.c
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_core.c:38:20: warning: no previous prototype for ‘symbol_table_create_impl’ [-Wmissing-prototypes]
+   38 | GlobalSymbolTable *symbol_table_create_impl(size_t initial_capacity) {
+      |                    ^~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_core.c:82:6: warning: no previous prototype for ‘symbol_table_free_impl’ [-Wmissing-prototypes]
+   82 | void symbol_table_free_impl(GlobalSymbolTable *table) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_core.c:119:6: warning: no previous prototype for ‘symbol_table_get_stats_impl’ [-Wmissing-prototypes]
+  119 | void symbol_table_get_stats_impl(const GlobalSymbolTable *table, size_t *out_capacity,
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_core.c:149:6: warning: no previous prototype for ‘symbol_table_should_rehash_impl’ [-Wmissing-prototypes]
+  149 | bool symbol_table_should_rehash_impl(const GlobalSymbolTable *table) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_core.c:171:6: warning: no previous prototype for ‘symbol_table_rehash_impl’ [-Wmissing-prototypes]
+  171 | bool symbol_table_rehash_impl(GlobalSymbolTable *table, size_t new_capacity) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_core.c:221:6: warning: no previous prototype for ‘symbol_table_add_scope_impl’ [-Wmissing-prototypes]
+  221 | bool symbol_table_add_scope_impl(GlobalSymbolTable *table, const char *scope_prefix) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 82%] Building C object core/CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_entry.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_entry.c.o -MF CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_entry.c.o.d -o CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_entry.c.o -c /home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_entry.c
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_entry.c:181:6: warning: no previous prototype for ‘symbol_entry_set_module_path’ [-Wmissing-prototypes]
+  181 | bool symbol_entry_set_module_path(SymbolEntry *entry, const char *module_path) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_entry.c:203:6: warning: no previous prototype for ‘symbol_entry_set_definition’ [-Wmissing-prototypes]
+  203 | void symbol_entry_set_definition(SymbolEntry *entry, bool is_definition) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_entry.c:218:6: warning: no previous prototype for ‘symbol_entry_set_parent’ [-Wmissing-prototypes]
+  218 | void symbol_entry_set_parent(SymbolEntry *entry, SymbolEntry *parent) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~
+[ 83%] Building C object core/CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_lookup.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_lookup.c.o -MF CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_lookup.c.o.d -o CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_lookup.c.o -c /home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_lookup.c
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_lookup.c:29:14: warning: no previous prototype for ‘symbol_table_lookup_impl’ [-Wmissing-prototypes]
+   29 | SymbolEntry *symbol_table_lookup_impl(const GlobalSymbolTable *table, const char *qualified_name) {
+      |              ^~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_lookup.c:66:14: warning: no previous prototype for ‘symbol_table_scope_lookup_impl’ [-Wmissing-prototypes]
+   66 | SymbolEntry *symbol_table_scope_lookup_impl(const GlobalSymbolTable *table, const char *name,
+      |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_lookup.c:175:8: warning: no previous prototype for ‘symbol_table_get_by_type_impl’ [-Wmissing-prototypes]
+  175 | size_t symbol_table_get_by_type_impl(const GlobalSymbolTable *table, ASTNodeType type,
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_lookup.c:213:8: warning: no previous prototype for ‘symbol_table_get_by_file_impl’ [-Wmissing-prototypes]
+  213 | size_t symbol_table_get_by_file_impl(const GlobalSymbolTable *table, const char *file_path,
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_lookup.c:251:8: warning: no previous prototype for ‘symbol_table_get_by_language_impl’ [-Wmissing-prototypes]
+  251 | size_t symbol_table_get_by_language_impl(const GlobalSymbolTable *table, Language language,
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_lookup.c:289:8: warning: no previous prototype for ‘symbol_table_get_by_scope_impl’ [-Wmissing-prototypes]
+  289 | size_t symbol_table_get_by_scope_impl(const GlobalSymbolTable *table, const char *scope_prefix,
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ 85%] Building C object core/CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_table_registration.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_table_registration.c.o -MF CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_table_registration.c.o.d -o CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_table_registration.c.o -c /home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_table_registration.c
+/home/matrillo/apps/scopemux/core/src/parser/symbol_table/symbol_table_registration.c:30:10: warning: no previous prototype for ‘hash_string’ [-Wmissing-prototypes]
+   30 | uint32_t hash_string(const char *str, size_t table_size) {
+      |          ^~~~~~~~~~~
+[ 86%] Building C object core/CMakeFiles/parser_core.dir/src/adapters/adapter_registry.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/adapters/adapter_registry.c.o -MF CMakeFiles/parser_core.dir/src/adapters/adapter_registry.c.o.d -o CMakeFiles/parser_core.dir/src/adapters/adapter_registry.c.o -c /home/matrillo/apps/scopemux/core/src/adapters/adapter_registry.c
+[ 86%] Building C object core/CMakeFiles/parser_core.dir/src/adapters/language_adapter.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/adapters/language_adapter.c.o -MF CMakeFiles/parser_core.dir/src/adapters/language_adapter.c.o.d -o CMakeFiles/parser_core.dir/src/adapters/language_adapter.c.o -c /home/matrillo/apps/scopemux/core/src/adapters/language_adapter.c
+/home/matrillo/apps/scopemux/core/src/adapters/language_adapter.c: In function ‘stub_extract_signature’:
+/home/matrillo/apps/scopemux/core/src/adapters/language_adapter.c:189:44: warning: unused parameter ‘node’ [-Wunused-parameter]
+  189 | static char *stub_extract_signature(TSNode node, const char *source_code) { return strdup("()"); }
+      |                                     ~~~~~~~^~~~
+/home/matrillo/apps/scopemux/core/src/adapters/language_adapter.c:189:62: warning: unused parameter ‘source_code’ [-Wunused-parameter]
+  189 | static char *stub_extract_signature(TSNode node, const char *source_code) { return strdup("()"); }
+      |                                                  ~~~~~~~~~~~~^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/adapters/language_adapter.c: In function ‘stub_generate_qualified_name’:
+/home/matrillo/apps/scopemux/core/src/adapters/language_adapter.c:190:70: warning: unused parameter ‘parent’ [-Wunused-parameter]
+  190 | static char *stub_generate_qualified_name(const char *name, ASTNode *parent) {
+      |                                                             ~~~~~~~~~^~~~~~
+[ 87%] Linking C static library libparser_core.a
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cmake -P CMakeFiles/parser_core.dir/cmake_clean_target.cmake
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cmake -E cmake_link_script CMakeFiles/parser_core.dir/link.txt --verbose=1
+/usr/bin/ar qc libparser_core.a CMakeFiles/parser_core.dir/src/parser/parser.c.o CMakeFiles/parser_core.dir/src/parser/ast_node.c.o CMakeFiles/parser_core.dir/src/parser/cst_node.c.o CMakeFiles/parser_core.dir/src/parser/memory_tracking.c.o CMakeFiles/parser_core.dir/src/parser/parser_context.c.o CMakeFiles/parser_core.dir/src/parser/query_processing.c.o CMakeFiles/parser_core.dir/src/parser/project_context/project_context_facade.c.o CMakeFiles/parser_core.dir/src/parser/project_context/project_utils.c.o CMakeFiles/parser_core.dir/src/parser/project_context/project_symbol_extraction.c.o CMakeFiles/parser_core.dir/src/parser/project_context/symbol_management.c.o CMakeFiles/parser_core.dir/src/parser/project_context/symbol_collection.c.o CMakeFiles/parser_core.dir/src/parser/ts_init.c.o CMakeFiles/parser_core.dir/src/parser/ts_ast_builder.c.o CMakeFiles/parser_core.dir/src/parser/ts_cst_builder.c.o CMakeFiles/parser_core.dir/src/parser/ts_query_processor.c.o CMakeFiles/parser_core.dir/src/parser/query_manager.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_registration.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_implementation.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/resolver_core.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_facade.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/reference_resolver_core.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/c_resolver.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/cpp_resolver.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/typescript_resolver.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/python_resolver.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/javascript_resolver.c.o CMakeFiles/parser_core.dir/src/parser/reference_resolver.c.o CMakeFiles/parser_core.dir/src/ast_compliance.c.o CMakeFiles/parser_core.dir/src/parser/lang/c_compliance.c.o CMakeFiles/parser_core.dir/src/parser/lang/lang_compliance_registry.c.o CMakeFiles/parser_core.dir/src/parser/lang/python_ast_compliance.c.o CMakeFiles/parser_core.dir/src/parser/lang/javascript_ast_compliance.c.o CMakeFiles/parser_core.dir/src/parser/lang/typescript_ast_compliance.c.o CMakeFiles/parser_core.dir/src/parser/lang/c_ast_compliance.c.o CMakeFiles/parser_core.dir/src/common/memory_management.c.o CMakeFiles/parser_core.dir/src/common/error_handling.c.o CMakeFiles/parser_core.dir/src/common/logging.c.o CMakeFiles/parser_core.dir/src/utils/memory_debug.c.o CMakeFiles/parser_core.dir/src/utils/ts_resource_manager.c.o CMakeFiles/parser_core.dir/src/config/node_type_mapping_loader.c.o CMakeFiles/parser_core.dir/src/processors/docstring_processor.c.o CMakeFiles/parser_core.dir/src/processors/ast_post_processor.c.o CMakeFiles/parser_core.dir/src/processors/test_processor.c.o CMakeFiles/parser_core.dir/src/parser/symbol_table.c.o CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_core.c.o CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_entry.c.o CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_lookup.c.o CMakeFiles/parser_core.dir/src/parser/symbol_table/symbol_table_registration.c.o CMakeFiles/parser_core.dir/src/adapters/adapter_registry.c.o CMakeFiles/parser_core.dir/src/adapters/language_adapter.c.o
+/usr/bin/ranlib libparser_core.a
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[ 87%] Built target parser_core
+make  -f core/tests/CMakeFiles/test_utilities.dir/build.make core/tests/CMakeFiles/test_utilities.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/core/tests /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/core/tests /home/matrillo/apps/scopemux/build-misc/core/tests/CMakeFiles/test_utilities.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f core/tests/CMakeFiles/test_utilities.dir/build.make core/tests/CMakeFiles/test_utilities.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[ 88%] Building C object core/tests/CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cc  -I/home/matrillo/apps/scopemux/core/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/tests/CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o -MF CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o.d -o CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o -c /home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:18:7: warning: no previous prototype for ‘read_test_file’ [-Wmissing-prototypes]
+   18 | char *read_test_file(const char *language, const char *category, const char *file_name) {
+      |       ^~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: In function ‘read_test_file’:
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:21:5: warning: implicit declaration of function ‘cr_log_error’; did you mean ‘log_error’? [-Wimplicit-function-declaration]
+   21 |     cr_log_error("read_test_file called with NULL parameter(s)");
+      |     ^~~~~~~~~~~~
+      |     log_error
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:34:23: warning: implicit declaration of function ‘strlen’ [-Wimplicit-function-declaration]
+   34 |   if (project_root && strlen(project_root) > 0) {
+      |                       ^~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:9:1: note: include ‘<string.h>’ or provide a declaration of ‘strlen’
+    8 | #include <unistd.h>
+  +++ |+#include <string.h>
+    9 | 
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:34:23: warning: incompatible implicit declaration of built-in function ‘strlen’ [-Wbuiltin-declaration-mismatch]
+   34 |   if (project_root && strlen(project_root) > 0) {
+      |                       ^~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:34:23: note: include ‘<string.h>’ or provide a declaration of ‘strlen’
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:45:9: warning: implicit declaration of function ‘cr_log_info’; did you mean ‘log_info’? [-Wimplicit-function-declaration]
+   45 |         cr_log_info("Successfully opened file using PROJECT_ROOT_DIR: %s", project_root_path);
+      |         ^~~~~~~~~~~
+      |         log_info
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:60:77: warning: implicit declaration of function ‘strerror’; did you mean ‘perror’? [-Wimplicit-function-declaration]
+   60 |     fprintf(stderr, "ERROR: Failed to get current working directory: %s\n", strerror(errno));
+      |                                                                             ^~~~~~~~
+      |                                                                             perror
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:60:71: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
+   60 |     fprintf(stderr, "ERROR: Failed to get current working directory: %s\n", strerror(errno));
+      |                                                                      ~^     ~~~~~~~~~~~~~~~
+      |                                                                       |     |
+      |                                                                       |     int
+      |                                                                       char *
+      |                                                                      %d
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:115:7: warning: incompatible implicit declaration of built-in function ‘strlen’ [-Wbuiltin-declaration-mismatch]
+  115 |   if (strlen(cwd_safe) >= sizeof(cwd_copy)) {
+      |       ^~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:115:7: note: include ‘<string.h>’ or provide a declaration of ‘strlen’
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:121:3: warning: implicit declaration of function ‘strcpy’ [-Wimplicit-function-declaration]
+  121 |   strcpy(cwd_copy, cwd_safe); // Safe copy of CWD
+      |   ^~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:121:3: note: include ‘<string.h>’ or provide a declaration of ‘strcpy’
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:121:3: warning: incompatible implicit declaration of built-in function ‘strcpy’ [-Wbuiltin-declaration-mismatch]
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:121:3: note: include ‘<string.h>’ or provide a declaration of ‘strcpy’
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:124:7: warning: implicit declaration of function ‘strstr’ [-Wimplicit-function-declaration]
+  124 |   if (strstr(cwd_copy, "/build/")) {
+      |       ^~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:124:7: note: include ‘<string.h>’ or provide a declaration of ‘strstr’
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:124:7: warning: incompatible implicit declaration of built-in function ‘strstr’ [-Wbuiltin-declaration-mismatch]
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:124:7: note: include ‘<string.h>’ or provide a declaration of ‘strstr’
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:170:61: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
+  170 |     fprintf(stderr, "ERROR: Failed to seek to end of file: %s\n", strerror(errno));
+      |                                                            ~^     ~~~~~~~~~~~~~~~
+      |                                                             |     |
+      |                                                             |     int
+      |                                                             char *
+      |                                                            %d
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:178:55: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
+  178 |     fprintf(stderr, "ERROR: Failed to get file size: %s\n", strerror(errno));
+      |                                                      ~^     ~~~~~~~~~~~~~~~
+      |                                                       |     |
+      |                                                       |     int
+      |                                                       char *
+      |                                                      %d
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:186:68: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
+  186 |     fprintf(stderr, "ERROR: Failed to seek back to start of file: %s\n", strerror(errno));
+      |                                                                   ~^     ~~~~~~~~~~~~~~~
+      |                                                                    |     |
+      |                                                                    |     int
+      |                                                                    char *
+      |                                                                   %d
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:205:49: warning: pointer/integer type mismatch in conditional expression
+  205 |             length, ferror(f) ? strerror(errno) : "Unknown error");
+      |                                                 ^
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: At top level:
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:221:10: warning: no previous prototype for ‘find_node_by_name’ [-Wmissing-prototypes]
+  221 | ASTNode *find_node_by_name(ASTNode *parent, const char *name, ASTNodeType type) {
+      |          ^~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: In function ‘find_node_by_name’:
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:227:56: warning: implicit declaration of function ‘strcmp’ [-Wimplicit-function-declaration]
+  227 |     if (child && child->name && child->type == type && strcmp(child->name, name) == 0) {
+      |                                                        ^~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:227:56: note: include ‘<string.h>’ or provide a declaration of ‘strcmp’
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: At top level:
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:235:6: warning: no previous prototype for ‘assert_node_fields’ [-Wmissing-prototypes]
+  235 | void assert_node_fields(ASTNode *node, const char *node_name) {
+      |      ^~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: In function ‘assert_node_fields’:
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:236:3: warning: implicit declaration of function ‘cr_assert_not_null’ [-Wimplicit-function-declaration]
+  236 |   cr_assert_not_null(node, "Node '%s' should not be NULL", node_name);
+      |   ^~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:238:3: warning: implicit declaration of function ‘cr_assert_str_eq’ [-Wimplicit-function-declaration]
+  238 |   cr_assert_str_eq(node->name, node_name, "Node name should be '%s'", node_name);
+      |   ^~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:241:3: warning: implicit declaration of function ‘cr_assert_gt’ [-Wimplicit-function-declaration]
+  241 |   cr_assert_gt(node->range.end.line, 0, "Node '%s' should have valid end line", node_name);
+      |   ^~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: At top level:
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:248:5: warning: no previous prototype for ‘count_nodes_by_type’ [-Wmissing-prototypes]
+  248 | int count_nodes_by_type(ASTNode *root, ASTNodeType type) {
+      |     ^~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:260:6: warning: no previous prototype for ‘dump_ast_structure’ [-Wmissing-prototypes]
+  260 | void dump_ast_structure(ASTNode *node, int level) {
+      |      ^~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:289:10: warning: no previous prototype for ‘parse_cpp_ast’ [-Wmissing-prototypes]
+  289 | ASTNode *parse_cpp_ast(ParserContext *ctx, const char *source) {
+      |          ^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: In function ‘parse_cpp_ast’:
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:306:66: warning: incompatible implicit declaration of built-in function ‘strlen’ [-Wbuiltin-declaration-mismatch]
+  306 |   fprintf(stderr, "DEBUG: Parsing C++ source with length %zu\n", strlen(source));
+      |                                                                  ^~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:306:66: note: include ‘<string.h>’ or provide a declaration of ‘strlen’
+[ 88%] Building C object core/tests/CMakeFiles/test_utilities.dir/src/common/json_validation.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cc  -I/home/matrillo/apps/scopemux/core/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/tests/CMakeFiles/test_utilities.dir/src/common/json_validation.c.o -MF CMakeFiles/test_utilities.dir/src/common/json_validation.c.o.d -o CMakeFiles/test_utilities.dir/src/common/json_validation.c.o -c /home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c
+In file included from /usr/include/criterion/options.h:32,
+                 from /usr/include/criterion/internal/assert.h:47,
+                 from /usr/include/criterion/assert.h:1681,
+                 from /usr/include/criterion/criterion.h:32,
+                 from /home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:3:
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c: In function ‘load_expected_json’:
+/home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/logging.h:8:26: warning: the address of ‘filepath’ will always evaluate as ‘true’ [-Waddress]
+    8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
+      |                          ^
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:30:53: note: in expansion of macro ‘SAFE_STR’
+   30 |   cr_log_info("Looking for expected JSON file: %s", SAFE_STR(filepath));
+      |                                                     ^~~~~~~~
+/home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/logging.h:8:26: warning: the address of ‘current_dir’ will always evaluate as ‘true’ [-Waddress]
+    8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
+      |                          ^
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:35:79: note: in expansion of macro ‘SAFE_STR’
+   35 |                  SAFE_STR(language), SAFE_STR(category), SAFE_STR(file_name), SAFE_STR(current_dir));
+      |                                                                               ^~~~~~~~
+/home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/logging.h:8:26: warning: the address of ‘filepath’ will always evaluate as ‘true’ [-Waddress]
+    8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
+      |                          ^
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:39:61: note: in expansion of macro ‘SAFE_STR’
+   39 |   cr_log_info("Successfully opened expected JSON file: %s", SAFE_STR(filepath));
+      |                                                             ^~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c: In function ‘validate_ast_against_json’:
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:375:23: warning: comparison of integer expressions of different signedness: ‘int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+  375 |         for (i = 0; i < strlen(expected_doc) && i < max_print; i++) {
+      |                       ^
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:382:23: warning: comparison of integer expressions of different signedness: ‘int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
+  382 |         for (i = 0; i < strlen(node->docstring) && i < max_print; i++) {
+      |                       ^
+[ 90%] Building C object core/tests/CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cc  -I/home/matrillo/apps/scopemux/core/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/tests/CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o -MF CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o.d -o CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o -c /home/matrillo/apps/scopemux/core/tests/utilities/tree_sitter_test_util.c
+[ 91%] Linking C static library libtest_utilities.a
+cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cmake -P CMakeFiles/test_utilities.dir/cmake_clean_target.cmake
+cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cmake -E cmake_link_script CMakeFiles/test_utilities.dir/link.txt --verbose=1
+/usr/bin/ar qc libtest_utilities.a CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o CMakeFiles/test_utilities.dir/src/common/json_validation.c.o CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o
+/usr/bin/ranlib libtest_utilities.a
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[ 91%] Built target test_utilities
+make  -f core/CMakeFiles/context_engine.dir/build.make core/CMakeFiles/context_engine.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/core /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/core /home/matrillo/apps/scopemux/build-misc/core/CMakeFiles/context_engine.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f core/CMakeFiles/context_engine.dir/build.make core/CMakeFiles/context_engine.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[ 92%] Building C object core/CMakeFiles/context_engine.dir/src/context_engine/compressor.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/context_engine.dir/src/context_engine/compressor.c.o -MF CMakeFiles/context_engine.dir/src/context_engine/compressor.c.o.d -o CMakeFiles/context_engine.dir/src/context_engine/compressor.c.o -c /home/matrillo/apps/scopemux/core/src/context_engine/compressor.c
+[ 92%] Building C object core/CMakeFiles/context_engine.dir/src/context_engine/expander.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/context_engine.dir/src/context_engine/expander.c.o -MF CMakeFiles/context_engine.dir/src/context_engine/expander.c.o.d -o CMakeFiles/context_engine.dir/src/context_engine/expander.c.o -c /home/matrillo/apps/scopemux/core/src/context_engine/expander.c
+/home/matrillo/apps/scopemux/core/src/context_engine/expander.c:24:6: warning: no previous prototype for ‘context_engine_expand_block’ [-Wmissing-prototypes]
+   24 | bool context_engine_expand_block(ContextEngine *engine, InfoBlock *block) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/expander.c:43:8: warning: no previous prototype for ‘context_engine_get_expanded_block’ [-Wmissing-prototypes]
+   43 | size_t context_engine_get_expanded_block(ContextEngine *engine, InfoBlock *block, char *out_buffer,
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/expander.c:64:8: warning: no previous prototype for ‘context_engine_expand_relevant_blocks’ [-Wmissing-prototypes]
+   64 | size_t context_engine_expand_relevant_blocks(ContextEngine *engine, size_t max_blocks,
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/expander.c:83:13: warning: ‘reset_block_compression’ defined but not used [-Wunused-function]
+   83 | static bool reset_block_compression(ContextEngine *engine, InfoBlock *block) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+[ 93%] Building C object core/CMakeFiles/context_engine.dir/src/context_engine/token_budgeter.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/context_engine.dir/src/context_engine/token_budgeter.c.o -MF CMakeFiles/context_engine.dir/src/context_engine/token_budgeter.c.o.d -o CMakeFiles/context_engine.dir/src/context_engine/token_budgeter.c.o -c /home/matrillo/apps/scopemux/core/src/context_engine/token_budgeter.c
+/home/matrillo/apps/scopemux/core/src/context_engine/token_budgeter.c:22:6: warning: no previous prototype for ‘token_estimator_init’ [-Wmissing-prototypes]
+   22 | bool token_estimator_init(ContextEngine *engine) {
+      |      ^~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/token_budgeter.c:36:6: warning: no previous prototype for ‘token_estimator_free’ [-Wmissing-prototypes]
+   36 | void token_estimator_free(ContextEngine *engine) {
+      |      ^~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/token_budgeter.c:70:6: warning: no previous prototype for ‘token_budget_distribute’ [-Wmissing-prototypes]
+   70 | bool token_budget_distribute(ContextEngine *engine) {
+      |      ^~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/token_budgeter.c:85:6: warning: no previous prototype for ‘token_budget_check’ [-Wmissing-prototypes]
+   85 | bool token_budget_check(ContextEngine *engine) {
+      |      ^~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/token_budgeter.c:101:8: warning: no previous prototype for ‘token_budget_get_total’ [-Wmissing-prototypes]
+  101 | size_t token_budget_get_total(ContextEngine *engine, bool use_compressed) {
+      |        ^~~~~~~~~~~~~~~~~~~~~~
+[ 95%] Building C object core/CMakeFiles/context_engine.dir/src/context_engine/context_engine.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/context_engine.dir/src/context_engine/context_engine.c.o -MF CMakeFiles/context_engine.dir/src/context_engine/context_engine.c.o.d -o CMakeFiles/context_engine.dir/src/context_engine/context_engine.c.o -c /home/matrillo/apps/scopemux/core/src/context_engine/context_engine.c
+/home/matrillo/apps/scopemux/core/src/context_engine/context_engine.c: In function ‘context_engine_rank_blocks’:
+/home/matrillo/apps/scopemux/core/src/context_engine/context_engine.c:97:68: warning: unused parameter ‘cursor_file’ [-Wunused-parameter]
+   97 | bool context_engine_rank_blocks(ContextEngine *engine, const char *cursor_file,
+      |                                                        ~~~~~~~~~~~~^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/context_engine.c:98:42: warning: unused parameter ‘cursor_line’ [-Wunused-parameter]
+   98 |                                 uint32_t cursor_line, uint32_t cursor_column, const char *query) {
+      |                                 ~~~~~~~~~^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/context_engine.c:98:64: warning: unused parameter ‘cursor_column’ [-Wunused-parameter]
+   98 |                                 uint32_t cursor_line, uint32_t cursor_column, const char *query) {
+      |                                                       ~~~~~~~~~^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/context_engine.c:98:91: warning: unused parameter ‘query’ [-Wunused-parameter]
+   98 |                                 uint32_t cursor_line, uint32_t cursor_column, const char *query) {
+      |                                                                               ~~~~~~~~~~~~^~~~~
+/home/matrillo/apps/scopemux/core/src/context_engine/context_engine.c: In function ‘context_engine_update_focus’:
+/home/matrillo/apps/scopemux/core/src/context_engine/context_engine.c:180:19: warning: unused variable ‘qualified_name’ [-Wunused-variable]
+  180 |       const char *qualified_name = node_qualified_names[i];
+      |                   ^~~~~~~~~~~~~~
+[ 96%] Building C object core/CMakeFiles/context_engine.dir/src/common/error_handling.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/context_engine.dir/src/common/error_handling.c.o -MF CMakeFiles/context_engine.dir/src/common/error_handling.c.o.d -o CMakeFiles/context_engine.dir/src/common/error_handling.c.o -c /home/matrillo/apps/scopemux/core/src/common/error_handling.c
+[ 96%] Building C object core/CMakeFiles/context_engine.dir/src/common/memory_management.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/context_engine.dir/src/common/memory_management.c.o -MF CMakeFiles/context_engine.dir/src/common/memory_management.c.o.d -o CMakeFiles/context_engine.dir/src/common/memory_management.c.o -c /home/matrillo/apps/scopemux/core/src/common/memory_management.c
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:18:7: warning: no previous prototype for ‘safe_malloc’ [-Wmissing-prototypes]
+   18 | void *safe_malloc(size_t size) {
+      |       ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:34:7: warning: no previous prototype for ‘safe_realloc’ [-Wmissing-prototypes]
+   34 | void *safe_realloc(void *ptr, size_t size) {
+      |       ^~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:51:6: warning: no previous prototype for ‘safe_free’ [-Wmissing-prototypes]
+   51 | void safe_free(void *ptr) {
+      |      ^~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:63:7: warning: no previous prototype for ‘safe_strdup’ [-Wmissing-prototypes]
+   63 | char *safe_strdup(const char *str) {
+      |       ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:82:7: warning: no previous prototype for ‘memory_pool_init’ [-Wmissing-prototypes]
+   82 | void *memory_pool_init(size_t size) {
+      |       ^~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:95:7: warning: no previous prototype for ‘memory_pool_alloc’ [-Wmissing-prototypes]
+   95 | void *memory_pool_alloc(void *pool, size_t size) {
+      |       ^~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/memory_management.c:107:6: warning: no previous prototype for ‘memory_pool_free’ [-Wmissing-prototypes]
+  107 | void memory_pool_free(void *pool) {
+      |      ^~~~~~~~~~~~~~~~
+[ 97%] Building C object core/CMakeFiles/context_engine.dir/src/common/logging.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/context_engine.dir/src/common/logging.c.o -MF CMakeFiles/context_engine.dir/src/common/logging.c.o.d -o CMakeFiles/context_engine.dir/src/common/logging.c.o -c /home/matrillo/apps/scopemux/core/src/common/logging.c
+/home/matrillo/apps/scopemux/core/src/common/logging.c:42:6: warning: no previous prototype for ‘log_init’ [-Wmissing-prototypes]
+   42 | bool log_init(LogLevel level, const char *log_path) {
+      |      ^~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:59:6: warning: no previous prototype for ‘log_cleanup’ [-Wmissing-prototypes]
+   59 | void log_cleanup(void) {
+      |      ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:71:6: warning: no previous prototype for ‘log_set_level’ [-Wmissing-prototypes]
+   71 | void log_set_level(LogLevel level) { current_log_level = level; }
+      |      ^~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:80:6: warning: no previous prototype for ‘log_message’ [-Wmissing-prototypes]
+   80 | void log_message(LogLevel level, const char *format, ...) {
+      |      ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:135:6: warning: no previous prototype for ‘log_debug’ [-Wmissing-prototypes]
+  135 | void log_debug(const char *format, ...) {
+      |      ^~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:172:6: warning: no previous prototype for ‘log_info’ [-Wmissing-prototypes]
+  172 | void log_info(const char *format, ...) {
+      |      ^~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:209:6: warning: no previous prototype for ‘log_warning’ [-Wmissing-prototypes]
+  209 | void log_warning(const char *format, ...) {
+      |      ^~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/common/logging.c:246:6: warning: no previous prototype for ‘log_error’ [-Wmissing-prototypes]
+  246 | void log_error(const char *format, ...) {
+      |      ^~~~~~~~~
+[ 98%] Linking C static library libcontext_engine.a
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cmake -P CMakeFiles/context_engine.dir/cmake_clean_target.cmake
+cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cmake -E cmake_link_script CMakeFiles/context_engine.dir/link.txt --verbose=1
+/usr/bin/ar qc libcontext_engine.a CMakeFiles/context_engine.dir/src/context_engine/compressor.c.o CMakeFiles/context_engine.dir/src/context_engine/expander.c.o CMakeFiles/context_engine.dir/src/context_engine/token_budgeter.c.o CMakeFiles/context_engine.dir/src/context_engine/context_engine.c.o CMakeFiles/context_engine.dir/src/common/error_handling.c.o CMakeFiles/context_engine.dir/src/common/memory_management.c.o CMakeFiles/context_engine.dir/src/common/logging.c.o
+/usr/bin/ranlib libcontext_engine.a
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[ 98%] Built target context_engine
+make  -f core/tests/CMakeFiles/init_parser_tests.dir/build.make core/tests/CMakeFiles/init_parser_tests.dir/depend
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+cd /home/matrillo/apps/scopemux/build-misc && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/matrillo/apps/scopemux /home/matrillo/apps/scopemux/core/tests /home/matrillo/apps/scopemux/build-misc /home/matrillo/apps/scopemux/build-misc/core/tests /home/matrillo/apps/scopemux/build-misc/core/tests/CMakeFiles/init_parser_tests.dir/DependInfo.cmake "--color="
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+make  -f core/tests/CMakeFiles/init_parser_tests.dir/build.make core/tests/CMakeFiles/init_parser_tests.dir/build
+make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
+[100%] Building C object core/tests/CMakeFiles/init_parser_tests.dir/src/init_parser_tests.c.o
+cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cc  -I/home/matrillo/apps/scopemux/core/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/tests/CMakeFiles/init_parser_tests.dir/src/init_parser_tests.c.o -MF CMakeFiles/init_parser_tests.dir/src/init_parser_tests.c.o.d -o CMakeFiles/init_parser_tests.dir/src/init_parser_tests.c.o -c /home/matrillo/apps/scopemux/core/tests/src/init_parser_tests.c
+/home/matrillo/apps/scopemux/core/tests/src/init_parser_tests.c:16:7: warning: no previous prototype for ‘read_file_to_string’ [-Wmissing-prototypes]
+   16 | char *read_file_to_string(const char *filepath) {
+      |       ^~~~~~~~~~~~~~~~~~~
+[100%] Linking C executable init_parser_tests
+cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cmake -E cmake_link_script CMakeFiles/init_parser_tests.dir/link.txt --verbose=1
+/usr/bin/cc  -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable CMakeFiles/init_parser_tests.dir/src/init_parser_tests.c.o -o init_parser_tests  libtest_utilities.a ../libparser_core.a ../libcontext_engine.a -lcriterion ../../tree-sitter-libs/libtree-sitter.a ../../tree-sitter-libs/libtree-sitter-c.a ../../tree-sitter-libs/libtree-sitter-cpp.a ../../tree-sitter-libs/libtree-sitter-python.a ../../tree-sitter-libs/libtree-sitter-javascript.a ../../tree-sitter-libs/libtree-sitter-typescript.a
+make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[100%] Built target init_parser_tests
+make[2]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+/usr/bin/cmake -E cmake_progress_start /home/matrillo/apps/scopemux/build-misc/CMakeFiles 0
+make[1]: Leaving directory '/home/matrillo/apps/scopemux/build-misc'
+[run_misc_tests.sh] Successfully built init_parser_tests, running tests...
+[test_runner_lib] Checking for test executable: /home/matrillo/apps/scopemux/build-misc/core/tests/init_parser_tests
+[test_runner_lib] Running Init Parser Tests: /home/matrillo/apps/scopemux/build-misc/core/tests/init_parser_tests
+[test_runner_lib] Test output from Init Parser Tests:
+[Init Parser Tests] [====] Synthesis: Tested: 2 | Passing: 2 | Failing: 0 | Crashing: 0 
+[1;32m PASS: Init Parser Tests (All tests passed)[0m
+[test_runner_lib] Building  in Edge Case Tests...
+[test_runner_lib] Cleaning up temporary files...
+[test_runner_lib] Done.

@@ -65,20 +65,25 @@ message(STATUS "Python libraries: ${Python_LIBRARIES}")
 add_library(test_utilities STATIC
     src/common/test_helpers.c
     src/common/json_validation.c
+    utilities/tree_sitter_test_util.c
 )
 
-add_library(test_parser STATIC
-    src/init_parser_tests.c
-    src/edge_case_tests.c
-)
+# Create a lightweight interface library that other tests can link to for shared
+# parser_core functionality without pulling in specific test sources.
+add_library(test_parser INTERFACE)
+# Link parser_core so any target that links to test_parser automatically gets the
+# necessary core parser symbols.
+target_link_libraries(test_parser INTERFACE parser_core)
 
 # Link test libraries with core libraries
-target_link_libraries(test_parser PRIVATE parser_core)
-target_link_libraries(test_utilities PRIVATE parser_core)
+# For the interface library, link parser_core transitively for consumers
+# (This line is safe even if the previous INTERFACE linkage already exists.)
+target_link_libraries(test_parser INTERFACE parser_core)
+target_link_libraries(test_utilities PRIVATE parser_core ${CRITERION_LIBRARIES})
 
 # Set include directories for test targets
-set_common_test_includes(test_parser)
-set_common_test_includes(test_utilities)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(test_utilities)
 
 # Create test executable
 add_executable(run_tests
@@ -93,10 +98,150 @@ target_link_libraries(run_tests PRIVATE
     context_engine
 )
 
-set_common_test_includes(run_tests)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(run_tests)
+
+# Add Criterion for unit testing (via pkg-config workaround)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(CRITERION REQUIRED criterion)
+
+# Add init_parser_tests target
+add_executable(init_parser_tests
+    src/init_parser_tests.c
+)
+# Criterion provides its own main; include its headers and link libraries.
+target_include_directories(init_parser_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+# Link against utilities, core libraries, and Criterion.
+target_link_libraries(init_parser_tests PRIVATE
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(init_parser_tests)
+
+# Add edge_case_tests target
+add_executable(edge_case_tests
+    src/edge_case_tests.c
+)
+target_include_directories(edge_case_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(edge_case_tests PRIVATE
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(edge_case_tests)
+
+# Add c_example_ast_tests target
+add_executable(c_example_ast_tests
+    src/c/c_example_ast_tests.c
+)
+target_include_directories(c_example_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(c_example_ast_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(c_example_ast_tests)
+
+# Add cpp_example_ast_tests target
+add_executable(cpp_example_ast_tests
+    src/cpp/cpp_example_ast_tests.c
+)
+target_include_directories(cpp_example_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(cpp_example_ast_tests PRIVATE
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(cpp_example_ast_tests)
+
+# Add cpp_basic_ast_tests target
+add_executable(cpp_basic_ast_tests
+    src/cpp/cpp_basic_ast_tests.c
+)
+target_include_directories(cpp_basic_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(cpp_basic_ast_tests PRIVATE
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(cpp_basic_ast_tests)
+
+# Add js_basic_ast_tests target
+add_executable(js_basic_ast_tests
+    src/js/js_basic_ast_tests.c
+)
+target_include_directories(js_basic_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(js_basic_ast_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(js_basic_ast_tests)
+
+# Add ts_basic_ast_tests target
+add_executable(ts_basic_ast_tests
+    src/ts/ts_basic_ast_tests.c
+)
+target_include_directories(ts_basic_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(ts_basic_ast_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(ts_basic_ast_tests)
+
+# Add python_basic_ast_tests target
+add_executable(python_basic_ast_tests
+    src/python/python_basic_ast_tests.c
+)
+target_include_directories(python_basic_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(python_basic_ast_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(python_basic_ast_tests)
+
+# Add python_example_ast_tests target
+add_executable(python_example_ast_tests
+    src/python/python_example_ast_tests.c
+)
+target_include_directories(python_example_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(python_example_ast_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(python_example_ast_tests)
 
 # Installation rules
 install(TARGETS run_tests DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
-message(STATUS "Copied example files and expected JSON to build directory for validation.") 
+message(STATUS "Copied example files and expected JSON to build directory for validation.")
+
+target_include_directories(test_utilities PRIVATE ${CRITERION_INCLUDE_DIRS})

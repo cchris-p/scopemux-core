@@ -38,7 +38,7 @@ RUN_C_STRUCT_UNION_ENUM_TESTS=false
 
 # Project root directory (assuming this script is in the root)
 PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build-c"
+CMAKE_BUILD_DIR="${PROJECT_ROOT_DIR}/build-c"
 
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
@@ -70,10 +70,10 @@ for arg in "$@"; do
 done
 
 # Prepare build directory (clean or not, depending on flag)
-prepare_clean_build_dir "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
+prepare_clean_build_dir "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
 
 # Setup CMake configuration using the shared library
-setup_cmake_config "$PROJECT_ROOT_DIR"
+setup_cmake_config "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR"
 
 # Run all C test executables in a robust, standardized way
 # Define all C test targets and their display names
@@ -124,7 +124,7 @@ for target in "${C_TEST_TARGETS[@]}"; do
 
     # Build the test target
     echo "[run_c_tests.sh] Building $test_description ($test_name)..."
-    build_test_target "$test_name" "$CMAKE_PROJECT_BUILD_DIR"
+    build_test_target "$test_name" "$CMAKE_BUILD_DIR" "$test_description"
     build_result=$?
 
     if [ $build_result -ne 0 ]; then
@@ -134,7 +134,7 @@ for target in "${C_TEST_TARGETS[@]}"; do
     fi
 
     # Get the absolute path to the executable
-    executable_path="${CMAKE_PROJECT_BUILD_DIR}/${C_TEST_EXECUTABLES[$test_name]}"
+    executable_path="${CMAKE_BUILD_DIR}/${C_TEST_EXECUTABLES[$test_name]}"
 
     # Verify that the executable was built
     if [ ! -f "$executable_path" ]; then
@@ -175,8 +175,8 @@ fi
 
 # Run per-directory C example tests if any are enabled
 if [ "${#C_CATEGORIES[@]}" -gt 0 ]; then
-        echo "[run_c_tests.sh] Building C example AST tests executable..."
-    build_test_target "c_example_ast_tests" "$CMAKE_PROJECT_BUILD_DIR"
+    echo "[run_c_tests.sh] Building C example AST tests executable..."
+    build_test_target "c_example_ast_tests" "$CMAKE_BUILD_DIR" "C Example AST Tests"
     build_result=$?
     if [ $build_result -ne 0 ]; then
         echo "[run_c_tests.sh] ERROR: Failed to build c_example_ast_tests, skipping example tests."

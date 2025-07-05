@@ -26,7 +26,8 @@
  * the expected parser output for different C++ language constructs.
  */
 
-#include "../../../core/include/scopemux/parser.h"
+// NOTE: The following include path is correct for this test file location.
+#include "../../../include/scopemux/parser.h"
 #include "../../include/json_validation.h"
 #include "../../include/test_helpers.h"
 #include <criterion/criterion.h>
@@ -36,6 +37,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+
+// Function prototypes for non-static functions defined in this file
+// (none needed; all helper functions in this file are declared static and not used elsewhere)
 
 /**
  * Check if a file has a specific extension

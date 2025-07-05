@@ -1,0 +1,38 @@
+[test_runner_lib] Shared libraries missing, running scripts/build_shared_libs.sh...
+Building shared libraries in /home/matrillo/apps/scopemux/build/tree-sitter-libs
+Converting static libraries to shared libraries...
+Created shared libraries:
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul  5 19:18 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul  5 19:18 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul  5 19:18 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul  5 19:18 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  237264 Jul  5 19:18 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul  5 19:18 libtree-sitter-typescript.so
+Done building shared libraries.
+[test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux/build/tree-sitter-libs
+DEBUG: prepare_clean_build_dir received build_dir='/home/matrillo/apps/scopemux/build-interfile'
+[test_runner_lib] Creating build directory: '/home/matrillo/apps/scopemux/build-interfile'
+[run_interfile_tests.sh] Configuring CMake in build directory: /home/matrillo/apps/scopemux/build-interfile
+[run_interfile_tests.sh] Running interfile resolution test suite
+[test_runner_lib] Building  in Symbol Table Tests...
+ ERROR: Failed to build test target ''.
+Build log output:
+make: *** Symbol Table Tests: No such file or directory.  Stop.
+[test_runner_lib] Checking for test executable: /home/matrillo/apps/scopemux/build-interfile/core/tests/symbol_table_tests
+ FAIL: Symbol Table Tests. Executable not found: /home/matrillo/apps/scopemux/build-interfile/core/tests/symbol_table_tests
+[test_runner_lib] Searching for the missing executable...
+[test_runner_lib] Building  in Project Context Tests...
+ ERROR: Failed to build test target ''.
+Build log output:
+make: *** Project Context Tests: No such file or directory.  Stop.
+[test_runner_lib] Checking for test executable: /home/matrillo/apps/scopemux/build-interfile/core/tests/project_context_tests
+ FAIL: Project Context Tests. Executable not found: /home/matrillo/apps/scopemux/build-interfile/core/tests/project_context_tests
+[test_runner_lib] Searching for the missing executable...
+[run_interfile_tests.sh] Running integrated cross-module tests
+
+===== INTERFILE TEST SUMMARY =====
+Total test suites run: 0
+❌❌ 2 TEST SUITES FAILED ❌❌
+Please check the output above for detailed error messages
+[test_runner_lib] Cleaning up temporary files...
+[test_runner_lib] Done.

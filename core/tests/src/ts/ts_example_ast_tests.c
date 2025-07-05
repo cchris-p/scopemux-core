@@ -25,7 +25,7 @@
 
 #define DEBUG_MODE true
 
-#include "../../../core/include/scopemux/parser.h"
+#include "../../../include/scopemux/parser.h"
 #include "../../include/json_validation.h"
 #include "../../include/test_helpers.h"
 #include <criterion/criterion.h>
@@ -301,7 +301,8 @@ static void process_ts_category(const char *category) {
   }
 
   // Log error if all attempts fail
-  log_warning("Could not open category directory for '%s' after trying multiple paths", SAFE_STR(category));
+  log_warning("Could not open category directory for '%s' after trying multiple paths",
+              SAFE_STR(category));
 }
 
 /**

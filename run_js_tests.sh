@@ -14,6 +14,15 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 # NOTE: This script uses a unique build directory (build-js) to allow parallel test execution across languages.
 # This prevents race conditions and build directory conflicts with other test runners.
 
+# Project root directory (assuming this script is in the root)
+PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+CMAKE_BUILD_DIR="${PROJECT_ROOT_DIR}/build-js"
+export CMAKE_BUILD_DIR
+if [ -z "$CMAKE_BUILD_DIR" ]; then
+    echo "ERROR: CMAKE_BUILD_DIR is not set"
+    exit 1
+fi
+
 # Source the shared test runner library
 source scripts/test_runner_lib.sh
 
@@ -28,16 +37,11 @@ RUN_JS_BASIC_AST_TESTS=true
 RUN_JS_EXAMPLE_AST_TESTS=true
 RUN_JS_CST_TESTS=false # Disabled - source files don't exist yet
 
-
 # JavaScript example test directory toggles
 RUN_JS_BASIC_SYNTAX_TESTS=true
 RUN_JS_MODERN_JS_TESTS=false
 RUN_JS_ASYNC_TESTS=false
 RUN_JS_FUNCTION_TESTS=false
-
-# Project root directory (assuming this script is in the root)
-PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build-js"
 
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
@@ -68,10 +72,10 @@ for arg in "$@"; do
 done
 
 # Prepare build directory (clean or not, depending on flag)
-prepare_clean_build_dir "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
+prepare_clean_build_dir "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
 
 # Setup CMake configuration using the shared library
-setup_cmake_config "$PROJECT_ROOT_DIR"
+setup_cmake_config "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR"
 
 # Run standard JavaScript language tests
 echo "[run_js_tests.sh] Running JavaScript language test suite"
@@ -86,7 +90,7 @@ if [ "${RUN_JS_BASIC_AST_TESTS}" = true ]; then
         ((TEST_FAILURES++))
     else
         # Change to build directory and get absolute path to executable
-        cd "$CMAKE_PROJECT_BUILD_DIR"
+        cd "$CMAKE_BUILD_DIR"
         make "js_basic_ast_tests"
 
         # Verify that the executable was built
@@ -121,7 +125,7 @@ fi
 
 # Run per-directory JavaScript example tests if any are enabled
 if [ "${#JS_TEST_CATEGORIES[@]}" -gt 0 ]; then
-    process_language_tests js JS_TEST_CATEGORIES "$CMAKE_PROJECT_BUILD_DIR/core/tests/js_example_ast_tests" "$PARALLEL_JOBS" ".js"
+    process_language_tests js JS_TEST_CATEGORIES "$CMAKE_BUILD_DIR/core/tests/js_example_ast_tests" "$PARALLEL_JOBS" ".js"
 fi
 
 # Run CST tests if enabled
@@ -134,7 +138,7 @@ if [ "${RUN_JS_CST_TESTS}" = true ]; then
         ((TEST_FAILURES++))
     else
         # Change to build directory and get absolute path to executable
-        cd "$CMAKE_PROJECT_BUILD_DIR"
+        cd "$CMAKE_BUILD_DIR"
         make "js_cst_tests"
 
         # Verify that the executable was built

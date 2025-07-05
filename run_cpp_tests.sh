@@ -14,8 +14,21 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 # NOTE: This script uses a unique build directory (build-cpp) to allow parallel test execution across languages.
 # This prevents race conditions and build directory conflicts with other test runners.
 
+# Project root directory (assuming this script is in the root)
+PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+echo "DEBUG: PROJECT_ROOT_DIR is '$PROJECT_ROOT_DIR'"
+CMAKE_BUILD_DIR="${PROJECT_ROOT_DIR}/build-cpp"
+echo "DEBUG: CMAKE_BUILD_DIR is '$CMAKE_BUILD_DIR'"
+export CMAKE_BUILD_DIR
+if [ -z "$CMAKE_BUILD_DIR" ]; then
+    echo "ERROR: CMAKE_BUILD_DIR is not set"
+    exit 1
+fi
+
 # Source the shared test runner library
 source scripts/test_runner_lib.sh
+
+echo "DEBUG: After sourcing test_runner_lib.sh, CMAKE_BUILD_DIR is '$CMAKE_BUILD_DIR'"
 
 # Exit on any error (disabled during test loop to allow all tests to run)
 # set -e
@@ -32,10 +45,6 @@ RUN_CPP_BASIC_SYNTAX_TESTS=true
 RUN_CPP_COMPLEX_STRUCTURES_TESTS=true
 RUN_CPP_MODERN_CPP_TESTS=true
 RUN_CPP_TEMPLATES_TESTS=true
-
-# Project root directory (assuming this script is in the root)
-PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build-cpp"
 
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
@@ -65,11 +74,13 @@ for arg in "$@"; do
     esac
 done
 
+echo "DEBUG: Before prepare_clean_build_dir, CMAKE_BUILD_DIR is '$CMAKE_BUILD_DIR'"
 # Prepare build directory (clean or not, depending on flag)
-prepare_clean_build_dir "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
+prepare_clean_build_dir "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
 
+echo "DEBUG: Before setup_cmake_config, CMAKE_BUILD_DIR is '$CMAKE_BUILD_DIR'"
 # Setup CMake configuration using the shared library
-setup_cmake_config "$PROJECT_ROOT_DIR"
+setup_cmake_config "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR"
 
 # Define all C++ test targets and their display names
 CPP_TEST_TARGETS=(
@@ -104,7 +115,8 @@ for target in "${CPP_TEST_TARGETS[@]}"; do
         continue
     fi
 
-    build_test_target "$test_name" "$CMAKE_PROJECT_BUILD_DIR"
+    echo "DEBUG: Before build_test_target, CMAKE_BUILD_DIR is '$CMAKE_BUILD_DIR'"
+    build_test_target "$test_name" "$CMAKE_BUILD_DIR"
     build_result=$?
     if [ $build_result -ne 0 ]; then
         echo "[run_cpp_tests.sh] ERROR: Failed to build $test_name"
@@ -112,7 +124,7 @@ for target in "${CPP_TEST_TARGETS[@]}"; do
         continue
     fi
 
-    executable_path="${CMAKE_PROJECT_BUILD_DIR}/${CPP_TEST_EXECUTABLES[$test_name]}"
+    executable_path="${CMAKE_BUILD_DIR}/${CPP_TEST_EXECUTABLES[$test_name]}"
     if [ ! -f "$executable_path" ]; then
         echo "[run_cpp_tests.sh] ERROR: Executable not found at $executable_path"
         ((TEST_FAILURES++))
@@ -133,7 +145,7 @@ if [ "$RUN_CPP_TEMPLATES_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("templates"
 # Run per-directory C++ example tests if any are enabled
 if [ "${#CPP_TEST_CATEGORIES[@]}" -gt 0 ]; then
     echo "[run_cpp_tests.sh] Building C++ example AST tests executable..."
-    build_test_target "cpp_example_ast_tests" "$CMAKE_PROJECT_BUILD_DIR"
+    build_test_target "cpp_example_ast_tests" "$CMAKE_BUILD_DIR"
     build_result=$?
     if [ $build_result -ne 0 ]; then
         echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_example_ast_tests, skipping example tests."

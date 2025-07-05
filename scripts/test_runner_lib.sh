@@ -39,6 +39,9 @@ START_TIME=$(date +%s)
 # Associative array for per-suite results (Bash 4+)
 declare -A TEST_SUITE_RESULTS
 
+# Global build directory variable (should be set by each test runner)
+# CMAKE_BUILD_DIR=""
+
 # Standardized error handling
 # Handles errors by printing a message and returning 1 (does not exit the script).
 handle_error() {
@@ -60,11 +63,12 @@ trap cleanup EXIT
 # Builds a test target. On failure, prints the build log and returns 1 (does not exit the script).
 build_test_target() {
     local target_name="$1"
-    local display_name="$2"
+    local build_dir="${2:-$CMAKE_BUILD_DIR}"
+    local display_name="$3"
     local build_log="$TMP_DIR/${target_name}_build.log"
 
-    echo "[test_runner_lib] Building ${display_name}..."
-    make "${target_name}" >"$build_log" 2>&1
+    echo "[test_runner_lib] Building ${display_name} in ${build_dir}..."
+    make -C "$build_dir" "$target_name" >"$build_log" 2>&1
     local build_exit_code=$?
 
     if [ $build_exit_code -ne 0 ]; then
@@ -297,8 +301,16 @@ process_language_tests() {
 
 # Setup CMake configuration
 setup_cmake_config() {
-    local project_root_dir=$1
-    local build_dir=$2
+    local project_root_dir="$1"
+    local build_dir="${2:-$CMAKE_BUILD_DIR}"
+
+    echo "DEBUG: setup_cmake_config received project_root_dir='$project_root_dir', build_dir='$build_dir'"
+
+    # Ensure build directory is set
+    if [ -z "$build_dir" ]; then
+        echo "[test_runner_lib] ERROR: Build directory not specified for CMake"
+        return 1
+    fi
 
     # Always run CMake configuration in the build directory
     if [ ! -d "$build_dir" ]; then
@@ -316,15 +328,13 @@ setup_cmake_config() {
 # Usage: prepare_clean_build_dir <build_dir> <clean_flag>
 prepare_clean_build_dir() {
     local build_dir="$1"
-    local clean_flag="$2"
-    if [ "$clean_flag" = true ] && [ -d "$build_dir" ]; then
-        echo "[test_runner_lib] Cleaning build directory: $build_dir"
+    local clean="$2"
+    echo "DEBUG: prepare_clean_build_dir received build_dir='$build_dir'"
+    echo "[test_runner_lib] Creating build directory: '$build_dir'"
+    if [ "$clean" = true ] && [ -d "$build_dir" ]; then
         rm -rf "$build_dir"
     fi
-    if [ ! -d "$build_dir" ]; then
-        echo "[test_runner_lib] Creating build directory: $build_dir"
-        mkdir -p "$build_dir"
-    fi
+    mkdir -p "$build_dir"
 }
 
 # Print test summary

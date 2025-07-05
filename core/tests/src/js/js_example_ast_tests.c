@@ -25,7 +25,7 @@
 
 #define DEBUG_MODE true
 
-#include "../../../core/include/scopemux/parser.h"
+#include "../../../include/scopemux/parser.h"
 #include "../../include/json_validation.h"
 #include "../../include/test_helpers.h"
 #include <criterion/criterion.h>
