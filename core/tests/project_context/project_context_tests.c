@@ -225,9 +225,6 @@ Test(project_context_delegation, dependency_management, .init = setup_project,
   cr_assert(found_utils, "Should find utils.c in dependencies");
 
   // Free the dependency array
-  for (size_t i = 0; i < num_deps; i++) {
-    free(deps[i]);
-  }
   free(deps);
 }
 
@@ -279,7 +276,5 @@ Test(project_context_delegation, interfile_symbols, .init = setup_project,
             "Symbol 2 file_path: expected '%s', got '%s'.", file2_path,
             ast_node_get_file_path(sym2->node));
 
-  // Cleanup AST nodes (parser context takes ownership)
-  ast_node_free(ast1);
-  ast_node_free(ast2);
+  // No need to free ast1/ast2; parser context takes ownership
 }

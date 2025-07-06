@@ -5,8 +5,8 @@
  * Tests for creation, destruction, registration, and unregistration of reference resolvers.
  */
 
-#include "reference_resolvers/reference_resolver_private.h" /* For resolution constants */
-#include "scopemux/parser.h"                                /* For AST node types and operations */
+#include "reference_resolver_private.h" /* For resolution constants */
+#include "scopemux/parser.h"            /* For AST node types and operations */
 #include "scopemux/reference_resolver.h"
 #include "scopemux/symbol_table.h"
 #include <criterion/criterion.h>
@@ -63,7 +63,6 @@ Test(resolver_core, create, .init = setup_resolver, .fini = teardown_resolver) {
 
 // Test registration of a language resolver
 Test(resolver_core, register_resolver, .init = setup_resolver, .fini = teardown_resolver) {
-
   // Register a mock resolver for C language
   bool result = reference_resolver_register(resolver, LANG_C, mock_resolver_func, NULL, NULL);
   cr_assert(result, "Registration of resolver should succeed");
