@@ -209,21 +209,23 @@ size_t project_add_directory_impl(ProjectContext *project, const char *dirpath,
     // Prepare buffer for full path
     char full_path[1024];
 
-    // Check if path would be too long
-    #ifndef SAFE_LEN
-    #define SAFE_LEN(x) ((x) ? strlen(x) : 0)
-    #endif
+// Check if path would be too long
+#ifndef SAFE_LEN
+#define SAFE_LEN(x) ((x) ? strlen(x) : 0)
+#endif
     size_t dir_len = SAFE_LEN(normalized_dir);
     size_t name_len = SAFE_LEN(entry->d_name);
     if (dir_len + name_len + 2 > sizeof(full_path)) { // +2 for '/' and null terminator
-      log_warning("Path too long, skipping: %s/%s", SAFE_STR(normalized_dir), SAFE_STR(entry->d_name));
+      log_warning("Path too long, skipping: %s/%s", SAFE_STR(normalized_dir),
+                  SAFE_STR(entry->d_name));
       continue;
     }
 
     // Construct the full path safely
     int written = snprintf(full_path, sizeof(full_path), "%s/%s", normalized_dir, entry->d_name);
     if (written < 0 || (size_t)written >= sizeof(full_path)) {
-      log_warning("Path truncated, skipping: %s/%s", SAFE_STR(normalized_dir), SAFE_STR(entry->d_name));
+      log_warning("Path truncated, skipping: %s/%s", SAFE_STR(normalized_dir),
+                  SAFE_STR(entry->d_name));
       continue;
     }
 
@@ -360,6 +362,10 @@ bool project_remove_file_impl(ProjectContext *project, const char *filepath) {
     return false;
   }
 
+  // Remove all symbols for this file before freeing the parser context
+  if (project->symbol_table) {
+    symbol_table_remove_by_file(project->symbol_table, normalized_path);
+  }
   // Free the parser context
   parser_context_free(project->file_contexts[found_index]);
   project->file_contexts[found_index] = NULL;
@@ -369,6 +375,7 @@ bool project_remove_file_impl(ProjectContext *project, const char *filepath) {
     project->file_contexts[i] = project->file_contexts[i + 1];
   }
   project->num_files--;
+  project->file_contexts[project->num_files] = NULL; // Defensive: clear dangling pointer
 
   // Also remove from discovered files if present
   for (size_t i = 0; i < project->num_discovered; i++) {

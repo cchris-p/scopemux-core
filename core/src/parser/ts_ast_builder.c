@@ -26,6 +26,7 @@
 #include "ast_node.h"
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
+#include "scopemux/common.h"
 #include <setjmp.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -35,7 +36,8 @@
 
 // File-scope utility: Recursively log warning for any function node with missing/empty name
 static void check_function_names(ASTNode *node) {
-  if (!node) return;
+  if (!node)
+    return;
   if (node->type == NODE_FUNCTION && (!node->name || strlen(node->name) == 0)) {
     log_warning("Function node missing name/qualified_name after compliance");
   }
@@ -60,11 +62,11 @@ void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
 static char *generate_qualified_name(const char *name, ASTNode *parent) {
   // Ensure we never return NULL for qualified names
   if (!name) {
-    return strdup(""); // Return empty string instead of NULL
+    return safe_strdup(""); // Return empty string instead of NULL
   }
 
   if (!parent || !parent->name || parent->type == NODE_ROOT) {
-    return strdup(name);
+    return safe_strdup(name);
   }
 
   // Calculate required length
@@ -73,10 +75,10 @@ static char *generate_qualified_name(const char *name, ASTNode *parent) {
   size_t total_len = parent_name_len + 1 + name_len + 1; // +1 for dot, +1 for null terminator
 
   // Allocate memory
-  char *result = (char *)malloc(total_len);
+  char *result = (char *)safe_malloc(total_len);
   if (!result) {
     // Even on allocation failure, return a valid string
-    return strdup(name); // Fallback to just the name
+    return safe_strdup(name); // Fallback to just the name
   }
 
   // Combine names
@@ -120,9 +122,9 @@ static ASTNode *create_ast_root_node(ParserContext *ctx) {
 
   // Set qualified_name to match the filename for schema compliance
   if (root->qualified_name) {
-    free(root->qualified_name);
+    safe_free(root->qualified_name);
   }
-  root->qualified_name = strdup(node_name);
+  root->qualified_name = safe_strdup(node_name);
 
   log_info("[create_ast_root_node] Set qualified_name: '%s'", node_name);
 
@@ -154,7 +156,7 @@ static void apply_qualified_naming_to_children(ASTNode *ast_root, ParserContext 
         ast_node_set_property(child, "original_name", child->name);
 
         // Replace name with qualified name
-        free(child->name);
+        safe_free(child->name);
         child->name = qualified_name;
       }
     }
@@ -183,15 +185,15 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
 
   // Ensure name is never NULL
   if (!node->name) {
-    node->name = strdup("");
+    node->name = safe_strdup("");
   }
 
   // Ensure qualified_name is never NULL
   if (!node->qualified_name) {
     if (node->name) {
-      node->qualified_name = strdup(node->name);
+      node->qualified_name = safe_strdup(node->name);
     } else {
-      node->qualified_name = strdup("");
+      node->qualified_name = safe_strdup("");
     }
   }
 
@@ -210,14 +212,14 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
     if (basename && strlen(basename) > 0) {
       if (!node->name || strlen(node->name) == 0 || strcmp(node->name, basename) != 0) {
         if (node->name)
-          free(node->name);
-        node->name = strdup(basename);
+          safe_free(node->name);
+        node->name = safe_strdup(basename);
       }
       if (!node->qualified_name || strlen(node->qualified_name) == 0 ||
           strcmp(node->qualified_name, basename) != 0) {
         if (node->qualified_name)
-          free(node->qualified_name);
-        node->qualified_name = strdup(basename);
+          safe_free(node->qualified_name);
+        node->qualified_name = safe_strdup(basename);
       }
     }
   }
@@ -264,13 +266,19 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
  * @param initial_child_count Initial child count before processing
  * @return ASTNode* Finalized AST root or NULL on failure
  */
-// Utility: Ensure all AST nodes have non-NULL string fields (name, qualified_name, signature, docstring)
+// Utility: Ensure all AST nodes have non-NULL string fields (name, qualified_name, signature,
+// docstring)
 static void ensure_nonnull_string_fields(ASTNode *node) {
-  if (!node) return;
-  if (!node->name) node->name = strdup("");
-  if (!node->qualified_name) node->qualified_name = strdup("");
-  if (!node->signature) node->signature = strdup("");
-  if (!node->docstring) node->docstring = strdup("");
+  if (!node)
+    return;
+  if (!node->name)
+    node->name = safe_strdup("");
+  if (!node->qualified_name)
+    node->qualified_name = safe_strdup("");
+  if (!node->signature)
+    node->signature = safe_strdup("");
+  if (!node->docstring)
+    node->docstring = safe_strdup("");
   for (size_t i = 0; i < node->num_children; i++) {
     ensure_nonnull_string_fields(node->children[i]);
   }
@@ -313,7 +321,7 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
 
         // Reset the children array
         if (ast_root->children) {
-          free(ast_root->children);
+          safe_free(ast_root->children);
           ast_root->children = NULL;
         }
         ast_root->num_children = 0;
@@ -344,20 +352,21 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
     const char *basename = filename;
     if (filename) {
       const char *slash = strrchr(filename, '/');
-      if (slash) basename = slash + 1;
+      if (slash)
+        basename = slash + 1;
     }
     if (basename && strlen(basename) > 0) {
-      if (ast_root->name) free(ast_root->name);
-      ast_root->name = strdup(basename);
-      if (ast_root->qualified_name) free(ast_root->qualified_name);
-      ast_root->qualified_name = strdup(basename);
+      if (ast_root->name)
+        safe_free(ast_root->name);
+      ast_root->name = safe_strdup(basename);
+      if (ast_root->qualified_name)
+        safe_free(ast_root->qualified_name);
+      ast_root->qualified_name = safe_strdup(basename);
     }
   }
 
   // Recursively ensure all nodes have non-NULL string fields for schema compliance
   ensure_nonnull_string_fields(ast_root);
-
-
 
   // All AST nodes now guaranteed to be schema-compliant and robust for future changes
   return ast_root;
@@ -408,14 +417,14 @@ static void enhance_schema_compliance_for_tests(ASTNode *ast_root, ParserContext
 
   // Set the root node name and qualified_name to the filename
   if (ast_root->name) {
-    free(ast_root->name);
+    safe_free(ast_root->name);
   }
-  ast_root->name = strdup(basename);
+  ast_root->name = safe_strdup(basename);
 
   if (ast_root->qualified_name) {
-    free(ast_root->qualified_name);
+    safe_free(ast_root->qualified_name);
   }
-  ast_root->qualified_name = strdup(basename);
+  ast_root->qualified_name = safe_strdup(basename);
 
   // Ensure all string fields are properly set as empty strings
   ast_node_set_property(ast_root, "docstring", "");

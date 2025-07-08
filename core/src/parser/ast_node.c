@@ -125,43 +125,49 @@ void ast_node_free_internal(ASTNode *node) {
   // Set the magic number to a known bad value after freeing
   node->magic = 0xDEADBEEF;
 
-  // Free the name if it exists
+  // Ownership and freeing policy for ASTNode fields:
+  // - All string fields (name, qualified_name, signature, docstring, raw_content, file_path):
+  //   Only free if they were heap-allocated (typically via safe_strdup or safe_malloc).
+  //   Never free if they point to static, stack, or library-owned memory.
+  //   If you change AST node construction to not duplicate a field, update this logic!
+
+  // Free the name if it exists (owned, heap-allocated)
   if (node->name) {
     memory_debug_free(node->name, __FILE__, __LINE__);
     node->name = NULL;
   }
 
-  // Free the signature if it exists
+  // Free the signature if it exists (owned, heap-allocated)
   if (node->signature) {
     memory_debug_free(node->signature, __FILE__, __LINE__);
     node->signature = NULL;
   }
 
-  // Free the qualified name if it exists
+  // Free the qualified name if it exists (owned, heap-allocated)
   if (node->qualified_name) {
     memory_debug_free(node->qualified_name, __FILE__, __LINE__);
     node->qualified_name = NULL;
   }
 
-  // Free the docstring if it exists
+  // Free the docstring if it exists (owned, heap-allocated)
   if (node->docstring) {
     memory_debug_free(node->docstring, __FILE__, __LINE__);
     node->docstring = NULL;
   }
 
-  // Free the raw_content if it exists
+  // Free the raw_content if it exists (owned, heap-allocated)
   if (node->raw_content) {
     memory_debug_free(node->raw_content, __FILE__, __LINE__);
     node->raw_content = NULL;
   }
 
-  // Free the file_path if it exists
+  // Free the file_path if it exists (owned, heap-allocated)
   if (node->file_path) {
     memory_debug_free(node->file_path, __FILE__, __LINE__);
     node->file_path = NULL;
   }
 
-  // Free any additional data if it exists
+  // Free any additional data if it exists (owned, heap-allocated)
   if (node->additional_data) {
     memory_debug_free(node->additional_data, __FILE__, __LINE__);
     node->additional_data = NULL;

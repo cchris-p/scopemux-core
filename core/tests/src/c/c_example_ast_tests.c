@@ -97,68 +97,42 @@ static void test_c_example() {
   strcpy(source_path, test_file);
   char *source = read_file_contents(test_file);
 
-  // If file can't be found with current path, try a few alternatives
+  // Fall back to the single base path with category
   if (!source) {
-    // Create a list of possible paths to try
-    const char *alternatives[] = {
-        "/home/matrillo/apps/scopemux/core/tests/examples/c/%s",       // Direct to C examples dir
-        "/home/matrillo/apps/scopemux/build/core/tests/examples/c/%s", // Build dir examples
-        "/home/matrillo/apps/scopemux/%s",                             // Project root + full path
-        NULL};
+    const char *base_path_fmt = "/home/matrillo/apps/scopemux/core/tests/examples/c/%s";
+    char alt_path[1024];
+    // Extract filename portion
+    const char *file_part = strrchr(test_file, '/');
+    file_part = file_part ? file_part + 1 : test_file;
 
-    for (int i = 0; alternatives[i] != NULL; i++) {
-      char alt_path[1024];
+    snprintf(alt_path, sizeof(alt_path), base_path_fmt, file_part);
 
-      // Extract the subdirectory and filename from the path
-      const char *file_part = strrchr(test_file, '/');
-      if (file_part) {
-        // We have a path separator
-        file_part++; // Skip over the / character
-
-        // Find the category subdirectory (basic_syntax, complex_structures, etc.)
-        char *category_path = NULL;
-        if (strstr(test_file, "basic_syntax")) {
-          category_path = "basic_syntax/%s";
-        } else if (strstr(test_file, "complex_structures")) {
-          category_path = "complex_structures/%s";
-        } else if (strstr(test_file, "file_io")) {
-          category_path = "file_io/%s";
-        } else if (strstr(test_file, "memory_management")) {
-          category_path = "memory_management/%s";
-        } else if (strstr(test_file, "struct_union_enum")) {
-          category_path = "struct_union_enum/%s";
-        } else {
-          // Default case - use the filename only
-          category_path = "%s";
-        }
-
-        snprintf(alt_path, sizeof(alt_path), alternatives[i],
-                 category_path[0] == '%' ? file_part : category_path);
-
-        if (category_path[0] != '%') {
-          // If we have a category path, fill in the filename
-          char temp_path[1024];
-          strcpy(temp_path, alt_path);
-          snprintf(alt_path, sizeof(alt_path), temp_path, file_part);
-        }
-      } else {
-        // No path separator, use the entire test_file as filename
-        snprintf(alt_path, sizeof(alt_path), alternatives[i], test_file);
+    // Extract category from test_file path
+    const char *category_start = strstr(test_file, "/c/");
+    char category_buf[256] = {0};
+    if (category_start) {
+      category_start += 3; // skip "/c/"
+      const char *slash = strchr(category_start, '/');
+      size_t category_len = slash ? (size_t)(slash - category_start) : strlen(category_start);
+      if (category_len >= sizeof(category_buf)) {
+        category_len = sizeof(category_buf) - 1;
       }
+      strncpy(category_buf, category_start, category_len);
+      category_buf[category_len] = '\0';
+    }
+    // Build full path: base/<category>/<filename>
+    snprintf(alt_path, sizeof(alt_path), base_path_fmt, category_buf, file_part);
 
+    if (DEBUG_MODE) {
+      fprintf(stderr, "TESTING: Attempting fallback path %s...\n", alt_path);
+    }
+
+    source = read_file_contents(alt_path);
+    if (source) {
       if (DEBUG_MODE) {
-        fprintf(stderr, "TESTING: Attempting alternative path %s...\n", alt_path);
+        fprintf(stderr, "TESTING: Successfully read from fallback path %s\n", alt_path);
       }
-
-      source = read_file_contents(alt_path);
-      if (source) {
-        if (DEBUG_MODE) {
-          fprintf(stderr, "TESTING: Successfully read from alternative path %s\n", alt_path);
-        }
-        // Store the successful path for later use with JSON file
-        strcpy(source_path, alt_path);
-        break;
-      }
+      strcpy(source_path, alt_path);
     }
   }
 

@@ -25,11 +25,11 @@
 
 // Controls detailed debug output from the query manager
 // Only enable temporarily when diagnosing issues with query loading or compilation
-#define DIRECT_DEBUG_MODE false
+#define DIRECT_DEBUG_MODE true
 
 // Controls debugging output for query path resolution
 // Shows paths attempted when loading .scm query files
-#define QUERY_PATH_DEBUG_MODE false
+#define QUERY_PATH_DEBUG_MODE true
 
 #define _POSIX_C_SOURCE 200809L // For strdup
 
@@ -44,6 +44,7 @@
 #include "../../core/include/scopemux/parser.h" // For Language constants
 #include "../../core/include/scopemux/query_manager.h"
 #include "scopemux/adapters/language_adapter.h"
+#include "scopemux/common.h"
 
 /**
  * @brief Structure to represent a cached query.
@@ -85,9 +86,9 @@ QueryManager *query_manager_init(const char *queries_dir) {
     return NULL;
   }
 
-  manager->queries_dir = strdup(queries_dir);
+  manager->queries_dir = safe_strdup(queries_dir);
   if (!manager->queries_dir) {
-    free(manager);
+    safe_free(manager);
     return NULL;
   }
 
@@ -164,7 +165,7 @@ void query_manager_free(QueryManager *manager) {
   if (manager->queries_dir) {
     printf("[QUERY_MANAGER_FREE] Freeing queries_dir at %p\n", (void *)manager->queries_dir);
     fflush(stdout);
-    free((void *)manager->queries_dir);
+    safe_free((void *)manager->queries_dir);
     manager->queries_dir = NULL;
   }
 
@@ -188,7 +189,7 @@ void query_manager_free(QueryManager *manager) {
                    (void *)manager->cached_queries[i][j].query_name,
                    manager->cached_queries[i][j].query_name);
             fflush(stdout);
-            free((void *)manager->cached_queries[i][j].query_name);
+            safe_free((void *)manager->cached_queries[i][j].query_name);
             manager->cached_queries[i][j].query_name = NULL;
           }
 
@@ -205,7 +206,7 @@ void query_manager_free(QueryManager *manager) {
         printf("[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at %p\n",
                (void *)manager->cached_queries[i]);
         fflush(stdout);
-        free(manager->cached_queries[i]);
+        safe_free(manager->cached_queries[i]);
         manager->cached_queries[i] = NULL;
       }
     }
@@ -214,7 +215,7 @@ void query_manager_free(QueryManager *manager) {
     printf("[QUERY_MANAGER_FREE] Freeing cached_queries array at %p\n",
            (void *)manager->cached_queries);
     fflush(stdout);
-    free(manager->cached_queries);
+    safe_free(manager->cached_queries);
     manager->cached_queries = NULL;
   }
 
@@ -223,7 +224,7 @@ void query_manager_free(QueryManager *manager) {
     printf("[QUERY_MANAGER_FREE] Freeing languages array at %p\n", (void *)manager->languages);
     fflush(stdout);
     // Note: We don't free the language objects themselves as they are owned elsewhere
-    free(manager->languages);
+    safe_free(manager->languages);
     manager->languages = NULL;
   }
 
@@ -232,7 +233,7 @@ void query_manager_free(QueryManager *manager) {
     printf("[QUERY_MANAGER_FREE] Freeing language_types array at %p\n",
            (void *)manager->language_types);
     fflush(stdout);
-    free(manager->language_types);
+    safe_free(manager->language_types);
     manager->language_types = NULL;
   }
 
@@ -241,14 +242,14 @@ void query_manager_free(QueryManager *manager) {
     printf("[QUERY_MANAGER_FREE] Freeing query_counts array at %p\n",
            (void *)manager->query_counts);
     fflush(stdout);
-    free(manager->query_counts);
+    safe_free(manager->query_counts);
     manager->query_counts = NULL;
   }
 
   // Free the manager itself
   printf("[QUERY_MANAGER_FREE] Freeing manager struct at %p\n", (void *)manager);
   fflush(stdout);
-  free(manager);
+  safe_free(manager);
 
   printf("[QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete\n");
   fflush(stdout);
@@ -266,39 +267,58 @@ void query_manager_free(QueryManager *manager) {
 static char *construct_query_path(const QueryManager *manager, const char *language_name,
                                   const char *query_name) {
   if (!manager || !manager->queries_dir || !language_name || !query_name) {
+    fprintf(stderr,
+            "[QUERY_PATH_DEBUG] Invalid parameters for construct_query_path: manager=%p, "
+            "queries_dir=%s, language_name=%s, query_name=%s\n",
+            (void *)manager,
+            manager ? (manager->queries_dir ? manager->queries_dir : "NULL") : "NULL",
+            language_name ? language_name : "NULL", query_name ? query_name : "NULL");
     return NULL;
   }
 
   size_t path_len = strlen(manager->queries_dir) + strlen(language_name) + strlen(query_name) + 7;
-  char *full_path = (char *)malloc(path_len);
+  char *full_path = (char *)safe_malloc(path_len);
   if (!full_path) {
+    fprintf(stderr, "[QUERY_PATH_DEBUG] Failed to allocate memory for query path\n");
     return NULL;
   }
 
   // Primary path
   snprintf(full_path, path_len, "%s/%s/%s.scm", manager->queries_dir, language_name, query_name);
+  fprintf(stderr, "[QUERY_PATH_DEBUG] Trying primary path: %s\n", full_path);
   if (access(full_path, F_OK) == 0) {
-    if (QUERY_PATH_DEBUG_MODE) {
-      fprintf(stderr, "Validated query path: %s\n", full_path);
-    }
+    fprintf(stderr, "[QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: %s\n", full_path);
     return full_path;
   }
+  fprintf(stderr, "[QUERY_PATH_DEBUG] Primary path not found: %s (error: %s)\n", full_path,
+          strerror(errno));
 
   // Fallback path
   snprintf(full_path, path_len, "/home/matrillo/apps/scopemux/queries/%s/%s.scm", language_name,
            query_name);
+  fprintf(stderr, "[QUERY_PATH_DEBUG] Trying fallback path: %s\n", full_path);
   if (access(full_path, F_OK) == 0) {
-    if (QUERY_PATH_DEBUG_MODE) {
-      fprintf(stderr, "Validated fallback query path: %s\n", full_path);
-    }
+    fprintf(stderr, "[QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: %s\n", full_path);
     return full_path;
   }
+  fprintf(stderr, "[QUERY_PATH_DEBUG] Fallback path not found: %s (error: %s)\n", full_path,
+          strerror(errno));
 
-  if (QUERY_PATH_DEBUG_MODE) {
-    fprintf(stderr, "Query file not found at expected paths\n");
+  // Try another fallback with relative path
+  snprintf(full_path, path_len, "./queries/%s/%s.scm", language_name, query_name);
+  fprintf(stderr, "[QUERY_PATH_DEBUG] Trying relative fallback path: %s\n", full_path);
+  if (access(full_path, F_OK) == 0) {
+    fprintf(stderr, "[QUERY_PATH_DEBUG] SUCCESS: Found query at relative fallback path: %s\n",
+            full_path);
+    return full_path;
   }
+  fprintf(stderr, "[QUERY_PATH_DEBUG] Relative fallback path not found: %s (error: %s)\n",
+          full_path, strerror(errno));
 
-  free(full_path);
+  fprintf(stderr, "[QUERY_PATH_DEBUG] FAILED: Query file not found at any path: %s/%s.scm\n",
+          language_name, query_name);
+
+  safe_free(full_path);
   return NULL;
 }
 
@@ -333,7 +353,7 @@ static char *read_query_file(const char *file_path, uint32_t *content_len) {
   rewind(file);
 
   // Allocate buffer for the file content
-  char *content = (char *)malloc(file_size + 1); // +1 for null terminator
+  char *content = (char *)safe_malloc(file_size + 1); // +1 for null terminator
   if (!content) {
     fprintf(stderr, "Failed to allocate memory for query content\n");
     fclose(file);
@@ -346,7 +366,7 @@ static char *read_query_file(const char *file_path, uint32_t *content_len) {
 
   if (bytes_read != (size_t)file_size) {
     fprintf(stderr, "Failed to read entire query file: %s\n", file_path);
-    free(content);
+    safe_free(content);
     return NULL;
   }
 
@@ -514,7 +534,7 @@ static bool cache_query(QueryManager *manager, int lang_idx, const char *query_n
   }
 
   // Add the query to the cache
-  manager->cached_queries[lang_idx][query_count].query_name = strdup(query_name);
+  manager->cached_queries[lang_idx][query_count].query_name = safe_strdup(query_name);
   if (!manager->cached_queries[lang_idx][query_count].query_name) {
     return false;
   }
@@ -584,7 +604,10 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
     fflush(stderr);
   }
 
-  // Step 1: Find  // Check if language index is in range
+  // SPECIAL CASE: For "functions" query, try a simple fallback query if normal loading fails
+  bool is_functions_query = (strcmp(query_name, "functions") == 0);
+
+  // Step 1: Find language index
   size_t lang_idx = get_language_index(q_manager, language);
   if (lang_idx == (size_t)-1) {
     fprintf(stderr, "Unsupported language %d in query_manager_get_query\n", language);
@@ -620,6 +643,36 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
 
   // Construct the query file path
   char *query_path = construct_query_path(q_manager, lang_name, query_name);
+
+  // If we couldn't find the query file and this is a functions query, try a simple fallback
+  if (!query_path && is_functions_query) {
+    fprintf(stderr, "[QUERY_DEBUG] Using simple fallback query for functions\n");
+
+    // Simple query that should match any function definition or declaration
+    const char *simple_query = "(function_definition) @function";
+
+    uint32_t error_offset = 0;
+    const TSQuery *query =
+        compile_query(ts_language, simple_query, strlen(simple_query), &error_offset);
+
+    if (query) {
+      fprintf(stderr, "[QUERY_DEBUG] Successfully compiled simple fallback query\n");
+
+      // Cache the compiled query for future use
+      if (!cache_query(q_manager, lang_idx, query_name, query)) {
+        fprintf(stderr, "Failed to cache simple fallback query\n");
+        ts_query_delete((TSQuery *)query); // Cast away const
+        return NULL;
+      }
+
+      return query;
+    } else {
+      fprintf(stderr, "[QUERY_DEBUG] Failed to compile simple fallback query\n");
+    }
+
+    return NULL;
+  }
+
   if (!query_path) {
     fprintf(stderr, "Failed to construct query path for %s/%s\n", lang_name, query_name);
     return NULL;
@@ -628,7 +681,7 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
   // Load the query file content
   uint32_t content_len = 0;
   char *query_content = read_query_file(query_path, &content_len);
-  free(query_path); // Free the path string as we don't need it anymore
+  safe_free(query_path); // Free the path string as we don't need it anymore
 
   if (!query_content) {
     fprintf(stderr, "Failed to read query file for %s/%s\n", lang_name, query_name);
@@ -638,7 +691,7 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
   // Compile the query
   uint32_t error_offset = 0;
   const TSQuery *query = compile_query(ts_language, query_content, content_len, &error_offset);
-  free(query_content); // Free the file content as we don't need it anymore
+  safe_free(query_content); // Free the file content as we don't need it anymore
 
   if (!query) {
     fprintf(stderr, "Failed to compile query %s/%s\n", lang_name, query_name);

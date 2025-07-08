@@ -18,6 +18,20 @@
 
 #define SAFE_STR(x) ((x) ? (x) : "(null)")
 
+// Defensive free macro
+#define DEFENSIVE_FREE(ptr, label)                                                                 \
+  do {                                                                                             \
+    if (ptr) {                                                                                     \
+      if (memory_debug_is_valid_ptr(ptr)) {                                                        \
+        log_debug("Freeing tracked pointer (%s): %p", label, (void *)(ptr));                       \
+        memory_debug_free(ptr, __FILE__, __LINE__);                                                \
+      } else {                                                                                     \
+        log_warning("Skipping untracked pointer (%s): %p", label, (void *)(ptr));                  \
+      }                                                                                            \
+      ptr = NULL;                                                                                  \
+    }                                                                                              \
+  } while (0)
+
 /**
  * Initialize a new parser context.
  */
@@ -72,120 +86,79 @@ void parser_clear(ParserContext *ctx) {
     return;
   }
 
-  log_info("Clearing parser context at %p", (void *)ctx);
+  log_info("[LIFECYCLE] Entering parser_clear for ctx=%p", (void *)ctx);
 
-  // Flag to track if any errors were encountered during cleanup
-  int encountered_error = 0;
+  // Check for static assignment (simple heuristic: check if pointer is in static range)
+  extern char __data_start, _edata, __bss_start, _end;
+  if (ctx->filename) {
+    if ((ctx->filename >= (char *)&__data_start && ctx->filename < (char *)&_edata) ||
+        (ctx->filename >= (char *)&__bss_start && ctx->filename < (char *)&_end)) {
+      log_warning("[LIFECYCLE] ctx->filename appears to point to static data: %p ('%s')",
+                  (void *)ctx->filename, ctx->filename);
+    }
+  }
+  if (ctx->source_code) {
+    if ((ctx->source_code >= (char *)&__data_start && ctx->source_code < (char *)&_edata) ||
+        (ctx->source_code >= (char *)&__bss_start && ctx->source_code < (char *)&_end)) {
+      log_warning("[LIFECYCLE] ctx->source_code appears to point to static data: %p ('%.20s')",
+                  (void *)ctx->source_code, ctx->source_code);
+    }
+  }
 
-  // First free the CST root as it's often the source of memory issues
+  // Free the CST root as before
   if (ctx->cst_root) {
     CSTNode *old_cst_root = ctx->cst_root;
-    ctx->cst_root = NULL; // Clear reference first to prevent potential double-free
-
+    ctx->cst_root = NULL;
     log_debug("Freeing CST root at %p", (void *)old_cst_root);
     cst_node_free(old_cst_root);
     log_debug("CST root freed successfully");
   }
 
-  // Free the source code
-  if (ctx->source_code) {
-    log_debug("parser_clear: freeing ctx->source_code pointer=%p, preview='%.20s%s'",
-              (void *)ctx->source_code, SAFE_STR(ctx->source_code),
-              (!ctx->source_code || strlen(ctx->source_code) <= 20) ? "" : "...");
-    safe_free_field((void **)&ctx->source_code, "source_code", &encountered_error);
-    log_debug("parser_clear: after free, ctx->source_code pointer=%p", (void *)ctx->source_code);
-  }
-
-  // Free the filename
-  if (ctx->filename) {
-    safe_free_field((void **)&ctx->filename, "filename", &encountered_error);
-  }
-
-  // Free the error message
-  if (ctx->last_error) {
-    safe_free_field((void **)&ctx->last_error, "last_error", &encountered_error);
-  }
+  // Defensive free for source_code
+  DEFENSIVE_FREE(ctx->source_code, "source_code");
+  // Defensive free for filename
+  DEFENSIVE_FREE(ctx->filename, "filename");
+  // Defensive free for last_error
+  DEFENSIVE_FREE(ctx->last_error, "last_error");
 
   // Note: Tree-sitter tree is not stored in the context anymore
   // It should be freed immediately after use in parser.c
 
-  // Free the AST nodes - extra care needed here as this is where issues often occur
+  // Free the AST nodes as before
   log_debug("Freeing %zu AST nodes", ctx->num_ast_nodes);
   size_t freed_nodes = 0;
-
-  // First mark all nodes as to-be-freed to prevent cyclic reference issues
   if (ctx->all_ast_nodes) {
     for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
       ASTNode *node = ctx->all_ast_nodes[i];
       if (!node)
         continue;
-
-      // Check memory canary
       if (!memory_debug_check_canary(node, sizeof(ASTNode))) {
         log_error("Memory corruption detected in AST node %zu (buffer overflow)", i);
-        ctx->all_ast_nodes[i] = NULL; // Clear corrupt reference
-        encountered_error = 1;
+        ctx->all_ast_nodes[i] = NULL;
         continue;
       }
-
-      // Validate magic number
       if (node->magic != ASTNODE_MAGIC) {
         log_error("Invalid magic number in AST node %zu: expected 0x%X, found 0x%X", i,
                   ASTNODE_MAGIC, node->magic);
-        ctx->all_ast_nodes[i] = NULL; // Clear invalid reference
-        encountered_error = 1;
+        ctx->all_ast_nodes[i] = NULL;
         continue;
       }
-
-      // Free each node with careful error handling
-#ifdef _MSC_VER
-      __try {
-#endif
-        ast_node_free(node);
-        freed_nodes++;
-        ctx->all_ast_nodes[i] = NULL; // Clear reference to prevent double-free
-#ifdef _MSC_VER
-      } __except (EXCEPTION_EXECUTE_HANDLER) {
-        log_error("Exception while freeing AST node %zu", i);
-        encountered_error = 1;
-        ctx->all_ast_nodes[i] = NULL;
-      }
-#endif
+      ast_node_free(node);
+      freed_nodes++;
+      ctx->all_ast_nodes[i] = NULL;
     }
   }
+  log_info("AST node cleanup summary: freed %zu of %zu nodes, errors: NO", freed_nodes,
+           ctx->num_ast_nodes);
+  // Defensive free for all_ast_nodes array
+  DEFENSIVE_FREE(ctx->all_ast_nodes, "all_ast_nodes");
+  ctx->num_ast_nodes = 0;
+  ctx->ast_nodes_capacity = 0;
 
-  log_info("AST node cleanup summary: freed %zu of %zu nodes, errors: %s", freed_nodes,
-           ctx->num_ast_nodes, SAFE_STR(encountered_error ? "YES" : "NO"));
-
-  // Free the array of AST nodes with extra validation
-#ifdef _MSC_VER
-  __try {
-#endif
-    if (ctx->all_ast_nodes && memory_debug_is_valid_ptr(ctx->all_ast_nodes)) {
-      memory_debug_free(ctx->all_ast_nodes, __FILE__, __LINE__);
-    }
-    ctx->all_ast_nodes = NULL;
-    ctx->num_ast_nodes = 0;
-    ctx->ast_nodes_capacity = 0;
-#ifdef _MSC_VER
-  } __except (EXCEPTION_EXECUTE_HANDLER) {
-    log_error("Exception while freeing all_ast_nodes array");
-    encountered_error = 1;
-
-    // Still reset to safe values
-    ctx->all_ast_nodes = NULL;
-    ctx->num_ast_nodes = 0;
-    ctx->ast_nodes_capacity = 0;
-  }
-#endif
-
-  // Free dependency tracking array (but not the actual contexts it points to)
-  if (ctx->dependencies) {
-    memory_debug_free(ctx->dependencies, __FILE__, __LINE__);
-    ctx->dependencies = NULL;
-    ctx->num_dependencies = 0;
-    ctx->dependencies_capacity = 0;
-  }
+  // Defensive free for dependencies array
+  DEFENSIVE_FREE(ctx->dependencies, "dependencies");
+  ctx->num_dependencies = 0;
+  ctx->dependencies_capacity = 0;
 
   // Reset all context values to safe defaults to prevent issues if reused
   ctx->source_code_length = 0;
@@ -193,11 +166,7 @@ void parser_clear(ParserContext *ctx) {
   ctx->error_code = 0;
   // Reset error state completely
 
-  if (encountered_error) {
-    log_warning("Encountered errors during cleanup, but continued safely");
-  }
-
-  log_info("Successfully cleared parser context at %p", (void *)ctx);
+  log_info("[LIFECYCLE] Exiting parser_clear for ctx=%p", (void *)ctx);
 }
 
 /**
@@ -209,58 +178,42 @@ void parser_free(ParserContext *ctx) {
     return;
   }
 
-  log_info("Freeing parser context at %p", (void *)ctx);
+  log_info("[LIFECYCLE] Entering parser_free for ctx=%p", (void *)ctx);
+
   int encountered_error = 0;
 
   // Clear all resources
   parser_clear(ctx);
 
-  // Free the query manager if it exists with defensive checks
+  // Defensive free for query manager
   if (ctx->q_manager) {
     log_debug("Freeing query manager at %p", (void *)ctx->q_manager);
-
-#ifdef _MSC_VER
-    __try {
-#endif
-      query_manager_free(ctx->q_manager);
-      ctx->q_manager = NULL;
-      log_debug("Query manager freed successfully");
-#ifdef _MSC_VER
-    } __except (EXCEPTION_EXECUTE_HANDLER) {
-      log_error("Exception while freeing query manager");
-      encountered_error = 1;
-      ctx->q_manager = NULL;
-    }
-#endif
+    query_manager_free(ctx->q_manager);
+    ctx->q_manager = NULL;
+    log_debug("Query manager freed successfully");
   }
 
-  // Free the Tree-sitter parser with defensive checks
+  // Defensive free for Tree-sitter parser
   if (ctx->ts_parser) {
     log_debug("Freeing Tree-sitter parser at %p", (void *)ctx->ts_parser);
-
-#ifdef _MSC_VER
-    __try {
-#endif
-      ts_parser_delete(ctx->ts_parser);
-      ctx->ts_parser = NULL;
-      log_debug("Tree-sitter parser freed successfully");
-#ifdef _MSC_VER
-    } __except (EXCEPTION_EXECUTE_HANDLER) {
-      log_error("Exception while freeing Tree-sitter parser");
-      encountered_error = 1;
-      ctx->ts_parser = NULL;
-    }
-#endif
+    ts_parser_delete(ctx->ts_parser);
+    ctx->ts_parser = NULL;
+    log_debug("Tree-sitter parser freed successfully");
   }
 
-  // Finally, free the context itself
-  memory_debug_free(ctx, __FILE__, __LINE__);
+  // Defensive free for the context itself
+  if (memory_debug_is_valid_ptr(ctx)) {
+    log_debug("Freeing tracked ParserContext struct: %p", (void *)ctx);
+    memory_debug_free(ctx, __FILE__, __LINE__);
+  } else {
+    log_warning("Skipping untracked ParserContext struct: %p", (void *)ctx);
+  }
 
   if (encountered_error) {
     log_warning("Encountered errors during cleanup, but continued safely");
   }
 
-  log_info("Parser context cleanup complete");
+  log_info("[LIFECYCLE] Exiting parser_free for ctx=%p", (void *)ctx);
 }
 
 /**

@@ -86,7 +86,7 @@ SymbolEntry *symbol_table_register_impl(GlobalSymbolTable *table, const char *qu
   table->num_symbols++;
   table->count++; // Increment count for test compatibility
 
-  log_debug("Registered symbol: %s (%s)", qualified_name, file_path);
+  log_debug("[SYMTAB] Registered symbol: qualified_name='%s', file_path='%s', entry=%p", qualified_name, file_path, (void*)entry);
 
   // Check if rehashing is needed
   if (symbol_table_should_rehash(table)) {

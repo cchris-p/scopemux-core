@@ -45,6 +45,7 @@ extern bool symbol_table_add_impl(GlobalSymbolTable *table, SymbolEntry *entry);
 extern size_t symbol_table_register_from_ast_impl(GlobalSymbolTable *table, ASTNode *node,
                                                   const char *current_scope, const char *file_path,
                                                   Language language);
+extern void symbol_table_remove_by_file_impl(GlobalSymbolTable *table, const char *file_path);
 
 /**
  * Create a new global symbol table
@@ -184,4 +185,8 @@ size_t symbol_table_register_from_ast(GlobalSymbolTable *table, ASTNode *node,
                                       const char *current_scope, const char *file_path,
                                       Language language) {
   return symbol_table_register_from_ast_impl(table, node, current_scope, file_path, language);
+}
+
+void symbol_table_remove_by_file(GlobalSymbolTable *table, const char *file_path) {
+  symbol_table_remove_by_file_impl(table, file_path);
 }

@@ -23,6 +23,7 @@
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include "scopemux/ast.h"
+#include "scopemux/common.h"
 #include "scopemux/logging.h"
 #include "scopemux/parser.h"
 #include <stdio.h>
@@ -89,15 +90,15 @@ CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx);
 #include <string.h>
 
 char *ts_node_text(TSNode node, const char *source_code) {
-    uint32_t start = ts_node_start_byte(node);
-    uint32_t end = ts_node_end_byte(node);
-    if (!source_code || end <= start)
-        return NULL;
-    size_t len = end - start;
-    char *text = (char *)malloc(len + 1);
-    if (!text)
-        return NULL;
-    memcpy(text, source_code + start, len);
-    text[len] = '\0';
-    return text;
+  uint32_t start = ts_node_start_byte(node);
+  uint32_t end = ts_node_end_byte(node);
+  if (!source_code || end <= start)
+    return NULL;
+  size_t len = end - start;
+  char *text = (char *)safe_malloc(len + 1);
+  if (!text)
+    return NULL;
+  memcpy(text, source_code + start, len);
+  text[len] = '\0';
+  return text;
 }

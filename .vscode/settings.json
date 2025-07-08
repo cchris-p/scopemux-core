@@ -14,6 +14,7 @@
     "editor.formatOnSave": false
   },
   "files.associations": {
+    "*.js": "javascript",
     "*.tsx": "typescriptreact",
     "*.h": "c",
     "*.hpp": "cpp",
@@ -28,7 +29,9 @@
     "tuple": "c",
     "type_traits": "c",
     "utility": "c",
-    "cstdint": "c"
+    "cstdint": "c",
+    "ranges": "c",
+    "complex": "c"
   },
   "files.exclude": {
     "**/.git": true,
@@ -42,12 +45,11 @@
     "core/build": true,
     "core/scopemux_core.egg-info": true,
     "core/vendor/pybind11": true,
-    "core/vendor": true
+    "core/vendor": true,
   },
   "search.exclude": {
     "**/main.c": true,
     "**/.windsurfrules": true,
-    "**/*.txt": true,
     "**/Makefile": true,
     "**/.git": true,
     "**/build": true,

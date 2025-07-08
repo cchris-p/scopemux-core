@@ -315,3 +315,39 @@ size_t symbol_table_get_by_scope_impl(const GlobalSymbolTable *table, const char
 
   return count;
 }
+
+void symbol_table_remove_by_file_impl(GlobalSymbolTable *table, const char *file_path) {
+  log_debug("[SYMTAB] Called remove_by_file for file_path='%s'", SAFE_STR(file_path));
+  if (!table || !file_path)
+    return;
+
+  size_t count = symbol_table_get_by_file_impl(table, file_path, NULL, 0);
+  if (count == 0) {
+    log_debug("[SYMTAB] No symbols found for file_path='%s'", SAFE_STR(file_path));
+    return;
+  }
+
+  SymbolEntry **to_remove = malloc(sizeof(SymbolEntry *) * count);
+  if (!to_remove)
+    return;
+
+  size_t found = symbol_table_get_by_file_impl(table, file_path, to_remove, count);
+
+  log_debug("[SYMTAB] Removing %zu symbols for file_path='%s'", found, SAFE_STR(file_path));
+  for (size_t i = 0; i < found; ++i) {
+    SymbolEntry *entry = to_remove[i];
+    log_debug("[SYMTAB] Removing symbol: qualified_name='%s', file_path='%s', entry=%p", SAFE_STR(entry->qualified_name), SAFE_STR(entry->file_path), (void*)entry);
+    uint32_t hash = hash_string(entry->qualified_name, table->num_buckets);
+    SymbolEntry **prev = &table->buckets[hash];
+    while (*prev) {
+      if (*prev == entry) {
+        *prev = entry->next;
+        symbol_entry_free(entry);
+        table->num_symbols--;
+        break;
+      }
+      prev = &((*prev)->next);
+    }
+  }
+  free(to_remove);
+}

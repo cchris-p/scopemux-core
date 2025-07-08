@@ -126,6 +126,7 @@ void project_context_free_impl(ProjectContext *project) {
   for (size_t i = 0; i < project->num_files; i++) {
     if (project->file_contexts[i]) {
       parser_free(project->file_contexts[i]);
+      project->file_contexts[i] = NULL;
     }
   }
   free(project->file_contexts);

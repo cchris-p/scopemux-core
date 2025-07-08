@@ -29,7 +29,7 @@ Test(ast_extraction, python_functions, .description = "Test AST extraction of Py
   // Initialize parser context (updated API)
   ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->filename = "functions.py"; // Updated: use filename
+  ctx->filename = strdup("functions.py"); // Updated: use heap-allocated filename
 
   // Parse the source code
   parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);
@@ -76,7 +76,7 @@ Test(ast_extraction, python_classes, .description = "Test AST extraction of Pyth
   // Initialize parser context (updated API)
   ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->filename = "classes.py"; // Updated: use filename
+  ctx->filename = strdup("classes.py"); // Updated: use heap-allocated filename
 
   // Parse the source code
   parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);
@@ -134,7 +134,7 @@ Test(ast_extraction, python_hierarchy,
   // Initialize parser context (updated API)
   ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->filename = "classes.py"; // Updated: use filename
+  ctx->filename = strdup("classes.py"); // Updated: use heap-allocated filename
 
   // Parse the source code
   parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);

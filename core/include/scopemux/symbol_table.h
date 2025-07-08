@@ -231,4 +231,15 @@ bool symbol_table_should_rehash(const GlobalSymbolTable *table);
  */
 bool symbol_table_rehash(GlobalSymbolTable *table, size_t new_capacity);
 
+/**
+ * @brief Remove all symbols from a specific file
+ *
+ * Removes and frees all symbol entries associated with the given file path.
+ * This should be called before freeing the AST for a file to avoid dangling pointers.
+ *
+ * @param table Symbol table
+ * @param file_path File path whose symbols should be removed
+ */
+void symbol_table_remove_by_file(GlobalSymbolTable *table, const char *file_path);
+
 #endif /* SCOPEMUX_SYMBOL_TABLE_H */

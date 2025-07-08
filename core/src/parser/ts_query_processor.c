@@ -289,299 +289,174 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
  */
 void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
                    ASTNode **node_map) {
-  log_debug("process_query: query_type=%s, root_node_is_null=%d, ctx=%p, ast_root=%p, node_map=%p",
-            SAFE_STR(query_type), ts_node_is_null(root_node), (void *)ctx, (void *)ast_root,
-            (void *)node_map);
-  assert(query_type != NULL && "query_type must not be NULL");
-  assert(ctx != NULL && "ParserContext must not be NULL");
-  assert(ast_root != NULL && "ast_root must not be NULL");
-  log_debug("ENTERING process_query with query_type: %s", SAFE_STR(query_type));
-
-  // Validate all input parameters
-  if (!query_type) {
-    log_error("process_query: query_type is NULL");
+  if (!query_type || !ctx || !ast_root || !node_map) {
+    log_error("[QUERY_PROCESSOR] Invalid parameters to process_query");
     return;
   }
 
+  // Defensive check for NULL root_node
   if (ts_node_is_null(root_node)) {
-    log_error("process_query: root_node is NULL for query type '%s'", SAFE_STR(query_type));
+    log_error("[QUERY_PROCESSOR] Cannot process query with NULL root node");
     return;
   }
 
-  if (!ctx) {
-    log_error("process_query: ctx is NULL for query type '%s'", SAFE_STR(query_type));
-    return;
-  }
+  log_debug("Processing query type: %s", query_type);
 
-  if (!ast_root) {
-    log_error("process_query: ast_root is NULL for query type '%s'", SAFE_STR(query_type));
-    return;
-  }
-
-  // Additional validation for node_map
-  if (!node_map) {
-    log_warning("process_query: node_map is NULL for query type '%s' - parent relationships will "
-                "not be tracked",
-                SAFE_STR(query_type));
-    // We continue execution as node_map is optional
-  }
-
-  // Get the compiled query from the query manager
+  // Get the query for this language and query type
   const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
   if (!query) {
-    if (ctx->log_level <= LOG_DEBUG) {
-      log_debug(
-          "No query found for type '%s' and language %d - check query file exists and is valid",
-          query_type, ctx->language);
-    }
+    log_error("[QUERY_PROCESSOR] Failed to get query for %s", query_type);
     return;
   }
 
-  int match_count = 0;
-
-  // Create a query cursor
+  // Create a query cursor for executing the query
   TSQueryCursor *cursor = ts_query_cursor_new();
   if (!cursor) {
-    log_error("Failed to create query cursor for '%s'", SAFE_STR(query_type));
+    log_error("[QUERY_PROCESSOR] Failed to create query cursor");
     return;
   }
 
-  // Set the query range to the entire syntax tree
+  // Set the query cursor to use the root node
   ts_query_cursor_exec(cursor, query, root_node);
 
-  log_debug("Executing query '%s' on syntax tree", SAFE_STR(query_type));
-
-  // Set up protection against segfaults during query matching
-  jmp_buf query_recovery;
-  if (setjmp(query_recovery) != 0) {
-    log_error("Recovered from potential crash in query processing for '%s'", SAFE_STR(query_type));
-    ts_query_cursor_delete(cursor);
-    return;
-  }
-
-  // Install signal handler for this operation
-  void (*prev_handler)(int) = signal(SIGSEGV, segfault_handler);
-
-  // Process all matches with protection
+  // Process all matches
   TSQueryMatch match;
-  bool had_error = false;
+  while (ts_query_cursor_next_match(cursor, &match)) {
+    // Get the capture count for this match
+    uint32_t capture_count = match.capture_count;
 
-  // FUTURE-PROOF: Disambiguate docstring vs comment captures
-  // If a node is captured as both docstring and comment, treat as DOCSTRING
-  static const char *last_doc_comment_node_id = NULL;
-  static uint32_t last_doc_comment_node_type = NODE_UNKNOWN;
-  char node_id_buf[64] = {0};
-
-  while (!had_error) {
-    // Try to get the next match safely
-    bool has_match = false;
-
-    // Use setjmp/longjmp for error recovery
-    if (setjmp(query_recovery) != 0) {
-      log_error("Recovered from crash in ts_query_cursor_next_match for '%s'",
-                SAFE_STR(query_type));
-      had_error = true;
-      break;
+    // Skip if no captures
+    if (capture_count == 0) {
+      continue;
     }
 
-    // Get the next match
-    has_match = ts_query_cursor_next_match(cursor, &match);
+    // Process each capture in the match
+    for (uint32_t i = 0; i < capture_count; i++) {
+      // Get the capture
+      TSQueryCapture capture = match.captures[i];
 
-    if (!has_match) {
-      break; // No more matches
-    }
-    match_count++;
+      // Defensive check for invalid capture
+      if (capture.index >= ts_query_capture_count(query)) {
+        log_error("[QUERY_PROCESSOR] Invalid capture index: %u (max: %u)", capture.index,
+                  ts_query_capture_count(query) - 1);
+        continue;
+      }
 
-    // --- Diagnostic logging: print all captures in this match ---
-    char capture_log_buf[1024] = {0};
-    size_t pos = 0;
-    pos += snprintf(capture_log_buf + pos, sizeof(capture_log_buf) - pos, "Match captures: [");
-    for (uint32_t i = 0; i < match.capture_count; i++) {
-      uint32_t cap_idx = match.captures[i].index;
-      uint32_t cap_len;
-      const char *cap_name = ts_query_capture_name_for_id(query, cap_idx, &cap_len);
-      const char *node_type_str = ts_node_type(match.captures[i].node);
-      pos += snprintf(capture_log_buf + pos, sizeof(capture_log_buf) - pos, "%s%s(type=%s)",
-                      (i > 0 ? ", " : ""), cap_name ? cap_name : "(none)",
-                      node_type_str ? node_type_str : "(null)");
-    }
-    snprintf(capture_log_buf + pos, sizeof(capture_log_buf) - pos, "]");
-    log_debug("[DIAG] Query '%s' match #%d: %s", SAFE_STR(query_type), match_count,
-              capture_log_buf);
-    // --- End diagnostic logging ---
+      // Get the name of the capture
+      uint32_t capture_name_length;
+      const char *capture_name =
+          ts_query_capture_name_for_id(query, capture.index, &capture_name_length);
 
-    // Process each match based on its pattern
-    for (uint32_t i = 0; i < match.capture_count; i++) {
-      TSNode captured_node = match.captures[i].node;
-      uint32_t capture_index = match.captures[i].index;
-
-      // Get the capture name
-      uint32_t length;
-      const char *capture_name = ts_query_capture_name_for_id(query, capture_index, &length);
+      // Defensive check for NULL capture name
       if (!capture_name) {
-        if (ctx->log_level <= LOG_DEBUG) {
-          log_debug("No capture name for index %d in query '%s'", capture_index,
-                    SAFE_STR(query_type));
-        }
+        log_error("[QUERY_PROCESSOR] NULL capture name for index %u", capture.index);
         continue;
       }
 
-      // Robust DOCSTRING vs COMMENT disambiguation:
-      // For each match, if any capture is a docstring, do NOT create a COMMENT node for the same
-      // node.
-      bool match_has_docstring = false;
-      for (uint32_t j = 0; j < match.capture_count; j++) {
-        uint32_t idx = match.captures[j].index;
-        uint32_t len2;
-        const char *cap2 = ts_query_capture_name_for_id(query, idx, &len2);
-        if (cap2 && (strcmp(cap2, "docstring") == 0 || strstr(cap2, "docstring"))) {
-          match_has_docstring = true;
-          break;
-        }
-      }
-      // If this capture is a comment and the match has a docstring, skip creating the comment node
-      if (capture_name && strcmp(capture_name, "comment") == 0 && match_has_docstring) {
-        log_debug("[DIAG] Skipping COMMENT node because DOCSTRING is present in the same match. %s",
-                  capture_log_buf);
+      // Get the node for this capture
+      TSNode node = capture.node;
+
+      // Defensive check for NULL node
+      if (ts_node_is_null(node)) {
+        log_error("[QUERY_PROCESSOR] NULL node for capture %s", capture_name);
         continue;
       }
-      // Determine node type and name assignment based on capture name
-      uint32_t node_type = NODE_UNKNOWN;
-      bool assign_name = false;
-      if (capture_name) {
-        if (strcmp(capture_name, "docstring") == 0 || strstr(capture_name, "docstring")) {
-          node_type = NODE_DOCSTRING;
-        } else if (strcmp(capture_name, "comment") == 0) {
-          node_type = NODE_COMMENT;
-        } else if (strcmp(capture_name, "function") == 0) {
-          node_type = NODE_FUNCTION;
-        } else if (strcmp(capture_name, "name") == 0) {
-          // Only assign name if parent node is a function (handled below)
-          node_type = NODE_UNKNOWN; // Will not create a node for @name itself
-          assign_name = true;
-        } else {
-          node_type = map_query_type_to_node_type(query_type);
-          // FUTURE-PROOF: Warn if unknown capture type
-          if (node_type == NODE_UNKNOWN) {
-            log_warning("Unknown capture type '%s' in query '%s' (node id %s)", capture_name,
-                        query_type, node_id_buf);
-          }
-        }
-      } else {
-        node_type = map_query_type_to_node_type(query_type);
+
+      // Get the node type
+      const char *node_type = ts_node_type(node);
+
+      // Defensive check for NULL node type
+      if (!node_type) {
+        log_error("[QUERY_PROCESSOR] NULL node type for capture %s", capture_name);
+        continue;
       }
 
-      // Only create AST node if node_type is known and not just a @name capture
-      if (node_type != NODE_UNKNOWN) {
-        ASTNode *ast_node = NULL;
-        ParseStatus status = create_node_from_match(node_type, NULL, captured_node, &ast_node, ctx);
-        if (status == 0 && ast_node) {
-          // Only assign name/qualified_name for function nodes with a @name capture
-          if (node_type == NODE_FUNCTION) {
-            // Always set the name/qualified_name from a @name capture if present, else set to ""
-            bool found_name = false;
-            for (uint32_t j = 0; j < match.capture_count; j++) {
-              uint32_t idx = match.captures[j].index;
-              uint32_t len2;
-              const char *cap2 = ts_query_capture_name_for_id(query, idx, &len2);
-              if (cap2 && strcmp(cap2, "name") == 0) {
-                char *ident = ts_node_text(match.captures[j].node, ctx->source_code);
-                if (ident) {
-                  if (ast_node->name)
-                    free(ast_node->name);
-                  ast_node->name = strdup(ident);
-                  if (ast_node->qualified_name)
-                    free(ast_node->qualified_name);
-                  ast_node->qualified_name = strdup(ident);
-                  free(ident);
-                  found_name = true;
-                }
-                break;
-              }
-            }
-            if (!found_name) {
-              if (ast_node->name)
-                free(ast_node->name);
-              ast_node->name = strdup("");
-              if (ast_node->qualified_name)
-                free(ast_node->qualified_name);
-              ast_node->qualified_name = strdup("");
-              log_debug(
-                  "[DIAG] Function node created without a name (no @name capture in match). %s",
-                  capture_log_buf);
-            }
-          } else if (node_type == NODE_COMMENT || node_type == NODE_DOCSTRING) {
-            // Never assign name/qualified_name for COMMENT or DOCSTRING nodes
-            if (ast_node->name) {
-              free(ast_node->name);
-              ast_node->name = NULL;
-            }
-            if (ast_node->qualified_name) {
-              free(ast_node->qualified_name);
-              ast_node->qualified_name = NULL;
-            }
+      // Check if we have a name capture
+      if (strncmp(capture_name, "name", capture_name_length) == 0) {
+        // Extract the name from the node text
+        char *name = NULL;
+
+        // Defensive check before extracting text
+        if (ctx->source_code && ts_node_start_byte(node) < ctx->source_code_length &&
+            ts_node_end_byte(node) <= ctx->source_code_length) {
+
+          uint32_t start_byte = ts_node_start_byte(node);
+          uint32_t length = ts_node_end_byte(node) - start_byte;
+
+          // Allocate memory for the name
+          name = (char *)memory_debug_malloc(length + 1, __FILE__, __LINE__, "name_capture");
+          if (name) {
+            // Copy the name from the source code
+            strncpy(name, ctx->source_code + start_byte, length);
+            name[length] = '\0';
           }
-          // Never assign name/qualified_name for docstring or comment nodes
-          if (node_type == NODE_DOCSTRING || node_type == NODE_COMMENT) {
-            if (ast_node->name) {
-              free(ast_node->name);
-              ast_node->name = NULL;
-            }
-            if (ast_node->qualified_name) {
-              free(ast_node->qualified_name);
-              ast_node->qualified_name = NULL;
-            }
+        }
+
+        if (!name) {
+          log_error("[QUERY_PROCESSOR] Failed to extract name for %s", node_type);
+          continue;
+        }
+
+        // Find the function capture
+        for (uint32_t j = 0; j < capture_count; j++) {
+          TSQueryCapture function_capture = match.captures[j];
+
+          // Defensive check for invalid capture
+          if (function_capture.index >= ts_query_capture_count(query)) {
+            continue;
           }
-          // Set node metadata
-          if (ctx->source_code) {
-            ast_node->raw_content = extract_raw_content(captured_node, ctx->source_code);
-            if (!ast_node->raw_content && ctx->log_level <= LOG_DEBUG) {
-              log_debug("Failed to extract raw content for node type %u", node_type);
-            }
-          } else {
-            log_warning("Source code is NULL, cannot extract raw content");
-            ast_node->raw_content = NULL;
+
+          uint32_t function_capture_name_length;
+          const char *function_capture_name = ts_query_capture_name_for_id(
+              query, function_capture.index, &function_capture_name_length);
+
+          // Defensive check for NULL capture name
+          if (!function_capture_name) {
+            continue;
           }
-          // Add to the node hierarchy
-          ASTNode *parent = NULL;
-          // Find parent logic would be here
-          if (parent) {
-            ast_node_add_child(parent, ast_node);
-          } else {
+
+          // Check if this is a function capture
+          if (strncmp(function_capture_name, "function", function_capture_name_length) == 0 ||
+              strncmp(function_capture_name, "function_declaration",
+                      function_capture_name_length) == 0) {
+
+            // Get the function node
+            TSNode function_node = function_capture.node;
+
+            // Defensive check for NULL function node
+            if (ts_node_is_null(function_node)) {
+              continue;
+            }
+
+            // Create an AST node for the function
+            ASTNode *ast_node = ast_node_create(
+                NODE_FUNCTION, name, name,
+                (SourceRange){.start = {.line = ts_node_start_point(function_node).row,
+                                        .column = ts_node_start_point(function_node).column},
+                              .end = {.line = ts_node_end_point(function_node).row,
+                                      .column = ts_node_end_point(function_node).column}});
+            if (!ast_node) {
+              log_error("[QUERY_PROCESSOR] Failed to create AST node for function %s", name);
+              memory_debug_free(name, __FILE__, __LINE__);
+              continue;
+            }
+
+            // Add the AST node to the root
             ast_node_add_child(ast_root, ast_node);
+
+            // Free the name (it's been copied in ast_node_create)
+            memory_debug_free(name, __FILE__, __LINE__);
+
+            // Break out of the loop
+            break;
           }
-          // Add to node map
-          if (node_map) {
-            // Node map update logic would be here
-          }
-          // --- Diagnostic logging for each node processed ---
-          log_debug("[DIAG] AST node created: type=%s, name='%s', qualified_name='%s', "
-                    "capture='%s', all_captures=%s",
-                    ast_node_type_to_string(node_type), ast_node->name ? ast_node->name : "(none)",
-                    ast_node->qualified_name ? ast_node->qualified_name : "(none)", capture_name,
-                    capture_log_buf);
-          // --- End diagnostic logging ---
         }
       }
     }
   }
 
-  // Clean up
+  // Free the query cursor
   ts_query_cursor_delete(cursor);
-
-  // Restore the previous signal handler
-  signal(SIGSEGV, prev_handler);
-
-  // Report query match results
-  if (ctx->log_level <= LOG_DEBUG) {
-    if (match_count > 0) {
-      log_debug("Query '%s' found %d matches in the syntax tree", SAFE_STR(query_type),
-                match_count);
-    } else {
-      log_debug("Query '%s' did not find any matches in the syntax tree - check query correctness",
-                SAFE_STR(query_type));
-    }
-  }
 }
 
 /**
@@ -628,21 +503,42 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
   int successful_queries = 0;
   int failed_queries = 0;
 
+  // ENHANCED LOGGING: Log source code preview
+  if (ctx->source_code && ctx->source_code_length > 0) {
+    size_t preview_len = ctx->source_code_length < 100 ? ctx->source_code_length : 100;
+    char preview[101] = {0};
+    strncpy(preview, ctx->source_code, preview_len);
+    log_error("[QUERY_DEBUG] Source code preview (first %zu bytes): '%s%s'", preview_len, preview,
+              ctx->source_code_length > 100 ? "..." : "");
+  } else {
+    log_error("[QUERY_DEBUG] Source code is NULL or empty!");
+  }
+
+  // ENHANCED LOGGING: Log Tree-sitter node structure
+  log_error("[QUERY_DEBUG] Tree-sitter root node: type='%s', named=%d, child_count=%u",
+            ts_node_type(root_node), ts_node_is_named(root_node), ts_node_child_count(root_node));
+
+  // Log a few children for context
+  for (uint32_t i = 0; i < ts_node_child_count(root_node) && i < 5; i++) {
+    TSNode child = ts_node_child(root_node, i);
+    log_error("[QUERY_DEBUG] Child %u: type='%s', named=%d", i, ts_node_type(child),
+              ts_node_is_named(child));
+  }
+
   // Allocate node map for tracking parents
   // (Size would depend on implementation details)
   size_t node_map_size = 1024; // Arbitrary size for example
   ASTNode **node_map = calloc(node_map_size, sizeof(ASTNode *));
   if (!node_map) {
     log_error("Failed to allocate node map for AST processing");
-    return;
+    return false;
   }
 
   // Process queries in semantic order
   for (size_t i = 0; i < num_query_types; i++) {
-    if (ctx->log_level <= LOG_DEBUG) {
-      log_debug("Processing query type: %s (%zu of %zu)", SAFE_STR(query_types[i]), i + 1,
-                num_query_types);
-    }
+    // ENHANCED LOGGING: Log query processing start with more detail
+    log_error("[QUERY_DEBUG] Processing query type: %s (%zu of %zu)", SAFE_STR(query_types[i]),
+              i + 1, num_query_types);
 
     // Track AST node count before processing this query
     size_t prev_child_count = ast_root->num_children;
@@ -653,15 +549,13 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
     // Check if new nodes were added
     if (ast_root->num_children > prev_child_count) {
       successful_queries++;
-      if (ctx->log_level <= LOG_DEBUG) {
-        log_debug("Query '%s' added %zu node(s)", SAFE_STR(query_types[i]),
-                  ast_root->num_children - prev_child_count);
-      }
+      // ENHANCED LOGGING: Log successful query with more detail
+      log_error("[QUERY_DEBUG] Query '%s' SUCCEEDED: Added %zu node(s)", SAFE_STR(query_types[i]),
+                ast_root->num_children - prev_child_count);
     } else {
       failed_queries++;
-      if (ctx->log_level <= LOG_DEBUG) {
-        log_debug("Query '%s' did not add any nodes", SAFE_STR(query_types[i]));
-      }
+      // ENHANCED LOGGING: Log failed query with more detail
+      log_error("[QUERY_DEBUG] Query '%s' FAILED: No nodes added", SAFE_STR(query_types[i]));
     }
   }
 
@@ -671,6 +565,11 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
              successful_queries, failed_queries, ast_root->num_children);
   }
 
+  // ENHANCED LOGGING: More detailed summary
+  log_error(
+      "[QUERY_DEBUG] AST query processing summary: %d successful, %d failed, total AST nodes: %zu",
+      successful_queries, failed_queries, ast_root->num_children);
+
   // If no queries succeeded, log a warning
   if (successful_queries == 0 && ctx->log_level <= LOG_WARNING) {
     log_warning(
@@ -679,4 +578,6 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
 
   // Clean up
   free(node_map);
+
+  return successful_queries > 0;
 }

@@ -2,12 +2,12 @@
 Building shared libraries in /home/matrillo/apps/scopemux/build/tree-sitter-libs
 Converting static libraries to shared libraries...
 Created shared libraries:
--rwxrwxr-x 1 matrillo matrillo 3566904 Jul  5 20:51 libtree-sitter-cpp.so
--rwxrwxr-x 1 matrillo matrillo  627536 Jul  5 20:51 libtree-sitter-c.so
--rwxrwxr-x 1 matrillo matrillo  386944 Jul  5 20:51 libtree-sitter-javascript.so
--rwxrwxr-x 1 matrillo matrillo  484368 Jul  5 20:51 libtree-sitter-python.so
--rwxrwxr-x 1 matrillo matrillo  237264 Jul  5 20:51 libtree-sitter.so
--rwxrwxr-x 1 matrillo matrillo 1443832 Jul  5 20:51 libtree-sitter-typescript.so
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul  6 01:07 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul  6 01:07 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul  6 01:07 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul  6 01:07 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  237264 Jul  6 01:07 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul  6 01:07 libtree-sitter-typescript.so
 Done building shared libraries.
 [test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux/build/tree-sitter-libs
 DEBUG: prepare_clean_build_dir received build_dir='/home/matrillo/apps/scopemux/build-python'
@@ -51,7 +51,7 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 --   C Compiler: GNU 11.4.0
 --   C++ Compiler: GNU 11.4.0
 --   Tree-sitter core libraries built to: /home/matrillo/apps/scopemux/build-python/tree-sitter-libs
--- Configuring done (14.5s)
+-- Configuring done (9.1s)
 -- Generating done (0.2s)
 -- Build files have been written to: /home/matrillo/apps/scopemux/build-python
 [run_python_tests.sh] Running Python language test suite
@@ -91,7 +91,7 @@ make: *** Python Basic AST Tests: No such file or directory.  Stop.
 =======================================================================
                       TEST EXECUTION SUMMARY                          
 =======================================================================
-Total execution time: 16 seconds
+Total execution time: 10 seconds
 
 Test Suite                               | Result  
 ------------------------------------------|----------

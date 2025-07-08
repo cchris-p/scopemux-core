@@ -143,7 +143,15 @@ void cst_node_free(CSTNode *node) {
     node->children = NULL;
   }
 
-  // Free the content if it exists
+  // Ownership and freeing policy:
+  // - type: NEVER freed here (not heap-allocated, not owned by CSTNode)
+  // - content: Only free if non-NULL (ownership transferred at creation)
+  // - children: Always free if allocated
+
+  // Defensive: Never free node->type (not owned, not duplicated)
+  // (If you change cst_node_new to strdup type, then update this logic)
+
+  // Free the content if it exists and is owned
   if (node->content) {
     memory_debug_free(node->content, __FILE__, __LINE__);
     node->content = NULL;

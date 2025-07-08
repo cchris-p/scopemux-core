@@ -132,6 +132,8 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
       parser_set_error(ctx, 6, "Memory allocation failed for filename");
       return false;
     }
+  } else {
+    ctx->filename = NULL;
   }
 
   // Detect language if not specified
