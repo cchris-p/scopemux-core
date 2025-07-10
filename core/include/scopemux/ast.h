@@ -84,8 +84,13 @@ typedef struct ASTNode {
   size_t num_references;       /**< Number of references */
   size_t references_capacity;  /**< Capacity of references array */
 
-  void *additional_data; /**< Language-specific or analysis data */
-  Language lang;         /**< Language type */
+  void *additional_data;        /**< Language-specific or analysis data */
+  Language lang;                /**< Language type */
+  size_t ast_node_set_property; /**< Number of properties set on this node */
+  char **property_names;        /**< Names of properties */
+  char **property_values;       /**< Values of properties */
+  size_t properties_capacity;   /**< Capacity of property arrays */
+  size_t num_properties;        /**< Number of properties set on this node */
 } ASTNode;
 
 /**

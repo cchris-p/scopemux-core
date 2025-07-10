@@ -36,7 +36,7 @@ void parser_context_free(ParserContext *ctx);
  *
  * @return ParserContext* Initialized parser context or NULL on failure
  */
-ParserContext *parser_init(void);
+// ParserContext *parser_init(void);
 
 /**
  * @brief Clear all resources associated with a parser context

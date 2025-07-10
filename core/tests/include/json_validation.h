@@ -1,7 +1,7 @@
 #ifndef SCOPEMUX_JSON_VALIDATION_H
 #define SCOPEMUX_JSON_VALIDATION_H
 
-#include "../../core/include/scopemux/parser.h"
+#include "scopemux/parser.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +63,7 @@ JsonValue *parse_json_string(const char *json_str);
  * @param node_path Path to current node (for error reporting)
  * @return true if validation passes, false otherwise
  */
-bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *node_path);
+bool validate_ast_against_json(const ASTNode *node, JsonValue *expected);
 
 /**
  * Print JSON structure for debugging

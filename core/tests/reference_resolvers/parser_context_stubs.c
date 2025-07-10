@@ -20,20 +20,21 @@ typedef struct ParserContextImpl {
   size_t capacity;
 } ParserContextImpl;
 
+// TODO: Remove
 // Create a new parser context
-ParserContext *parser_init(void) {
-  ParserContextImpl *ctx = MALLOC(sizeof(ParserContextImpl), "parser_context_impl");
-  if (!ctx) {
-    return NULL;
-  }
+// ParserContext *parser_init(void) {
+//   ParserContextImpl *ctx = MALLOC(sizeof(ParserContextImpl), "parser_context_impl");
+//   if (!ctx) {
+//     return NULL;
+//   }
 
-  ctx->asts = NULL;
-  ctx->file_paths = NULL;
-  ctx->num_asts = 0;
-  ctx->capacity = 0;
+//   ctx->asts = NULL;
+//   ctx->file_paths = NULL;
+//   ctx->num_asts = 0;
+//   ctx->capacity = 0;
 
-  return (ParserContext *)ctx;
-}
+//   return (ParserContext *)ctx;
+// }
 
 // Free parser context resources
 void parser_free(ParserContext *ctx) {

@@ -2,370 +2,68 @@
  * @file c_example_ast_tests.c
  * @brief Tests for validating AST extraction against expected JSON output for C language
  *
- * This test validates AST extraction for a single C source file specified via:
- * - SCOPEMUX_TEST_FILE environment variable (path to .c file)
- * - SCOPEMUX_EXPECTED_JSON environment variable (path to expected .json file)
- *
- * The test:
- * 1. Reads the specified C source file
- * 2. Parses it into an AST
- * 3. Loads the expected JSON file
- * 4. Compares the AST against the expected JSON output
- * 5. Reports any discrepancies
+ * This file contains tests that iterate through each subdirectory of the
+ * core/tests/examples/c directory, load C source files, extract their ASTs,
+ * and validate them against corresponding .expected.json files.
  */
 
-#define DEBUG_MODE true
-
-// Include the proper headers first to get access to all required types
-#include "../../core/include/scopemux/logging.h"
-#include "../../core/include/scopemux/parser.h"
-#include "../../include/json_validation.h"
-
-// The language enum is already defined in parser.h as LANG_C
-
-// Use criterion's logging exclusively
-#define LOG_WARN(fmt, ...) criterion_log(CR_LOG_WARNING, fmt, ##__VA_ARGS__)
-
+#include "../../include/ast_test_utils.h"
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
-#include <errno.h>
-#include <fcntl.h>
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-
-// Forward declarations
-static char *read_file_contents(const char *path);
+#include <sys/stat.h>
 
 /**
- * Run a test for the specified C example file
+ * Run a test for a specific C example file
  */
-static void test_c_example() {
-  log_set_level(LOG_DEBUG);
-  const char *test_file = getenv("SCOPEMUX_TEST_FILE");
-  const char *json_file = getenv("SCOPEMUX_EXPECTED_JSON");
-  char absolute_test_file[1024] = "";
-  char absolute_json_file[1024] = "";
-
-  if (!test_file || !json_file) {
-    cr_assert_fail(
-        "Missing required environment variables: SCOPEMUX_TEST_FILE and SCOPEMUX_EXPECTED_JSON");
+static void test_c_example(const char *category, const char *filename) {
+  // Get test paths
+  TestPaths paths = construct_test_paths("c", category, filename);
+  if (!paths.base_filename) {
+    cr_log_error("Failed to construct test paths");
+    cr_assert_fail("Memory allocation failed");
   }
 
-  // Extract filename without path for test reporting
-  const char *filename = strrchr(test_file, '/');
-  filename = filename ? filename + 1 : test_file;
+  // Initialize test configuration
+  ASTTestConfig config = ast_test_config_init();
+  config.source_file = paths.source_path;
+  config.json_file = paths.json_path;
+  config.category = category;
+  config.base_filename = paths.base_filename;
+  config.language = LANG_C;
+  config.debug_mode = true;
 
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Starting test for %s\n", test_file);
-  }
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Starting test for %s\n", test_file);
-  }
+  // Run the test
+  bool test_passed = run_ast_test(&config);
 
-  // Determine if we need to convert relative paths to absolute paths
-  // Get current working directory
-  char cwd[1024];
-  if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    // Check if test_file is absolute or relative
-    if (test_file[0] != '/') {
-      // It's a relative path, convert to absolute
-      snprintf(absolute_test_file, sizeof(absolute_test_file), "%s/%s", cwd, test_file);
-      if (DEBUG_MODE) {
-        fprintf(stderr, "TESTING: Converting relative path to absolute: %s\n", absolute_test_file);
-      }
-      test_file = absolute_test_file;
-    }
+  // Cleanup
+  free(paths.base_filename);
 
-    // Same for json_file
-    if (json_file && json_file[0] != '/') {
-      snprintf(absolute_json_file, sizeof(absolute_json_file), "%s/%s", cwd, json_file);
-      if (DEBUG_MODE) {
-        fprintf(stderr, "TESTING: Converting relative path to absolute: %s\n", absolute_json_file);
-      }
-      json_file = absolute_json_file;
-    }
-  }
-
-  // 1. Read source file
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Reading source file %s...\n", test_file);
-  }
-
-  char source_path[1024] = "";
-  strcpy(source_path, test_file);
-  char *source = read_file_contents(test_file);
-
-  // Fall back to the single base path with category
-  if (!source) {
-    const char *base_path_fmt = "/home/matrillo/apps/scopemux/core/tests/examples/c/%s";
-    char alt_path[1024];
-    // Extract filename portion
-    const char *file_part = strrchr(test_file, '/');
-    file_part = file_part ? file_part + 1 : test_file;
-
-    snprintf(alt_path, sizeof(alt_path), base_path_fmt, file_part);
-
-    // Extract category from test_file path
-    const char *category_start = strstr(test_file, "/c/");
-    char category_buf[256] = {0};
-    if (category_start) {
-      category_start += 3; // skip "/c/"
-      const char *slash = strchr(category_start, '/');
-      size_t category_len = slash ? (size_t)(slash - category_start) : strlen(category_start);
-      if (category_len >= sizeof(category_buf)) {
-        category_len = sizeof(category_buf) - 1;
-      }
-      strncpy(category_buf, category_start, category_len);
-      category_buf[category_len] = '\0';
-    }
-    // Build full path: base/<category>/<filename>
-    snprintf(alt_path, sizeof(alt_path), base_path_fmt, category_buf, file_part);
-
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: Attempting fallback path %s...\n", alt_path);
-    }
-
-    source = read_file_contents(alt_path);
-    if (source) {
-      if (DEBUG_MODE) {
-        fprintf(stderr, "TESTING: Successfully read from fallback path %s\n", alt_path);
-      }
-      strcpy(source_path, alt_path);
-    }
-  }
-
-  if (!source) {
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: ERROR - Failed to read source file %s\n", test_file);
-    }
-    cr_assert(source != NULL, "Failed to read source file: %s", test_file);
-  }
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Successfully read source file (length: %zu bytes)\n", strlen(source));
-  }
-
-  // 2. Parse the C code into an AST
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Initializing parser context...\n");
-  }
-  ParserContext *ctx = parser_init();
-  if (!ctx) {
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: ERROR - Failed to create parser context\n");
-    }
-    free(source);
-    cr_assert(ctx != NULL, "Failed to create parser context");
-  }
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Parser context initialized, calling parse_string...\n");
-  }
-
-  bool parse_success = parser_parse_string(ctx, source, strlen(source), filename, LANG_C);
-  if (!parse_success) {
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: ERROR - Failed to parse C code\n");
-    }
-    const char *error = parser_get_last_error(ctx);
-    if (error) {
-      if (DEBUG_MODE) {
-        fprintf(stderr, "TESTING: Parser error: %s\n", error);
-      }
-    }
-    free(source);
-    parser_free(ctx);
-    cr_assert(parse_success, "Failed to parse C code");
-  }
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Source code parsed successfully\n");
-  }
-
-  // Get the root node of the AST directly from the parser context
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Getting AST root node...\n");
-  }
-  const ASTNode *ast = ctx->ast_root;
-  if (!ast) {
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: ERROR - AST root node is NULL\n");
-    }
-    free(source);
-    parser_free(ctx);
-    cr_assert(ast != NULL, "Failed to get AST root node");
-  }
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: AST root node exists (type: %d, num_children: %zu)\n", ast->type,
-            ast->num_children);
-  }
-
-  // 3. Load the expected JSON file
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Loading expected JSON from %s...\n", json_file);
-  }
-
-  // Try to read and parse the JSON file
-  char *json_content = read_file_contents(json_file);
-  JsonValue *expected_json = NULL;
-
-  // If direct read failed, try alternative paths for the JSON file
-  if (!json_content) {
-    // Try with .expected.json if not already there
-    if (!strstr(json_file, ".expected.json")) {
-      char expected_json_path[1024];
-      snprintf(expected_json_path, sizeof(expected_json_path), "%s.expected.json", test_file);
-      if (DEBUG_MODE) {
-        fprintf(stderr, "TESTING: Trying with .expected.json: %s\n", expected_json_path);
-      }
-      json_content = read_file_contents(expected_json_path);
-    }
-
-    // Try modifying path from "examples/" to match source file location
-    if (!json_content && source_path && source_path[0] != '\0') {
-      char json_path_from_source[1024];
-      snprintf(json_path_from_source, sizeof(json_path_from_source), "%s.expected.json",
-               source_path);
-      if (DEBUG_MODE) {
-        fprintf(stderr, "TESTING: Trying JSON path based on source file: %s\n",
-                json_path_from_source);
-      }
-      json_content = read_file_contents(json_path_from_source);
-    }
-  }
-
-  if (!json_content) {
-    cr_assert_fail("Failed to read JSON file: %s", json_file);
-    return;
-  }
-
-  // Parse the JSON content using the function from json_validation.h
-  expected_json = parse_json_string(json_content);
-  free(json_content); // Free the content after parsing
-  if (!expected_json) {
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: WARNING - No valid JSON found in %s, skipping validation\n",
-              json_file);
-    }
-    LOG_WARN("No valid JSON found in %s, skipping validation", json_file);
-    free(source);
-    parser_free(ctx);
-    return;
-  }
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Successfully loaded expected JSON\n");
-  }
-
-  // Extract the AST field from the top-level JSON structure
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Extracting AST field from expected JSON...\n");
-  }
-  JsonValue *ast_json = NULL;
-  if (expected_json->type == JSON_OBJECT) {
-    // Search for the "ast" field in the top-level object
-    for (size_t i = 0; i < expected_json->value.object.size; i++) {
-      if (expected_json->value.object.keys[i] &&
-          strcmp(expected_json->value.object.keys[i], "ast") == 0) {
-        ast_json = expected_json->value.object.values[i];
-        if (DEBUG_MODE) {
-          fprintf(stderr, "TESTING: Found 'ast' field in expected JSON\n");
-        }
-        break;
-      }
-    }
-  }
-
-  // If no AST field is found, use the whole JSON (for backward compatibility)
-  if (!ast_json) {
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: No 'ast' field found, using entire JSON object for validation\n");
-    }
-    ast_json = expected_json;
-  }
-
-  // 4. Validate AST against expected JSON
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Starting AST validation against expected JSON...\n");
-  }
-
-  // All tests must be properly validated against their expected output
-  // No special cases or test bypasses - core issues must be fixed
-
-  // Initialize validation result
-  bool json_valid = false;
-
-  // Perform the validation with all possible safety checks
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Validating AST against expected JSON...\n");
-  }
-
-  // For each node in the AST, validate against the expected JSON
-  json_valid = validate_ast_against_json((ASTNode *)ast, ast_json, filename);
-
-  // TEMPORARY: Currently bypassing JSON validation errors since that's a separate task
-  bool valid = true; // Force pass regardless of JSON validation result
-
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: JSON Validation result: %s (bypassed for now)\n",
-            json_valid ? "PASS" : "FAIL");
-    fprintf(stderr, "TESTING: Overall test result: %s\n", valid ? "PASS" : "FAIL");
-  }
-
-  // Free resources
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Freeing resources...\n");
-  }
-  free_json_value(expected_json);
-  free(source);
-  parser_free(ctx);
-
-  // 5. Report results
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Reporting final validation result...\n");
-  }
-  // TEMPORARY: Always pass the test for now, since we're only concerned with file finding,
-  // not JSON validation which will be fixed separately
-  cr_assert(valid, "Note: AST validation is currently bypassed. Actual JSON validation %s for %s",
-            json_valid ? "passed" : "failed", test_file);
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Test completed successfully for %s\n", test_file);
-  }
+  cr_assert(test_passed, "AST test failed for %s/%s", category, filename);
 }
 
 /**
- * Helper function to read file contents
+ * Check if a file is a C source file
+ *
+ * @param filename The filename to check if the file is a C source file. This should be a more
+ * robust check.
+ *
+ * TODO: Consider orientating this function to check if the file is a test file for a given
+ * language.
  */
-static char *read_file_contents(const char *path) {
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Attempting to open file: %s\n", path);
-  }
-
-  FILE *file = fopen(path, "rb");
-  if (!file) {
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: fopen failed for %s: %s\n", path, strerror(errno));
-    }
-    return NULL;
-  }
-
-  fseek(file, 0, SEEK_END);
-  long length = ftell(file);
-  fseek(file, 0, SEEK_SET);
-
-  char *buffer = malloc(length + 1);
-  if (!buffer) {
-    fclose(file);
-    return NULL;
-  }
-
-  fread(buffer, 1, length, file);
-  buffer[length] = '\0';
-  fclose(file);
-  return buffer;
-}
-
-// No duplicate implementations - using json_validation.h functions instead
+static bool is_c_file(const char *filename) { return has_extension(filename, ".c"); }
 
 /**
- * Single test that processes the file specified in environment variables
+ * Test that processes all C example files
  */
-Test(c_examples, single_test) { test_c_example(); }
+Test(c_examples, all_examples) {
+  const char *categories[] = {"basic_syntax", "functions_and_pointers", "structs_and_unions",
+                              "preprocessor", NULL};
+
+  for (int i = 0; categories[i] != NULL; i++) {
+    process_category_files("c", categories[i], is_c_file, test_c_example);
+  }
+}

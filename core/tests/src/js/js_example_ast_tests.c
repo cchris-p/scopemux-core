@@ -5,29 +5,9 @@
  * This file contains tests that iterate through each subdirectory of the
  * core/tests/examples/js directory, load JavaScript source files, extract their ASTs,
  * and validate them against corresponding .expected.json files.
- *
- * Subdirectory coverage:
- * - core/tests/examples/js/basic_syntax/
- * - core/tests/examples/js/functions_and_objects/
- * - core/tests/examples/js/es6_features/
- * - Any other directories added to examples/js/
- *
- * Each test:
- * 1. Reads a JavaScript source file from examples
- * 2. Parses it into an AST
- * 3. Loads the corresponding .expected.json file
- * 4. Compares the AST against the expected JSON output
- * 5. Reports any discrepancies
- *
- * This approach provides both regression testing and documentation of
- * the expected parser output for different JavaScript language constructs.
  */
 
-#define DEBUG_MODE true
-
-#include "../../../core/include/scopemux/parser.h"
-#include "../../include/json_validation.h"
-#include "../../include/test_helpers.h"
+#include "../../include/ast_test_utils.h"
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
 #include <dirent.h>
@@ -56,265 +36,41 @@ static bool has_extension(const char *filename, const char *ext) {
 
 /**
  * Run a test for a specific JavaScript example file
- *
- * @param category The test category (subdirectory name)
- * @param filename The JavaScript source file name
  */
 static void test_js_example(const char *category, const char *filename) {
-  char *base_filename = strdup(filename);
-  if (!base_filename) {
-    cr_log_error("Failed to duplicate filename");
+  // Get test paths
+  TestPaths paths = construct_test_paths("js", category, filename);
+  if (!paths.base_filename) {
+    cr_log_error("Failed to construct test paths");
     cr_assert_fail("Memory allocation failed");
   }
 
-  // Remove extension to get base name
-  char *dot = strrchr(base_filename, '.');
-  if (dot) {
-    *dot = '\0';
-  }
+  // Initialize test configuration
+  ASTTestConfig config = ast_test_config_init();
+  config.source_file = paths.source_path;
+  config.json_file = paths.json_path;
+  config.category = category;
+  config.base_filename = paths.base_filename;
+  config.language = LANG_JAVASCRIPT;
+  config.debug_mode = true;
 
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Testing JavaScript example: %s/%s\n", category, base_filename);
-  }
+  // Run the test
+  bool test_passed = run_ast_test(&config);
 
-  // 1. Read example JavaScript file
-  char *source = read_test_file("js", category, filename);
+  // Cleanup
+  free(paths.base_filename);
 
-  // If the standard helper function couldn't find the source file, try manual alternatives
-  if (!source) {
-    char source_path[1024] = "";
-
-    // Get current working directory for absolute path conversion
-    char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-      // Try multiple approaches to find the file
-      const char *alternatives[] = {
-          "%s/core/tests/examples/js/%s/%s",                           // From project root
-          "%s/build/core/tests/examples/js/%s/%s",                     // From build directory
-          "/home/matrillo/apps/scopemux/core/tests/examples/js/%s/%s", // Direct path
-          NULL};
-
-      for (int i = 0; alternatives[i] != NULL; i++) {
-        char alt_path[1024];
-
-        if (i < 2) { // Using cwd
-          snprintf(alt_path, sizeof(alt_path), alternatives[i], cwd, category, filename);
-        } else { // Direct path
-          snprintf(alt_path, sizeof(alt_path), alternatives[i], category, filename);
-        }
-
-        if (DEBUG_MODE) {
-          fprintf(stderr, "TESTING: Trying to read source file from: %s\n", alt_path);
-        }
-
-        FILE *file = fopen(alt_path, "rb");
-        if (file) {
-          // Get file size
-          fseek(file, 0, SEEK_END);
-          long size = ftell(file);
-          fseek(file, 0, SEEK_SET);
-
-          // Allocate and read
-          source = malloc(size + 1);
-          if (source) {
-            fread(source, 1, size, file);
-            source[size] = '\0';
-            strcpy(source_path, alt_path); // Save the path that worked
-            if (DEBUG_MODE) {
-              fprintf(stderr, "TESTING: Successfully read source file from: %s\n", alt_path);
-            }
-          }
-          fclose(file);
-          break;
-        }
-      }
-    }
-  }
-
-  cr_assert(source != NULL, "Failed to read source file: %s/%s", category, filename);
-
-  // 2. Parse the JavaScript code into an AST
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Initializing parser context\n");
-  }
-  ParserContext *ctx = parser_init();
-  cr_assert(ctx != NULL, "Failed to create parser context");
-
-  // Parse the JavaScript code into an AST
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Parsing JavaScript source (length: %zu)\n", strlen(source));
-  }
-  bool parse_success =
-      parser_parse_string(ctx, source, strlen(source), "example.js", LANG_JAVASCRIPT);
-  cr_assert(parse_success, "Failed to parse JavaScript code");
-
-  // Get the root node of the AST directly from the parser context
-  const ASTNode *ast = ctx->ast_root;
-  cr_assert(ast != NULL, "Failed to get AST root node");
-
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Successfully parsed AST with %zu children\n", ast->num_children);
-  }
-
-  // 3. Load the expected JSON file
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Loading expected JSON file for %s/%s\n", category, base_filename);
-  }
-  JsonValue *expected_json = load_expected_json("js", category, base_filename);
-
-  // Try to find the expected JSON if standard method fails
-  if (!expected_json) {
-    // Construct the expected JSON path ourselves and try different options
-    char json_path[1024];
-
-    // Try with .expected.json extension
-    snprintf(json_path, sizeof(json_path),
-             "/home/matrillo/apps/scopemux/core/tests/examples/js/%s/%s.expected.json", category,
-             base_filename);
-
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: Trying to load JSON manually from: %s\n", json_path);
-    }
-
-    // Read and parse the JSON manually
-    FILE *json_file = fopen(json_path, "r");
-    if (json_file) {
-      fseek(json_file, 0, SEEK_END);
-      long size = ftell(json_file);
-      fseek(json_file, 0, SEEK_SET);
-
-      char *json_content = malloc(size + 1);
-      if (json_content) {
-        fread(json_content, 1, size, json_file);
-        json_content[size] = '\0';
-        expected_json = parse_json_string(json_content);
-        free(json_content);
-      }
-      fclose(json_file);
-    }
-  }
-
-  if (!expected_json) {
-    if (DEBUG_MODE) {
-      fprintf(stderr, "TESTING: No expected JSON found for %s/%s, skipping validation\n", category,
-              base_filename);
-    }
-    log_warning("No .expected.json file found for %s/%s, skipping validation", category,
-                base_filename);
-    free(base_filename);
-    free(source);
-    parser_free(ctx);
-    return;
-  }
-
-  // 4. Validate AST against expected JSON
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Validating AST against expected JSON\n");
-  }
-  bool json_valid = validate_ast_against_json((ASTNode *)ast, expected_json, base_filename);
-
-  // TEMPORARY: Bypass JSON validation errors, similar to C tests
-  bool valid = true; // Force pass regardless of JSON validation result
-
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: JSON Validation result: %s (bypassed for now)\n",
-            json_valid ? "PASS" : "FAIL");
-  }
-
-  // Free resources
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Freeing resources\n");
-  }
-  free_json_value(expected_json);
-  free(base_filename);
-  free(source);
-  parser_free(ctx);
-
-  // 5. Report results
-  if (DEBUG_MODE) {
-    fprintf(stderr, "TESTING: Test completed for %s/%s\n", category, filename);
-  }
-
-  // TEMPORARY: Currently bypassing JSON validation errors
-  cr_assert(valid,
-            "Note: AST validation is currently bypassed. Actual JSON validation %s for %s/%s",
-            json_valid ? "passed" : "failed", category, filename);
+  cr_assert(test_passed, "AST test failed for %s/%s", category, filename);
 }
 
 /**
- * Process files in a directory for testing
- *
- * @param dir The directory to process
- * @param category The category name
+ * Test that processes all JavaScript example files
  */
-static void process_directory(DIR *dir, const char *category) {
-  struct dirent *entry;
-  while ((entry = readdir(dir)) != NULL) {
-    // Skip directories and non-JavaScript files
-    if (entry->d_type != DT_REG || !has_extension(entry->d_name, ".js")) {
-      continue;
-    }
+Test(js_examples, all_examples) {
+  const char *categories[] = {"basic_syntax", "functions_and_objects", "es6_features", NULL};
 
-    // Run test for this example file
-    test_js_example(category, entry->d_name);
+  for (int i = 0; categories[i] != NULL; i++) {
+    process_category_files("js", categories[i], (bool (*)(const char *, const char *))has_extension,
+                           test_js_example);
   }
 }
-
-/**
- * Process all examples in a JavaScript test category
- *
- * @param category The category (subdirectory) to process
- */
-static void process_js_category(const char *category) {
-  char path[512];
-
-  // First try using PROJECT_ROOT_DIR environment variable
-  const char *project_root = getenv("PROJECT_ROOT_DIR");
-  if (project_root) {
-    snprintf(path, sizeof(path), "%s/core/tests/examples/js/%s", project_root, category);
-    DIR *dir = opendir(path);
-    if (dir) {
-      process_directory(dir, category);
-      closedir(dir);
-      return;
-    }
-  }
-
-  // Try different relative paths
-  const char *possible_paths[] = {
-      "../../../core/tests/examples/js/%s",                    // From build/core/tests/
-      "../../core/tests/examples/js/%s",                       // One level up
-      "../core/tests/examples/js/%s",                          // Two levels up
-      "../examples/js/%s",                                     // Original path
-      "./core/tests/examples/js/%s",                           // From project root
-      "/home/matrillo/apps/scopemux/core/tests/examples/js/%s" // Absolute path
-  };
-
-  for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
-    snprintf(path, sizeof(path), possible_paths[i], category);
-    DIR *dir = opendir(path);
-    if (dir) {
-      process_directory(dir, category);
-      closedir(dir);
-      return;
-    }
-  }
-
-  // Log error if all attempts fail
-  log_warning("Could not open category directory for '%s' after trying multiple paths", category);
-}
-
-/**
- * Test basic JavaScript syntax examples
- */
-Test(js_examples, basic_syntax) { process_js_category("basic_syntax"); }
-
-/**
- * Test JavaScript functions and objects examples
- */
-Test(js_examples, functions_and_objects) { process_js_category("functions_and_objects"); }
-
-/**
- * Test JavaScript ES6 features examples
- */
-Test(js_examples, es6_features) { process_js_category("es6_features"); }

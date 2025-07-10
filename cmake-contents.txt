@@ -1,0 +1,388 @@
+==> ./CMakeLists.txt
+# CMakeLists.txt for ScopeMux Core
+
+cmake_minimum_required(VERSION 3.10)
+project(scopemux_core C)
+
+# Set C standard
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# Add compiler flags
+add_compile_options(-Wall -Wextra -pedantic)
+
+# Option to enable memory debugging features
+option(SCOPEMUX_DEBUG_MEMORY "Enable memory debugging and tracking" ON)
+if(SCOPEMUX_DEBUG_MEMORY)
+    add_definitions(-DSCOPEMUX_DEBUG_MEMORY)
+    message(STATUS "Memory debugging enabled: detailed tracking and validation will be active")
+endif()
+
+# Configure Valgrind support when requested
+option(SCOPEMUX_VALGRIND_COMPATIBLE "Build with Valgrind compatibility" ON)
+if(SCOPEMUX_VALGRIND_COMPATIBLE)
+    add_definitions(-DSCOPEMUX_VALGRIND_COMPATIBLE)
+    message(STATUS "Building with Valgrind compatibility")
+endif()
+
+# Find Python
+find_package(Python 3.6 REQUIRED COMPONENTS Interpreter Development)
+
+# Include FetchContent for pybind11
+include(FetchContent)
+FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11.git
+    GIT_TAG v2.11.1
+)
+FetchContent_MakeAvailable(pybind11)
+
+# Add subdirectories
+add_subdirectory(core)
+add_subdirectory(core/tests)
+
+# Print configuration summary
+message(STATUS "Configuration summary:")
+message(STATUS "  C Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
+message(STATUS "  Python: ${Python_VERSION}")
+message(STATUS "  Installation prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  Memory debugging: ${SCOPEMUX_DEBUG_MEMORY}")
+message(STATUS "  Valgrind compatibility: ${SCOPEMUX_VALGRIND_COMPATIBLE}")
+==> ./windsurf-collector/node_modules/bare-os/CMakeLists.txt
+cmake_minimum_required(VERSION 3.25)
+
+find_package(cmake-bare REQUIRED PATHS node_modules/cmake-bare)
+
+project(bare_os C)
+
+add_bare_module(bare_os)
+
+target_sources(
+  ${bare_os}
+  PRIVATE
+    binding.c
+)
+==> ./windsurf-collector/node_modules/bare-fs/CMakeLists.txt
+cmake_minimum_required(VERSION 3.25)
+
+find_package(cmake-bare REQUIRED PATHS node_modules/cmake-bare)
+
+project(bare_fs C)
+
+add_bare_module(bare_fs)
+
+target_sources(
+  ${bare_fs}
+  PRIVATE
+    binding.c
+)
+==> ./build/_deps/pybind11-subbuild/CMakeLists.txt
+# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+# file LICENSE.rst or https://cmake.org/licensing for details.
+
+cmake_minimum_required(VERSION 4.0.2)
+
+# Reject any attempt to use a toolchain file. We must not use one because
+# we could be downloading it here. If the CMAKE_TOOLCHAIN_FILE environment
+# variable is set, the cache variable will have been initialized from it.
+unset(CMAKE_TOOLCHAIN_FILE CACHE)
+unset(ENV{CMAKE_TOOLCHAIN_FILE})
+
+# We name the project and the target for the ExternalProject_Add() call
+# to something that will highlight to the user what we are working on if
+# something goes wrong and an error message is produced.
+
+project(pybind11-populate NONE)
+
+
+
+include(ExternalProject)
+ExternalProject_Add(pybind11-populate
+                     "UPDATE_DISCONNECTED" "False" "EXTERNALPROJECT_INTERNAL_ARGUMENT_SEPARATOR"
+                    SOURCE_DIR          "/home/matrillo/apps/scopemux/vendor/pybind11"
+                    BINARY_DIR          "/home/matrillo/apps/scopemux/build/_deps/pybind11-build"
+                    CONFIGURE_COMMAND   ""
+                    BUILD_COMMAND       ""
+                    INSTALL_COMMAND     ""
+                    TEST_COMMAND        ""
+                    USES_TERMINAL_DOWNLOAD  YES
+                    USES_TERMINAL_UPDATE    YES
+                    USES_TERMINAL_PATCH     YES
+)
+
+
+==> ./core/CMakeLists.txt
+# CMakeLists.txt for ScopeMux Core Library
+cmake_minimum_required(VERSION 3.14)
+project(scopemux_core)
+
+# Set compiler flags for this directory
+# Note: C/C++ standards are already set in the root CMakeLists.txt
+
+# Enhanced compiler flags for memory safety and early error detection
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Wmissing-prototypes")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit-function-declaration -Wformat-security")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpointer-arith -Wunused-variable")
+
+    # Memory safety flags (enable in debug builds)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=undefined")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -g")
+        message(STATUS "Memory sanitizers enabled for debug build")
+    endif()
+endif()
+
+# Option to enable memory debugging features
+option(SCOPEMUX_DEBUG_MEMORY "Enable memory debugging and tracking" OFF)
+if(SCOPEMUX_DEBUG_MEMORY)
+    add_definitions(-DSCOPEMUX_DEBUG_MEMORY)
+    message(STATUS "Memory debugging enabled: detailed tracking and validation will be active")
+endif()
+
+# Find Python packages needed for the project
+find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
+
+# Fetch pybind11 first, before we use any of its variables
+include(FetchContent)
+FetchContent_Declare(
+    pybind11
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/pybind11
+)
+FetchContent_MakeAvailable(pybind11)
+
+# Include directories - make sure all targets can find the headers
+include_directories(
+    # Tree-sitter headers (defined in the root CMakeLists.txt)
+    ${TS_CORE_INCLUDE_DIR}
+    ${TS_C_INCLUDE_DIR}
+    ${TS_CPP_INCLUDE_DIR}
+    ${TS_PYTHON_INCLUDE_DIR}
+    ${TS_JS_INCLUDE_DIR}
+    ${TS_TS_INCLUDE_DIR}
+    # Project headers
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    # Add source directory to include path
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    # Python headers
+    ${Python_INCLUDE_DIRS}
+    ${pybind11_INCLUDE_DIRS}
+)
+
+# Add preprocessor defines for proper compilation
+add_compile_definitions(
+    SCOPEMUX_BUILDING=1
+    PY_SSIZE_T_CLEAN
+)
+
+# Configure Valgrind support when requested
+option(SCOPEMUX_VALGRIND_COMPATIBLE "Build with Valgrind compatibility" OFF)
+if(SCOPEMUX_VALGRIND_COMPATIBLE)
+    add_definitions(-DSCOPEMUX_VALGRIND_COMPATIBLE)
+    message(STATUS "Building with Valgrind compatibility")
+endif()
+
+# Add compiler flags for Python C API
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>)
+
+# Get the Python include directories explicitly
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_path('include'))"
+    OUTPUT_VARIABLE PYTHON_INCLUDE_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message(STATUS "Python include path from sysconfig: ${PYTHON_INCLUDE_PATH}")
+
+# Configure Python includes directly
+# First use sysconfig path, fallback to CMake's Python_INCLUDE_DIRS if that fails
+if(NOT PYTHON_INCLUDE_PATH)
+    set(PYTHON_INCLUDE_PATH "${Python_INCLUDE_DIRS}")
+    message(STATUS "Using CMake's Python_INCLUDE_DIRS as fallback")
+endif()
+
+# Add custom compiler options to enforce include path and Python macro definitions
+add_compile_options(
+    $<$<COMPILE_LANGUAGE:C>:-I${PYTHON_INCLUDE_PATH}>
+    $<$<COMPILE_LANGUAGE:C>:-DPY_SSIZE_T_CLEAN>
+    $<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>
+)
+
+# Output Python information for debugging
+message(STATUS "Python include dirs: ${Python_INCLUDE_DIRS}")
+message(STATUS "Python libraries: ${Python_LIBRARIES}")
+
+# pybind11 is already loaded above
+
+# Build parser core static library
+add_library(parser_core STATIC
+    src/parser/parser.c
+    src/parser/ast_node.c
+    src/parser/cst_node.c
+    src/parser/memory_tracking.c
+    src/parser/parser_context.c
+    src/parser/query_processing.c
+    src/parser/ts_init.c
+    src/parser/ts_ast_builder.c
+    src/parser/ts_cst_builder.c
+    src/parser/ts_query_processor.c
+    src/parser/tree_sitter_integration.c
+    src/parser/query_manager.c
+    src/parser/reference_resolver.c
+    src/parser/symbol_table.c
+    src/parser/ast_properties.c
+    src/parser/ts_diagnostic.c
+    src/parser/parser_context_utils.c
+    src/common/memory_management.c
+    src/common/logging.c
+    src/ast_compliance.c
+    src/lang_compliance.c
+    src/ast.c
+)
+
+# Add include directories
+target_include_directories(parser_core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tree-sitter-libs
+)
+
+# Link with tree-sitter libraries
+target_link_libraries(parser_core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tree-sitter-libs/libtree-sitter.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tree-sitter-libs/libtree-sitter-c.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tree-sitter-libs/libtree-sitter-cpp.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tree-sitter-libs/libtree-sitter-python.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tree-sitter-libs/libtree-sitter-javascript.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tree-sitter-libs/libtree-sitter-typescript.a
+)
+
+# Add context engine library
+add_library(context_engine STATIC
+    src/context_engine/context_engine.c
+    src/context_engine/compressor.c
+    src/context_engine/expander.c
+    src/context_engine/token_budgeter.c
+)
+
+# Link context engine with parser core
+target_link_libraries(context_engine PUBLIC parser_core)
+
+# Install libraries and headers
+install(TARGETS parser_core context_engine
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+)
+
+install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+)
+==> ./core/tests/CMakeLists.txt
+cmake_minimum_required(VERSION 3.10)
+project(scopemux_tests C)
+
+# Add include directories
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include
+)
+
+# Add test utilities library
+add_library(ast_test_utils STATIC
+    src/utilities/ast_test_utils.c
+)
+
+# Add test executables
+add_executable(c_example_ast_tests src/c/c_example_ast_tests.c)
+add_executable(cpp_example_ast_tests src/cpp/cpp_example_ast_tests.c)
+add_executable(js_example_ast_tests src/js/js_example_ast_tests.c)
+add_executable(ts_example_ast_tests src/ts/ts_example_ast_tests.c)
+add_executable(python_example_ast_tests src/python/python_example_ast_tests.c)
+
+# Link test executables with test utilities
+target_link_libraries(c_example_ast_tests PRIVATE ast_test_utils)
+target_link_libraries(cpp_example_ast_tests PRIVATE ast_test_utils)
+target_link_libraries(js_example_ast_tests PRIVATE ast_test_utils)
+target_link_libraries(ts_example_ast_tests PRIVATE ast_test_utils)
+target_link_libraries(python_example_ast_tests PRIVATE ast_test_utils)
+
+# Add parser core
+target_link_libraries(c_example_ast_tests PRIVATE ast_test_utils parser_core)
+target_link_libraries(cpp_example_ast_tests PRIVATE ast_test_utils parser_core)
+target_link_libraries(js_example_ast_tests PRIVATE ast_test_utils parser_core)
+target_link_libraries(ts_example_ast_tests PRIVATE ast_test_utils parser_core)
+target_link_libraries(python_example_ast_tests PRIVATE ast_test_utils parser_core)
+
+# Add criterion library
+find_library(CRITERION_LIB criterion REQUIRED)
+
+# Link criterion with test executables
+target_link_libraries(c_example_ast_tests PRIVATE ${CRITERION_LIB})
+target_link_libraries(cpp_example_ast_tests PRIVATE ${CRITERION_LIB})
+target_link_libraries(js_example_ast_tests PRIVATE ${CRITERION_LIB})
+target_link_libraries(ts_example_ast_tests PRIVATE ${CRITERION_LIB})
+target_link_libraries(python_example_ast_tests PRIVATE ${CRITERION_LIB})
+==> ./core/src/adapters/CMakeLists.txt
+# Ensure adapter sources are included in both the main library and test targets
+
+# Add adapter sources to the main parser_core library
+target_sources(parser_core PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/adapter_registry.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/language_adapter.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/parser.c
+)
+
+# Make sure the include directories are set
+target_include_directories(parser_core PRIVATE
+    ${CMAKE_SOURCE_DIR}/core/include
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux
+    ${CMAKE_SOURCE_DIR}/core/include/tree_sitter
+)
+==> ./core/src/config/CMakeLists.txt
+# CMakeLists.txt for config
+
+==> ./core/_deps/pybind11-subbuild/CMakeLists.txt
+# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+# file LICENSE.rst or https://cmake.org/licensing for details.
+
+cmake_minimum_required(VERSION 4.0.2)
+
+# Reject any attempt to use a toolchain file. We must not use one because
+# we could be downloading it here. If the CMAKE_TOOLCHAIN_FILE environment
+# variable is set, the cache variable will have been initialized from it.
+unset(CMAKE_TOOLCHAIN_FILE CACHE)
+unset(ENV{CMAKE_TOOLCHAIN_FILE})
+
+# We name the project and the target for the ExternalProject_Add() call
+# to something that will highlight to the user what we are working on if
+# something goes wrong and an error message is produced.
+
+project(pybind11-populate NONE)
+
+
+
+include(ExternalProject)
+ExternalProject_Add(pybind11-populate
+                     "UPDATE_DISCONNECTED" "False" "EXTERNALPROJECT_INTERNAL_ARGUMENT_SEPARATOR"
+                    SOURCE_DIR          "/home/matrillo/apps/scopemux/core/../vendor/pybind11"
+                    BINARY_DIR          "/home/matrillo/apps/scopemux/core/_deps/pybind11-build"
+                    CONFIGURE_COMMAND   ""
+                    BUILD_COMMAND       ""
+                    INSTALL_COMMAND     ""
+                    TEST_COMMAND        ""
+                    USES_TERMINAL_DOWNLOAD  YES
+                    USES_TERMINAL_UPDATE    YES
+                    USES_TERMINAL_PATCH     YES
+)
+
+
+==> ./core/examples/CMakeLists.txt
+cmake_minimum_required(VERSION 3.10)
+
+# Examples directory - this can be expanded to include example code as needed
+message(STATUS "Configuring examples directory")
+
+# Add any example targets here if needed
+# For example:
+# add_executable(example_parser example_parser.c)
+# target_link_libraries(example_parser scopemux-core)
