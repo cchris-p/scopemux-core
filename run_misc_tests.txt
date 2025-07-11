@@ -2,12 +2,12 @@
 Building shared libraries in /home/matrillo/apps/scopemux/build/tree-sitter-libs
 Converting static libraries to shared libraries...
 Created shared libraries:
--rwxrwxr-x 1 matrillo matrillo 3566904 Jul  6 01:16 libtree-sitter-cpp.so
--rwxrwxr-x 1 matrillo matrillo  627536 Jul  6 01:16 libtree-sitter-c.so
--rwxrwxr-x 1 matrillo matrillo  386944 Jul  6 01:16 libtree-sitter-javascript.so
--rwxrwxr-x 1 matrillo matrillo  484368 Jul  6 01:16 libtree-sitter-python.so
--rwxrwxr-x 1 matrillo matrillo  237264 Jul  6 01:16 libtree-sitter.so
--rwxrwxr-x 1 matrillo matrillo 1443832 Jul  6 01:16 libtree-sitter-typescript.so
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul 10 11:47 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul 10 11:47 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul 10 11:47 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul 10 11:47 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  237264 Jul 10 11:47 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul 10 11:47 libtree-sitter-typescript.so
 Done building shared libraries.
 [test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux/build/tree-sitter-libs
 DEBUG: prepare_clean_build_dir received build_dir='/home/matrillo/apps/scopemux/build-misc'
@@ -619,42 +619,21 @@ cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEA
 /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:290:6: warning: no previous prototype for ‘process_query’ [-Wmissing-prototypes]
   290 | void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
       |      ^~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c: In function ‘process_query’:
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:488:31: warning: implicit declaration of function ‘ts_node_text’; did you mean ‘ts_node_eq’? [-Wimplicit-function-declaration]
-  488 |                 char *ident = ts_node_text(match.captures[j].node, ctx->source_code);
-      |                               ^~~~~~~~~~~~
-      |                               ts_node_eq
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:488:31: warning: initialization of ‘char *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:450:12: warning: variable ‘assign_name’ set but not used [-Wunused-but-set-variable]
-  450 |       bool assign_name = false;
-      |            ^~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:372:19: warning: unused variable ‘last_doc_comment_node_type’ [-Wunused-variable]
-  372 |   static uint32_t last_doc_comment_node_type = NODE_UNKNOWN;
-      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:371:22: warning: unused variable ‘last_doc_comment_node_id’ [-Wunused-variable]
-  371 |   static const char *last_doc_comment_node_id = NULL;
-      |                      ^~~~~~~~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c: At top level:
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:595:6: warning: no previous prototype for ‘process_all_ast_queries’ [-Wmissing-prototypes]
-  595 | bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:470:6: warning: no previous prototype for ‘process_all_ast_queries’ [-Wmissing-prototypes]
+  470 | bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
       |      ^~~~~~~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c: In function ‘process_all_ast_queries’:
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:637:5: warning: ‘return’ with no value, in function returning non-void [-Wreturn-type]
-  637 |     return;
-      |     ^~~~~~
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:595:6: note: declared here
-  595 | bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
-      |      ^~~~~~~~~~~~~~~~~~~~~~~
-At top level:
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:371:22: warning: ‘last_doc_comment_node_id’ defined but not used [-Wunused-variable]
-  371 |   static const char *last_doc_comment_node_id = NULL;
-      |                      ^~~~~~~~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:372:19: warning: ‘last_doc_comment_node_type’ defined but not used [-Wunused-variable]
-  372 |   static uint32_t last_doc_comment_node_type = NODE_UNKNOWN;
-      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:203:14: warning: ‘extract_raw_content’ defined but not used [-Wunused-function]
+  203 | static char *extract_raw_content(TSNode node, const char *source_code) {
+      |              ^~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:148:12: warning: ‘create_node_from_match’ defined but not used [-Wunused-function]
+  148 | static int create_node_from_match(uint32_t node_type, const char *name, TSNode ts_node,
+      |            ^~~~~~~~~~~~~~~~~~~~~~
 /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:97:20: warning: ‘determine_capture_name’ defined but not used [-Wunused-function]
    97 | static const char *determine_capture_name(const char *node_type, const char *query_type) {
       |                    ^~~~~~~~~~~~~~~~~~~~~~
+/home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:49:17: warning: ‘map_query_type_to_node_type’ defined but not used [-Wunused-function]
+   49 | static uint32_t map_query_type_to_node_type(const char *query_type) {
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
 [ 57%] Building C object core/CMakeFiles/parser_core.dir/src/parser/tree_sitter_integration.c.o
 cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/tree_sitter_integration.c.o -MF CMakeFiles/parser_core.dir/src/parser/tree_sitter_integration.c.o.d -o CMakeFiles/parser_core.dir/src/parser/tree_sitter_integration.c.o -c /home/matrillo/apps/scopemux/core/src/parser/tree_sitter_integration.c
 [ 57%] Building C object core/CMakeFiles/parser_core.dir/src/parser/query_manager.c.o
@@ -665,8 +644,8 @@ In file included from /home/matrillo/apps/scopemux/core/include/../../core/inclu
 /home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/logging.h:8:26: warning: the address of ‘preview’ will always evaluate as ‘true’ [-Waddress]
     8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
       |                          ^
-/home/matrillo/apps/scopemux/core/src/parser/query_manager.c:395:38: note: in expansion of macro ‘SAFE_STR’
-  395 |   log_debug("Query preview: '%s%s'", SAFE_STR(preview), query_len > 40 ? "..." : "");
+/home/matrillo/apps/scopemux/core/src/parser/query_manager.c:414:38: note: in expansion of macro ‘SAFE_STR’
+  414 |   log_debug("Query preview: '%s%s'", SAFE_STR(preview), query_len > 40 ? "..." : "");
       |                                      ^~~~~~~~
 [ 58%] Building C object core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o
 cd /home/matrillo/apps/scopemux/build-misc/core && /usr/bin/cc -DPY_SSIZE_T_CLEAN -DSCOPEMUX_BUILDING=1 -I/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include -I/home/matrillo/apps/scopemux/vendor/tree-sitter-c/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-cpp/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-python/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-javascript/src -I/home/matrillo/apps/scopemux/vendor/tree-sitter-typescript/typescript/src -I/home/matrillo/apps/scopemux/core/include -I/home/matrillo/apps/scopemux/core/src -I/usr/include/python3.10 -I/home/matrillo/apps/scopemux/vendor/pybind11/include -I/home/matrillo/apps/scopemux/core/include/scopemux -I/home/matrillo/apps/scopemux/core/include/tree_sitter -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -fPIC -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o -MF CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o.d -o CMakeFiles/parser_core.dir/src/parser/reference_resolvers/language_resolvers.c.o -c /home/matrillo/apps/scopemux/core/src/parser/reference_resolvers/language_resolvers.c
@@ -1127,118 +1106,6 @@ make  -f core/tests/CMakeFiles/test_utilities.dir/build.make core/tests/CMakeFil
 make[3]: Entering directory '/home/matrillo/apps/scopemux/build-misc'
 [ 90%] Building C object core/tests/CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o
 cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cc  -I/home/matrillo/apps/scopemux/core/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/tests/CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o -MF CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o.d -o CMakeFiles/test_utilities.dir/src/common/test_helpers.c.o -c /home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:18:7: warning: no previous prototype for ‘read_test_file’ [-Wmissing-prototypes]
-   18 | char *read_test_file(const char *language, const char *category, const char *file_name) {
-      |       ^~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: In function ‘read_test_file’:
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:21:5: warning: implicit declaration of function ‘cr_log_error’; did you mean ‘log_error’? [-Wimplicit-function-declaration]
-   21 |     cr_log_error("read_test_file called with NULL parameter(s)");
-      |     ^~~~~~~~~~~~
-      |     log_error
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:34:23: warning: implicit declaration of function ‘strlen’ [-Wimplicit-function-declaration]
-   34 |   if (project_root && strlen(project_root) > 0) {
-      |                       ^~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:9:1: note: include ‘<string.h>’ or provide a declaration of ‘strlen’
-    8 | #include <unistd.h>
-  +++ |+#include <string.h>
-    9 | 
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:34:23: warning: incompatible implicit declaration of built-in function ‘strlen’ [-Wbuiltin-declaration-mismatch]
-   34 |   if (project_root && strlen(project_root) > 0) {
-      |                       ^~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:34:23: note: include ‘<string.h>’ or provide a declaration of ‘strlen’
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:45:9: warning: implicit declaration of function ‘cr_log_info’; did you mean ‘log_info’? [-Wimplicit-function-declaration]
-   45 |         cr_log_info("Successfully opened file using PROJECT_ROOT_DIR: %s", project_root_path);
-      |         ^~~~~~~~~~~
-      |         log_info
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:60:77: warning: implicit declaration of function ‘strerror’; did you mean ‘perror’? [-Wimplicit-function-declaration]
-   60 |     fprintf(stderr, "ERROR: Failed to get current working directory: %s\n", strerror(errno));
-      |                                                                             ^~~~~~~~
-      |                                                                             perror
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:60:71: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
-   60 |     fprintf(stderr, "ERROR: Failed to get current working directory: %s\n", strerror(errno));
-      |                                                                      ~^     ~~~~~~~~~~~~~~~
-      |                                                                       |     |
-      |                                                                       |     int
-      |                                                                       char *
-      |                                                                      %d
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:115:7: warning: incompatible implicit declaration of built-in function ‘strlen’ [-Wbuiltin-declaration-mismatch]
-  115 |   if (strlen(cwd_safe) >= sizeof(cwd_copy)) {
-      |       ^~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:115:7: note: include ‘<string.h>’ or provide a declaration of ‘strlen’
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:121:3: warning: implicit declaration of function ‘strcpy’ [-Wimplicit-function-declaration]
-  121 |   strcpy(cwd_copy, cwd_safe); // Safe copy of CWD
-      |   ^~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:121:3: note: include ‘<string.h>’ or provide a declaration of ‘strcpy’
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:121:3: warning: incompatible implicit declaration of built-in function ‘strcpy’ [-Wbuiltin-declaration-mismatch]
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:121:3: note: include ‘<string.h>’ or provide a declaration of ‘strcpy’
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:124:7: warning: implicit declaration of function ‘strstr’ [-Wimplicit-function-declaration]
-  124 |   if (strstr(cwd_copy, "/build/")) {
-      |       ^~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:124:7: note: include ‘<string.h>’ or provide a declaration of ‘strstr’
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:124:7: warning: incompatible implicit declaration of built-in function ‘strstr’ [-Wbuiltin-declaration-mismatch]
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:124:7: note: include ‘<string.h>’ or provide a declaration of ‘strstr’
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:170:61: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
-  170 |     fprintf(stderr, "ERROR: Failed to seek to end of file: %s\n", strerror(errno));
-      |                                                            ~^     ~~~~~~~~~~~~~~~
-      |                                                             |     |
-      |                                                             |     int
-      |                                                             char *
-      |                                                            %d
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:178:55: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
-  178 |     fprintf(stderr, "ERROR: Failed to get file size: %s\n", strerror(errno));
-      |                                                      ~^     ~~~~~~~~~~~~~~~
-      |                                                       |     |
-      |                                                       |     int
-      |                                                       char *
-      |                                                      %d
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:186:68: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
-  186 |     fprintf(stderr, "ERROR: Failed to seek back to start of file: %s\n", strerror(errno));
-      |                                                                   ~^     ~~~~~~~~~~~~~~~
-      |                                                                    |     |
-      |                                                                    |     int
-      |                                                                    char *
-      |                                                                   %d
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:205:49: warning: pointer/integer type mismatch in conditional expression
-  205 |             length, ferror(f) ? strerror(errno) : "Unknown error");
-      |                                                 ^
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: At top level:
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:221:10: warning: no previous prototype for ‘find_node_by_name’ [-Wmissing-prototypes]
-  221 | ASTNode *find_node_by_name(ASTNode *parent, const char *name, ASTNodeType type) {
-      |          ^~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: In function ‘find_node_by_name’:
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:227:56: warning: implicit declaration of function ‘strcmp’ [-Wimplicit-function-declaration]
-  227 |     if (child && child->name && child->type == type && strcmp(child->name, name) == 0) {
-      |                                                        ^~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:227:56: note: include ‘<string.h>’ or provide a declaration of ‘strcmp’
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: At top level:
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:235:6: warning: no previous prototype for ‘assert_node_fields’ [-Wmissing-prototypes]
-  235 | void assert_node_fields(ASTNode *node, const char *node_name) {
-      |      ^~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: In function ‘assert_node_fields’:
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:236:3: warning: implicit declaration of function ‘cr_assert_not_null’ [-Wimplicit-function-declaration]
-  236 |   cr_assert_not_null(node, "Node '%s' should not be NULL", node_name);
-      |   ^~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:238:3: warning: implicit declaration of function ‘cr_assert_str_eq’ [-Wimplicit-function-declaration]
-  238 |   cr_assert_str_eq(node->name, node_name, "Node name should be '%s'", node_name);
-      |   ^~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:241:3: warning: implicit declaration of function ‘cr_assert_gt’ [-Wimplicit-function-declaration]
-  241 |   cr_assert_gt(node->range.end.line, 0, "Node '%s' should have valid end line", node_name);
-      |   ^~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: At top level:
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:248:5: warning: no previous prototype for ‘count_nodes_by_type’ [-Wmissing-prototypes]
-  248 | int count_nodes_by_type(ASTNode *root, ASTNodeType type) {
-      |     ^~~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:260:6: warning: no previous prototype for ‘dump_ast_structure’ [-Wmissing-prototypes]
-  260 | void dump_ast_structure(ASTNode *node, int level) {
-      |      ^~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:289:10: warning: no previous prototype for ‘parse_cpp_ast’ [-Wmissing-prototypes]
-  289 | ASTNode *parse_cpp_ast(ParserContext *ctx, const char *source) {
-      |          ^~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c: In function ‘parse_cpp_ast’:
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:306:66: warning: incompatible implicit declaration of built-in function ‘strlen’ [-Wbuiltin-declaration-mismatch]
-  306 |   fprintf(stderr, "DEBUG: Parsing C++ source with length %zu\n", strlen(source));
-      |                                                                  ^~~~~~
-/home/matrillo/apps/scopemux/core/tests/src/common/test_helpers.c:306:66: note: include ‘<string.h>’ or provide a declaration of ‘strlen’
 [ 90%] Building C object core/tests/CMakeFiles/test_utilities.dir/src/common/json_validation.c.o
 cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cc  -I/home/matrillo/apps/scopemux/core/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/tests/CMakeFiles/test_utilities.dir/src/common/json_validation.c.o -MF CMakeFiles/test_utilities.dir/src/common/json_validation.c.o.d -o CMakeFiles/test_utilities.dir/src/common/json_validation.c.o -c /home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c
 In file included from /usr/include/criterion/options.h:32,
@@ -1247,31 +1114,25 @@ In file included from /usr/include/criterion/options.h:32,
                  from /usr/include/criterion/criterion.h:32,
                  from /home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:3:
 /home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c: In function ‘load_expected_json’:
-/home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/logging.h:8:26: warning: the address of ‘filepath’ will always evaluate as ‘true’ [-Waddress]
+/home/matrillo/apps/scopemux/core/include/scopemux/logging.h:8:26: warning: the address of ‘filepath’ will always evaluate as ‘true’ [-Waddress]
     8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
       |                          ^
 /home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:30:53: note: in expansion of macro ‘SAFE_STR’
    30 |   cr_log_info("Looking for expected JSON file: %s", SAFE_STR(filepath));
       |                                                     ^~~~~~~~
-/home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/logging.h:8:26: warning: the address of ‘current_dir’ will always evaluate as ‘true’ [-Waddress]
+/home/matrillo/apps/scopemux/core/include/scopemux/logging.h:8:26: warning: the address of ‘current_dir’ will always evaluate as ‘true’ [-Waddress]
     8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
       |                          ^
-/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:35:79: note: in expansion of macro ‘SAFE_STR’
-   35 |                  SAFE_STR(language), SAFE_STR(category), SAFE_STR(file_name), SAFE_STR(current_dir));
-      |                                                                               ^~~~~~~~
-/home/matrillo/apps/scopemux/core/include/../../core/include/scopemux/logging.h:8:26: warning: the address of ‘filepath’ will always evaluate as ‘true’ [-Waddress]
-    8 | #define SAFE_STR(x) ((x) ? (x) : "(null)")
-      |                          ^
-/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:39:61: note: in expansion of macro ‘SAFE_STR’
-   39 |   cr_log_info("Successfully opened expected JSON file: %s", SAFE_STR(filepath));
-      |                                                             ^~~~~~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:36:18: note: in expansion of macro ‘SAFE_STR’
+   36 |                  SAFE_STR(current_dir));
+      |                  ^~~~~~~~
 /home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c: In function ‘validate_ast_against_json’:
-/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:375:23: warning: comparison of integer expressions of different signedness: ‘int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
-  375 |         for (i = 0; i < strlen(expected_doc) && i < max_print; i++) {
-      |                       ^
-/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:382:23: warning: comparison of integer expressions of different signedness: ‘int’ and ‘size_t’ {aka ‘long unsigned int’} [-Wsign-compare]
-  382 |         for (i = 0; i < strlen(node->docstring) && i < max_print; i++) {
-      |                       ^
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:476:58: warning: passing argument 1 of ‘find_child_by_name’ discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+  476 |             ASTNode *matching_child = find_child_by_name(node, child_name);
+      |                                                          ^~~~
+/home/matrillo/apps/scopemux/core/tests/src/common/json_validation.c:183:45: note: expected ‘ASTNode *’ {aka ‘struct ASTNode *’} but argument is of type ‘const ASTNode *’ {aka ‘const struct ASTNode *’}
+  183 | static ASTNode *find_child_by_name(ASTNode *parent, const char *name) {
+      |                                    ~~~~~~~~~^~~~~~
 [ 92%] Building C object core/tests/CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o
 cd /home/matrillo/apps/scopemux/build-misc/core/tests && /usr/bin/cc  -I/home/matrillo/apps/scopemux/core/include -Wall -Wextra -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-function-declaration -Wformat-security -Wpointer-arith -Wunused-variable -std=gnu11 -DPy_BUILD_CORE_MODULE -I/usr/include/python3.10 -DPY_SSIZE_T_CLEAN -MD -MT core/tests/CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o -MF CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o.d -o CMakeFiles/test_utilities.dir/utilities/tree_sitter_test_util.c.o -c /home/matrillo/apps/scopemux/core/tests/utilities/tree_sitter_test_util.c
 [ 92%] Linking C static library libtest_utilities.a

@@ -66,6 +66,7 @@ add_library(test_utilities STATIC
     src/common/test_helpers.c
     src/common/json_validation.c
     utilities/tree_sitter_test_util.c
+    src/utilities/ast_test_utils.c
 )
 
 # Create a lightweight interface library that other tests can link to for shared
@@ -317,4 +318,4 @@ install(TARGETS run_tests DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
 message(STATUS "Copied example files and expected JSON to build directory for validation.")
 
-target_include_directories(test_utilities PRIVATE ${CRITERION_INCLUDE_DIRS}) 
+target_include_directories(test_utilities PRIVATE ${CRITERION_INCLUDE_DIRS})

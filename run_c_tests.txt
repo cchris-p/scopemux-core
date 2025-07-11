@@ -2,12 +2,12 @@
 Building shared libraries in /home/matrillo/apps/scopemux/build/tree-sitter-libs
 Converting static libraries to shared libraries...
 Created shared libraries:
--rwxrwxr-x 1 matrillo matrillo 3566904 Jul  8 07:30 libtree-sitter-cpp.so
--rwxrwxr-x 1 matrillo matrillo  627536 Jul  8 07:30 libtree-sitter-c.so
--rwxrwxr-x 1 matrillo matrillo  386944 Jul  8 07:30 libtree-sitter-javascript.so
--rwxrwxr-x 1 matrillo matrillo  484368 Jul  8 07:30 libtree-sitter-python.so
--rwxrwxr-x 1 matrillo matrillo  237264 Jul  8 07:30 libtree-sitter.so
--rwxrwxr-x 1 matrillo matrillo 1443832 Jul  8 07:30 libtree-sitter-typescript.so
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul 11 06:23 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul 11 06:23 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul 11 06:23 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul 11 06:23 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  237264 Jul 11 06:23 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul 11 06:23 libtree-sitter-typescript.so
 Done building shared libraries.
 [test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux/build/tree-sitter-libs
 DEBUG: prepare_clean_build_dir received build_dir='/home/matrillo/apps/scopemux/build-c'
@@ -51,8 +51,8 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 --   C Compiler: GNU 11.4.0
 --   C++ Compiler: GNU 11.4.0
 --   Tree-sitter core libraries built to: /home/matrillo/apps/scopemux/build-c/tree-sitter-libs
--- Configuring done (8.5s)
--- Generating done (0.3s)
+-- Configuring done (8.6s)
+-- Generating done (0.2s)
 -- Build files have been written to: /home/matrillo/apps/scopemux/build-c
 [run_c_tests.sh] Building C example AST tests executable...
 [test_runner_lib] Building C Example AST Tests in /home/matrillo/apps/scopemux/build-c...
@@ -60,108 +60,150 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [test_runner_lib] Processing c/basic_syntax tests...
 [test_runner_lib] Found 2 test files
 [test_runner_lib] Testing: core/tests/examples/c/basic_syntax/hello_world.c
-[c Example Test: hello_world.c] TESTING: Starting test for core/tests/examples/c/basic_syntax/hello_world.c
-[c Example Test: hello_world.c] TESTING: Starting test for core/tests/examples/c/basic_syntax/hello_world.c
-[c Example Test: hello_world.c] TESTING: Converting relative path to absolute: /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c
-[c Example Test: hello_world.c] TESTING: Converting relative path to absolute: /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c.expected.json
-[c Example Test: hello_world.c] TESTING: Reading source file /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c...
-[c Example Test: hello_world.c] TESTING: Attempting to open file: /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c
-[c Example Test: hello_world.c] TESTING: fopen failed for /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c: No such file or directory
-[c Example Test: hello_world.c] TESTING: Attempting alternative path /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c...
-[c Example Test: hello_world.c] TESTING: Attempting to open file: /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c
-[c Example Test: hello_world.c] TESTING: Successfully read from alternative path /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c
+[DEBUG] Directory listing before test execution:
+total 6808
+-rwxrwxr-x  1 matrillo matrillo 6840856 Jul 11 06:23 c_example_ast_tests
+drwxrwxr-x 19 matrillo matrillo    4096 Jul 11 06:23 CMakeFiles
+-rw-rw-r--  1 matrillo matrillo    2862 Jul 11 06:23 cmake_install.cmake
+-rw-rw-r--  1 matrillo matrillo   66330 Jul 11 06:23 libtest_utilities.a
+-rw-rw-r--  1 matrillo matrillo   47688 Jul 11 06:23 Makefile
+[c Example Test: hello_world.c] TESTING: Reading source file /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c...
 [c Example Test: hello_world.c] TESTING: Successfully read source file (length: 393 bytes)
 [c Example Test: hello_world.c] TESTING: Initializing parser context...
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [INFO] Registered language-specific compliance callbacks
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [INFO] Successfully initialized parser context at 0x5642b26e08d0
-[c Example Test: hello_world.c] TESTING: Parser context initialized, calling parse_string...
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [INFO] Clearing parser context at 0x5642b26e08d0
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [INFO] Successfully cleared parser context at 0x5642b26e08d0
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] Registered C language compliance callbacks
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] Registered language-specific compliance callbacks
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] Successfully initialized parser context at 0x55567ef09cb0
+[c Example Test: hello_world.c] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x55567ef09cb0, content=0x55567ef0acc0, content_length=393, filename=hello_world, language=1
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x55567ef09cb0
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x55567ef09cb0
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[c Example Test: hello_world.c] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x55567ef09cb0, language=1
+[c Example Test: hello_world.c] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x55567ef09cb0, language=1
 [c Example Test: hello_world.c] 
 [c Example Test: hello_world.c] ***** PARSER INITIALIZATION DIAGNOSTIC *****
-[c Example Test: hello_world.c] Test executable pid: 95878
-[c Example Test: hello_world.c] Loading Tree-sitter shared libraries from: /home/matrillo/apps/scopemux/build/tree-sitter-libs
-[c Example Test: hello_world.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-c.so successfully
-[c Example Test: hello_world.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-cpp.so successfully
-[c Example Test: hello_world.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-python.so successfully
-[c Example Test: hello_world.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-javascript.so successfully
-[c Example Test: hello_world.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-typescript.so successfully
+[c Example Test: hello_world.c] Test executable pid: 953207
+[c Example Test: hello_world.c] Using statically linked Tree-sitter libraries
 [c Example Test: hello_world.c] SYMBOL RESOLUTION CHECK:
-[c Example Test: hello_world.c]   dlsym(tree_sitter_c): 0x7f7110acf8aa
-[c Example Test: hello_world.c]   dlsym(tree_sitter_cpp): 0x7f7110776495
-[c Example Test: hello_world.c]   dlsym(tree_sitter_python): 0x7f71106edb92
-[c Example Test: hello_world.c]   dlsym(tree_sitter_javascript): 0x7f711068fb28
-[c Example Test: hello_world.c]   dlsym(tree_sitter_typescript): 0x7f711052fabe
-[c Example Test: hello_world.c] 
-[c Example Test: hello_world.c] ===== TS_INIT_PARSER: LANGUAGE FUNCTION DIAGNOSTICS =====
-[c Example Test: hello_world.c] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
-[c Example Test: hello_world.c]   tree_sitter_c function address: 0x5642a92d3142
-[c Example Test: hello_world.c]   tree_sitter_cpp function address: 0x5642a92e942f
-[c Example Test: hello_world.c]   tree_sitter_python function address: 0x5642a92ef1ef
-[c Example Test: hello_world.c]   tree_sitter_javascript function address: 0x5642a92f6f12
-[c Example Test: hello_world.c]   tree_sitter_typescript function address: 0x5642a92fe2d7
-[c Example Test: hello_world.c] 
-[c Example Test: hello_world.c] ==== TREE-SITTER LANGUAGE FUNCTION DIAGNOSTICS ====
-[c Example Test: hello_world.c] Function pointers from language libraries:
-[c Example Test: hello_world.c]   C function pointer:          0x5642a92d3142
-[c Example Test: hello_world.c]   C++ function pointer:        0x5642a92e942f
-[c Example Test: hello_world.c]   Python function pointer:     0x5642a92ef1ef
-[c Example Test: hello_world.c]   JavaScript function pointer: 0x5642a92f6f12
-[c Example Test: hello_world.c]   TypeScript function pointer: 0x5642a92fe2d7
-[c Example Test: hello_world.c] 
-[c Example Test: hello_world.c] Attempting to call appropriate language function...
-[c Example Test: hello_world.c]   Using tree_sitter_c()
-[c Example Test: hello_world.c]   tree_sitter_c() returned: 0x5642a98e8240
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] Successfully retrieved language object for language type 1, address: 0x5642a98e8240
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] Calling ts_parser_set_language with parser=0x5642b276ec70, language=0x5642a98e8240
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] ts_parser_set_language succeeded
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] Verification: ts_parser_language() returned: 0x5642a98e8240
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] Language verification successful - pointer match confirmed
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] ===================================================================
+[c Example Test: hello_world.c]   dlsym(tree_sitter_c): 0x55565ec293b2
+[c Example Test: hello_world.c]   dlsym(tree_sitter_cpp): 0x55565ec3f69f
+[c Example Test: hello_world.c]   dlsym(tree_sitter_python): 0x55565ec4545f
+[c Example Test: hello_world.c]   dlsym(tree_sitter_javascript): 0x55565ec4d182
+[c Example Test: hello_world.c]   dlsym(tree_sitter_typescript): 0x55565ec54547
+[c Example Test: hello_world.c] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[c Example Test: hello_world.c] [DIAGNOSTIC] Language name: C
+[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter lookup result: 0x55565f244100
+[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter language_name: C
+[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x55565ec293b2
+[c Example Test: hello_world.c] [DIAGNOSTIC] Result of get_ts_language(): 0x55565f240240
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] Successfully retrieved language object for language type 1, address: 0x55565f240240
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] Calling ts_parser_set_language with parser=0x55567ef09d50, language=0x55565f240240
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] ts_parser_set_language succeeded
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] Verification: ts_parser_language() returned: 0x55565f240240
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] Language verification successful - pointer match confirmed
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] ===================================================================
 [c Example Test: hello_world.c] DEBUG: Using queries directory: /home/matrillo/apps/scopemux/queries/c
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] Loading hardcoded node type mappings (source of truth)...
-[c Example Test: hello_world.c] [scopemux] INFO: Using hardcoded node type mappings (ignoring path: NULL)
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] Loading hardcoded node type mappings (source of truth)...
+[c Example Test: hello_world.c] [scopemux] INFO: Loading hardcoded node type mappings
 [c Example Test: hello_world.c] [scopemux] Loaded 14 hardcoded node type mappings
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] ts_init_parser returned: TRUE
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] After initialization: Tree-sitter parser=0x5642b276ec70, language=0x5642a98e8240
-[c Example Test: hello_world.c] [2025-07-08 07:31:11] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [INFO] AST query processing complete: 2 successful, 5 failed, total AST nodes: 21
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [WARNING] Language-specific schema compliance callback for language 1 failed on node ROOT
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [WARNING] Language-specific schema compliance callback for language 1 failed on node identifier
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [WARNING] Language-specific schema compliance callback for language 1 failed on node parameter_list
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [WARNING] Language-specific schema compliance callback for language 1 failed on node compound_statement
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [WARNING] Language-specific schema compliance callback for language 1 failed on node primitive_type
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [WARNING] Language-specific schema compliance callback for language 1 failed on node identifier
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [WARNING] Language-specific schema compliance callback for language 1 failed on node parameter_list
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [WARNING] Language-specific schema compliance callback for language 1 failed on node compound_statement
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] ts_init_parser returned: TRUE
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] After initialization: Tree-sitter parser=0x55567ef09d50, language=0x55565f240240
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [create_ast_root_node] ctx->filename: 'hello_world' (basename: 'hello_world')
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [create_ast_root_node] Created root node with name: 'hello_world'
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [create_ast_root_node] Set qualified_name: 'hello_world'
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
+[c Example Test: hello_world.c]  * @file hello_world.c
+[c Example Test: hello_world.c]  * @brief A simple "Hello, World!" program in C
+[c Example Test: hello_world.c]  *
+[c Example Test: hello_world.c]  * This example demons...'
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Child 0: type='comment', named=1
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Child 2: type='comment', named=1
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Child 3: type='function_definition', named=1
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/classes.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/classes.scm (error: No such file or directory)
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/structs.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/structs.scm (error: No such file or directory)
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/functions.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/functions.scm (error: No such file or directory)
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ee92550 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:448 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/methods.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/methods.scm (error: No such file or directory)
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/variables.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/variables.scm (error: No such file or directory)
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/imports.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/imports.scm (error: No such file or directory)
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm (error: No such file or directory)
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'docstrings' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] AST query processing complete: 1 successful, 6 failed, total AST nodes: 1
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] AST query processing summary: 1 successful, 6 failed, total AST nodes: 1
 [c Example Test: hello_world.c] TESTING: Source code parsed successfully
-[c Example Test: hello_world.c] TESTING: Getting AST root node...
-[c Example Test: hello_world.c] TESTING: AST root node exists (type: 1, num_children: 0)
-[c Example Test: hello_world.c] TESTING: Loading expected JSON from /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c.expected.json...
-[c Example Test: hello_world.c] TESTING: Attempting to open file: /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c.expected.json
-[c Example Test: hello_world.c] TESTING: fopen failed for /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c.expected.json: No such file or directory
-[c Example Test: hello_world.c] TESTING: Trying JSON path based on source file: /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c.expected.json
-[c Example Test: hello_world.c] TESTING: Attempting to open file: /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c.expected.json
-[c Example Test: hello_world.c] TESTING: Successfully loaded expected JSON
-[c Example Test: hello_world.c] TESTING: Extracting AST field from expected JSON...
-[c Example Test: hello_world.c] TESTING: Found 'ast' field in expected JSON
-[c Example Test: hello_world.c] TESTING: Starting AST validation against expected JSON...
-[c Example Test: hello_world.c] TESTING: Validating AST against expected JSON...
-[c Example Test: hello_world.c] [ERR ] hello_world.c: 'signature' field is not a string
-[c Example Test: hello_world.c] [ERR ] hello_world.c: 'docstring' field is not a string
-[c Example Test: hello_world.c] TESTING: JSON Validation result: FAIL (bypassed for now)
-[c Example Test: hello_world.c] TESTING: Overall test result: PASS
-[c Example Test: hello_world.c] TESTING: Freeing resources...
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [INFO] Freeing parser context at 0x5642b26e08d0
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [INFO] Clearing parser context at 0x5642b26e08d0
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [INFO] AST node cleanup summary: freed 2 of 2 nodes, errors: NO
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [INFO] Successfully cleared parser context at 0x5642b26e08d0
+[c Example Test: hello_world.c] TESTING: AST root node exists (type: 1, num_children: 1)
+[c Example Test: hello_world.c] [C Test: hello_world] Loading expected JSON from /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.expected.json...
+[c Example Test: hello_world.c] TESTING: Failed to load or parse expected JSON
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [LIFECYCLE] Entering parser_free for ctx=0x55567ef09cb0
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x55567ef09cb0
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef0a740 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:118 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef0a8e0 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:120 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef0aca0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:136 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef0d9c0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:312 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef0db60 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:136 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567f016970 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:142 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef0db80 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:148 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567f01c8d0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:154 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567f01a120 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:172 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef17590 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:136 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567f0185e0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:142 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ee92570 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:148 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef17300 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:154 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567f018fa0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:172 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567f01eb00 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:312 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567f01f360 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:294 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef0da90 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:312 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] AST node cleanup summary: freed 2 of 2 nodes, errors: NO
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ee9ca50 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:154 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x55567ef09cb0
 [c Example Test: hello_world.c] [scopemux] Loading hardcoded node type mappings:
 [c Example Test: hello_world.c]   functions -> NODE_FUNCTION
 [c Example Test: hello_world.c]   classes -> NODE_CLASS
@@ -177,149 +219,194 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [c Example Test: hello_world.c]   docstrings -> NODE_DOCSTRING
 [c Example Test: hello_world.c]   interfaces -> NODE_INTERFACE
 [c Example Test: hello_world.c]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] ENTER: manager=0x5642b2773d30
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x5642b2726190
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x5642b2773dd0 (language_count=6)
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x5642b2773e50 (query_count=0)
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5642b2773e50
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x5642b2773f60 (query_count=7)
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5642b2779660: 'classes'
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5642b2778be0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5642b2779d10: 'structs'
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5642b277bda0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5642b2778bc0: 'functions'
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5642b2888590
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5642b28816f0: 'methods'
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5642b2784bf0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5642b287a3c0: 'variables'
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5642b279f3a0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5642b287f400: 'imports'
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5642b27a9aa0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5642b27aa9b0: 'docstrings'
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5642b27a71c0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5642b2773f60
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x5642b2774070 (query_count=0)
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5642b2774070
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x5642b2774180 (query_count=0)
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5642b2774180
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x5642b2774290 (query_count=0)
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5642b2774290
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x5642b27743a0 (query_count=0)
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5642b27743a0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x5642b2773dd0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x5642b2773d70
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x5642b2773db0
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x5642b2773e10
-[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x5642b2773d30
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] ENTER: manager=0x55567ef0ab00
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x55567eeb9190
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x55567ef0aba0 (language_count=6)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x55567ef0be70 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55567ef0be70
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x55567ef0bf80 (query_count=7)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x55567ef10630: 'classes'
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x55567ef0fbb0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x55567ee8d5b0: 'structs'
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x55567ef12b30
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x55567ef11eb0: 'functions'
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x55567f01f160
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x55567ee9e2e0: 'methods'
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x55567ef1b7a0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x55567f01eae0: 'variables'
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x55567ef1c410
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x55567ef1ac80: 'imports'
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x55567ef192a0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query name at 0x55567f0137b0: 'docstrings'
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x55567ef374e0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55567ef0bf80
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x55567ef0c090 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55567ef0c090
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x55567ef0c1a0 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55567ef0c1a0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x55567ef0c2b0 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55567ef0c2b0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x55567ef0c3c0 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55567ef0c3c0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x55567ef0aba0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x55567ef0ab40
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x55567ef0ab80
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x55567ef0abe0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x55567ef0ab00
 [c Example Test: hello_world.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
-[c Example Test: hello_world.c] [2025-07-08 07:31:12] [INFO] Parser context cleanup complete
-[c Example Test: hello_world.c] TESTING: Reporting final validation result...
-[c Example Test: hello_world.c] TESTING: Test completed successfully for /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/hello_world.c
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x55567ef09cb0 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:207 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-11 06:23:33] [INFO] [LIFECYCLE] Exiting parser_free for ctx=0x55567ef09cb0
+[c Example Test: hello_world.c] [----] ../../../core/tests/src/c/c_example_ast_tests.c:45: Assertion Failed
+[c Example Test: hello_world.c] [----]   
+[c Example Test: hello_world.c] [----]   AST test failed for basic_syntax/hello_world.c
+[c Example Test: hello_world.c] [----]   
+[c Example Test: hello_world.c] [FAIL] c_examples::all_examples: (0.29s)
  FAIL: c Example Test: hello_world.c (3/)
 [test_runner_lib] Testing: core/tests/examples/c/basic_syntax/variables_loops_conditions.c
-[c Example Test: variables_loops_conditions.c] TESTING: Starting test for core/tests/examples/c/basic_syntax/variables_loops_conditions.c
-[c Example Test: variables_loops_conditions.c] TESTING: Starting test for core/tests/examples/c/basic_syntax/variables_loops_conditions.c
-[c Example Test: variables_loops_conditions.c] TESTING: Converting relative path to absolute: /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c
-[c Example Test: variables_loops_conditions.c] TESTING: Converting relative path to absolute: /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c.expected.json
-[c Example Test: variables_loops_conditions.c] TESTING: Reading source file /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c...
-[c Example Test: variables_loops_conditions.c] TESTING: Attempting to open file: /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c
-[c Example Test: variables_loops_conditions.c] TESTING: fopen failed for /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c: No such file or directory
-[c Example Test: variables_loops_conditions.c] TESTING: Attempting alternative path /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/variables_loops_conditions.c...
-[c Example Test: variables_loops_conditions.c] TESTING: Attempting to open file: /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/variables_loops_conditions.c
-[c Example Test: variables_loops_conditions.c] TESTING: Successfully read from alternative path /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/variables_loops_conditions.c
-[c Example Test: variables_loops_conditions.c] TESTING: Successfully read source file (length: 1573 bytes)
+[DEBUG] Directory listing before test execution:
+total 6808
+-rwxrwxr-x  1 matrillo matrillo 6840856 Jul 11 06:23 c_example_ast_tests
+drwxrwxr-x 19 matrillo matrillo    4096 Jul 11 06:23 CMakeFiles
+-rw-rw-r--  1 matrillo matrillo    2862 Jul 11 06:23 cmake_install.cmake
+-rw-rw-r--  1 matrillo matrillo   66330 Jul 11 06:23 libtest_utilities.a
+-rw-rw-r--  1 matrillo matrillo   47688 Jul 11 06:23 Makefile
+[c Example Test: variables_loops_conditions.c] TESTING: Reading source file /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c...
+[c Example Test: variables_loops_conditions.c] TESTING: Successfully read source file (length: 393 bytes)
 [c Example Test: variables_loops_conditions.c] TESTING: Initializing parser context...
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] Registered language-specific compliance callbacks
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] Successfully initialized parser context at 0x5630b55e18d0
-[c Example Test: variables_loops_conditions.c] TESTING: Parser context initialized, calling parse_string...
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] Clearing parser context at 0x5630b55e18d0
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] Successfully cleared parser context at 0x5630b55e18d0
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] Registered C language compliance callbacks
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] Registered language-specific compliance callbacks
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] Successfully initialized parser context at 0x558afffd6cb0
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x558afffd6cb0, content=0x558afffd7cc0, content_length=393, filename=hello_world, language=1
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x558afffd6cb0
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x558afffd6cb0
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x558afffd6cb0, language=1
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x558afffd6cb0, language=1
 [c Example Test: variables_loops_conditions.c] 
 [c Example Test: variables_loops_conditions.c] ***** PARSER INITIALIZATION DIAGNOSTIC *****
-[c Example Test: variables_loops_conditions.c] Test executable pid: 95894
-[c Example Test: variables_loops_conditions.c] Loading Tree-sitter shared libraries from: /home/matrillo/apps/scopemux/build/tree-sitter-libs
-[c Example Test: variables_loops_conditions.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-c.so successfully
-[c Example Test: variables_loops_conditions.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-cpp.so successfully
-[c Example Test: variables_loops_conditions.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-python.so successfully
-[c Example Test: variables_loops_conditions.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-javascript.so successfully
-[c Example Test: variables_loops_conditions.c]   Loaded /home/matrillo/apps/scopemux/build/tree-sitter-libs/libtree-sitter-typescript.so successfully
+[c Example Test: variables_loops_conditions.c] Test executable pid: 953224
+[c Example Test: variables_loops_conditions.c] Using statically linked Tree-sitter libraries
 [c Example Test: variables_loops_conditions.c] SYMBOL RESOLUTION CHECK:
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_c): 0x7f8cf94fd8aa
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_cpp): 0x7f8cf91a4495
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_python): 0x7f8cf911bb92
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_javascript): 0x7f8cf90bdb28
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_typescript): 0x7f8cf8f5dabe
-[c Example Test: variables_loops_conditions.c] 
-[c Example Test: variables_loops_conditions.c] ===== TS_INIT_PARSER: LANGUAGE FUNCTION DIAGNOSTICS =====
-[c Example Test: variables_loops_conditions.c] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
-[c Example Test: variables_loops_conditions.c]   tree_sitter_c function address: 0x56309f4f1142
-[c Example Test: variables_loops_conditions.c]   tree_sitter_cpp function address: 0x56309f50742f
-[c Example Test: variables_loops_conditions.c]   tree_sitter_python function address: 0x56309f50d1ef
-[c Example Test: variables_loops_conditions.c]   tree_sitter_javascript function address: 0x56309f514f12
-[c Example Test: variables_loops_conditions.c]   tree_sitter_typescript function address: 0x56309f51c2d7
-[c Example Test: variables_loops_conditions.c] 
-[c Example Test: variables_loops_conditions.c] ==== TREE-SITTER LANGUAGE FUNCTION DIAGNOSTICS ====
-[c Example Test: variables_loops_conditions.c] Function pointers from language libraries:
-[c Example Test: variables_loops_conditions.c]   C function pointer:          0x56309f4f1142
-[c Example Test: variables_loops_conditions.c]   C++ function pointer:        0x56309f50742f
-[c Example Test: variables_loops_conditions.c]   Python function pointer:     0x56309f50d1ef
-[c Example Test: variables_loops_conditions.c]   JavaScript function pointer: 0x56309f514f12
-[c Example Test: variables_loops_conditions.c]   TypeScript function pointer: 0x56309f51c2d7
-[c Example Test: variables_loops_conditions.c] 
-[c Example Test: variables_loops_conditions.c] Attempting to call appropriate language function...
-[c Example Test: variables_loops_conditions.c]   Using tree_sitter_c()
-[c Example Test: variables_loops_conditions.c]   tree_sitter_c() returned: 0x56309fb06240
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] Successfully retrieved language object for language type 1, address: 0x56309fb06240
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] Calling ts_parser_set_language with parser=0x5630b566fc70, language=0x56309fb06240
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] ts_parser_set_language succeeded
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] Verification: ts_parser_language() returned: 0x56309fb06240
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] Language verification successful - pointer match confirmed
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] ===================================================================
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_c): 0x558ac228b3b2
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_cpp): 0x558ac22a169f
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_python): 0x558ac22a745f
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_javascript): 0x558ac22af182
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_typescript): 0x558ac22b6547
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Language name: C
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter lookup result: 0x558ac28a6100
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter language_name: C
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x558ac228b3b2
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Result of get_ts_language(): 0x558ac28a2240
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] Successfully retrieved language object for language type 1, address: 0x558ac28a2240
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] Calling ts_parser_set_language with parser=0x558afffd6d50, language=0x558ac28a2240
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] ts_parser_set_language succeeded
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] Verification: ts_parser_language() returned: 0x558ac28a2240
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] Language verification successful - pointer match confirmed
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] ===================================================================
 [c Example Test: variables_loops_conditions.c] DEBUG: Using queries directory: /home/matrillo/apps/scopemux/queries/c
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] Loading hardcoded node type mappings (source of truth)...
-[c Example Test: variables_loops_conditions.c] [scopemux] INFO: Using hardcoded node type mappings (ignoring path: NULL)
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] Loading hardcoded node type mappings (source of truth)...
+[c Example Test: variables_loops_conditions.c] [scopemux] INFO: Loading hardcoded node type mappings
 [c Example Test: variables_loops_conditions.c] [scopemux] Loaded 14 hardcoded node type mappings
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] ts_init_parser returned: TRUE
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] After initialization: Tree-sitter parser=0x5630b566fc70, language=0x56309fb06240
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] AST query processing complete: 3 successful, 4 failed, total AST nodes: 108
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] ts_init_parser returned: TRUE
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] After initialization: Tree-sitter parser=0x558afffd6d50, language=0x558ac28a2240
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] [create_ast_root_node] ctx->filename: 'hello_world' (basename: 'hello_world')
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] [create_ast_root_node] Created root node with name: 'hello_world'
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [INFO] [create_ast_root_node] Set qualified_name: 'hello_world'
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
+[c Example Test: variables_loops_conditions.c]  * @file hello_world.c
+[c Example Test: variables_loops_conditions.c]  * @brief A simple "Hello, World!" program in C
+[c Example Test: variables_loops_conditions.c]  *
+[c Example Test: variables_loops_conditions.c]  * This example demons...'
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Child 0: type='comment', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Child 2: type='comment', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Child 3: type='function_definition', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/classes.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/classes.scm (error: No such file or directory)
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/structs.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/structs.scm (error: No such file or directory)
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/functions.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/functions.scm (error: No such file or directory)
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [WARNING] Attempt to free untracked memory at 0x558afff5f550 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:448 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/methods.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/methods.scm (error: No such file or directory)
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:33] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/variables.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/variables.scm (error: No such file or directory)
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [ERROR] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [ERROR] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/imports.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/imports.scm (error: No such file or directory)
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm (error: No such file or directory)
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [ERROR] [QUERY_DEBUG] Query 'docstrings' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [INFO] AST query processing complete: 1 successful, 6 failed, total AST nodes: 1
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [ERROR] [QUERY_DEBUG] AST query processing summary: 1 successful, 6 failed, total AST nodes: 1
 [c Example Test: variables_loops_conditions.c] TESTING: Source code parsed successfully
-[c Example Test: variables_loops_conditions.c] TESTING: Getting AST root node...
-[c Example Test: variables_loops_conditions.c] TESTING: AST root node exists (type: 1, num_children: 13)
-[c Example Test: variables_loops_conditions.c] TESTING: Loading expected JSON from /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c.expected.json...
-[c Example Test: variables_loops_conditions.c] TESTING: Attempting to open file: /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c.expected.json
-[c Example Test: variables_loops_conditions.c] TESTING: fopen failed for /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c.expected.json: No such file or directory
-[c Example Test: variables_loops_conditions.c] TESTING: Trying JSON path based on source file: /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/variables_loops_conditions.c.expected.json
-[c Example Test: variables_loops_conditions.c] TESTING: Attempting to open file: /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/variables_loops_conditions.c.expected.json
-[c Example Test: variables_loops_conditions.c] TESTING: Successfully loaded expected JSON
-[c Example Test: variables_loops_conditions.c] TESTING: Extracting AST field from expected JSON...
-[c Example Test: variables_loops_conditions.c] TESTING: Found 'ast' field in expected JSON
-[c Example Test: variables_loops_conditions.c] TESTING: Starting AST validation against expected JSON...
-[c Example Test: variables_loops_conditions.c] TESTING: Validating AST against expected JSON...
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c: Name mismatch - expected 'variables_loops_conditions.c', got ''
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c: Qualified name mismatch - expected 'variables_loops_conditions.c', got ''
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.[0]: Type mismatch - expected 'DOCSTRING', got 'COMMENT'
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.[3]: Type mismatch - expected 'COMMENT', got 'DOCSTRING'
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.[4]: Type mismatch - expected 'DOCSTRING', got 'COMMENT'
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.[11]: Type mismatch - expected 'COMMENT', got 'FUNCTION'
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.[11]: Name mismatch - expected '', got 'main'
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.[11]: Qualified name mismatch - expected '', got 'main'
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.main[12]: Type mismatch - expected 'FUNCTION', got 'COMMENT'
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.main[12]: Name mismatch - expected 'main', got ''
-[c Example Test: variables_loops_conditions.c] [ERR ] variables_loops_conditions.c.main[12]: Qualified name mismatch - expected 'main', got ''
-[c Example Test: variables_loops_conditions.c] TESTING: JSON Validation result: FAIL (bypassed for now)
-[c Example Test: variables_loops_conditions.c] TESTING: Overall test result: PASS
-[c Example Test: variables_loops_conditions.c] TESTING: Freeing resources...
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] Freeing parser context at 0x5630b55e18d0
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] Clearing parser context at 0x5630b55e18d0
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] AST node cleanup summary: freed 2 of 2 nodes, errors: NO
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] Successfully cleared parser context at 0x5630b55e18d0
+[c Example Test: variables_loops_conditions.c] TESTING: AST root node exists (type: 1, num_children: 1)
+[c Example Test: variables_loops_conditions.c] [C Test: hello_world] Loading expected JSON from /home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.expected.json...
+[c Example Test: variables_loops_conditions.c] TESTING: Failed to load or parse expected JSON
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [INFO] [LIFECYCLE] Entering parser_free for ctx=0x558afffd6cb0
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x558afffd6cb0
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffd7740 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:118 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffd78e0 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:120 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffd7ca0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:136 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffda9c0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:312 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffdab60 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:136 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558b000e3970 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:142 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffdab80 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:148 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558b000e98d0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:154 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558b000e7120 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:172 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffe4590 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:136 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558b000e55e0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:142 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afff5f570 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:148 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffe4300 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:154 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558b000e5fa0 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:172 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558b000ebb00 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:312 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558b000ec360 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:294 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffdaa90 in /home/matrillo/apps/scopemux/core/src/parser/ast_node.c:312 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [INFO] AST node cleanup summary: freed 2 of 2 nodes, errors: NO
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afff69a50 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:154 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x558afffd6cb0
 [c Example Test: variables_loops_conditions.c] [scopemux] Loading hardcoded node type mappings:
 [c Example Test: variables_loops_conditions.c]   functions -> NODE_FUNCTION
 [c Example Test: variables_loops_conditions.c]   classes -> NODE_CLASS
@@ -335,44 +422,48 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [c Example Test: variables_loops_conditions.c]   docstrings -> NODE_DOCSTRING
 [c Example Test: variables_loops_conditions.c]   interfaces -> NODE_INTERFACE
 [c Example Test: variables_loops_conditions.c]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] ENTER: manager=0x5630b5675660
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x5630b5627190
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x5630b5675700 (language_count=6)
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x5630b5675780 (query_count=0)
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5630b5675780
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x5630b5675890 (query_count=7)
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5630b56919d0: 'classes'
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5630b568eac0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5630b5694680: 'structs'
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5630b5694090
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5630b579fc50: 'functions'
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5630b57a09e0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5630b57a0700: 'methods'
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5630b57a9a00
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5630b579a7e0: 'variables'
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5630b57a7da0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5630b57c8af0: 'imports'
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5630b57cfb00
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x5630b57ca290: 'docstrings'
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x5630b57919a0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5630b5675890
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x5630b56759a0 (query_count=0)
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5630b56759a0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x5630b5675ab0 (query_count=0)
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5630b5675ab0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x5630b5675bc0 (query_count=0)
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5630b5675bc0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x5630b5675cd0 (query_count=0)
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5630b5675cd0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x5630b5675700
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x5630b56756a0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x5630b56756e0
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x5630b5675740
-[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x5630b5675660
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] ENTER: manager=0x558afffd7b00
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x558afff86190
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x558afffd7ba0 (language_count=6)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x558afffd8e70 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558afffd8e70
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x558afffd8f80 (query_count=7)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x558afffdd630: 'classes'
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x558afffdcbb0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x558afff5a5b0: 'structs'
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x558afffdfb30
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x558afffdeeb0: 'functions'
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x558b000ec160
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x558afff6b2e0: 'methods'
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x558afffe87a0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x558b000ebae0: 'variables'
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x558afffe9410
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x558afffe7c80: 'imports'
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x558afffe62a0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query name at 0x558b000e07b0: 'docstrings'
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing TSQuery at 0x558b000044e0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558afffd8f80
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x558afffd9090 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558afffd9090
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x558afffd91a0 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558afffd91a0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x558afffd92b0 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558afffd92b0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x558afffd93c0 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558afffd93c0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x558afffd7ba0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x558afffd7b40
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x558afffd7b80
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x558afffd7be0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x558afffd7b00
 [c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
-[c Example Test: variables_loops_conditions.c] [2025-07-08 07:31:12] [INFO] Parser context cleanup complete
-[c Example Test: variables_loops_conditions.c] TESTING: Reporting final validation result...
-[c Example Test: variables_loops_conditions.c] TESTING: Test completed successfully for /home/matrillo/apps/scopemux/core/tests/core/tests/examples/c/basic_syntax/variables_loops_conditions.c
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [WARNING] Attempt to free untracked memory at 0x558afffd6cb0 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:207 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-11 06:23:34] [INFO] [LIFECYCLE] Exiting parser_free for ctx=0x558afffd6cb0
+[c Example Test: variables_loops_conditions.c] [----] ../../../core/tests/src/c/c_example_ast_tests.c:45: Assertion Failed
+[c Example Test: variables_loops_conditions.c] [----]   
+[c Example Test: variables_loops_conditions.c] [----]   AST test failed for basic_syntax/hello_world.c
+[c Example Test: variables_loops_conditions.c] [----]   
+[c Example Test: variables_loops_conditions.c] [FAIL] c_examples::all_examples: (0.29s)
  FAIL: c Example Test: variables_loops_conditions.c (3/)
 [test_runner_lib] 2 tests failed in directory: core/tests/examples/c/basic_syntax
 [1;31m FAIL: c/basic_syntax (0/2 tests passed, 2 problems in directory)[0m

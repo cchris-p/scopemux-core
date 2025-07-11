@@ -182,7 +182,7 @@ if [ "${#C_CATEGORIES[@]}" -gt 0 ]; then
         echo "[run_c_tests.sh] ERROR: Failed to build c_example_ast_tests, skipping example tests."
         ((TEST_FAILURES++))
     else
-        process_language_tests c C_CATEGORIES "$C_EXAMPLE_AST_EXECUTABLE_RELPATH"
+        process_language_tests c C_CATEGORIES "${CMAKE_BUILD_DIR}/core/tests/c_example_ast_tests"
     fi
 fi
 

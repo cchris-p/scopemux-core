@@ -210,6 +210,8 @@ process_language_tests() {
 
                     local test_log="$TMP_DIR/$(basename "${test_file}").log"
                     pushd "$(dirname "${example_executable_path}")" >/dev/null
+                    echo "[DEBUG] Directory listing before test execution:"
+                    ls -l
                     local executable="./$(basename "${example_executable_path}")"
                     local test_result=1
                     local raw_log="${test_log}.raw"
