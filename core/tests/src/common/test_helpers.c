@@ -1,11 +1,16 @@
 #include "config/node_type_mapping_loader.h"
 #include "scopemux/ast.h"
 #include "scopemux/logging.h"
+#include <criterion/criterion.h>
+#include <criterion/logging.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 // Centralized logging toggle for all test executables
 int logging_enabled = 0;
-#include <errno.h>
-#include <unistd.h>
 
 /*
  * CRITICAL BUILD INTEGRATION NOTE:
@@ -13,6 +18,14 @@ int logging_enabled = 0;
  * It must only be linked via the test_utilities static library.
  * Direct inclusion will cause duplicate symbols and Criterion runtime errors.
  */
+
+// Function prototypes for non-static functions
+char *read_test_file(const char *language, const char *category, const char *file_name);
+ASTNode *find_node_by_name(ASTNode *parent, const char *name, ASTNodeType type);
+void assert_node_fields(ASTNode *node, const char *node_name);
+int count_nodes_by_type(ASTNode *root, ASTNodeType type);
+void dump_ast_structure(ASTNode *node, int level);
+ASTNode *parse_cpp_ast(ParserContext *ctx, const char *source);
 
 /* Helper function to read test files with robust error handling */
 char *read_test_file(const char *language, const char *category, const char *file_name) {

@@ -6,6 +6,7 @@
  * levels (debug, info, warning, error).
  */
 
+#include "../../core/include/scopemux/logging.h"
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -14,10 +15,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-// Define log levels
-typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR } LogLevel;
-
 // Current log level
 static LogLevel current_log_level = LOG_INFO;
 

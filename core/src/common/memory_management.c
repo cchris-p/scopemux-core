@@ -6,6 +6,7 @@
  * allocation, deallocation, and memory pool management.
  */
 
+#include "../../core/include/scopemux/memory_management.h"
 #include <stdlib.h>
 #include <string.h>
 

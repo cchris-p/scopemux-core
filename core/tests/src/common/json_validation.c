@@ -37,7 +37,7 @@ JsonValue *load_expected_json(const char *language, const char *category, const 
     return NULL;
   }
 
-  cr_log_info("Successfully opened expected JSON file: %s", SAFE_STR(filepath));
+  cr_log_info("Successfully opened expected JSON file: %s", filepath);
 
   // Get file size
   fseek(f, 0, SEEK_END);
@@ -212,7 +212,7 @@ static JsonValue *find_json_field(JsonValue *obj, const char *field_name) {
   return NULL;
 }
 
-bool validate_ast_against_json(ASTNode *node, JsonValue *expected) {
+bool validate_ast_against_json(const ASTNode *node, JsonValue *expected) {
   // Ensure we have a valid path string to use in error messages
   const char *node_path = node ? node->file_path : NULL;
   const char *safe_path = node_path ? node_path : "<unknown>";
@@ -372,18 +372,18 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected) {
 
         // Print first 50 chars in both strings for comparison
         int max_print = 50;
-        int i;
+        size_t i;
 
         cr_log_error("Expected docstring bytes:");
-        for (i = 0; i < strlen(expected_doc) && i < max_print; i++) {
-          cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)expected_doc[i],
+        for (i = 0; i < strlen(expected_doc) && i < (size_t)max_print; i++) {
+          cr_log_error("Byte %zu: %d (0x%02x) '%c'", i, (int)expected_doc[i],
                        (unsigned char)expected_doc[i],
                        (expected_doc[i] >= 32 && expected_doc[i] <= 126) ? expected_doc[i] : '?');
         }
 
         cr_log_error("Actual docstring bytes:");
-        for (i = 0; i < strlen(node->docstring) && i < max_print; i++) {
-          cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)node->docstring[i],
+        for (i = 0; i < strlen(node->docstring) && i < (size_t)max_print; i++) {
+          cr_log_error("Byte %zu: %d (0x%02x) '%c'", i, (int)node->docstring[i],
                        (unsigned char)node->docstring[i],
                        (node->docstring[i] >= 32 && node->docstring[i] <= 126) ? node->docstring[i]
                                                                                : '?');

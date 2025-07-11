@@ -205,6 +205,78 @@ size_t context_engine_update_focus(ContextEngine *engine, const char **node_qual
 void context_engine_reset_compression(ContextEngine *engine);
 
 /**
+ * @brief Expand a compressed block to its original form
+ *
+ * @param engine Context engine
+ * @param block InfoBlock to expand
+ * @return bool True on success, false on failure
+ */
+bool context_engine_expand_block(ContextEngine *engine, InfoBlock *block);
+
+/**
+ * @brief Get expanded context for a specific block
+ *
+ * @param engine Context engine
+ * @param block InfoBlock to expand
+ * @param out_buffer Output buffer (can be NULL to get required size)
+ * @param buffer_size Size of output buffer
+ * @return size_t Size of the expanded context (excluding null terminator)
+ */
+size_t context_engine_get_expanded_block(ContextEngine *engine, InfoBlock *block, char *out_buffer,
+                                         size_t buffer_size);
+
+/**
+ * @brief Select blocks to expand based on relevance
+ *
+ * @param engine Context engine
+ * @param max_blocks Maximum number of blocks to expand
+ * @param max_tokens Maximum total tokens for expanded blocks
+ * @return size_t Number of blocks expanded
+ */
+size_t context_engine_expand_relevant_blocks(ContextEngine *engine, size_t max_blocks,
+                                             size_t max_tokens);
+
+/**
+ * @brief Initialize the token estimator
+ *
+ * @param engine Context engine
+ * @return bool True on success, false on failure
+ */
+bool token_estimator_init(ContextEngine *engine);
+
+/**
+ * @brief Free the token estimator
+ *
+ * @param engine Context engine
+ */
+void token_estimator_free(ContextEngine *engine);
+
+/**
+ * @brief Distribute token budget among blocks based on relevance
+ *
+ * @param engine Context engine
+ * @return bool True on success, false on failure
+ */
+bool token_budget_distribute(ContextEngine *engine);
+
+/**
+ * @brief Check if the current compressed content fits within the token budget
+ *
+ * @param engine Context engine
+ * @return bool True if within budget, false otherwise
+ */
+bool token_budget_check(ContextEngine *engine);
+
+/**
+ * @brief Get the total token count for all blocks
+ *
+ * @param engine Context engine
+ * @param use_compressed Whether to use compressed token counts
+ * @return size_t Total token count
+ */
+size_t token_budget_get_total(ContextEngine *engine, bool use_compressed);
+
+/**
  * @brief Get the names of AST nodes in a given file
  *
  * @param engine Context engine

@@ -15,6 +15,15 @@ bool log_init(LogLevel level, const char *log_path);
 void log_cleanup(void);
 void log_set_level(LogLevel level);
 
+/**
+ * @brief Log a message at the specified level.
+ *
+ * @param level Log level
+ * @param format Format string
+ * @param ... Additional arguments
+ */
+void log_message(LogLevel level, const char *format, ...);
+
 void log_debug(const char *format, ...);
 void log_info(const char *format, ...);
 void log_warning(const char *format, ...);
