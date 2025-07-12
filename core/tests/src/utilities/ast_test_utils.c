@@ -31,22 +31,62 @@ bool has_extension(const char *filename, const char *ext) {
 }
 
 char *read_file_contents(const char *path) {
+  fprintf(stderr, "DEBUG: read_file_contents called with path: %s\n", path);
+
+  // Print current working directory
+  char cwd[4096];
+  if (getcwd(cwd, sizeof(cwd))) {
+    fprintf(stderr, "DEBUG: Current working directory: %s\n", cwd);
+  } else {
+    perror("getcwd");
+  }
+
+  // Print directory listing for the file's directory
+  const char *last_slash = strrchr(path, '/');
+  if (last_slash) {
+    char dirpath[4096];
+    size_t len = last_slash - path;
+    if (len < sizeof(dirpath)) {
+      strncpy(dirpath, path, len);
+      dirpath[len] = '\0';
+      DIR *dir = opendir(dirpath);
+      if (dir) {
+        fprintf(stderr, "DEBUG: Directory listing for %s:\n", dirpath);
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+          fprintf(stderr, "  %s\n", entry->d_name);
+        }
+        closedir(dir);
+      } else {
+        fprintf(stderr, "DEBUG: Failed to open directory: %s\n", dirpath);
+      }
+    }
+  }
+
   FILE *file = fopen(path, "rb");
   if (!file) {
+    fprintf(stderr, "DEBUG: fopen failed for path: %s\n", path);
+    fprintf(stderr, "DEBUG: errno=%d (%s)\n", errno, strerror(errno));
     return NULL;
   }
 
   fseek(file, 0, SEEK_END);
   long size = ftell(file);
   fseek(file, 0, SEEK_SET);
+  fprintf(stderr, "DEBUG: file size for %s is %ld bytes\n", path, size);
 
   char *content = malloc(size + 1);
   if (!content) {
+    fprintf(stderr, "DEBUG: malloc failed for %ld bytes for file: %s\n", size + 1, path);
     fclose(file);
     return NULL;
   }
 
-  fread(content, 1, size, file);
+  size_t read_bytes = fread(content, 1, size, file);
+  if (read_bytes != size) {
+    fprintf(stderr, "DEBUG: fread read %zu bytes, expected %ld bytes for file: %s\n", read_bytes,
+            size, path);
+  }
   content[size] = '\0';
   fclose(file);
 
@@ -199,8 +239,26 @@ bool run_ast_test(const ASTTestConfig *config) {
     JsonValue *expected_json = NULL;
     char *json_content = read_file_contents(config->json_file);
 
-    if (json_content) {
+    if (!json_content) {
+      if (config->debug_mode) {
+        fprintf(stderr, "DEBUG: Failed to read JSON file: %s\n", config->json_file);
+      }
+    } else {
+      if (config->debug_mode) {
+        fprintf(stderr, "DEBUG: Read JSON file (%zu bytes): %s\n", strlen(json_content),
+                config->json_file);
+      }
       expected_json = parse_json_string(json_content);
+      if (!expected_json) {
+        if (config->debug_mode) {
+          fprintf(stderr, "DEBUG: parse_json_string returned NULL. Possible reasons: "
+                          "out-of-memory, stack overflow, or malformed JSON.\n");
+          // Try to print the first 500 characters for context
+          size_t preview_len = strlen(json_content) > 500 ? 500 : strlen(json_content);
+          fprintf(stderr, "DEBUG: JSON file preview (first %zu bytes):\n%.*s\n", preview_len,
+                  (int)preview_len, json_content);
+        }
+      }
       free(json_content);
     }
 
@@ -235,13 +293,13 @@ TestPaths construct_test_paths(const char *lang, const char *category, const cha
     }
   }
 
-  // Construct source and JSON file paths
-  snprintf(paths.source_path, sizeof(paths.source_path),
-           "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s", lang, category, filename);
+  // Construct source and JSON file paths using relative paths
+  snprintf(paths.source_path, sizeof(paths.source_path), "core/tests/examples/%s/%s/%s", lang,
+           category, filename);
 
-  snprintf(paths.json_path, sizeof(paths.json_path),
-           "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s.expected.json", lang,
-           category, paths.base_filename ? paths.base_filename : filename);
+  // Use filename for JSON path to preserve extension
+  snprintf(paths.json_path, sizeof(paths.json_path), "core/tests/examples/%s/%s/%s.expected.json",
+           lang, category, filename);
 
   return paths;
 }
@@ -250,8 +308,7 @@ void process_category_files(const char *lang, const char *category,
                             bool (*is_test_file)(const char *filename),
                             void (*test_file)(const char *category, const char *filename)) {
   char dir_path[1024];
-  snprintf(dir_path, sizeof(dir_path), "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s",
-           lang, category);
+  snprintf(dir_path, sizeof(dir_path), "core/tests/examples/%s/%s", lang, category);
 
   DIR *dir = opendir(dir_path);
   if (!dir) {

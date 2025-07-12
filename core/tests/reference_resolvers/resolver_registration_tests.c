@@ -5,7 +5,7 @@
  * Tests for language resolver registration, lookup, and built-in language resolvers.
  */
 
-#include "reference_resolvers/reference_resolver_private.h"
+#include "scopemux/ast.h"
 #include "scopemux/parser.h"
 #include "scopemux/reference_resolver.h"
 #include "scopemux/symbol_table.h"
@@ -108,22 +108,22 @@ void teardown_registration(void) {
 Test(resolver_registration, find_language_resolver, .init = setup_registration,
      .fini = teardown_registration) {
   // Register a mock resolver
-  bool reg_result = reference_resolver_register(resolver, LANG_C, mock_resolver_func, NULL, NULL);
+  bool reg_result = reference_resolver_register(LANG_C, mock_resolver_func, NULL, NULL);
   cr_assert(reg_result, "Registration should succeed");
 
   // Create a test node and try to resolve it to verify registration worked
-  ASTNode *test_node = ast_node_new(NODE_TYPE_FUNCTION_CALL, "test_function");
+  ASTNode *test_node = ast_node_new(NODE_FUNCTION, "test_function");
   cr_assert(test_node != NULL, "Node creation should succeed");
 
   // Try resolving with the registered resolver - should succeed for C
   ResolutionStatus c_status =
-      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name", LANG_C);
+      reference_resolver_resolve_node(resolver, test_node, REF_CALL, "test_name", LANG_C);
   cr_assert(c_status == RESOLUTION_SUCCESS, "Resolution should succeed with registered C resolver");
 
   // Try with Python - should fail since we haven't registered it
-  reference_resolver_unregister(resolver, LANG_C); // Unregister C resolver first
+  reference_resolver_unregister(LANG_C); // Unregister C resolver first
   ResolutionStatus py_status =
-      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name", LANG_C);
+      reference_resolver_resolve_node(resolver, test_node, REF_CALL, "test_name", LANG_C);
   cr_assert(py_status == RESOLUTION_NOT_FOUND, "Resolution should fail with unregistered resolver");
 
   // Clean up
@@ -138,27 +138,27 @@ Test(resolver_registration, init_builtin, .init = setup_registration,
   // Since init_builtin is void, we'll verify success by checking resolver functionality
 
   // Create test node to verify resolver functionality
-  ASTNode *test_node = ast_node_new(NODE_TYPE_FUNCTION_CALL, "test_function");
+  ASTNode *test_node = ast_node_new(NODE_FUNCTION, "test_function");
   cr_assert(test_node != NULL, "Node creation should succeed");
 
   // Verify C resolver functionality
-  ResolutionStatus c_status = reference_resolver_resolve_node(
-      resolver, test_node, REF_TYPE_FUNCTION, "test_c_function", LANG_C);
+  ResolutionStatus c_status =
+      reference_resolver_resolve_node(resolver, test_node, REF_CALL, "test_c_function", LANG_C);
   cr_assert(c_status != RESOLUTION_NOT_FOUND, "C resolver should be registered");
 
   // Verify Python resolver functionality
-  ResolutionStatus py_status = reference_resolver_resolve_node(
-      resolver, test_node, REF_TYPE_FUNCTION, "test_py_function", LANG_PYTHON);
+  ResolutionStatus py_status = reference_resolver_resolve_node(resolver, test_node, REF_CALL,
+                                                               "test_py_function", LANG_PYTHON);
   cr_assert(py_status != RESOLUTION_NOT_FOUND, "Python resolver should be registered");
 
   // Verify JavaScript resolver functionality
-  ResolutionStatus js_status = reference_resolver_resolve_node(
-      resolver, test_node, REF_TYPE_FUNCTION, "test_js_function", LANG_JAVASCRIPT);
+  ResolutionStatus js_status = reference_resolver_resolve_node(resolver, test_node, REF_CALL,
+                                                               "test_js_function", LANG_JAVASCRIPT);
   cr_assert(js_status != RESOLUTION_NOT_FOUND, "JavaScript resolver should be registered");
 
   // Verify TypeScript resolver functionality
-  ResolutionStatus ts_status = reference_resolver_resolve_node(
-      resolver, test_node, REF_TYPE_FUNCTION, "test_ts_function", LANG_TYPESCRIPT);
+  ResolutionStatus ts_status = reference_resolver_resolve_node(resolver, test_node, REF_CALL,
+                                                               "test_ts_function", LANG_TYPESCRIPT);
   cr_assert(ts_status != RESOLUTION_NOT_FOUND, "TypeScript resolver should be registered");
 
   // Clean up
@@ -171,25 +171,25 @@ Test(resolver_registration, resolver_priority, .init = setup_registration,
   // We'll use the predefined functions to test resolver priority
 
   // Register first resolver
-  bool result1 = reference_resolver_register(resolver, LANG_C, first_resolver_func, NULL, NULL);
+  bool result1 = reference_resolver_register(LANG_C, first_resolver_func, NULL, NULL);
   cr_assert(result1, "First resolver registration should succeed");
 
   // Create a test node
-  ASTNode *test_node = ast_node_new(NODE_TYPE_FUNCTION_CALL, "test_function");
+  ASTNode *test_node = ast_node_new(NODE_FUNCTION, "test_function");
   cr_assert(test_node != NULL, "Node creation should succeed");
 
   // Verify first resolver is active - should return SUCCESS
   ResolutionStatus status1 =
-      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name", LANG_C);
+      reference_resolver_resolve_node(resolver, test_node, REF_CALL, "test_name", LANG_C);
   cr_assert(status1 == RESOLUTION_SUCCESS, "First resolver should return SUCCESS");
 
   // Register second resolver (should replace first)
-  bool result2 = reference_resolver_register(resolver, LANG_C, second_resolver_func, NULL, NULL);
+  bool result2 = reference_resolver_register(LANG_C, second_resolver_func, NULL, NULL);
   cr_assert(result2, "Second resolver registration should succeed");
 
   // Verify the second one is active - should return NOT_FOUND
   ResolutionStatus status2 =
-      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "test_name", LANG_C);
+      reference_resolver_resolve_node(resolver, test_node, REF_CALL, "test_name", LANG_C);
   cr_assert(status2 == RESOLUTION_NOT_FOUND,
             "Second resolver should be active and return NOT_FOUND");
 
@@ -216,22 +216,22 @@ Test(resolver_registration, resolver_with_custom_data, .init = setup_registratio
   // We'll use the predefined custom_cleanup_func
 
   // Register resolver with custom data
-  bool reg_result = reference_resolver_register(resolver, LANG_C, custom_data_resolver_func, data,
-                                                custom_cleanup_func);
+  bool reg_result =
+      reference_resolver_register(LANG_C, custom_data_resolver_func, data, custom_cleanup_func);
   cr_assert(reg_result, "Registration with custom data should succeed");
 
   // Create test node
-  ASTNode *test_node = ast_node_new(NODE_TYPE_FUNCTION_CALL, "test_function");
+  ASTNode *test_node = ast_node_new(NODE_FUNCTION, "test_function");
   cr_assert(test_node != NULL, "Node creation should succeed");
 
   // Verify the resolver with custom data works correctly
-  ResolutionStatus matched_status = reference_resolver_resolve_node(
-      resolver, test_node, REF_TYPE_FUNCTION, "custom_data_function");
+  ResolutionStatus matched_status = reference_resolver_resolve_node(resolver, test_node, REF_CALL,
+                                                                    "custom_data_function", LANG_C);
   cr_assert(matched_status == RESOLUTION_SUCCESS, "Resolver should use custom data correctly");
 
   // Try a mismatched name
   ResolutionStatus mismatched_status =
-      reference_resolver_resolve_node(resolver, test_node, REF_TYPE_FUNCTION, "wrong_name", LANG_C);
+      reference_resolver_resolve_node(resolver, test_node, REF_CALL, "wrong_name", LANG_C);
   cr_assert(mismatched_status == RESOLUTION_NOT_FOUND, "Resolver should fail with wrong name");
 
   // Cleanup

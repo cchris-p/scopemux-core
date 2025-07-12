@@ -10,6 +10,10 @@ ts_language_test
 core/src/info_block/*
 core/include/scopemux/info_block.h
 
+# These directories may interfere with coding agents
+core/tests/build*
+build-*
+build/core/tests/examples/*
 
 # Python
 __pycache__/

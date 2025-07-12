@@ -202,6 +202,12 @@ set(UTILS_SOURCES
 # Add library targets
 add_library(context_engine STATIC ${CONTEXT_ENGINE_SOURCES} ${COMMON_SOURCES})
 
+# Set properties for context_engine
+set_target_properties(context_engine PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    SKIP_DEPENDENCY_GENERATION TRUE
+)
+
 # Set include directories for each target
 target_include_directories(parser_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(context_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -282,7 +288,8 @@ target_include_directories(scopemux_core PRIVATE
 )
 
 # Add target_link_options block for scopemux_core to force --whole-archive inclusion of all Tree-sitter static libraries (ts_c, ts_cpp, ts_python, ts_javascript, ts_typescript)
-target_link_options(scopemux_core PRIVATE
+if(TARGET ts_c AND TARGET ts_cpp AND TARGET ts_python AND TARGET ts_javascript AND TARGET ts_typescript)
+  target_link_options(scopemux_core PRIVATE
     -Wl,--whole-archive
     -Wl,$<TARGET_FILE:ts_c>
     -Wl,$<TARGET_FILE:ts_cpp>
@@ -290,7 +297,8 @@ target_link_options(scopemux_core PRIVATE
     -Wl,$<TARGET_FILE:ts_javascript>
     -Wl,$<TARGET_FILE:ts_typescript>
     -Wl,--no-whole-archive
-)
+  )
+endif()
 
 # Add target_link_options block for scopemux_core to force --whole-archive inclusion of context_engine
 target_link_options(scopemux_core PRIVATE

@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project(scopemux_tests)
 # Configuration for ScopeMux Bindings C Tests
 # C/C++ standards are set in the root CMakeLists.txt
 
@@ -61,10 +63,11 @@ add_compile_options(
 message(STATUS "Python include dirs: ${Python_INCLUDE_DIRS}")
 message(STATUS "Python libraries: ${Python_LIBRARIES}")
 
-# Create test-specific libraries with different names to avoid conflicts
+# Create test utilities library
 add_library(test_utilities STATIC
     src/common/test_helpers.c
     src/common/json_validation.c
+    src/common/symbol_test_helpers.c
     utilities/tree_sitter_test_util.c
     src/utilities/ast_test_utils.c
 )
@@ -80,7 +83,16 @@ target_link_libraries(test_parser INTERFACE parser_core)
 # For the interface library, link parser_core transitively for consumers
 # (This line is safe even if the previous INTERFACE linkage already exists.)
 target_link_libraries(test_parser INTERFACE parser_core)
-target_link_libraries(test_utilities PRIVATE parser_core ${CRITERION_LIBRARIES})
+target_link_libraries(test_utilities PRIVATE
+    parser_core
+    ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
 
 # Set include directories for test targets
 # include directories already set above; removed problematic macro call
@@ -97,6 +109,13 @@ target_link_libraries(run_tests PRIVATE
     test_utilities
     parser_core
     context_engine
+    ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
 # include directories already set above; removed problematic macro call
@@ -118,6 +137,12 @@ target_link_libraries(init_parser_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(init_parser_tests)
@@ -132,6 +157,12 @@ target_link_libraries(edge_case_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(edge_case_tests)
@@ -147,6 +178,12 @@ target_link_libraries(c_example_ast_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(c_example_ast_tests)
@@ -162,6 +199,12 @@ target_link_libraries(cpp_example_ast_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(cpp_example_ast_tests)
@@ -177,6 +220,12 @@ target_link_libraries(cpp_basic_ast_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(cpp_basic_ast_tests)
@@ -192,6 +241,12 @@ target_link_libraries(js_basic_ast_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(js_basic_ast_tests)
@@ -207,6 +262,12 @@ target_link_libraries(ts_basic_ast_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(ts_basic_ast_tests)
@@ -222,6 +283,12 @@ target_link_libraries(python_basic_ast_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(python_basic_ast_tests)
@@ -237,6 +304,12 @@ target_link_libraries(python_example_ast_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(python_example_ast_tests)
@@ -253,6 +326,12 @@ target_link_libraries(project_context_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
 # Resolver Registration Tests
@@ -264,6 +343,12 @@ target_link_libraries(resolver_registration_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
 # Resolver Resolution Tests
@@ -275,6 +360,12 @@ target_link_libraries(resolver_resolution_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
 # Language Resolver Tests
@@ -288,6 +379,12 @@ target_link_libraries(language_resolver_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
 # Resolver Core Tests
@@ -299,6 +396,12 @@ target_link_libraries(resolver_core_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
 # Symbol Table Tests
@@ -310,12 +413,140 @@ target_link_libraries(symbol_table_tests PRIVATE
     parser_core
     context_engine
     ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
 )
 
 # Installation rules
 install(TARGETS run_tests DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
+# Copy the examples directory (including .expected.json files) to the build directory for test data access
+# Preserve the directory structure by copying to core/tests/examples
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/core/tests)
+
 message(STATUS "Configured Scopemux Bindings C Tests with Criterion.")
 message(STATUS "Copied example files and expected JSON to build directory for validation.")
 
-target_include_directories(test_utilities PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_include_directories(test_utilities PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(run_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(init_parser_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(edge_case_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(c_example_ast_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(cpp_example_ast_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(cpp_basic_ast_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(js_basic_ast_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(ts_basic_ast_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(python_basic_ast_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(python_example_ast_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(project_context_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(resolver_registration_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(resolver_resolution_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(language_resolver_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(resolver_core_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)
+
+target_include_directories(symbol_table_tests PRIVATE 
+    ${CMAKE_SOURCE_DIR}/core/include 
+    ${CMAKE_SOURCE_DIR}/core/include/config 
+    ${CMAKE_SOURCE_DIR}/core/include/scopemux 
+    ${CRITERION_INCLUDE_DIRS}
+)

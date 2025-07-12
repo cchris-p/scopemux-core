@@ -18,6 +18,11 @@ Options:
     --verbose           Print detailed information during processing
 """
 
+from pathlib import Path
+import difflib
+import glob
+import argparse
+import json
 import sys
 import os
 import gc
@@ -31,7 +36,8 @@ print(f"DEBUG: PYTHONPATH = {os.environ.get('PYTHONPATH', '')}")
 print(f"DEBUG: LD_LIBRARY_PATH = {os.environ.get('LD_LIBRARY_PATH', '')}")
 
 # Set up Python path to find the core module - ensure build/core is first
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+project_root = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "../../.."))
 core_build_path = os.path.join(project_root, "build/core")
 
 # Ensure build/core is first in sys.path
@@ -67,14 +73,9 @@ except AttributeError:
     print(
         "Warning: scopemux_core.register_segfault_handler not found, using dummy handler"
     )
-    segfault_handler = lambda: None
+    def segfault_handler(): return None
 
 # Rest of the imports
-import json
-import argparse
-import glob
-import difflib
-from pathlib import Path
 
 
 def main():
@@ -82,7 +83,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate expected JSON output for test cases"
     )
-    parser.add_argument("source_path", help="Source file or directory to process")
+    parser.add_argument(
+        "source_path", help="Source file or directory to process")
     parser.add_argument(
         "--output-dir", help="Directory to write output files (default: same as input)"
     )
@@ -139,6 +141,27 @@ def process_directory(directory, args):
             process_file(file_path, args)
 
 
+def serialize_ast_node_to_dict(ast_node):
+    """Convert an ASTNodeObject to a dictionary suitable for JSON serialization."""
+    if not ast_node:
+        return None
+
+    try:
+        node_dict = {
+            "type": ast_node.get_type() if hasattr(ast_node, 'get_type') else None,
+            "name": ast_node.get_name() if hasattr(ast_node, 'get_name') else None,
+            "qualified_name": ast_node.get_qualified_name() if hasattr(ast_node, 'get_qualified_name') else None,
+            "signature": ast_node.get_signature() if hasattr(ast_node, 'get_signature') else None,
+            "docstring": ast_node.get_docstring() if hasattr(ast_node, 'get_docstring') else None,
+        }
+
+        # Remove None values to keep the output clean
+        return {k: v for k, v in node_dict.items() if v is not None}
+    except Exception as e:
+        print(f"Error serializing AST node: {e}")
+        return None
+
+
 def process_file(file_path, args):
     # Determine the language based on file extension
     ext = os.path.splitext(file_path)[1].lower()
@@ -165,41 +188,82 @@ def process_file(file_path, args):
     # Create a parser context
     ctx = scopemux_core.ParserContext()
 
-    # Parse the file
+    ast_json = None
+    cst_json = None
+
+    # Parse the file once
+    try:
+        parse_result = ctx.parse_string(content, file_path, language)
+        if not parse_result:
+            print(f"Failed to parse {file_path}")
+            return
+    except Exception as e:
+        print(f"Error parsing {file_path}: {e}")
+        return
+
+    # Extract AST if requested
     if args.mode in ["ast", "both"]:
         try:
-            ast_result = ctx.parse_string(content, file_path, language)
-            if ast_result:
-                ast_json = ctx.get_ast_json()
-                output_path = get_output_path(file_path, "ast", args)
-                write_or_update_json(ast_json, output_path, args)
+            ast_root = ctx.get_ast_root()
+            if ast_root:
+                ast_json = serialize_ast_node_to_dict(ast_root)
+                print(
+                    f"DEBUG: AST root extracted for {file_path}, type: {type(ast_root)}")
             else:
-                print(f"Failed to parse AST for {file_path}")
+                print(f"No AST root found for {file_path}")
         except Exception as e:
-            print(f"Error parsing AST for {file_path}: {e}")
+            print(f"Error extracting AST for {file_path}: {e}")
 
+    # Extract CST if requested
     if args.mode in ["cst", "both"]:
         try:
-            cst_result = ctx.parse_string(content, file_path, language)
-            if cst_result:
-                cst_json = ctx.get_cst_json()
-                output_path = get_output_path(file_path, "cst", args)
-                write_or_update_json(cst_json, output_path, args)
+            if hasattr(ctx, "get_cst_root"):
+                cst_root = ctx.get_cst_root()
+                if cst_root:
+                    cst_json = cst_root  # get_cst_root already returns a dictionary
+                    print(
+                        f"DEBUG: CST root extracted for {file_path}, type: {type(cst_root)}")
+                else:
+                    print(f"No CST root found for {file_path}")
             else:
-                print(f"Failed to parse CST for {file_path}")
+                print(
+                    "Warning: get_cst_root() not available in scopemux_core.ParserContext")
         except Exception as e:
-            print(f"Error parsing CST for {file_path}: {e}")
+            print(f"Error extracting CST for {file_path}: {e}")
 
-    # Clean up
-    ctx.clear()
+    # Debug: print AST and CST output
+    print(f"DEBUG: AST for {file_path}: {repr(ast_json)}")
+    print(f"DEBUG: CST for {file_path}: {repr(cst_json)}")
 
+    # Write combined .expected.json file if either AST or CST is present
+    combined = {}
+    if ast_json is not None:
+        combined["ast"] = ast_json
+    if cst_json is not None:
+        combined["cst"] = cst_json
 
-def get_output_path(file_path, mode, args):
-    if args.output_dir:
-        base_name = os.path.basename(file_path)
-        return os.path.join(args.output_dir, f"{base_name}.{mode}.expected.json")
+    # Add language field if available
+    if hasattr(ctx, "language"):
+        combined["language"] = ctx.language
     else:
-        return f"{file_path}.{mode}.expected.json"
+        # Fallback: try to infer from language variable
+        lang_map = {
+            scopemux_core.LANG_C: "C",
+            scopemux_core.LANG_CPP: "C++",
+            scopemux_core.LANG_PYTHON: "Python",
+            scopemux_core.LANG_JAVASCRIPT: "JavaScript",
+            scopemux_core.LANG_TYPESCRIPT: "TypeScript",
+        }
+        combined["language"] = lang_map.get(language, "unknown")
+
+    # Write to .expected.json file
+    output_path = f"{file_path}.expected.json"
+    write_or_update_json(combined, output_path, args)
+    # Clean up
+    # ctx.clear()  # Removed to avoid AttributeError
+
+
+# get_output_path is no longer needed for combined output
 
 
 def write_or_update_json(json_data, output_path, args):

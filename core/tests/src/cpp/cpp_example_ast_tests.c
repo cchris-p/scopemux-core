@@ -17,24 +17,6 @@
 #include <sys/stat.h>
 
 /**
- * Check if a file has a specific extension
- *
- * @param filename The filename to check
- * @param ext The extension to look for (with the dot, e.g. ".cpp")
- * @return true if the file has the specified extension
- */
-static bool has_extension(const char *filename, const char *ext) {
-  size_t filename_len = strlen(filename);
-  size_t ext_len = strlen(ext);
-
-  if (filename_len <= ext_len) {
-    return false;
-  }
-
-  return strcmp(filename + filename_len - ext_len, ext) == 0;
-}
-
-/**
  * Check if a file is a C++ source file
  *
  * @param filename The filename to check

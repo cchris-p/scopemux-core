@@ -76,6 +76,15 @@ typedef struct GlobalSymbolTable {
 } GlobalSymbolTable;
 
 /**
+ * @brief Hash a qualified name for symbol table lookup
+ *
+ * @param qualified_name The qualified name to hash
+ * @param table_size The size of the hash table
+ * @return unsigned long The hash value
+ */
+unsigned long hash_qualified_name(const char *qualified_name, size_t table_size);
+
+/**
  * @brief Create a new global symbol table
  *
  * @param initial_capacity Initial capacity (number of buckets)

@@ -154,6 +154,14 @@ void reference_resolver_free(ReferenceResolver *resolver);
 bool reference_resolver_register(Language language, ResolverFunction resolver_func,
                                  void *resolver_data, ResolverCleanupFunction cleanup_func);
 
+/**
+ * Unregister a language resolver from the reference resolver
+ * @param resolver The reference resolver instance
+ * @param language The language to unregister
+ * @return true if successful, false otherwise
+ */
+bool reference_resolver_unregister(ReferenceResolver *resolver, Language language);
+
 bool reference_resolver_init_builtin(ReferenceResolver *resolver);
 
 /**

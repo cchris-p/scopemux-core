@@ -60,8 +60,8 @@ static bool is_c_file(const char *filename) { return has_extension(filename, ".c
  * Test that processes all C example files
  */
 Test(c_examples, all_examples) {
-  const char *categories[] = {"basic_syntax", "functions_and_pointers", "structs_and_unions",
-                              "preprocessor", NULL};
+  const char *categories[] = {"basic_syntax",      "complex_structures", "file_io",
+                              "memory_management", "struct_union_enum",  NULL};
 
   for (int i = 0; categories[i] != NULL; i++) {
     process_category_files("c", categories[i], is_c_file, test_c_example);
