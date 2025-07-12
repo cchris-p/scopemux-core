@@ -48,12 +48,77 @@ void cst_node_free(CSTNode *node);
 bool cst_node_add_child(CSTNode *parent, CSTNode *child);
 
 /**
+ * @section Public CST Parsing API
+ *
+ * These functions provide a minimal, stable interface for extracting a full Concrete Syntax Tree
+ * (CST) from a C source file or buffer. All parser context, initialization, and error handling are
+ * managed internally. The returned CSTNode tree is owned by the caller and must be freed with
+ * cst_node_free().
+ *
+ * Thread Safety: Not thread-safe. Do not call from multiple threads concurrently.
+ *
+ * On error, returns NULL and logs an error internally (see logging.h).
+ */
+
+/**
+ * @brief Parse a C source file and return the CST root node.
+ *
+ * @param filename Path to the C source file.
+ * @return CSTNode* Root CST node, or NULL on error. Caller must free with cst_node_free().
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Parse a C source file and return the CST root node.
+ *
+ * @param filename Path to the C source file.
+ * @return CSTNode* Root CST node, or NULL on error. Caller must free with cst_node_free().
+ */
+CSTNode *parse_c_file_to_cst(const char *filename);
+
+/**
+ * @brief Parse a C source buffer and return the CST root node.
+ *
+ * @param buffer Pointer to C source code (UTF-8, not null-terminated).
+ * @param len Length of the buffer in bytes.
+ * @return CSTNode* Root CST node, or NULL on error. Caller must free with cst_node_free().
+ */
+CSTNode *parse_c_source_to_cst(const char *buffer, size_t len);
+
+#ifdef __cplusplus
+}
+#endif
+
+/**
  * @brief Creates a deep copy of a CST node and all its children
  *
  * @param node The node to copy
  * @return CSTNode* A new allocated copy or NULL on failure
  */
 CSTNode *cst_node_copy_deep(const CSTNode *node);
+
+// --- CSTNode public getters ---
+/**
+ * @brief Get the node type as a string.
+ */
+const char *cst_node_get_type(const CSTNode *node);
+
+/**
+ * @brief Get the number of children of this node.
+ */
+size_t cst_node_get_child_count(const CSTNode *node);
+
+/**
+ * @brief Get the child node at the given index (NULL if out of bounds).
+ */
+const CSTNode *cst_node_get_child(const CSTNode *node, size_t index);
+
+/**
+ * @brief Get the source range for this node.
+ */
+SourceRange cst_node_get_range(const CSTNode *node);
 
 /**
  * @brief AST node representing a parsed semantic entity in a language-agnostic way.

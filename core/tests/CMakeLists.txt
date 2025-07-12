@@ -118,6 +118,7 @@ target_link_libraries(run_tests PRIVATE
     ts_typescript
 )
 
+
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(run_tests)
 
@@ -250,6 +251,27 @@ target_link_libraries(js_basic_ast_tests PRIVATE
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(js_basic_ast_tests)
+
+# Add c_basic_ast_tests target
+add_executable(c_basic_ast_tests
+    src/c/c_basic_ast_tests.c
+)
+target_include_directories(c_basic_ast_tests PRIVATE ${CRITERION_INCLUDE_DIRS})
+target_link_libraries(c_basic_ast_tests PRIVATE
+    test_parser
+    test_utilities
+    parser_core
+    context_engine
+    ${CRITERION_LIBRARIES}
+    ts_core
+    ts_c
+    ts_cpp
+    ts_python
+    ts_javascript
+    ts_typescript
+)
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(c_basic_ast_tests)
 
 # Add ts_basic_ast_tests target
 add_executable(ts_basic_ast_tests

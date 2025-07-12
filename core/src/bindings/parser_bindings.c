@@ -1023,7 +1023,25 @@ static PyObject *detect_language(PyObject *self, PyObject *args, PyObject *kwds)
 /**
  * @brief Module methods
  */
+static PyObject *parse_c_file_to_cst_py(PyObject *self, PyObject *args, PyObject *kwds) {
+  (void)self;
+  const char *filename = NULL;
+  static char *kwlist[] = {"filename", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &filename)) {
+    return NULL;
+  }
+  CSTNode *root = parse_c_file_to_cst(filename);
+  if (!root) {
+    Py_RETURN_NONE;
+  }
+  PyObject *result = cst_node_to_py_dict(root);
+  cst_node_free(root);
+  return result;
+}
+
 const PyMethodDef module_methods[] = {
+    {"parse_c_file_to_cst", (PyCFunction)parse_c_file_to_cst_py, METH_VARARGS | METH_KEYWORDS,
+     "Parse a C file and return the CST as a Python dict."},
     {"detect_language", (PyCFunction)detect_language, METH_VARARGS | METH_KEYWORDS,
      "Detect language from filename and optionally content"},
     {NULL, NULL, 0, NULL} /* Sentinel */

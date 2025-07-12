@@ -100,7 +100,7 @@ message(STATUS "Python libraries: ${Python_LIBRARIES}")
 # pybind11 is already loaded above
 
 # Build parser core static library
-add_library(parser_core STATIC
+add_library(parser_core_obj OBJECT
     # Refactored parser components
     src/parser/parser.c
     src/parser/ast_node.c
@@ -166,6 +166,9 @@ add_library(parser_core STATIC
     src/parser/symbol_table/symbol_lookup.c
     src/parser/symbol_table/symbol_table_registration.c
 )
+set_target_properties(parser_core_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+add_library(parser_core STATIC $<TARGET_OBJECTS:parser_core_obj>)
 
 set_target_properties(parser_core PROPERTIES
     POSITION_INDEPENDENT_CODE ON
@@ -230,6 +233,7 @@ pybind11_add_module(scopemux_core MODULE
     src/bindings/context_engine_bindings.c
     src/bindings/test_processor_bindings.c
     src/bindings/signal_handler.c
+    $<TARGET_OBJECTS:parser_core_obj>
 )
 
 # Set include directories for the Python bindings module
@@ -242,19 +246,13 @@ target_include_directories(scopemux_core PRIVATE
 
 # Link the module with necessary libraries
 target_link_libraries(scopemux_core PRIVATE
-    -ldl # Needed for dlopen/dlsym functions
-    parser_core # Link with the static library directly so it is built and linked
+    -ldl
 )
 
 # Add explicit linker flags to force export of symbols and include whole archive for parser_core
 # This ensures all symbols from parser_core (including segfault_handler) are included
 # regardless of whether they're directly referenced
-target_link_options(scopemux_core PRIVATE
-    -Wl,--export-dynamic
-    -Wl,--whole-archive
-    -Wl,$<TARGET_FILE:parser_core>
-    -Wl,--no-whole-archive
-)
+
 
 # Ensure all symbols from our implementation are accessible
 set_target_properties(scopemux_core PROPERTIES

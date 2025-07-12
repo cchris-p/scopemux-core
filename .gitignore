@@ -9,10 +9,12 @@ ts_language_test
 !core/tests/**
 core/src/info_block/*
 core/include/scopemux/info_block.h
+core/tests/tools/cst_dump_tool
 
 # These directories may interfere with coding agents
 core/tests/build*
 build-*
+build/*
 build/core/tests/examples/*
 
 # Python

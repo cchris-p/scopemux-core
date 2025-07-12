@@ -24,10 +24,10 @@ source scripts/test_runner_lib.sh
 TEST_FAILURES=0
 
 # C Language Test Toggles
-RUN_C_BASIC_AST_TESTS=false
+RUN_C_BASIC_AST_TESTS=true
 # Note: The following tests are disabled because their source files don't exist yet
-RUN_C_CST_TESTS=false
-RUN_C_PREPROCESSOR_TESTS=false
+RUN_C_CST_TESTS=true
+RUN_C_PREPROCESSOR_TESTS=true
 
 # C example test directory toggles
 RUN_C_BASIC_SYNTAX_TESTS=true
@@ -103,17 +103,15 @@ for target in "${C_TEST_TARGETS[@]}"; do
         ;;
     "c_cst_tests")
         if [ "$RUN_C_CST_TESTS" = true ]; then
-            echo "[run_c_tests.sh] WARNING: $test_name is enabled but its source files do not exist yet. Skipping."
+            echo "[run_c_tests.sh] ERROR: $test_name is enabled but its source files do not exist yet. Exiting."
+            exit 1
         fi
-        # This test is not ready, so we always skip it.
-        continue
         ;;
     "c_preprocessor_tests")
         if [ "$RUN_C_PREPROCESSOR_TESTS" = true ]; then
-            echo "[run_c_tests.sh] WARNING: $test_name is enabled but its source files do not exist yet. Skipping."
+            echo "[run_c_tests.sh] ERROR: $test_name is enabled but its source files do not exist yet. Exiting."
+            exit 1
         fi
-        # This test is not ready, so we always skip it.
-        continue
         ;;
     esac
 
@@ -128,9 +126,8 @@ for target in "${C_TEST_TARGETS[@]}"; do
     build_result=$?
 
     if [ $build_result -ne 0 ]; then
-        echo "[run_c_tests.sh] ERROR: Failed to build $test_name"
-        ((TEST_FAILURES++))
-        continue
+        echo "[run_c_tests.sh] ERROR: Failed to build $test_name. Exiting."
+        exit 1
     fi
 
     # Get the absolute path to the executable
@@ -138,9 +135,8 @@ for target in "${C_TEST_TARGETS[@]}"; do
 
     # Verify that the executable was built
     if [ ! -f "$executable_path" ]; then
-        echo "[run_c_tests.sh] ERROR: Executable not found at $executable_path"
-        ((TEST_FAILURES++))
-        continue
+        echo "[run_c_tests.sh] ERROR: Executable not found at $executable_path. Exiting."
+        exit 1
     fi
 
     # Run the test
@@ -179,8 +175,8 @@ if [ "${#C_CATEGORIES[@]}" -gt 0 ]; then
     build_test_target "c_example_ast_tests" "$CMAKE_BUILD_DIR" "C Example AST Tests"
     build_result=$?
     if [ $build_result -ne 0 ]; then
-        echo "[run_c_tests.sh] ERROR: Failed to build c_example_ast_tests, skipping example tests."
-        ((TEST_FAILURES++))
+        echo "[run_c_tests.sh] ERROR: Failed to build c_example_ast_tests. Exiting."
+        exit 1
     else
         process_language_tests c C_CATEGORIES "${CMAKE_BUILD_DIR}/core/tests/c_example_ast_tests"
     fi

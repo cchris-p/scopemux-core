@@ -514,3 +514,57 @@ CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx) {
   }
   return ts_tree_to_cst_impl(root_node, ctx);
 }
+
+/**
+ * @brief Minimal public API: Parse a C file and return the CST root node.
+ * See parser.h for documentation and ownership notes.
+ */
+CSTNode *parse_c_file_to_cst(const char *filename) {
+  if (!filename) {
+    log_error("parse_c_file_to_cst: filename is NULL");
+    return NULL;
+  }
+  ParserContext *ctx = parser_init();
+  if (!ctx) {
+    log_error("parse_c_file_to_cst: failed to allocate parser context");
+    return NULL;
+  }
+  ctx->mode = PARSE_CST;
+  ctx->language = LANG_C;
+  CSTNode *result = NULL;
+  if (parser_parse_file(ctx, filename, LANG_C)) {
+    result = ctx->cst_root;
+    ctx->cst_root = NULL; // Detach, caller owns result
+  } else {
+    log_error("parse_c_file_to_cst: parse failed: %s", SAFE_STR(parser_get_last_error(ctx)));
+  }
+  parser_context_free(ctx);
+  return result;
+}
+
+/**
+ * @brief Minimal public API: Parse a C source buffer and return the CST root node.
+ * See parser.h for documentation and ownership notes.
+ */
+CSTNode *parse_c_source_to_cst(const char *buffer, size_t len) {
+  if (!buffer || len == 0) {
+    log_error("parse_c_source_to_cst: buffer is NULL or length is zero");
+    return NULL;
+  }
+  ParserContext *ctx = parser_init();
+  if (!ctx) {
+    log_error("parse_c_source_to_cst: failed to allocate parser context");
+    return NULL;
+  }
+  ctx->mode = PARSE_CST;
+  ctx->language = LANG_C;
+  CSTNode *result = NULL;
+  if (parser_parse_string(ctx, buffer, len, NULL, LANG_C)) {
+    result = ctx->cst_root;
+    ctx->cst_root = NULL; // Detach, caller owns result
+  } else {
+    log_error("parse_c_source_to_cst: parse failed: %s", SAFE_STR(parser_get_last_error(ctx)));
+  }
+  parser_context_free(ctx);
+  return result;
+}

@@ -29,146 +29,52 @@ ASTNode *parse_cpp_ast(ParserContext *ctx, const char *source);
 
 /* Helper function to read test files with robust error handling */
 char *read_test_file(const char *language, const char *category, const char *file_name) {
-  if (!language || !category || !file_name) {
+  if (!category || !file_name) {
     fprintf(stderr, "ERROR: read_test_file called with NULL parameter(s)\n");
     cr_log_error("read_test_file called with NULL parameter(s)");
     return NULL;
   }
 
-  fprintf(stderr, "DEBUG: read_test_file called for %s/%s/%s\n", language, category, file_name);
+  fprintf(stderr, "DEBUG: read_test_file called for category=%s file_name=%s\n", category,
+          file_name);
 
   char filepath[1024];
-  char project_root_path[1024] = "";
-  char cwd_safe[1024] = "";
   FILE *f = NULL;
 
-  // First try using PROJECT_ROOT_DIR environment variable
+  // Only try canonical path: PROJECT_ROOT_DIR/core/examples/category/file_name
   const char *project_root = getenv("PROJECT_ROOT_DIR");
   if (project_root && strlen(project_root) > 0) {
-    // Check for potential buffer overflow
-    size_t path_len = snprintf(NULL, 0, "%s/core/tests/examples/%s/%s/%s", project_root, language,
-                               category, file_name);
-    if (path_len < sizeof(project_root_path)) {
-      snprintf(project_root_path, sizeof(project_root_path), "%s/core/tests/examples/%s/%s/%s",
-               project_root, language, category, file_name);
-
-      fprintf(stderr, "DEBUG: Trying path using PROJECT_ROOT_DIR: %s\n", project_root_path);
-      f = fopen(project_root_path, "rb");
+    size_t path_len =
+        snprintf(NULL, 0, "%s/core/examples/%s/%s", project_root, category, file_name);
+    if (path_len < sizeof(filepath)) {
+      snprintf(filepath, sizeof(filepath), "%s/core/examples/%s/%s", project_root, category,
+               file_name);
+      fprintf(stderr, "DEBUG: Trying canonical path using PROJECT_ROOT_DIR: %s\n", filepath);
+      f = fopen(filepath, "rb");
       if (f) {
-        cr_log_info("Successfully opened file using PROJECT_ROOT_DIR: %s", project_root_path);
-        fprintf(stderr, "DEBUG: Successfully opened file using PROJECT_ROOT_DIR\n");
+        cr_log_info("Successfully opened file using canonical PROJECT_ROOT_DIR: %s", filepath);
         goto file_found;
       }
-    } else {
-      fprintf(stderr, "WARNING: Path using PROJECT_ROOT_DIR would overflow buffer (length: %zu)\n",
-              path_len);
-      log_warning("Path using PROJECT_ROOT_DIR would overflow buffer");
     }
-  } else {
-    fprintf(stderr, "DEBUG: PROJECT_ROOT_DIR environment variable not set or empty\n");
   }
 
-  // Get current working directory for logging and path calculation
-  if (getcwd(cwd_safe, sizeof(cwd_safe)) == NULL) {
-    fprintf(stderr, "ERROR: Failed to get current working directory: %s\n", strerror(errno));
-    cr_log_error("Failed to get current working directory: %s", strerror(errno));
-    return NULL;
-  }
-  fprintf(stderr, "DEBUG: Current working directory: %s\n", cwd_safe);
-  cr_log_info("Current working directory: %s", cwd_safe);
-
-  // Try multiple possible paths based on where the test might be running from
-  const char *possible_paths[] = {
-      "../../../core/tests/examples/%s/%s/%s",                     // Original path
-      "../../core/tests/examples/%s/%s/%s",                        // One level up
-      "../core/tests/examples/%s/%s/%s",                           // Two levels up
-      "./core/tests/examples/%s/%s/%s",                            // From project root
-      "/home/matrillo/apps/scopemux/core/tests/examples/%s/%s/%s", // Absolute path
-      "%s/core/tests/examples/%s/%s/%s",                           // Using CWD as base
-      "%s/../core/tests/examples/%s/%s/%s",                        // CWD one level up
-      "%s/../../core/tests/examples/%s/%s/%s"                      // CWD two levels up
-  };
-
-  for (size_t i = 0; i < sizeof(possible_paths) / sizeof(possible_paths[0]); i++) {
-    // Check for potential buffer overflow and handle different format strings
-    size_t path_len = 0;
-
-    // Handle different format string patterns based on index
-    if (i >= 5) { // Paths with CWD parameter
-      path_len = snprintf(NULL, 0, possible_paths[i], cwd_safe, language, category, file_name);
-    } else { // Original paths without CWD parameter
-      path_len = snprintf(NULL, 0, possible_paths[i], language, category, file_name);
-    }
-
-    if (path_len >= sizeof(filepath)) {
-      fprintf(stderr, "WARNING: Path %zu would overflow buffer (length: %zu)\n", i, path_len);
-      log_warning("Path %zu would overflow buffer", i);
-      continue;
-    }
-
-    // Format the path string
-    if (i >= 5) { // Paths with CWD parameter
-      snprintf(filepath, sizeof(filepath), possible_paths[i], cwd_safe, language, category,
-               file_name);
-    } else { // Original paths without CWD parameter
-      snprintf(filepath, sizeof(filepath), possible_paths[i], language, category, file_name);
-    }
-    fprintf(stderr, "DEBUG: Trying path: %s\n", filepath);
-
+  // Try canonical path relative to CWD
+  size_t path_len = snprintf(NULL, 0, "core/examples/%s/%s", category, file_name);
+  if (path_len < sizeof(filepath)) {
+    snprintf(filepath, sizeof(filepath), "core/examples/%s/%s", category, file_name);
+    fprintf(stderr, "DEBUG: Trying canonical path relative to CWD: %s\n", filepath);
     f = fopen(filepath, "rb");
     if (f) {
-      fprintf(stderr, "DEBUG: Successfully opened file: %s\n", filepath);
-      cr_log_info("Successfully opened file: %s", filepath);
+      cr_log_info("Successfully opened file using canonical CWD: %s", filepath);
       goto file_found;
     }
   }
 
-  // Make a copy of cwd before modifying it
-  char cwd_copy[512];
-  if (strlen(cwd_safe) >= sizeof(cwd_copy)) {
-    fprintf(stderr, "ERROR: CWD path too long to copy\n");
-    cr_log_error("CWD path too long to copy");
-    return NULL;
-  }
-
-  strcpy(cwd_copy, cwd_safe); // Safe copy of CWD
-
-  // Try to construct paths by navigating from the build directory to the source directory
-  if (strstr(cwd_copy, "/build/")) {
-    fprintf(stderr, "DEBUG: CWD contains '/build/', trying to construct relative path\n");
-
-    // If we're in a build subdirectory, try to navigate to source
-    char *build_pos = strstr(cwd_copy, "/build/");
-    if (build_pos) {
-      *build_pos = '\0'; // Terminate string at /build to get project root
-
-      // Check for potential buffer overflow
-      size_t path_len = snprintf(NULL, 0, "%s/core/tests/examples/%s/%s/%s", cwd_copy, language,
-                                 category, file_name);
-      if (path_len >= sizeof(filepath)) {
-        fprintf(stderr, "WARNING: Build-relative path would overflow buffer\n");
-        log_warning("Build-relative path would overflow buffer");
-      } else {
-        // Construct path from project root to examples
-        snprintf(filepath, sizeof(filepath), "%s/core/tests/examples/%s/%s/%s", cwd_copy, language,
-                 category, file_name);
-
-        fprintf(stderr, "DEBUG: Trying build-relative path: %s\n", filepath);
-        f = fopen(filepath, "rb");
-        if (f) {
-          fprintf(stderr, "DEBUG: Successfully opened file using build directory logic\n");
-          cr_log_info("Successfully opened file using build directory logic: %s", filepath);
-          goto file_found;
-        }
-      }
-    }
-  }
-
-  // If all paths failed
-  fprintf(stderr, "ERROR: Failed to open test file: %s/%s/%s (from working dir: %s)\n", language,
-          category, file_name, cwd_safe);
-  cr_log_error("Failed to open test file: %s/%s/%s (from working dir: %s)", language, category,
-               file_name, cwd_safe);
+  // If not found at canonical location, error
+  fprintf(stderr, "ERROR: Failed to open test file at canonical location: core/examples/%s/%s\n",
+          category, file_name);
+  cr_log_error("Failed to open test file at canonical location: core/examples/%s/%s", category,
+               file_name);
   return NULL;
 
 file_found:

@@ -110,6 +110,22 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
   return new_node;
 }
 
+// --- Public CSTNode getters ---
+const char *cst_node_get_type(const CSTNode *node) { return node ? node->type : NULL; }
+
+size_t cst_node_get_child_count(const CSTNode *node) { return node ? node->children_count : 0; }
+
+const CSTNode *cst_node_get_child(const CSTNode *node, size_t index) {
+  if (!node || !node->children || index >= node->children_count)
+    return NULL;
+  return node->children[index];
+}
+
+SourceRange cst_node_get_range(const CSTNode *node) {
+  static SourceRange empty = {0, 0, 0, 0, 0, 0};
+  return node ? node->range : empty;
+}
+
 /**
  * Frees a CST node and all its children recursively.
  */
