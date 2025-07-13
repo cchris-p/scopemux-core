@@ -442,3 +442,19 @@ char *memory_debug_strdup(const char *s, const char *file, int line, const char 
   }
   return dup;
 }
+
+char *memory_debug_strndup(const char *s, size_t n, const char *file, int line, const char *tag) {
+  if (!s) {
+    return NULL;
+  }
+  size_t actual = 0;
+  while (actual < n && s[actual] != '\0') {
+    actual++;
+  }
+  char *dup = memory_debug_malloc(actual + 1, file, line, tag);
+  if (dup) {
+    memcpy(dup, s, actual);
+    dup[actual] = '\0';
+  }
+  return dup;
+}

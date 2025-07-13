@@ -125,59 +125,30 @@ void ast_node_free_internal(ASTNode *node) {
   // Set the magic number to a known bad value after freeing
   node->magic = 0xDEADBEEF;
 
-  // Ownership and freeing policy for ASTNode fields:
-  // - All string fields (name, qualified_name, signature, docstring, raw_content, file_path):
-  //   Only free if they were heap-allocated (typically via safe_strdup or safe_malloc).
-  //   Never free if they point to static, stack, or library-owned memory.
-  //   If you change AST node construction to not duplicate a field, update this logic!
-
-  // Free the name if it exists (owned, heap-allocated)
-  if (node->name) {
+  // Free string fields based on their source
+  if (node->name && node->name_source == AST_SOURCE_DEBUG_ALLOC) {
     memory_debug_free(node->name, __FILE__, __LINE__);
-    node->name = NULL;
   }
-
-  // Free the signature if it exists (owned, heap-allocated)
-  if (node->signature) {
-    memory_debug_free(node->signature, __FILE__, __LINE__);
-    node->signature = NULL;
-  }
-
-  // Free the qualified name if it exists (owned, heap-allocated)
-  if (node->qualified_name) {
+  if (node->qualified_name && node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
     memory_debug_free(node->qualified_name, __FILE__, __LINE__);
-    node->qualified_name = NULL;
   }
-
-  // Free the docstring if it exists (owned, heap-allocated)
-  if (node->docstring) {
+  if (node->signature && node->signature_source == AST_SOURCE_DEBUG_ALLOC) {
+    memory_debug_free(node->signature, __FILE__, __LINE__);
+  }
+  if (node->docstring && node->docstring_source == AST_SOURCE_DEBUG_ALLOC) {
     memory_debug_free(node->docstring, __FILE__, __LINE__);
-    node->docstring = NULL;
   }
-
-  // Free the raw_content if it exists (owned, heap-allocated)
-  if (node->raw_content) {
+  if (node->raw_content) { // Assuming raw_content is always owned if present
     memory_debug_free(node->raw_content, __FILE__, __LINE__);
-    node->raw_content = NULL;
   }
-
-  // Free the file_path if it exists (owned, heap-allocated)
-  if (node->file_path) {
+  if (node->file_path && node->file_path_source == AST_SOURCE_DEBUG_ALLOC) {
     memory_debug_free(node->file_path, __FILE__, __LINE__);
-    node->file_path = NULL;
   }
 
-  // Free any additional data if it exists (owned, heap-allocated)
-  if (node->additional_data) {
+  // Free additional data if it exists
+  if (node->additional_data) { // Assuming always owned
     memory_debug_free(node->additional_data, __FILE__, __LINE__);
-    node->additional_data = NULL;
   }
-
-  // Properties handling is now done through the additional_data field
-  // No specific properties dictionary to free
-
-  // Note: children and references arrays are not freed here
-  // They are handled by ast_node_free to ensure proper recursion
 }
 
 /**
@@ -186,18 +157,19 @@ void ast_node_free_internal(ASTNode *node) {
  * @param file_path The file path to set (will be copied)
  * @return true on success, false on allocation failure
  */
-bool ast_node_set_file_path(ASTNode *node, const char *file_path) {
-  if (!node)
+bool ast_node_set_file_path(ASTNode *node, char *file_path, ASTStringSource source) {
+  if (!node || !file_path) {
+    log_error("Cannot set file path: invalid parameters");
     return false;
-  if (node->file_path) {
+  }
+
+  // Free existing file path if it's owned
+  if (node->file_path && node->file_path_source == AST_SOURCE_DEBUG_ALLOC) {
     memory_debug_free(node->file_path, __FILE__, __LINE__);
-    node->file_path = NULL;
   }
-  if (file_path) {
-    node->file_path = strdup(file_path);
-    if (!node->file_path)
-      return false;
-  }
+
+  node->file_path = file_path;
+  node->file_path_source = source;
   return true;
 }
 
@@ -215,7 +187,7 @@ const char *ast_node_get_file_path(const ASTNode *node) {
 /**
  * Creates a new AST node with the specified type and name.
  */
-ASTNode *ast_node_new(ASTNodeType type, const char *name) {
+ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source) {
   // Allocate memory for the node with memory tracking
   ASTNode *node = (ASTNode *)memory_debug_malloc(sizeof(ASTNode), __FILE__, __LINE__, "ast_node");
   if (!node) {
@@ -230,26 +202,18 @@ ASTNode *ast_node_new(ASTNodeType type, const char *name) {
   node->magic = ASTNODE_MAGIC;
   node->type = type;
 
-  // IMPORTANT: Root node naming must be enforced at the call site, not here.
-  // ast_node_new does not have access to the parser context, so the caller must
-  // provide a correct filename as name for NODE_ROOT. This fallback is for robustness only.
-  if (type == NODE_ROOT && (!name || strlen(name) == 0 || strcmp(name, "ROOT") == 0)) {
-    node->name = strdup("unknown_file");
-    if (!node->name) {
-      log_error("Failed to set default name for ROOT node");
-      memory_debug_free(node, __FILE__, __LINE__);
-      return NULL;
-    }
-  } else if (name) {
-    // Copy the name if provided
-    node->name = strdup(name);
-    if (!node->name) {
-      log_error("Failed to duplicate AST node name");
-      memory_debug_free(node, __FILE__, __LINE__);
-      return NULL;
-    }
-  }
-  // If name is NULL and it's not a ROOT node, leave node->name as NULL
+  // Set name and its source
+  node->name = name;
+  node->name_source = name_source;
+
+  // Initialize other sources
+  node->qualified_name_source = AST_SOURCE_NONE;
+  node->signature_source = AST_SOURCE_NONE;
+  node->docstring_source = AST_SOURCE_NONE;
+  node->file_path_source = AST_SOURCE_NONE;
+
+  // Initialize memory canary at the end of the struct
+  memory_debug_set_canary(node, sizeof(ASTNode));
 
   return node;
 }
@@ -394,9 +358,10 @@ bool ast_node_add_reference(ASTNode *from, ASTNode *to) {
 /**
  * Create a new AST node with full attributes.
  */
-ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name,
-                         SourceRange range) {
-  ASTNode *node = ast_node_new(type, name);
+ASTNode *ast_node_create(ASTNodeType type, char *name, ASTStringSource name_source, char *qualified_name,
+                          ASTStringSource qualified_name_source, SourceRange range) {
+  // Create node with name - this will set FIELD_NAME ownership if needed
+  ASTNode *node = ast_node_new(type, name, name_source);
   if (!node) {
     return NULL;
   }
@@ -404,14 +369,10 @@ ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualifi
   // Set the source range
   node->range = range;
 
-  // Copy the qualified name if provided
+  // Take ownership of the qualified name if provided
   if (qualified_name) {
-    node->qualified_name = strdup(qualified_name);
-    if (!node->qualified_name) {
-      log_error("Failed to duplicate qualified name");
-      ast_node_free(node);
-      return NULL;
-    }
+    node->qualified_name = qualified_name;
+    node->qualified_name_source = qualified_name_source;
   }
 
   return node;
@@ -434,9 +395,10 @@ bool ast_node_set_property(ASTNode *node, const char *key, const char *value) {
   if (!node->additional_data) {
     node->additional_data = memory_debug_malloc(1, __FILE__, __LINE__, "ast_property_placeholder");
     if (!node->additional_data) {
-      log_error("Failed to allocate memory for property placeholder");
+      log_error("Failed to allocate property placeholder");
       return false;
     }
+    node->owned_fields |= FIELD_ADDITIONAL_DATA;
   }
 
   return true;
@@ -449,42 +411,86 @@ bool ast_node_set_attribute(ASTNode *node, const char *key, const char *value) {
   return ast_node_set_property(node, key, value);
 }
 
+/**
+ * Set the signature of an AST node
+ * @param node The node to modify
+ * @param signature The signature to set (will be copied)
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_set_signature(ASTNode *node, char *signature, ASTStringSource source) {
+  if (!node) {
+    log_error("Cannot set signature: null node");
+    return false;
+  }
+
+  // Free existing signature if it's owned
+  if (node->signature && node->signature_source == AST_SOURCE_DEBUG_ALLOC) {
+    memory_debug_free(node->signature, __FILE__, __LINE__);
+  }
+
+  node->signature = signature;
+  node->signature_source = source;
+  return true;
+}
+
+/**
+ * Set the docstring of an AST node
+ * @param node The node to modify
+ * @param docstring The docstring to set (will be copied)
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_set_docstring(ASTNode *node, char *docstring, ASTStringSource source) {
+  if (!node) {
+    log_error("Cannot set docstring: null node");
+    return false;
+  }
+
+  // Free existing docstring if it's owned
+  if (node->docstring && node->docstring_source == AST_SOURCE_DEBUG_ALLOC) {
+    memory_debug_free(node->docstring, __FILE__, __LINE__);
+  }
+
+  node->docstring = docstring;
+  node->docstring_source = source;
+  return true;
+}
+
 static void ast_node_free_data(ASTNode *node) {
   if (!node) {
     return;
   }
 
-  if (node->name) {
+  if (node->name && node->name_source == AST_SOURCE_DEBUG_ALLOC) {
     FREE(node->name);
     node->name = NULL;
   }
 
-  if (node->signature) {
-    FREE(node->signature);
-    node->signature = NULL;
-  }
-
-  if (node->qualified_name) {
+  if (node->qualified_name && node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
     FREE(node->qualified_name);
     node->qualified_name = NULL;
   }
 
-  if (node->docstring) {
+  if (node->signature && node->signature_source == AST_SOURCE_DEBUG_ALLOC) {
+    FREE(node->signature);
+    node->signature = NULL;
+  }
+
+  if (node->docstring && node->docstring_source == AST_SOURCE_DEBUG_ALLOC) {
     FREE(node->docstring);
     node->docstring = NULL;
   }
 
-  if (node->raw_content) {
+  if (node->raw_content) { // Assuming raw_content is always owned
     FREE(node->raw_content);
     node->raw_content = NULL;
   }
 
-  if (node->file_path) {
+  if (node->file_path && node->file_path_source == AST_SOURCE_DEBUG_ALLOC) {
     FREE(node->file_path);
     node->file_path = NULL;
   }
 
-  if (node->additional_data) {
+  if (node->additional_data) { // Assuming always owned
     FREE(node->additional_data);
     node->additional_data = NULL;
   }

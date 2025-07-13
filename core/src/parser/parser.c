@@ -319,7 +319,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
       if (slash)
         basename = slash + 1;
     }
-    ASTNode *root = ast_node_create(NODE_ROOT, basename, NULL, (SourceRange){{0, 0, 0}, {0, 0, 0}});
+    ASTNode *root = ast_node_create(NODE_ROOT, (char *)basename, AST_SOURCE_STATIC, NULL, AST_SOURCE_NONE, (SourceRange){{0, 0, 0}, {0, 0, 0}});
     if (!root) {
       parser_set_error(ctx, 11, "Failed to create AST root node");
       return false;

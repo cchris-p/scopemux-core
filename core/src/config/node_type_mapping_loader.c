@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "scopemux/memory_debug.h"
 
 // Simple hash table for mapping query_type -> ASTNodeType
 #define MAX_MAPPINGS 32
@@ -35,7 +36,7 @@ typedef struct {
   ASTNodeType node_type;
 } NodeTypeMapping;
 
-static NodeTypeMapping mappings[MAX_MAPPINGS];
+static NodeTypeMapping mappings[MAX_MAPPINGS] = {0};
 static int mapping_count = 0;
 
 static ASTNodeType parse_node_type(const char *enum_str) {
@@ -108,8 +109,10 @@ void load_node_type_mapping(void) {
 
   // Clear existing mappings
   for (int i = 0; i < mapping_count; ++i) {
-    free(mappings[i].query_type);
-    mappings[i].query_type = NULL;
+    if (mappings[i].query_type) {
+      memory_debug_free(mappings[i].query_type, __FILE__, __LINE__);
+      mappings[i].query_type = NULL;
+    }
   }
   mapping_count = 0;
 
@@ -126,12 +129,15 @@ void load_node_type_mapping(void) {
     }
 
     // Safe string duplication with error checking
-    char *query_type_copy = strdup(query_type);
+    size_t query_type_len = strlen(query_type);
+    char *query_type_copy = (char *)memory_debug_malloc(query_type_len + 1, __FILE__, __LINE__, "query_type_mapping");
     if (!query_type_copy) {
       fprintf(stderr, "[scopemux] ERROR: Failed to allocate memory for query type: %s\n",
               query_type);
       continue;
     }
+    strncpy(query_type_copy, query_type, query_type_len);
+    query_type_copy[query_type_len] = '\0';
 
     // Validate the mapping before storing
     ASTNodeType node_type = parse_node_type(node_type_str);
@@ -166,8 +172,8 @@ ASTNodeType get_node_type_for_query(const char *query_type) {
   }
 
   // **CRITICAL SAFETY CHECK**: Validate mapping state
-  if (mapping_count < 0 || mapping_count > MAX_MAPPINGS) {
-    fprintf(stderr, "[scopemux] ERROR: Corrupted mapping_count: %d (max: %d)\n", mapping_count,
+  if (mapping_count <= 0 || mapping_count > MAX_MAPPINGS) {
+    fprintf(stderr, "[scopemux] ERROR: Invalid mapping_count: %d (max: %d)\n", mapping_count,
             MAX_MAPPINGS);
     return NODE_UNKNOWN;
   }

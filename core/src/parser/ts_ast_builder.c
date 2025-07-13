@@ -116,7 +116,7 @@ static ASTNode *create_ast_root_node(ParserContext *ctx) {
   // Always use the basename as the node name for consistency
   // If no basename is available, use a default name
   const char *node_name = (basename && strlen(basename) > 0) ? basename : "unknown_file";
-  ASTNode *root = ast_node_new(NODE_ROOT, node_name);
+  ASTNode *root = ast_node_new(NODE_ROOT, (char *)node_name, AST_SOURCE_STATIC);
 
   log_info("[create_ast_root_node] Created root node with name: '%s'", node_name);
 
@@ -482,7 +482,7 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
     ASTNode *fallback_root = create_ast_root_node(ctx);
     if (!fallback_root) {
       log_error("ts_tree_to_ast_impl: Emergency fallback: Creating basic AST root node");
-      fallback_root = ast_node_new(NODE_ROOT, ctx->filename ? ctx->filename : "unknown_file");
+      fallback_root = ast_node_new(NODE_ROOT, (char *)(ctx->filename ? ctx->filename : "unknown_file"), AST_SOURCE_STATIC);
     }
     return fallback_root;
   }
@@ -601,7 +601,7 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
     if (!final_root) {
       // Last resort emergency fallback
       log_error("Emergency fallback: Creating basic AST root node");
-      final_root = ast_node_new(NODE_ROOT, ctx->filename ? ctx->filename : "unknown_file");
+      final_root = ast_node_new(NODE_ROOT, (char *)(ctx->filename ? ctx->filename : "unknown_file"), AST_SOURCE_STATIC);
     }
   }
 

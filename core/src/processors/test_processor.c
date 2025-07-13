@@ -176,7 +176,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 1. file_docstring node
   if (enable_logging)
     log_debug("Creating file_docstring node");
-  ASTNode *file_docstring = ast_node_new(NODE_DOCSTRING, "file_docstring");
+  ASTNode *file_docstring = ast_node_new(NODE_DOCSTRING, "file_docstring", AST_SOURCE_STATIC);
   if (!file_docstring) {
     if (enable_logging)
       log_error("Failed to create file_docstring node");
@@ -223,7 +223,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 2. stdbool_include node
   if (enable_logging)
     log_debug("Creating stdbool_include node");
-  ASTNode *stdbool_include = ast_node_new(NODE_INCLUDE, "stdbool_include");
+  ASTNode *stdbool_include = ast_node_new(NODE_INCLUDE, "stdbool_include", AST_SOURCE_STATIC);
   if (!stdbool_include) {
     if (enable_logging)
       log_error("Failed to create stdbool_include node");
@@ -268,7 +268,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 3. stdio_include node
   if (enable_logging)
     log_debug("Creating stdio_include node");
-  ASTNode *stdio_include = ast_node_new(NODE_INCLUDE, "stdio_include");
+  ASTNode *stdio_include = ast_node_new(NODE_INCLUDE, "stdio_include", AST_SOURCE_STATIC);
   if (!stdio_include) {
     if (enable_logging)
       log_error("Failed to create stdio_include node");
@@ -312,7 +312,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 4. stdlib_include node
   if (enable_logging)
     log_debug("Creating stdlib_include node");
-  ASTNode *stdlib_include = ast_node_new(NODE_INCLUDE, "stdlib_include");
+  ASTNode *stdlib_include = ast_node_new(NODE_INCLUDE, "stdlib_include", AST_SOURCE_STATIC);
   if (!stdlib_include) {
     if (enable_logging)
       log_error("Failed to create stdlib_include node");
@@ -356,7 +356,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 5. main function node
   if (enable_logging)
     log_debug("Creating main function node");
-  ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main");
+  ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main", AST_SOURCE_STATIC);
   if (!main_func) {
     if (enable_logging)
       log_error("Failed to create main function node");
@@ -450,7 +450,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
 
   if (enable_logging)
     log_debug("Preparing main_func for child nodes");
-  ASTNode *v_i = ast_node_new(NODE_VARIABLE_DECLARATION, "i");
+  ASTNode *v_i = ast_node_new(NODE_VARIABLE_DECLARATION, "i", AST_SOURCE_STATIC);
   if (!v_i) {
     if (enable_logging)
       log_error("Failed to create variable node 'i'");
@@ -493,7 +493,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 2. float f = 3.14f;
   if (enable_logging)
     log_debug("Creating variable node 'f'");
-  ASTNode *v_f = ast_node_new(NODE_VARIABLE_DECLARATION, "f");
+  ASTNode *v_f = ast_node_new(NODE_VARIABLE_DECLARATION, "f", AST_SOURCE_STATIC);
   if (!v_f) {
     if (enable_logging)
       log_error("Failed to create variable node 'f'");
@@ -535,7 +535,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 3. double d = 2.71828;
   if (enable_logging)
     log_debug("Creating variable node 'd'");
-  ASTNode *v_d = ast_node_new(NODE_VARIABLE_DECLARATION, "d");
+  ASTNode *v_d = ast_node_new(NODE_VARIABLE_DECLARATION, "d", AST_SOURCE_STATIC);
   if (!v_d) {
     if (enable_logging)
       log_error("Failed to create variable node 'd'");
@@ -577,7 +577,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 4. char c = 'A';
   if (enable_logging)
     log_debug("Creating variable node 'c'");
-  ASTNode *v_c = ast_node_new(NODE_VARIABLE_DECLARATION, "c");
+  ASTNode *v_c = ast_node_new(NODE_VARIABLE_DECLARATION, "c", AST_SOURCE_STATIC);
   if (!v_c) {
     if (enable_logging)
       log_error("Failed to create variable node 'c'");
@@ -619,7 +619,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 5. bool b = true;
   if (enable_logging)
     log_debug("Creating variable node 'b'");
-  ASTNode *v_b = ast_node_new(NODE_VARIABLE_DECLARATION, "b");
+  ASTNode *v_b = ast_node_new(NODE_VARIABLE_DECLARATION, "b", AST_SOURCE_STATIC);
   if (!v_b) {
     if (enable_logging)
       log_error("Failed to create variable node 'b'");
@@ -661,7 +661,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 6. int array[5] = {1, 2, 3, 4, 5};
   if (enable_logging)
     log_debug("Creating variable node 'array'");
-  ASTNode *v_array = ast_node_new(NODE_VARIABLE_DECLARATION, "array");
+  ASTNode *v_array = ast_node_new(NODE_VARIABLE_DECLARATION, "array", AST_SOURCE_STATIC);
   if (!v_array) {
     if (enable_logging)
       log_error("Failed to create variable node 'array'");
@@ -704,7 +704,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 7. for loop
   if (enable_logging)
     log_debug("Creating for_loop node");
-  ASTNode *for_loop = ast_node_new(NODE_FOR_STATEMENT, "for_loop");
+  ASTNode *for_loop = ast_node_new(NODE_FOR_STATEMENT, "for_loop", AST_SOURCE_STATIC);
   if (!for_loop) {
     if (enable_logging)
       log_error("Failed to create for_loop node");
@@ -742,7 +742,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 8. while loop
   if (enable_logging)
     log_debug("Creating while_loop node");
-  ASTNode *while_loop = ast_node_new(NODE_WHILE_STATEMENT, "while_loop");
+  ASTNode *while_loop = ast_node_new(NODE_WHILE_STATEMENT, "while_loop", AST_SOURCE_STATIC);
   if (!while_loop) {
     if (enable_logging)
       log_error("Failed to create while_loop node");
@@ -780,7 +780,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 9. do-while loop
   if (enable_logging)
     log_debug("Creating do_while node");
-  ASTNode *do_while = ast_node_new(NODE_DO_WHILE_STATEMENT, "do_while_loop");
+  ASTNode *do_while = ast_node_new(NODE_DO_WHILE_STATEMENT, "do_while_loop", AST_SOURCE_STATIC);
   if (!do_while) {
     if (enable_logging)
       log_error("Failed to create do_while node");
@@ -818,7 +818,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 10. if-else statement
   if (enable_logging)
     log_debug("Creating if_else node");
-  ASTNode *if_else = ast_node_new(NODE_IF_STATEMENT, "if_else_statement");
+  ASTNode *if_else = ast_node_new(NODE_IF_STATEMENT, "if_else_statement", AST_SOURCE_STATIC);
   if (!if_else) {
     if (enable_logging)
       log_error("Failed to create if_else node");
@@ -856,7 +856,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 11. if-else-if statement
   if (enable_logging)
     log_debug("Creating if_else_if node");
-  ASTNode *if_else_if = ast_node_new(NODE_IF_ELSE_IF_STATEMENT, "if_else_if_statement");
+  ASTNode *if_else_if = ast_node_new(NODE_IF_ELSE_IF_STATEMENT, "if_else_if_statement", AST_SOURCE_STATIC);
   if (!if_else_if) {
     if (enable_logging)
       log_error("Failed to create if_else_if node");
@@ -896,7 +896,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 12. switch statement
   if (enable_logging)
     log_debug("Creating switch statement node");
-  ASTNode *switch_stmt = ast_node_new(NODE_SWITCH_STATEMENT, "switch_statement");
+  ASTNode *switch_stmt = ast_node_new(NODE_SWITCH_STATEMENT, "switch_statement", AST_SOURCE_STATIC);
   if (!switch_stmt) {
     if (enable_logging)
       log_error("Failed to create switch_stmt node");
@@ -1153,7 +1153,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   }
 
   // Create a new main function node
-  ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main");
+  ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main", AST_SOURCE_STATIC);
   if (!main_func) {
     if (enable_logging)
       log_error("Failed to create main function node");

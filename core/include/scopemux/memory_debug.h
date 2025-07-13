@@ -140,5 +140,6 @@ void *memory_debug_calloc(size_t nmemb, size_t size, const char *file, int line,
 void *memory_debug_realloc(void *ptr, size_t size, const char *file, int line, const char *tag);
 void memory_debug_free(void *ptr, const char *file, int line);
 char *memory_debug_strdup(const char *s, const char *file, int line, const char *tag);
+char *memory_debug_strndup(const char *s, size_t n, const char *file, int line, const char *tag);
 
 #endif /* SCOPEMUX_MEMORY_DEBUG_H */

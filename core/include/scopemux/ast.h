@@ -62,18 +62,48 @@ typedef enum {
 } ASTNodeType;
 
 /**
+ * @enum ASTStringSource
+ * @brief Describes the allocation source of a string field in an ASTNode.
+ */
+typedef enum {
+    AST_SOURCE_NONE,         /**< Source is unknown or not set */
+    AST_SOURCE_DEBUG_ALLOC,  /**< String was allocated by memory_debug_malloc and must be freed */
+    AST_SOURCE_STATIC,       /**< String is a static literal or library-managed, and must not be freed */
+} ASTStringSource;
+
+/**
  * Abstract Syntax Tree node structure
  */
 typedef struct ASTNode {
-  uint32_t magic;       /**< Canary for heap corruption/use-after-free detection */
-  ASTNodeType type;     /**< Type of the node */
+  uint32_t magic;   /**< Canary for heap corruption/use-after-free detection */
+  ASTNodeType type; /**< Type of the node */
+
+  // Memory ownership flags for string fields
+  uint32_t owned_fields; /**< Bitfield tracking which string fields we own and must free */
+#define FIELD_NAME (1 << 0)
+#define FIELD_QUALIFIED_NAME (1 << 1)
+#define FIELD_SIGNATURE (1 << 2)
+#define FIELD_DOCSTRING (1 << 3)
+#define FIELD_RAW_CONTENT (1 << 4)
+#define FIELD_FILE_PATH (1 << 5)
+#define FIELD_ADDITIONAL_DATA (1 << 6)
+
   char *name;           /**< Name of the entity */
+  ASTStringSource name_source;
+
   char *qualified_name; /**< Fully qualified name (e.g., namespace::class::method) */
+  ASTStringSource qualified_name_source;
+
   SourceRange range;    /**< Source code range */
   char *signature;      /**< Function/method signature if applicable */
+  ASTStringSource signature_source;
+
   char *docstring;      /**< Associated documentation */
+  ASTStringSource docstring_source;
+
   char *raw_content;    /**< Raw source code content */
   char *file_path;      /**< Source file path (new field) */
+  ASTStringSource file_path_source;
 
   struct ASTNode *parent;    /**< Parent node (e.g., class for a method) */
   struct ASTNode **children; /**< Child nodes (e.g., methods for a class) */
@@ -98,9 +128,8 @@ typedef struct ASTNode {
  * @param type The type of node to create
  * @return A new AST node with the given type, or NULL on allocation failure
  */
-ASTNode *ast_node_new(ASTNodeType type, const char *name);
-ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name,
-                         SourceRange range);
+ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source);
+ASTNode *ast_node_create(ASTNodeType type, char *name, ASTStringSource name_source, char *qualified_name, ASTStringSource qualified_name_source, SourceRange range);
 
 /**
  * Convert an ASTNodeType enum value to its canonical string representation
@@ -129,7 +158,7 @@ bool ast_node_add_child(ASTNode *parent, ASTNode *child);
  * @param name The name to set (will be copied)
  * @return true on success, false on allocation failure
  */
-bool ast_node_set_name(ASTNode *node, const char *name);
+bool ast_node_set_name(ASTNode *node, char *name, ASTStringSource source);
 
 /**
  * Set the file path of an AST node
@@ -137,7 +166,7 @@ bool ast_node_set_name(ASTNode *node, const char *name);
  * @param file_path The file path to set (will be copied)
  * @return true on success, false on allocation failure
  */
-bool ast_node_set_file_path(ASTNode *node, const char *file_path);
+bool ast_node_set_file_path(ASTNode *node, char *file_path, ASTStringSource source);
 
 /**
  * Get the file path of an AST node
@@ -147,12 +176,28 @@ bool ast_node_set_file_path(ASTNode *node, const char *file_path);
 const char *ast_node_get_file_path(const ASTNode *node);
 
 /**
+ * Set the signature of an AST node
+ * @param node The node to modify
+ * @param signature The signature to set (will be copied)
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_set_signature(ASTNode *node, char *signature, ASTStringSource source);
+
+/**
+ * Set the docstring of an AST node
+ * @param node The node to modify
+ * @param docstring The docstring to set (will be copied)
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_set_docstring(ASTNode *node, char *docstring, ASTStringSource source);
+
+/**
  * Set the qualified name of an AST node
  * @param node The node to modify
  * @param qualified_name The qualified name to set (will be copied)
  * @return true on success, false on allocation failure
  */
-bool ast_node_set_qualified_name(ASTNode *node, const char *qualified_name);
+bool ast_node_set_qualified_name(ASTNode *node, char *qualified_name, ASTStringSource source);
 
 /**
  * Set an attribute on an AST node

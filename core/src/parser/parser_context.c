@@ -55,7 +55,13 @@ ParserContext *parser_init(void) {
   }
 
   // Initialize the query manager
-  ctx->q_manager = NULL;
+  ctx->q_manager = query_manager_init("queries");
+  if (!ctx->q_manager) {
+    log_error("Failed to initialize query manager");
+    ts_parser_delete(ctx->ts_parser);
+    memory_debug_free(ctx, __FILE__, __LINE__);
+    return NULL;
+  }
 
   // Default to parse both AST and CST
   ctx->mode = PARSE_BOTH;
@@ -71,6 +77,10 @@ ParserContext *parser_init(void) {
   // Initialize language-specific schema compliance and post-processing callbacks
   register_all_language_compliance();
   log_info("Registered language-specific compliance callbacks");
+
+  // Initialize node type mappings
+  load_node_type_mapping();
+  log_info("Initialized node type mappings");
 
   log_info("Successfully initialized parser context at %p", (void *)ctx);
   return ctx;
@@ -123,6 +133,12 @@ void parser_clear(ParserContext *ctx) {
 
   // Note: Tree-sitter tree is not stored in the context anymore
   // It should be freed immediately after use in parser.c
+
+  // Free the query manager
+  if (ctx->q_manager) {
+    query_manager_free(ctx->q_manager);
+    ctx->q_manager = NULL;
+  }
 
   // Free the AST nodes as before
   log_debug("Freeing %zu AST nodes", ctx->num_ast_nodes);
