@@ -9,6 +9,52 @@
 #include <string.h>
 #include <unistd.h>
 
+// Debug utility: Print ASTNode as JSON (minimal, for test debug output only)
+static void print_ast_node_json(const ASTNode *node, int level) {
+  if (!node) {
+    fprintf(stderr, "null");
+    return;
+  }
+  // Indent
+  for (int i = 0; i < level; ++i) fprintf(stderr, "  ");
+  fprintf(stderr, "{\n");
+
+  for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+  fprintf(stderr, "\"type\": \"%s\",\n", ast_node_type_to_string(node->type));
+  if (node->name) {
+    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    fprintf(stderr, "\"name\": \"%s\",\n", node->name);
+  }
+  if (node->qualified_name) {
+    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    fprintf(stderr, "\"qualified_name\": \"%s\",\n", node->qualified_name);
+  }
+  if (node->signature) {
+    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    fprintf(stderr, "\"signature\": \"%s\",\n", node->signature);
+  }
+  if (node->docstring) {
+    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    fprintf(stderr, "\"docstring\": \"%s\",\n", node->docstring);
+  }
+  if (node->file_path) {
+    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    fprintf(stderr, "\"file_path\": \"%s\",\n", node->file_path);
+  }
+  // Print children
+  for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+  fprintf(stderr, "\"children\": [");
+  if (node->num_children > 0) fprintf(stderr, "\n");
+  for (size_t i = 0; i < node->num_children; ++i) {
+    print_ast_node_json(node->children[i], level + 2);
+    if (i + 1 < node->num_children) fprintf(stderr, ",");
+    fprintf(stderr, "\n");
+  }
+  for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+  fprintf(stderr, "]\n");
+  for (int i = 0; i < level; ++i) fprintf(stderr, "  ");
+  fprintf(stderr, "}");
+}
 ASTTestConfig ast_test_config_init(void) {
   ASTTestConfig config = {.source_file = NULL,
                           .json_file = NULL,
@@ -151,133 +197,126 @@ void json_value_free(JsonValue *value) {
 }
 
 bool run_ast_test(const ASTTestConfig *config) {
-  if (!config || !config->source_file) {
-    if (config->debug_mode) {
-      fprintf(stderr, "TESTING: Invalid test configuration\n");
-    }
+  bool test_passed = true;
+  char *source_content = NULL;
+  ASTNode *ast = NULL;
+  JsonValue *expected_json = NULL;
+
+  // Validate input params
+  if (!config) {
+    cr_assert_fail("NULL config passed to run_ast_test");
     return false;
   }
 
-  // 1. Read source file
-  if (config->debug_mode) {
-    fprintf(stderr, "TESTING: Reading source file %s...\n", config->source_file);
-  }
-
-  char *source = read_file_contents(config->source_file);
-  if (!source) {
-    if (config->debug_mode) {
-      fprintf(stderr, "TESTING: Failed to read source file %s\n", config->source_file);
-    }
+  // Validate source file
+  if (!config->source_file) {
+    cr_assert_fail("NULL source_file in test config");
     return false;
   }
 
-  if (config->debug_mode) {
-    fprintf(stderr, "TESTING: Successfully read source file (length: %zu bytes)\n", strlen(source));
+  // Validate expected JSON file
+  if (!config->json_file) {
+    cr_assert_fail("NULL json_file in test config");
+    return false;
   }
 
-  // 2. Initialize parser and parse source
-  if (config->debug_mode) {
-    fprintf(stderr, "TESTING: Initializing parser context...\n");
-  }
+  cr_log_info("===== BEGIN AST TEST =====");
+  cr_log_info("Source file: %s", config->source_file);
+  cr_log_info("Expected JSON file: %s", config->json_file);
 
+  // 1. Read the source file
+  source_content = read_file_contents(config->source_file);
+  if (!source_content) {
+    cr_assert_fail("Failed to read source file");
+    goto cleanup;
+  }
+  
+  // Debug: Show source content preview
+  size_t src_len = strlen(source_content);
+  size_t preview_len = src_len < 200 ? src_len : 200;
+  cr_log_info("Source content preview (%zu bytes total):\n%.*s%s", 
+              src_len, (int)preview_len, source_content, 
+              src_len > preview_len ? "..." : "");
+
+  // 2. Parse the file and get the AST
+  cr_log_info("Initializing parser context");
   ParserContext *ctx = parser_init();
   if (!ctx) {
-    if (config->debug_mode) {
-      fprintf(stderr, "TESTING: Failed to create parser context\n");
-    }
-    free(source);
-    return false;
+    cr_assert_fail("Failed to initialize parser context");
+    goto cleanup;
   }
 
-  parser_set_mode(ctx, PARSE_AST);
+  // Set the language based on the file extension
+  const char *extension = get_language_extension(config->language);
+  if (!extension) {
+    cr_assert_fail("Failed to determine file extension for source file");
+    parser_free(ctx);
+    goto cleanup;
+  }
+
+  cr_log_info("Setting parser language to: %d (extension: %s)", config->language, extension);
+  parser_set_language(ctx, config->language);
+
+  // Parse the source code
+  cr_log_info("Parsing source code");
   bool parse_success =
-      parser_parse_string(ctx, source, strlen(source), config->base_filename, config->language);
+      parser_parse_string(ctx, source_content, strlen(source_content), config->base_filename, config->language);
 
   if (!parse_success) {
-    if (config->debug_mode) {
-      fprintf(stderr, "TESTING: Failed to parse source code\n");
-      const char *error = parser_get_last_error(ctx);
-      if (error) {
-        fprintf(stderr, "TESTING: Parser error: %s\n", error);
-      }
-    }
-    free(source);
+    cr_assert_fail("Failed to parse source file");
     parser_free(ctx);
-    return false;
-  }
-
-  if (config->debug_mode) {
-    fprintf(stderr, "TESTING: Source code parsed successfully\n");
+    goto cleanup;
   }
 
   // 3. Get AST root
-  const ASTNode *ast = ctx->ast_root;
-  if (!ast) {
-    if (config->debug_mode) {
-      fprintf(stderr, "TESTING: AST root node is NULL\n");
-    }
-    free(source);
+  const ASTNode *ast_root = ctx->ast_root;
+  if (!ast_root) {
+    cr_assert_fail("AST root node is NULL");
     parser_free(ctx);
-    return false;
+    goto cleanup;
   }
 
-  if (config->debug_mode) {
-    fprintf(stderr, "TESTING: AST root node exists (type: %d, num_children: %zu)\n", ast->type,
-            ast->num_children);
-  }
+  cr_log_info("AST root node exists (type: %d, num_children: %zu)", ast_root->type,
+              ast_root->num_children);
 
   // 4. Load and validate expected JSON
-  if (config->debug_mode && config->json_file) {
-    if (config->debug_mode) {
-      fprintf(stderr, "[%s Test: %s] Loading expected JSON from %s...\n",
-              get_language_name(config->language), config->base_filename, config->json_file);
-    }
+  cr_log_info("Reading expected JSON file");
+  char *expected_content = read_file_contents(config->json_file);
+  if (!expected_content) {
+    cr_assert_fail("Failed to read expected JSON file");
+    goto cleanup;
   }
 
-  bool test_passed = true;
-  if (config->json_file) {
-    JsonValue *expected_json = NULL;
-    char *json_content = read_file_contents(config->json_file);
-
-    if (!json_content) {
-      if (config->debug_mode) {
-        fprintf(stderr, "DEBUG: Failed to read JSON file: %s\n", config->json_file);
-      }
-    } else {
-      if (config->debug_mode) {
-        fprintf(stderr, "DEBUG: Read JSON file (%zu bytes): %s\n", strlen(json_content),
-                config->json_file);
-      }
-      expected_json = parse_json_string(json_content);
-      if (!expected_json) {
-        if (config->debug_mode) {
-          fprintf(stderr, "DEBUG: parse_json_string returned NULL. Possible reasons: "
-                          "out-of-memory, stack overflow, or malformed JSON.\n");
-          // Try to print the first 500 characters for context
-          size_t preview_len = strlen(json_content) > 500 ? 500 : strlen(json_content);
-          fprintf(stderr, "DEBUG: JSON file preview (first %zu bytes):\n%.*s\n", preview_len,
-                  (int)preview_len, json_content);
-        }
-      }
-      free(json_content);
-    }
-
-    if (!expected_json) {
-      if (config->debug_mode) {
-        fprintf(stderr, "TESTING: Failed to load or parse expected JSON\n");
-      }
-      test_passed = false;
-    } else {
-      // Compare AST with expected JSON
-      test_passed = validate_ast_against_json(ast, expected_json);
-      json_value_free(expected_json);
-    }
+  expected_json = parse_json_string(expected_content);
+  if (!expected_json) {
+    cr_log_error("Failed to parse expected JSON file");
+    // Try to print the first 500 characters for context
+    size_t preview_len = strlen(expected_content) > 500 ? 500 : strlen(expected_content);
+    fprintf(stderr, "DEBUG: JSON file preview (first %zu bytes):\n%.*s\n", preview_len,
+            (int)preview_len, expected_content);
+    free(expected_content);
+    goto cleanup;
   }
 
-  // Cleanup
-  free(source);
-  parser_free(ctx);
+  if (expected_json) {
+    // Compare AST with expected JSON
+    test_passed = validate_ast_against_json(ast_root, expected_json);
+    if (!test_passed && config->debug_mode) {
+      fprintf(stderr, "\n========== AST/JSON MISMATCH ==========" "\n");
+      fprintf(stderr, "ACTUAL AST (as JSON):\n");
+      print_ast_node_json(ast_root, 0);
+      fprintf(stderr, "\nEXPECTED JSON:\n");
+      print_json_value(expected_json, 0);
+      fprintf(stderr, "\n=======================================\n");
+    }
+    json_value_free(expected_json);
+  }
 
+  free(expected_content);
+
+cleanup:
+  if (source_content) free(source_content);
+  if (ctx) parser_free(ctx);
   return test_passed;
 }
 

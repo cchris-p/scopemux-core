@@ -300,7 +300,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
     return;
   }
 
-  log_debug("Processing query type: %s", query_type);
+  log_error("[QUERY_DEBUG] Processing query type: %s", query_type);
 
   // Get the query for this language and query type
   const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
@@ -308,6 +308,16 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
     log_error("[QUERY_PROCESSOR] Failed to get query for %s", query_type);
     return;
   }
+
+  // DEBUG: Log query details
+  uint32_t pattern_count = ts_query_pattern_count(query);
+  uint32_t capture_count = ts_query_capture_count(query);
+  log_error("[QUERY_DEBUG] Query '%s' has %u patterns and %u possible captures",
+            query_type, pattern_count, capture_count);
+
+  // DEBUG: Tree-sitter does not provide pattern string introspection in the C API.
+  // This block is a placeholder for future Tree-sitter API upgrades or custom debug info.
+  // log_error("[QUERY_DEBUG] Query pattern introspection not available in C API");
 
   // Create a query cursor for executing the query
   TSQueryCursor *cursor = ts_query_cursor_new();
@@ -319,9 +329,18 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
   // Set the query cursor to use the root node
   ts_query_cursor_exec(cursor, query, root_node);
 
+  // DEBUG: Track matches count
+  int match_count = 0;
+  int successful_captures = 0;
+
+  // Map the query type to the appropriate AST node type
+  uint32_t node_type = map_query_type_to_node_type(query_type);
+  log_error("[QUERY_DEBUG] Mapped '%s' query to AST node type %u", query_type, node_type);
+
   // Process all matches
   TSQueryMatch match;
   while (ts_query_cursor_next_match(cursor, &match)) {
+    match_count++;
     // Get the capture count for this match
     uint32_t capture_count = match.capture_count;
 
@@ -330,130 +349,125 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       continue;
     }
 
-    // Process each capture in the match
+    log_error("[QUERY_DEBUG] Found match %d with %u captures", match_count, capture_count);
+
+    // Track main node and its name for this match
+    TSNode main_node = {0};
+    char *node_name = NULL;
+    bool node_name_is_debug_alloc = false; // Track if node_name was memory_debug_malloc'd
+
+    // First pass: find the main capture and name (if any)
     for (uint32_t i = 0; i < capture_count; i++) {
-      // Get the capture
       TSQueryCapture capture = match.captures[i];
-
-      // Defensive check for invalid capture
-      if (capture.index >= ts_query_capture_count(query)) {
-        log_error("[QUERY_PROCESSOR] Invalid capture index: %u (max: %u)", capture.index,
-                  ts_query_capture_count(query) - 1);
-        continue;
-      }
-
-      // Get the name of the capture
+      // Get capture name
       uint32_t capture_name_length;
-      const char *capture_name =
-          ts_query_capture_name_for_id(query, capture.index, &capture_name_length);
-
-      // Defensive check for NULL capture name
-      if (!capture_name) {
-        log_error("[QUERY_PROCESSOR] NULL capture name for index %u", capture.index);
-        continue;
-      }
-
-      // Get the node for this capture
+      const char *capture_name = ts_query_capture_name_for_id(query, capture.index, &capture_name_length);
+      if (!capture_name) continue;
       TSNode node = capture.node;
-
-      // Defensive check for NULL node
-      if (ts_node_is_null(node)) {
-        log_error("[QUERY_PROCESSOR] NULL node for capture %s", capture_name);
-        continue;
+      if (ts_node_is_null(node)) continue;
+      const char *node_type_str = ts_node_type(node);
+      log_error("[QUERY_DEBUG] Capture %u: name='%.*s', node_type='%s'", 
+                i, capture_name_length, capture_name, node_type_str);
+      // Special case: For docstring queries, always use the first comment node as main_node
+      if (strcmp(query_type, "docstrings") == 0 && main_node.id == 0) {
+        if (strcmp(node_type_str, "comment") == 0) {
+          main_node = node;
+          log_error("[QUERY_DEBUG] For docstrings, set main_node to comment node at match %d, capture %u", match_count, i);
+        }
       }
-
-      // Get the node type
-      const char *node_type = ts_node_type(node);
-
-      // Defensive check for NULL node type
-      if (!node_type) {
-        log_error("[QUERY_PROCESSOR] NULL node type for capture %s", capture_name);
-        continue;
+      // Find the main capture (function, struct, class, etc.)
+      if (strncmp(capture_name, query_type, strlen(query_type)) == 0 ||
+          strncmp(capture_name, "function", 8) == 0 ||
+          strncmp(capture_name, "struct", 6) == 0 ||
+          strncmp(capture_name, "class", 5) == 0 ||
+          strncmp(capture_name, "variable", 8) == 0 ||
+          strncmp(capture_name, "method", 6) == 0) {
+        main_node = node;
       }
-
-      // Check if we have a name capture
+      // Find name capture
       if (strncmp(capture_name, "name", capture_name_length) == 0) {
-        // Extract the name from the node text
-        char *name = NULL;
-
-        // Defensive check before extracting text
-        if (ctx->source_code && ts_node_start_byte(node) < ctx->source_code_length &&
-            ts_node_end_byte(node) <= ctx->source_code_length) {
-
-          uint32_t start_byte = ts_node_start_byte(node);
-          uint32_t length = ts_node_end_byte(node) - start_byte;
-
-          // Allocate memory for the name
-          name = (char *)memory_debug_malloc(length + 1, __FILE__, __LINE__, "name_capture");
-          if (name) {
-            // Copy the name from the source code
-            strncpy(name, ctx->source_code + start_byte, length);
-            name[length] = '\0';
+        // Extract name text
+        uint32_t start_byte = ts_node_start_byte(node);
+        uint32_t end_byte = ts_node_end_byte(node);
+        if (ctx->source_code && start_byte < ctx->source_code_length && end_byte <= ctx->source_code_length && end_byte > start_byte) {
+          uint32_t length = end_byte - start_byte;
+          node_name = (char *)memory_debug_malloc(length + 1, __FILE__, __LINE__, "name_capture");
+          if (node_name) {
+            strncpy(node_name, ctx->source_code + start_byte, length);
+            node_name[length] = '\0';
+            log_error("[QUERY_DEBUG] Extracted name: '%s'", node_name);
+            node_name_is_debug_alloc = true;
           }
-        }
-
-        if (!name) {
-          log_error("[QUERY_PROCESSOR] Failed to extract name for %s", node_type);
-          continue;
-        }
-
-        // Find the function capture
-        for (uint32_t j = 0; j < capture_count; j++) {
-          TSQueryCapture function_capture = match.captures[j];
-
-          // Defensive check for invalid capture
-          if (function_capture.index >= ts_query_capture_count(query)) {
-            continue;
-          }
-
-          uint32_t function_capture_name_length;
-          const char *function_capture_name = ts_query_capture_name_for_id(
-              query, function_capture.index, &function_capture_name_length);
-
-          // Defensive check for NULL capture name
-          if (!function_capture_name) {
-            continue;
-          }
-
-          // Check if this is a function capture
-          if (strncmp(function_capture_name, "function", function_capture_name_length) == 0 ||
-              strncmp(function_capture_name, "function_declaration",
-                      function_capture_name_length) == 0) {
-
-            // Get the function node
-            TSNode function_node = function_capture.node;
-
-            // Defensive check for NULL function node
-            if (ts_node_is_null(function_node)) {
-              continue;
-            }
-
-            // Create an AST node for the function
-            ASTNode *ast_node = ast_node_create(
-                NODE_FUNCTION, name, name,
-                (SourceRange){.start = {.line = ts_node_start_point(function_node).row,
-                                        .column = ts_node_start_point(function_node).column},
-                              .end = {.line = ts_node_end_point(function_node).row,
-                                      .column = ts_node_end_point(function_node).column}});
-            if (!ast_node) {
-              log_error("[QUERY_PROCESSOR] Failed to create AST node for function %s", name);
-              memory_debug_free(name, __FILE__, __LINE__);
-              continue;
-            }
-
-            // Add the AST node to the root
-            ast_node_add_child(ast_root, ast_node);
-
-            // Free the name (it's been copied in ast_node_create)
-            memory_debug_free(name, __FILE__, __LINE__);
-
-            // Break out of the loop
-            break;
-          }
+        } else {
+          log_error("[QUERY_DEBUG] Skipped extracting name: invalid source_code or out-of-bounds [%u,%u] (len %u)", start_byte, end_byte, ctx->source_code_length);
         }
       }
     }
+
+    // If we found a main node, create an AST node for it
+    if (!ts_node_is_null(main_node)) {
+      // Use default name if none found
+      if (!node_name) {
+        // For docstring queries, use the text of the main_node (comment) as the name if possible
+        if (strcmp(query_type, "docstrings") == 0 && !ts_node_is_null(main_node) && ctx->source_code) {
+          uint32_t start_byte = ts_node_start_byte(main_node);
+          uint32_t end_byte = ts_node_end_byte(main_node);
+          if (start_byte < ctx->source_code_length && end_byte <= ctx->source_code_length && end_byte > start_byte) {
+            uint32_t length = end_byte - start_byte;
+            node_name = (char *)memory_debug_malloc(length + 1, __FILE__, __LINE__, "docstring_comment");
+            if (node_name) {
+              strncpy(node_name, ctx->source_code + start_byte, length);
+              node_name[length] = '\0';
+              node_name_is_debug_alloc = true;
+              log_error("[QUERY_DEBUG] Used comment text as docstring name: '%s'", node_name);
+            }
+          } else {
+            log_error("[QUERY_DEBUG] Could not extract docstring comment text: invalid bounds [%u,%u] (len %u)", start_byte, end_byte, ctx->source_code_length);
+          }
+        }
+        if (!node_name) {
+          const char *default_name = "unnamed";
+          node_name = (char *)default_name; // Do not free this
+          log_error("[QUERY_DEBUG] Using default name: '%s'", default_name);
+        }
+      }
+
+      // Create AST node with appropriate type
+      ASTNode *ast_node = ast_node_create(
+          node_type, node_name, node_name,
+          (SourceRange){.start = {.line = ts_node_start_point(main_node).row,
+                                  .column = ts_node_start_point(main_node).column},
+                        .end = {.line = ts_node_end_point(main_node).row,
+                                .column = ts_node_end_point(main_node).column}});
+
+      if (ast_node) {
+        // Successfully created node
+        successful_captures++;
+        // Add the node to the AST
+        ast_node_add_child(ast_root, ast_node);
+        log_error("[QUERY_DEBUG] Added %s node '%s' to AST", 
+                  ast_node_type_to_string(node_type), node_name);
+      } else {
+        log_error("[QUERY_DEBUG] Failed to create AST node for %s", node_name);
+      }
+
+      // Free the name (it's been copied in ast_node_create)
+      if (node_name_is_debug_alloc) {
+        memory_debug_free(node_name, __FILE__, __LINE__);
+      } // else do not free string literal or strdup'd fallback
+    } else if (node_name) {
+      // We found a name but no main node
+      log_error("[QUERY_DEBUG] Found name '%s' but no main node for query '%s'", 
+                node_name, query_type);
+      memory_debug_free(node_name, __FILE__, __LINE__);
+    } else {
+      log_error("[QUERY_DEBUG] No main node or name found for match %d", match_count);
+    }
   }
+
+  // Final statistics
+  log_error("[QUERY_DEBUG] Query '%s' finished processing: %d matches, %d nodes added",
+            query_type, match_count, successful_captures);
 
   // Free the query cursor
   ts_query_cursor_delete(cursor);

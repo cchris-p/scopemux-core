@@ -8,7 +8,7 @@
   (_) @variable_type
   (init_declarator
     (identifier) @name
-    (_) @value)) @global_variable_with_init
+    (_) @value)) @variable
 
 ;; Variables with storage class specifiers (static, extern, etc.)
 (declaration
@@ -19,7 +19,7 @@
     (init_declarator
       (identifier) @name
       (_) @value)
-  ]) @variable_with_storage_class
+  ]) @variable
 
 ;; Variables with type qualifiers (const, volatile)
 (declaration
@@ -30,14 +30,14 @@
     (init_declarator
       (identifier) @name
       (_) @value)
-  ]) @variable_with_type_qualifier
+  ]) @variable
 
 ;; Array declarations
 (declaration
   (_) @array_type
   (array_declarator
     (identifier) @name
-    (_)? @array_size)) @array_variable
+    (_)? @array_size)) @variable
 
 ;; Array with initializer
 (declaration
@@ -46,7 +46,7 @@
     (array_declarator
       (identifier) @name
       (_)? @array_size)
-    (_) @value)) @array_variable_with_init
+    (_) @value)) @variable_with_init
 
 ;; Local variables (inside function body)
 (compound_statement

@@ -1,11 +1,12 @@
-;; Regular struct definition with name
-(struct_specifier
-  (type_identifier) @name) @struct
-
-;; Anonymous struct definition
-(struct_specifier) @struct
-
-;; Forward declarations of structs
+;; Named struct definition (not typedef)
 (declaration
-  (struct_specifier
-    (type_identifier) @name)) @struct_forward_declaration
+  type: (struct_specifier
+          name: (type_identifier) @name
+        ) @struct
+)
+
+;; Typedef struct (anonymous or named)
+(type_definition
+  type: (struct_specifier) @struct
+  declarator: (type_identifier) @name
+)

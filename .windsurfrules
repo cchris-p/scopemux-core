@@ -15,6 +15,16 @@ Here are the shell scripts
 - run_misc_tests.sh <- Tests basic functionality for parsing
 - run_interfile_tests.sh
 
+Example files and their JSON validation cases exist in these directories. You may have trouble accessing them because of gitignore but they do in fact exist so treat them as if the paths are absolutely valid.
+(scopemux) matrillo@matrillobase1:~/apps/scopemux$ ls core/tests/examples/c/
+basic_syntax  complex_structures  file1.c  file2.c  file_io  memory_management  struct_union_enum
+(scopemux) matrillo@matrillobase1:~/apps/scopemux$ ls core/tests/examples/c/basic_syntax/
+hello_world.c  hello_world.c.expected.json  variables_loops_conditions.c  variables_loops_conditions.c.expected.json
+
+For tests, the examples will be located in examples/ inside of the build directory
+
+build/core/tests/examples/*
+
 # 🔍 Tree-sitter Parsing in ScopeMux
 
 ## 📚 Role of Tree-sitter

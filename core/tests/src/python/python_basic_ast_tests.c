@@ -111,6 +111,12 @@ Test(ast_extraction, python_classes, .description = "Test AST extraction of Pyth
     }
   }
 
+  // Debug: Dump AST structure to visualize the parsed tree
+  // Uncomment if needed for debugging
+  // for (size_t i = 0; i < node_count; i++) {
+  //   dump_ast_structure(ast_nodes[i], 0);
+  // }
+
   // Clean up
   parser_free(ctx);
   free(source_code);

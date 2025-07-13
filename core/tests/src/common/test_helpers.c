@@ -41,40 +41,45 @@ char *read_test_file(const char *language, const char *category, const char *fil
   char filepath[1024];
   FILE *f = NULL;
 
-  // Only try canonical path: PROJECT_ROOT_DIR/core/examples/category/file_name
-  const char *project_root = getenv("PROJECT_ROOT_DIR");
-  if (project_root && strlen(project_root) > 0) {
-    size_t path_len =
-        snprintf(NULL, 0, "%s/core/examples/%s/%s", project_root, category, file_name);
-    if (path_len < sizeof(filepath)) {
-      snprintf(filepath, sizeof(filepath), "%s/core/examples/%s/%s", project_root, category,
-               file_name);
-      fprintf(stderr, "DEBUG: Trying canonical path using PROJECT_ROOT_DIR: %s\n", filepath);
-      f = fopen(filepath, "rb");
-      if (f) {
-        cr_log_info("Successfully opened file using canonical PROJECT_ROOT_DIR: %s", filepath);
-        goto file_found;
-      }
-    }
-  }
-
-  // Try canonical path relative to CWD
-  size_t path_len = snprintf(NULL, 0, "core/examples/%s/%s", category, file_name);
+  // 1. Try build/core/tests/examples/<category>/<file_name>
+  size_t path_len = snprintf(NULL, 0, "build/core/tests/examples/%s/%s", category, file_name);
   if (path_len < sizeof(filepath)) {
-    snprintf(filepath, sizeof(filepath), "core/examples/%s/%s", category, file_name);
-    fprintf(stderr, "DEBUG: Trying canonical path relative to CWD: %s\n", filepath);
+    snprintf(filepath, sizeof(filepath), "build/core/tests/examples/%s/%s", category, file_name);
+    fprintf(stderr, "DEBUG: Trying build directory path: %s\n", filepath);
     f = fopen(filepath, "rb");
     if (f) {
-      cr_log_info("Successfully opened file using canonical CWD: %s", filepath);
+      cr_log_info("Successfully opened file in build directory: %s", filepath);
       goto file_found;
     }
   }
 
-  // If not found at canonical location, error
-  fprintf(stderr, "ERROR: Failed to open test file at canonical location: core/examples/%s/%s\n",
-          category, file_name);
-  cr_log_error("Failed to open test file at canonical location: core/examples/%s/%s", category,
-               file_name);
+  // 2. Try submodule path: core/tests/examples/c/<category>/<file_name>
+  path_len = snprintf(NULL, 0, "core/tests/examples/c/%s/%s", category, file_name);
+  if (path_len < sizeof(filepath)) {
+    snprintf(filepath, sizeof(filepath), "core/tests/examples/c/%s/%s", category, file_name);
+    fprintf(stderr, "DEBUG: Trying submodule path: %s\n", filepath);
+    f = fopen(filepath, "rb");
+    if (f) {
+      cr_log_info("Successfully opened file in submodule path: %s", filepath);
+      goto file_found;
+    }
+  }
+
+  // 3. Try legacy canonical path: core/examples/<category>/<file_name>
+  path_len = snprintf(NULL, 0, "core/examples/%s/%s", category, file_name);
+  if (path_len < sizeof(filepath)) {
+    snprintf(filepath, sizeof(filepath), "core/examples/%s/%s", category, file_name);
+    fprintf(stderr, "DEBUG: Trying legacy canonical path: %s\n", filepath);
+    f = fopen(filepath, "rb");
+    if (f) {
+      cr_log_info("Successfully opened file using legacy canonical path: %s", filepath);
+      goto file_found;
+    }
+  }
+
+  // If not found at any location, error
+  fprintf(stderr, "ERROR: Failed to open test file at any known location for category=%s file_name=%s\n", category, file_name);
+  cr_log_error("Failed to open test file at any known location for category=%s file_name=%s", category, file_name);
   return NULL;
 
 file_found:

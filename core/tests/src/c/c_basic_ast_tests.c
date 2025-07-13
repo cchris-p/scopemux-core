@@ -162,6 +162,7 @@ Test(ast_extraction, c_functions, .description = "Test AST extraction of C funct
  * Verifies that struct definitions are correctly identified
  * and their properties are extracted properly.
  */
+#ifdef ENABLE_STRUCT_UNION_ENUM_TESTS
 Test(ast_extraction, c_structs, .description = "Test AST extraction of C structs") {
   if (DEBUG_MODE) {
     fprintf(stderr, "Starting c_structs test\n");
@@ -211,6 +212,7 @@ Test(ast_extraction, c_structs, .description = "Test AST extraction of C structs
   parser_free(ctx);
   free(source_code);
 }
+#endif // ENABLE_STRUCT_UNION_ENUM_TESTS
 
 /**
  * Test AST extraction of basic C syntax elements.

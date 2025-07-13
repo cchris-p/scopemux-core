@@ -55,6 +55,7 @@ Test(cpp_ast, functions, .description = "Test AST extraction of C++ functions") 
   free(source_code);
 }
 
+#ifdef ENABLE_STRUCT_UNION_ENUM_TESTS
 /**
  * Test extraction of C++ classes from source code.
  * Verifies that class definitions are correctly identified

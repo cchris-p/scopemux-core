@@ -431,12 +431,12 @@ static const TSQuery *compile_query(const TSLanguage *language, const char *quer
     if (error_offset && *error_offset < query_len) {
       uint32_t start = *error_offset > 20 ? *error_offset - 20 : 0;
       uint32_t end = *error_offset + 20 < query_len ? *error_offset + 20 : query_len;
-
-      log_error("Query snippet: ...%.*s[ERROR]%.*s...", *error_offset - start, query_str + start,
-                end - *error_offset, query_str + *error_offset);
+      fprintf(stderr, "[QUERY_DEBUG] Query error context: ...%.*s[ERROR]%.*s...\n", *error_offset - start, query_str + start, end - *error_offset, query_str + *error_offset);
     }
+    fprintf(stderr, "[QUERY_DEBUG] Loaded query content:\n%s\n", query_str);
   } else {
     log_debug("Successfully compiled query");
+    fprintf(stderr, "[QUERY_DEBUG] Loaded query content:\n%s\n", query_str);
   }
 
   return query;
@@ -681,6 +681,9 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
   // Load the query file content
   uint32_t content_len = 0;
   char *query_content = read_query_file(query_path, &content_len);
+  if (query_content) {
+    fprintf(stderr, "[QUERY_DEBUG] Contents of '%s':\n%.*s\n", query_path, (int)content_len, query_content);
+  }
   safe_free(query_path); // Free the path string as we don't need it anymore
 
   if (!query_content) {
