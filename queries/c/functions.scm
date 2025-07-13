@@ -1,12 +1,21 @@
-;; CASCADE_DEBUG_MARKER
+;; Function definitions (direct, pointer, parenthesized)
+;; Minimal compiling pattern for function definitions
+;; (Backed by vendor/tree-sitter-c/grammar.js and node-types.json)
 
-;; Capture function definition with signature
+;; Canonical function name extraction (one layer of nesting)
+;; (function_definition declarator: (function_declarator declarator: (identifier) @name)) @function
 (function_definition
   declarator: (function_declarator
     declarator: (identifier) @name
-    parameters: (parameter_list)?) @signature
-  type: (_) @return_type) @function
+  )
+) @function
 
-;; Capture docstring (comment before function)
-((comment) @docstring
- (#select-adjacent-before 1 @function))
+;; Pointer declarator nesting
+(function_definition
+  declarator: (function_declarator
+    declarator: (pointer_declarator
+      declarator: (identifier) @name
+    )
+  )
+) @function
+

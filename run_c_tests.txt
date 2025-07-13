@@ -2,12 +2,12 @@
 Building shared libraries in /home/matrillo/apps/scopemux/build/tree-sitter-libs
 Converting static libraries to shared libraries...
 Created shared libraries:
--rwxrwxr-x 1 matrillo matrillo 3566904 Jul 13 20:21 libtree-sitter-cpp.so
--rwxrwxr-x 1 matrillo matrillo  627536 Jul 13 20:21 libtree-sitter-c.so
--rwxrwxr-x 1 matrillo matrillo  386944 Jul 13 20:21 libtree-sitter-javascript.so
--rwxrwxr-x 1 matrillo matrillo  484368 Jul 13 20:21 libtree-sitter-python.so
--rwxrwxr-x 1 matrillo matrillo  237264 Jul 13 20:21 libtree-sitter.so
--rwxrwxr-x 1 matrillo matrillo 1443832 Jul 13 20:21 libtree-sitter-typescript.so
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul 13 22:22 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul 13 22:22 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul 13 22:22 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul 13 22:22 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  237264 Jul 13 22:22 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul 13 22:22 libtree-sitter-typescript.so
 Done building shared libraries.
 [test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux/build/tree-sitter-libs
 DEBUG: prepare_clean_build_dir received build_dir='/home/matrillo/apps/scopemux/build-c'
@@ -51,7 +51,7 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 --   C Compiler: GNU 11.4.0
 --   C++ Compiler: GNU 11.4.0
 --   Tree-sitter core libraries built to: /home/matrillo/apps/scopemux/build-c/tree-sitter-libs
--- Configuring done (4.2s)
+-- Configuring done (4.3s)
 -- Generating done (0.2s)
 -- Build files have been written to: /home/matrillo/apps/scopemux/build-c
 [run_c_tests.sh] Building C Basic AST Tests (c_basic_ast_tests)...
@@ -66,14 +66,14 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests] DEBUG: Trying submodule path: core/tests/examples/c/basic_syntax/hello_world.c
 [C Basic AST Tests] DEBUG: File size is 393 bytes
 [C Basic AST Tests] DEBUG: Successfully read file contents
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] Registered C language compliance callbacks
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] Registered language-specific compliance callbacks
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] Registered C language compliance callbacks
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] Registered language-specific compliance callbacks
 [C Basic AST Tests] [scopemux] INFO: Loading hardcoded node type mappings
 [C Basic AST Tests] [scopemux] Loaded 14 hardcoded node type mappings
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] Initialized node type mappings
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] Successfully initialized parser context at 0x558ddfc40d90
-[C Basic AST Tests] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x558ddfc40d90, content=0x558ddfc41da0, content_length=393, filename=hello_world.c, language=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x558ddfc40d90
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] Initialized node type mappings
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] Successfully initialized parser context at 0x563ef3937d90
+[C Basic AST Tests] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x563ef3937d90, content=0x563ef3938da0, content_length=393, filename=hello_world.c, language=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x563ef3937d90
 [C Basic AST Tests] [scopemux] Loading hardcoded node type mappings:
 [C Basic AST Tests]   functions -> NODE_FUNCTION
 [C Basic AST Tests]   classes -> NODE_CLASS
@@ -89,143 +89,112 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests]   docstrings -> NODE_DOCSTRING
 [C Basic AST Tests]   interfaces -> NODE_INTERFACE
 [C Basic AST Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
-[C Basic AST Tests] [QUERY_MANAGER_FREE] ENTER: manager=0x558ddfc417e0
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x558ddfc41820
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x558ddfc418a0 (language_count=6)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x558ddfc41920 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558ddfc41920
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x558ddfc41a30 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558ddfc41a30
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x558ddfc41b40 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558ddfc41b40
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x558ddfc41c50 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558ddfc41c50
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x558ddfc41f40 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558ddfc41f40
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x558ddfc42050 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x558ddfc42050
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x558ddfc418a0
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing languages array at 0x558ddfc41840
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing language_types array at 0x558ddfc41880
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x558ddfc418e0
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing manager struct at 0x558ddfc417e0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] ENTER: manager=0x563ef39387e0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x563ef3938820
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x563ef39388a0 (language_count=6)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x563ef3938920 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563ef3938920
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x563ef3938a30 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563ef3938a30
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x563ef3938b40 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563ef3938b40
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x563ef3938c50 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563ef3938c50
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x563ef3938f40 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563ef3938f40
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x563ef3939050 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563ef3939050
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x563ef39388a0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing languages array at 0x563ef3938840
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing language_types array at 0x563ef3938880
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x563ef39388e0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing manager struct at 0x563ef39387e0
 [C Basic AST Tests] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x558ddfc40d90
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
-[C Basic AST Tests] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x558ddfc40d90, language=1
-[C Basic AST Tests] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x558ddfc40d90, language=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x563ef3937d90
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[C Basic AST Tests] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x563ef3937d90, language=1
+[C Basic AST Tests] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x563ef3937d90, language=1
 [C Basic AST Tests] 
 [C Basic AST Tests] ***** PARSER INITIALIZATION DIAGNOSTIC *****
-[C Basic AST Tests] Test executable pid: 2266667
+[C Basic AST Tests] Test executable pid: 2356426
 [C Basic AST Tests] Using statically linked Tree-sitter libraries
 [C Basic AST Tests] SYMBOL RESOLUTION CHECK:
-[C Basic AST Tests]   dlsym(tree_sitter_c): 0x558db9440e12
-[C Basic AST Tests]   dlsym(tree_sitter_cpp): 0x558db94570ff
-[C Basic AST Tests]   dlsym(tree_sitter_python): 0x558db945cebf
-[C Basic AST Tests]   dlsym(tree_sitter_javascript): 0x558db9464be2
-[C Basic AST Tests]   dlsym(tree_sitter_typescript): 0x558db946bfa7
+[C Basic AST Tests]   dlsym(tree_sitter_c): 0x563eb7986ef2
+[C Basic AST Tests]   dlsym(tree_sitter_cpp): 0x563eb799d1df
+[C Basic AST Tests]   dlsym(tree_sitter_python): 0x563eb79a2f9f
+[C Basic AST Tests]   dlsym(tree_sitter_javascript): 0x563eb79aacc2
+[C Basic AST Tests]   dlsym(tree_sitter_typescript): 0x563eb79b2087
 [C Basic AST Tests] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
 [C Basic AST Tests] [DIAGNOSTIC] Language name: C
-[C Basic AST Tests] [DIAGNOSTIC] Adapter lookup result: 0x558db9a5b1a0
+[C Basic AST Tests] [DIAGNOSTIC] Adapter lookup result: 0x563eb7fa11a0
 [C Basic AST Tests] [DIAGNOSTIC] Adapter language_name: C
-[C Basic AST Tests] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x558db9440e12
-[C Basic AST Tests] [DIAGNOSTIC] Result of get_ts_language(): 0x558db9a57260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Successfully retrieved language object for language type 1, address: 0x558db9a57260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Calling ts_parser_set_language with parser=0x558ddfc40e30, language=0x558db9a57260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ts_parser_set_language succeeded
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Verification: ts_parser_language() returned: 0x558db9a57260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Language verification successful - pointer match confirmed
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ===================================================================
+[C Basic AST Tests] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x563eb7986ef2
+[C Basic AST Tests] [DIAGNOSTIC] Result of get_ts_language(): 0x563eb7f9d260
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Successfully retrieved language object for language type 1, address: 0x563eb7f9d260
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Calling ts_parser_set_language with parser=0x563ef3937e30, language=0x563eb7f9d260
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ts_parser_set_language succeeded
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Verification: ts_parser_language() returned: 0x563eb7f9d260
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Language verification successful - pointer match confirmed
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ===================================================================
 [C Basic AST Tests] DEBUG: Using queries directory: /home/matrillo/apps/scopemux/queries/c
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Loading hardcoded node type mappings (source of truth)...
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Loading hardcoded node type mappings (source of truth)...
 [C Basic AST Tests] [scopemux] INFO: Loading hardcoded node type mappings
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc3e1a0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc43170 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc43190 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc431b0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc431d0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc431f0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc43210 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc43230 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc43250 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc43270 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc43290 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc432b0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc432d0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc2e7e0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef39351a0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a170 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a190 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a1b0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a1d0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a1f0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a210 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a230 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a250 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a270 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a290 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a2b0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef393a2d0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef39257e0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
 [C Basic AST Tests] [scopemux] Loaded 14 hardcoded node type mappings
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ts_init_parser returned: TRUE
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] After initialization: Tree-sitter parser=0x558ddfc40e30, language=0x558db9a57260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [create_ast_root_node] ctx->filename: 'hello_world.c' (basename: 'hello_world.c')
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [create_ast_root_node] Created root node with name: 'hello_world.c'
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [create_ast_root_node] Set qualified_name: 'hello_world.c'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ts_init_parser returned: TRUE
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] After initialization: Tree-sitter parser=0x563ef3937e30, language=0x563eb7f9d260
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [create_ast_root_node] ctx->filename: 'hello_world.c' (basename: 'hello_world.c')
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [create_ast_root_node] Created root node with name: 'hello_world.c'
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [create_ast_root_node] Set qualified_name: 'hello_world.c'
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
 [C Basic AST Tests]  * @file hello_world.c
 [C Basic AST Tests]  * @brief A simple "Hello, World!" program in C
 [C Basic AST Tests]  *
 [C Basic AST Tests]  * This example demons...'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 0: type='comment', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 2: type='comment', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 3: type='function_definition', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: classes
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 0: type='comment', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 2: type='comment', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 3: type='function_definition', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: classes
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/classes.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/classes.scm (error: No such file or directory)
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/classes.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/classes.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/classes.scm':
-[C Basic AST Tests] ;; Empty placeholder for C classes (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
-[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
-[C Basic AST Tests] ;; Empty placeholder for C classes (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: structs
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/structs.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/structs.scm (error: No such file or directory)
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/structs.scm':
-[C Basic AST Tests] ;; Named struct definition (not typedef)
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   type: (struct_specifier
-[C Basic AST Tests]           name: (type_identifier) @name
-[C Basic AST Tests]         ) @struct
-[C Basic AST Tests] )
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Typedef struct (anonymous or named)
-[C Basic AST Tests] (type_definition
-[C Basic AST Tests]   type: (struct_specifier) @struct
-[C Basic AST Tests]   declarator: (type_identifier) @name
-[C Basic AST Tests] )
-[C Basic AST Tests] 
 [C Basic AST Tests] DEBUG: read_test_file called for category=basic_syntax file_name=variables_loops_conditions.c
 [C Basic AST Tests] DEBUG: Trying build directory path: build/core/tests/examples/basic_syntax/variables_loops_conditions.c
 [C Basic AST Tests] DEBUG: Trying submodule path: core/tests/examples/c/basic_syntax/variables_loops_conditions.c
 [C Basic AST Tests] DEBUG: File size is 1573 bytes
 [C Basic AST Tests] DEBUG: Successfully read file contents
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] Registered C language compliance callbacks
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] Registered language-specific compliance callbacks
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] Registered C language compliance callbacks
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] Registered language-specific compliance callbacks
 [C Basic AST Tests] [scopemux] INFO: Loading hardcoded node type mappings
 [C Basic AST Tests] [scopemux] Loaded 14 hardcoded node type mappings
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] Initialized node type mappings
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] Successfully initialized parser context at 0x563220106da0
-[C Basic AST Tests] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x563220106da0, content=0x563220107db0, content_length=1573, filename=variables_loops_conditions.c, language=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x563220106da0
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] Initialized node type mappings
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] Successfully initialized parser context at 0x55f1fdadfda0
+[C Basic AST Tests] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x55f1fdadfda0, content=0x55f1fdae0db0, content_length=1573, filename=variables_loops_conditions.c, language=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x55f1fdadfda0
 [C Basic AST Tests] [scopemux] Loading hardcoded node type mappings:
 [C Basic AST Tests]   functions -> NODE_FUNCTION
 [C Basic AST Tests]   classes -> NODE_CLASS
@@ -241,129 +210,128 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests]   docstrings -> NODE_DOCSTRING
 [C Basic AST Tests]   interfaces -> NODE_INTERFACE
 [C Basic AST Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
-[C Basic AST Tests] [QUERY_MANAGER_FREE] ENTER: manager=0x5632201077f0
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x563220107830
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x5632201078b0 (language_count=6)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x563220107930 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563220107930
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x563220107a40 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563220107a40
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x563220107b50 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563220107b50
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x563220107c60 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x563220107c60
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x5632201083e0 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5632201083e0
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x5632201084f0 (query_count=0)
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5632201084f0
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x5632201078b0
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing languages array at 0x563220107850
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing language_types array at 0x563220107890
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x5632201078f0
-[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing manager struct at 0x5632201077f0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] ENTER: manager=0x55f1fdae07f0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x55f1fdae0830
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x55f1fdae08b0 (language_count=6)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x55f1fdae0930 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55f1fdae0930
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x55f1fdae0a40 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55f1fdae0a40
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x55f1fdae0b50 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55f1fdae0b50
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x55f1fdae0c60 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55f1fdae0c60
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x55f1fdae13e0 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55f1fdae13e0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x55f1fdae14f0 (query_count=0)
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55f1fdae14f0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x55f1fdae08b0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing languages array at 0x55f1fdae0850
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing language_types array at 0x55f1fdae0890
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x55f1fdae08f0
+[C Basic AST Tests] [QUERY_MANAGER_FREE] Freeing manager struct at 0x55f1fdae07f0
 [C Basic AST Tests] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x563220106da0
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
-[C Basic AST Tests] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x563220106da0, language=1
-[C Basic AST Tests] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x563220106da0, language=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x55f1fdadfda0
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[C Basic AST Tests] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x55f1fdadfda0, language=1
+[C Basic AST Tests] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x55f1fdadfda0, language=1
 [C Basic AST Tests] 
 [C Basic AST Tests] ***** PARSER INITIALIZATION DIAGNOSTIC *****
-[C Basic AST Tests] Test executable pid: 2266670
+[C Basic AST Tests] Test executable pid: 2356428
 [C Basic AST Tests] Using statically linked Tree-sitter libraries
 [C Basic AST Tests] SYMBOL RESOLUTION CHECK:
-[C Basic AST Tests]   dlsym(tree_sitter_c): 0x563212758e12
-[C Basic AST Tests]   dlsym(tree_sitter_cpp): 0x56321276f0ff
-[C Basic AST Tests]   dlsym(tree_sitter_python): 0x563212774ebf
-[C Basic AST Tests]   dlsym(tree_sitter_javascript): 0x56321277cbe2
-[C Basic AST Tests]   dlsym(tree_sitter_typescript): 0x563212783fa7
+[C Basic AST Tests]   dlsym(tree_sitter_c): 0x55f1cfec6ef2
+[C Basic AST Tests]   dlsym(tree_sitter_cpp): 0x55f1cfedd1df
+[C Basic AST Tests]   dlsym(tree_sitter_python): 0x55f1cfee2f9f
+[C Basic AST Tests]   dlsym(tree_sitter_javascript): 0x55f1cfeeacc2
+[C Basic AST Tests]   dlsym(tree_sitter_typescript): 0x55f1cfef2087
 [C Basic AST Tests] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
 [C Basic AST Tests] [DIAGNOSTIC] Language name: C
-[C Basic AST Tests] [DIAGNOSTIC] Adapter lookup result: 0x563212d731a0
+[C Basic AST Tests] [DIAGNOSTIC] Adapter lookup result: 0x55f1d04e11a0
 [C Basic AST Tests] [DIAGNOSTIC] Adapter language_name: C
-[C Basic AST Tests] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x563212758e12
-[C Basic AST Tests] [DIAGNOSTIC] Result of get_ts_language(): 0x563212d6f260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Successfully retrieved language object for language type 1, address: 0x563212d6f260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Calling ts_parser_set_language with parser=0x563220106e40, language=0x563212d6f260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ts_parser_set_language succeeded
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Verification: ts_parser_language() returned: 0x563212d6f260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Language verification successful - pointer match confirmed
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ===================================================================
-[C Basic AST Tests] DEBUG: Using queries directory: /home/matrillo/apps/scopemux/queries/c
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Loading hardcoded node type mappings (source of truth)...
+[C Basic AST Tests] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x55f1cfec6ef2
+[C Basic AST Tests] [DIAGNOSTIC] Result of get_ts_language(): 0x55f1d04dd260
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Loaded query content:
+[C Basic AST Tests] ;; Empty placeholder for C classes (not applicable to C)
+[C Basic AST Tests] ;; This file exists to prevent file not found errors
+[C Basic AST Tests] 
+[C Basic AST Tests] Successfully retrieved language object for language type 1, address: 0x55f1d04dd260
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] Calling ts_parser_set_language with parser=0x55f1fdadfe40, language=0x55f1d04dd260[QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ts_parser_set_language succeeded
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3Verification: ts_parser_language() returned: 0x55f1d04dd260
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Language verification successful - pointer match confirmed
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ===================================================================
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes addedDEBUG: Using queries directory: /home/matrillo/apps/scopemux/queries/c
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: structsLoading hardcoded node type mappings (source of truth)...
+[C Basic AST Tests] 
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
 [C Basic AST Tests] [scopemux] INFO: Loading hardcoded node type mappings
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x5632201041a0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109610 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109630 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109650 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109670 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109690 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x5632201096b0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x5632201096d0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x5632201096f0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109710 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109730 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109750 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220109770 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x5632200f47e0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/structs.scm
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdadd1a0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/structs.scm (error: No such file or directory)
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2610 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer[QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2630 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2650 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2670 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2690 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae26b0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae26d0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae26f0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2710 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2730 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2750 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdae2770 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdacd7e0 in /home/matrillo/apps/scopemux/core/src/config/node_type_mapping_loader.c:113 - this may be a library-allocated pointer
 [C Basic AST Tests] [scopemux] Loaded 14 hardcoded node type mappings
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ts_init_parser returned: TRUE
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] After initialization: Tree-sitter parser=0x563220106e40, language=0x563212d6f260
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [create_ast_root_node] ctx->filename: 'variables_loops_conditions.c' (basename: 'variables_loops_conditions.c')
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [create_ast_root_node] Created root node with name: 'variables_loops_conditions.c'
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] [create_ast_root_node] Set qualified_name: 'variables_loops_conditions.c'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ts_init_parser returned: TRUE
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] After initialization: Tree-sitter parser=0x55f1fdadfe40, language=0x55f1d04dd260
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [create_ast_root_node] ctx->filename: 'variables_loops_conditions.c' (basename: 'variables_loops_conditions.c')
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [create_ast_root_node] Created root node with name: 'variables_loops_conditions.c'
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] [create_ast_root_node] Set qualified_name: 'variables_loops_conditions.c'
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
 [C Basic AST Tests]  * @file variables_loops_conditions.c
 [C Basic AST Tests]  * @brief Demonstration of variables, loops, and condition...'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=6
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 0: type='comment', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 2: type='preproc_include', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 3: type='preproc_include', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Child 4: type='comment', named=1
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: classes
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=6
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 0: type='comment', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 2: type='preproc_include', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 3: type='preproc_include', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Child 4: type='comment', named=1
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: classes
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/classes.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/classes.scm (error: No such file or directory)
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/classes.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/classes.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/classes.scm':
-[C Basic AST Tests] ;; Empty placeholder for C classes (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
 [C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
 [C Basic AST Tests] ;; Empty placeholder for C classes (not applicable to C)
 [C Basic AST Tests] ;; This file exists to prevent file not found errors
 [C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: structs
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: structs
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/structs.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/structs.scm (error: No such file or directory)
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/structs.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/structs.scm':
-[C Basic AST Tests] ;; Named struct definition (not typedef)
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   type: (struct_specifier
-[C Basic AST Tests]           name: (type_identifier) @name
-[C Basic AST Tests]         ) @struct
-[C Basic AST Tests] )
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Typedef struct (anonymous or named)
-[C Basic AST Tests] (type_definition
-[C Basic AST Tests]   type: (struct_specifier) @struct
-[C Basic AST Tests]   declarator: (type_identifier) @name
-[C Basic AST Tests] )
-[C Basic AST Tests] 
 [C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
 [C Basic AST Tests] ;; Named struct definition (not typedef)
 [C Basic AST Tests] (declaration
@@ -378,151 +346,50 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests]   declarator: (type_identifier) @name
 [C Basic AST Tests] )
 [C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Unknown query type: structs
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Unknown query type: struct
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc4a8c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:408 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: functions
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Unknown query type: structs
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Unknown query type: struct
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x563ef3941900 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:408 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: functions
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/functions.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/functions.scm (error: No such file or directory)
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/functions.scm':
-[C Basic AST Tests] ;; CASCADE_DEBUG_MARKER
+[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
+[C Basic AST Tests] ;; Function definitions (direct, pointer, parenthesized)
+[C Basic AST Tests] ;; Minimal compiling pattern for function definitions
+[C Basic AST Tests] ;; (Backed by vendor/tree-sitter-c/grammar.js and node-types.json)
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Capture function definition with signature
+[C Basic AST Tests] ;; Canonical function name extraction (one layer of nesting)
+[C Basic AST Tests] ;; (function_definition declarator: (function_declarator declarator: (identifier) @name)) @function
 [C Basic AST Tests] (function_definition
 [C Basic AST Tests]   declarator: (function_declarator
 [C Basic AST Tests]     declarator: (identifier) @name
-[C Basic AST Tests]     parameters: (parameter_list)?) @signature
-[C Basic AST Tests]   type: (_) @return_type) @function
+[C Basic AST Tests]   )
+[C Basic AST Tests] ) @function
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Capture docstring (comment before function)
-[C Basic AST Tests] ((comment) @docstring
-[C Basic AST Tests]  (#select-adjacent-before 1 @function))
-[C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Failed to compile query: Unknown error at offset 210
-[C Basic AST Tests] [QUERY_DEBUG] Query error context: ...ist)?) @signature
-[C Basic AST Tests]   [ERROR]type: (_) @return_ty...
-[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
-[C Basic AST Tests] ;; CASCADE_DEBUG_MARKER
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Capture function definition with signature
+[C Basic AST Tests] ;; Pointer declarator nesting
 [C Basic AST Tests] (function_definition
 [C Basic AST Tests]   declarator: (function_declarator
-[C Basic AST Tests]     declarator: (identifier) @name
-[C Basic AST Tests]     parameters: (parameter_list)?) @signature
-[C Basic AST Tests]   type: (_) @return_type) @function
+[C Basic AST Tests]     declarator: (pointer_declarator
+[C Basic AST Tests]       declarator: (identifier) @name
+[C Basic AST Tests]     )
+[C Basic AST Tests]   )
+[C Basic AST Tests] ) @function
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Capture docstring (comment before function)
-[C Basic AST Tests] ((comment) @docstring
-[C Basic AST Tests]  (#select-adjacent-before 1 @function))
 [C Basic AST Tests] 
-[C Basic AST Tests] Failed to compile query c/functions
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_PROCESSOR] Failed to get query for functions
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'functions' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: methods
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/methods.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/methods.scm (error: No such file or directory)
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/methods.scm':
-[C Basic AST Tests] ;; Empty placeholder for C methods (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
-[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
-[C Basic AST Tests] ;; Empty placeholder for C methods (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: variables
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/variables.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/variables.scm (error: No such file or directory)
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/variables.scm':
-[C Basic AST Tests] ;; Global variable declarations
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   (identifier) @name) @global_variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Global variable with initializer
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   (init_declarator
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (_) @value)) @variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Variables with storage class specifiers (static, extern, etc.)
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (storage_class_specifier) @storage_class
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   [
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (init_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_) @value)
-[C Basic AST Tests]   ]) @variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Variables with type qualifiers (const, volatile)
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (type_qualifier) @type_qualifier
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   [
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (init_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_) @value)
-[C Basic AST Tests]   ]) @variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Array declarations
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @array_type
-[C Basic AST Tests]   (array_declarator
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (_)? @array_size)) @variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Array with initializer
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @array_type
-[C Basic AST Tests]   (init_declarator
-[C Basic AST Tests]     (array_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_)? @array_size)
-[C Basic AST Tests]     (_) @value)) @variable_with_init
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Local variables (inside function body)
-[C Basic AST Tests] (compound_statement
-[C Basic AST Tests]   (declaration
-[C Basic AST Tests]     type: (_) @variable_type
-[C Basic AST Tests]     declarator: [
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (init_declarator
-[C Basic AST Tests]         declarator: (identifier) @name
-[C Basic AST Tests]         value: (_) @value)
-[C Basic AST Tests]     ])) @local_variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Pointer variables
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   type: (_) @pointer_base_type
-[C Basic AST Tests]   declarator: (pointer_declarator
-[C Basic AST Tests]     declarator: (identifier) @name)) @pointer_variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Function parameters (which are also variables)
-[C Basic AST Tests] (parameter_declaration
-[C Basic AST Tests]   type: (_) @param_type
-[C Basic AST Tests]   declarator: (identifier) @param_name) @function_parameter
-[C Basic AST Tests] 
-[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 1 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main() {
+[C Basic AST Tests]   printf("Hello, World!\n")'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Loaded query content:
 [C Basic AST Tests] ;; Named struct definition (not typedef)
 [C Basic AST Tests] (declaration
 [C Basic AST Tests]   type: (struct_specifier
@@ -536,150 +403,106 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests]   declarator: (type_identifier) @name
 [C Basic AST Tests] )
 [C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Unknown query type: structs
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Unknown query type: struct
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x56322012bbc0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:408 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: functions
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/functions.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/functions.scm (error: No such file or directory)
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/functions.scm':
-[C Basic AST Tests] ;; CASCADE_DEBUG_MARKER
+[C Basic AST Tests] Attempt to free untracked memory at 0x563ef3a49540 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures[QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Capture function definition with signature
-[C Basic AST Tests] (function_definition
-[C Basic AST Tests]   declarator: (function_declarator
-[C Basic AST Tests]     declarator: (identifier) @name
-[C Basic AST Tests]     parameters: (parameter_list)?) @signature
-[C Basic AST Tests]   type: (_) @return_type) @function
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Unknown query type: structsAttempt to free untracked memory at 0x563ef393fb20 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Capture docstring (comment before function)
-[C Basic AST Tests] ((comment) @docstring
-[C Basic AST Tests]  (#select-adjacent-before 1 @function))
-[C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] Failed to compile query: Unknown error at offset 210
-[C Basic AST Tests] [QUERY_DEBUG] Query error context: ...ist)?) @signature
-[C Basic AST Tests]   [ERROR]type: (_) @return_ty...
-[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
-[C Basic AST Tests] ;; CASCADE_DEBUG_MARKER
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Capture function definition with signature
-[C Basic AST Tests] (function_definition
-[C Basic AST Tests]   declarator: (function_declarator
-[C Basic AST Tests]     declarator: (identifier) @name
-[C Basic AST Tests]     parameters: (parameter_list)?) @signature
-[C Basic AST Tests]   type: (_) @return_type) @function
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Capture docstring (comment before function)
-[C Basic AST Tests] ((comment) @docstring
-[C Basic AST Tests]  (#select-adjacent-before 1 @function))
-[C Basic AST Tests] 
-[C Basic AST Tests] Failed to compile query c/functions
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_PROCESSOR] Failed to get query for functions
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'functions' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: methods
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Unknown query type: struct[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Added FUNCTION node 'main' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb04cb0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:408 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: methods
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/methods.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/methods.scm (error: No such file or directory)
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/methods.scm':
-[C Basic AST Tests] ;; Empty placeholder for C methods (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: functions
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/functions.scm
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/functions.scm (error: No such file or directory)
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/functions.scm
 [C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
 [C Basic AST Tests] ;; Empty placeholder for C methods (not applicable to C)
 [C Basic AST Tests] ;; This file exists to prevent file not found errors
 [C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: variables
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: variables
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/variables.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/variables.scm (error: No such file or directory)
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/variables.scm':
-[C Basic AST Tests] ;; Global variable declarations
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   (identifier) @name) @global_variable
+[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
+[C Basic AST Tests] ;; Function definitions (direct, pointer, parenthesized)
+[C Basic AST Tests] ;; Minimal compiling pattern for function definitions
+[C Basic AST Tests] ;; (Backed by vendor/tree-sitter-c/grammar.js and node-types.json)
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Global variable with initializer
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   (init_declarator
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (_) @value)) @variable
+[C Basic AST Tests] ;; Canonical function name extraction (one layer of nesting)
+[C Basic AST Tests] ;; (function_definition declarator: (function_declarator declarator: (identifier) @name)) @function
+[C Basic AST Tests] (function_definition
+[C Basic AST Tests]   declarator: (function_declarator
+[C Basic AST Tests]     declarator: (identifier) @name
+[C Basic AST Tests]   )
+[C Basic AST Tests] ) @function
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Variables with storage class specifiers (static, extern, etc.)
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (storage_class_specifier) @storage_class
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   [
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (init_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_) @value)
-[C Basic AST Tests]   ]) @variable
+[C Basic AST Tests] ;; Pointer declarator nesting
+[C Basic AST Tests] (function_definition
+[C Basic AST Tests]   declarator: (function_declarator
+[C Basic AST Tests]     declarator: (pointer_declarator
+[C Basic AST Tests]       declarator: (identifier) @name
+[C Basic AST Tests]     )
+[C Basic AST Tests]   )
+[C Basic AST Tests] ) @function
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Variables with type qualifiers (const, volatile)
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (type_qualifier) @type_qualifier
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   [
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (init_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_) @value)
-[C Basic AST Tests]   ]) @variable
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Array declarations
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @array_type
-[C Basic AST Tests]   (array_declarator
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (_)? @array_size)) @variable
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 1 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main() {
+[C Basic AST Tests]   // Variable declarations
+[C Basic AST Tests] '
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb061c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc13870 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added FUNCTION node 'main' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: methods
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/methods.scm
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/methods.scm (error: No such file or directory)
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
+[C Basic AST Tests] ;; Empty placeholder for C methods (not applicable to C)
+[C Basic AST Tests] ;; This file exists to prevent file not found errors
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; Array with initializer
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @array_type
-[C Basic AST Tests]   (init_declarator
-[C Basic AST Tests]     (array_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_)? @array_size)
-[C Basic AST Tests]     (_) @value)) @variable_with_init
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Local variables (inside function body)
-[C Basic AST Tests] (compound_statement
-[C Basic AST Tests]   (declaration
-[C Basic AST Tests]     type: (_) @variable_type
-[C Basic AST Tests]     declarator: [
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (init_declarator
-[C Basic AST Tests]         declarator: (identifier) @name
-[C Basic AST Tests]         value: (_) @value)
-[C Basic AST Tests]     ])) @local_variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Pointer variables
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   type: (_) @pointer_base_type
-[C Basic AST Tests]   declarator: (pointer_declarator
-[C Basic AST Tests]     declarator: (identifier) @name)) @pointer_variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Function parameters (which are also variables)
-[C Basic AST Tests] (parameter_declaration
-[C Basic AST Tests]   type: (_) @param_type
-[C Basic AST Tests]   declarator: (identifier) @param_name) @function_parameter
-[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: variables
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/variables.scm
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/variables.scm (error: No such file or directory)
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/variables.scm
 [C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
 [C Basic AST Tests] ;; Global variable declarations
 [C Basic AST Tests] (declaration
@@ -753,46 +576,259 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests]   type: (_) @param_type
 [C Basic AST Tests]   declarator: (identifier) @param_name) @function_parameter
 [C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'variables' has 9 patterns and 16 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'variables' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: imports (6 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: imports
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'variables' has 9 patterns and 16 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 1 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement', text='{
+[C Basic AST Tests]   // Variable declarations
+[C Basic AST Tests]   int i = 0'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc192b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='int'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc184c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='i'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc184c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal', text='0'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0b790 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] No main node found for match 1
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc184c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:567 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 2 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='int i = 0;'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc184c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='int'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc184c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='i'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc184c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal', text='0'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0b790 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'i' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 3 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement', text='{
+[C Basic AST Tests]   // Variable declarations
+[C Basic AST Tests]   int i = 0'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc192b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='float'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0b790 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='f'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0b790 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal', text='3.14f'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0d9f0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] No main node found for match 3
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0b790 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:567 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 4 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='float f = 3.14f;'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb07340 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='float'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0b790 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='f'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0b790 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal', text='3.14f'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0d9f0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'f' to AST
+[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
+[C Basic AST Tests] ;; Global variable declarations
+[C Basic AST Tests] (declaration
+[C Basic AST Tests]   (_) @variable_type
+[C Basic AST Tests]   (identifier) @name) @global_variable
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Global variable with initializer
+[C Basic AST Tests] (declaration
+[C Basic AST Tests]   (_) @variable_type
+[C Basic AST Tests]   (init_declarator
+[C Basic AST Tests]     (identifier) @name
+[C Basic AST Tests]     (_) @value)) @variable
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Variables with storage class specifiers (static, extern, etc.)
+[C Basic AST Tests] (declaration
+[C Basic AST Tests]   (storage_class_specifier) @storage_class
+[C Basic AST Tests]   (_) @variable_type
+[C Basic AST Tests]   [
+[C Basic AST Tests]     (identifier) @name
+[C Basic AST Tests]     (init_declarator
+[C Basic AST Tests]       (identifier) @name
+[C Basic AST Tests]       (_) @value)
+[C Basic AST Tests]   ]) @variable
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Variables with type qualifiers (const, volatile)
+[C Basic AST Tests] (declaration
+[C Basic AST Tests]   (type_qualifier) @type_qualifier
+[C Basic AST Tests]   (_) @variable_type
+[C Basic AST Tests]   [
+[C Basic AST Tests]     (identifier) @name
+[C Basic AST Tests]     (init_declarator
+[C Basic AST Tests]       (identifier) @name
+[C Basic AST Tests]       (_) @value)
+[C Basic AST Tests]   ]) @variable
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Array declarations
+[C Basic AST Tests] (declaration
+[C Basic AST Tests]   (_) @array_type
+[C Basic AST Tests]   (array_declarator
+[C Basic AST Tests]     (identifier) @name
+[C Basic AST Tests]     (_)? @array_size)) @variable
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Array with initializer
+[C Basic AST Tests] (declaration
+[C Basic AST Tests]   (_) @array_type
+[C Basic AST Tests]   (init_declarator
+[C Basic AST Tests]     (array_declarator
+[C Basic AST Tests]       (identifier) @name
+[C Basic AST Tests]       (_)? @array_size)
+[C Basic AST Tests]     (_) @value)) @variable_with_init
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Local variables (inside function body)
+[C Basic AST Tests] (compound_statement
+[C Basic AST Tests]   (declaration
+[C Basic AST Tests]     type: (_) @variable_type
+[C Basic AST Tests]     declarator: [
+[C Basic AST Tests]       (identifier) @name
+[C Basic AST Tests]       (init_declarator
+[C Basic AST Tests]         declarator: (identifier) @name
+[C Basic AST Tests]         value: (_) @value)
+[C Basic AST Tests]     ])) @local_variable
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Pointer variables
+[C Basic AST Tests] (declaration
+[C Basic AST Tests]   type: (_) @pointer_base_type
+[C Basic AST Tests]   declarator: (pointer_declarator
+[C Basic AST Tests]     declarator: (identifier) @name)) @pointer_variable
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Function parameters (which are also variables)
+[C Basic AST Tests] (parameter_declaration
+[C Basic AST Tests]   type: (_) @param_type
+[C Basic AST Tests]   declarator: (identifier) @param_name) @function_parameter
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 5 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement', text='{
+[C Basic AST Tests]   // Variable declarations
+[C Basic AST Tests]   int i = 0'[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Query 'variables' has 9 patterns and 16 possible captures[2025-07-13 22:22:33] [WARNING] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x55f1fdc192b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='double'[QUERY_DEBUG] Mapped 'variables' query to AST node type 5
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0d9f0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='d'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0d9f0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'variables' finished processing: 0 matches, 0 nodes added[QUERY_DEBUG] Capture 3: name='value', node_type='number_literal', text='2.71828'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [2025-07-13 22:22:33] [ERROR] Attempt to free untracked memory at 0x55f1fdc0e100 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] No main node found for match 5[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Processing query type: imports (6 of 7)[2025-07-13 22:22:33] [WARNING] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x55f1fdc0d9f0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:567 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: imports[QUERY_DEBUG] Found match 6 with 4 captures
+[C Basic AST Tests] 
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/imports.scm
+[C Basic AST Tests] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='double d = 2.71828;'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/imports.scm (error: No such file or directory)
+[C Basic AST Tests] Attempt to free untracked memory at 0x55f1fdb07340 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[C Basic AST Tests] 
+[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='double'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0d9f0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='d'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0d9f0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal', text='2.71828'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e100 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'd' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 7 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement', text='{
+[C Basic AST Tests]   // Variable declarations
+[C Basic AST Tests]   int i = 0'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc192b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='char'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e100 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='c'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e100 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='char_literal', text=''A''
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb08470 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] No main node found for match 7
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e100 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:567 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 8 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='char c = 'A';'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e100 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='char'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e100 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='c'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e100 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='char_literal', text=''A''
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb08470 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'c' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 9 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement', text='{
+[C Basic AST Tests]   // Variable declarations
+[C Basic AST Tests]   int i = 0'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc192b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='bool'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb08470 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='b'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb08470 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='true', text='true'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc098b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] No main node found for match 9
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb08470 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:567 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 10 with 4 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='bool b = true;'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb08470 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type', text='bool'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb08470 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='b'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb08470 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='true', text='true'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc098b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'b' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 11 with 5 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='variable_with_init', node_type='declaration', text='int array[5] = {1, 2, 3, 4, 5};'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb07340 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='array_type', node_type='primitive_type', text='int'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc098b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier', text='array'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc098b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 3: name='array_size', node_type='number_literal', text='5'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb06c80 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 4: name='value', node_type='initializer_list', text='{1, 2, 3, 4, 5}'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb06c80 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] No main node found for match 11
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc098b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:567 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'variables' finished processing: 11 matches, 5 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'variables' SUCCEEDED: Added 5 node(s)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: imports
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/imports.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/imports.scm (error: No such file or directory)
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/imports.scm':
-[C Basic AST Tests] ;; Empty placeholder for C imports (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
 [C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
 [C Basic AST Tests] ;; Empty placeholder for C imports (not applicable to C)
 [C Basic AST Tests] ;; This file exists to prevent file not found errors
 [C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: docstrings
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: docstrings
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm (error: No such file or directory)
 [C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
 [C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/docstrings.scm':
-[C Basic AST Tests] ;; C docstrings - primarily multi-line /** ... */ style comments
+[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
+[C Basic AST Tests] ;; Empty placeholder for C imports (not applicable to C)
+[C Basic AST Tests] ;; This file exists to prevent file not found errors
 [C Basic AST Tests] 
-[C Basic AST Tests] ;; File-level docstring (at the start of the file)
-[C Basic AST Tests] (comment) @file_docstring @docstring
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Function docstrings (immediately before a function_definition)
-[C Basic AST Tests] (comment) @function_docstring @docstring
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Structure docstrings (immediately before a structure)
-[C Basic AST Tests] (comment) @struct_docstring @docstring
-[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Processing query type: docstrings
+[C Basic AST Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm (error: No such file or directory)
+[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
 [C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
 [C Basic AST Tests] ;; C docstrings - primarily multi-line /** ... */ style comments
 [C Basic AST Tests] 
@@ -805,15 +841,44 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests] ;; Structure docstrings (immediately before a structure)
 [C Basic AST Tests] (comment) @struct_docstring @docstring
 [C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'docstrings' has 3 patterns and 4 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Unknown query type: docstrings
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Unknown query type: docstring
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x558ddfc4a940 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:408 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 0
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 1 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'docstrings' has 3 patterns and 4 possible captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Unknown query type: docstrings
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Unknown query type: docstring
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Loaded query content:
+[C Basic AST Tests] ;; C docstrings - primarily multi-line /** ... */ style comments
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; File-level docstring (at the start of the file)
+[C Basic AST Tests] (comment) @file_docstring @docstring
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Function docstrings (immediately before a function_definition)
+[C Basic AST Tests] (comment) @function_docstring @docstring
+[C Basic AST Tests] 
+[C Basic AST Tests] ;; Structure docstrings (immediately before a structure)
+[C Basic AST Tests] (comment) @struct_docstring @docstring
+[C Basic AST Tests] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x563ef3a48460 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:408 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'docstrings' has 3 patterns and 4 possible captures[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 0[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Unknown query type: docstrings
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Unknown query type: docstring[QUERY_DEBUG] Found match 1 with 2 captures
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e0a0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:408 - this may be a library-allocated pointer[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file hello_world.c
+[C Basic AST Tests]  * @brief A s'[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 0
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [2025-07-13 22:22:33] [ERROR] Attempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[QUERY_DEBUG] Found match 1 with 2 captures
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file variables_loops_conditions.'[QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file hello_world.c
+[C Basic AST Tests]  * @brief A s'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[2025-07-13 22:22:33] [WARNING] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file variables_loops_conditions.'[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Added UNKNOWN node '/**
 [C Basic AST Tests]  * @file hello_world.c
 [C Basic AST Tests]  * @brief A simple "Hello, World!" program in C
 [C Basic AST Tests]  *
@@ -824,10 +889,84 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests]  * - Function definitions
 [C Basic AST Tests]  * - Print statements
 [C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 2 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 2 with 2 captures[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests]  * @file variables_loops_conditions.c
+[C Basic AST Tests]  * @brief Demonstration of variables, loops, and conditional statements in C
+[C Basic AST Tests]  *
+[C Basic AST Tests]  * This example shows:
+[C Basic AST Tests]  * - Various variable declarations and types
+[C Basic AST Tests]  * - for, while, and do-while loops
+[C Basic AST Tests]  * - if, else if, else conditions
+[C Basic AST Tests]  * - switch statements
+[C Basic AST Tests]  */' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file hello_world.c
+[C Basic AST Tests]  * @brief A s'[QUERY_DEBUG] Found match 2 with 2 captures
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file variables_loops_conditions.'Attempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file hello_world.c
+[C Basic AST Tests]  * @brief A s'[QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file variables_loops_conditions.'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointerAttempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests]  * @file variables_loops_conditions.c
+[C Basic AST Tests]  * @brief Demonstration of variables, loops, and conditional statements in C
+[C Basic AST Tests]  *
+[C Basic AST Tests]  * This example shows:
+[C Basic AST Tests]  * - Various variable declarations and types
+[C Basic AST Tests]  * - for, while, and do-while loops
+[C Basic AST Tests]  * - if, else if, else conditions
+[C Basic AST Tests]  * - switch statements
+[C Basic AST Tests]  */' to AST[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests]  * @file hello_world.c
+[C Basic AST Tests]  * @brief A simple "Hello, World!" program in C
+[C Basic AST Tests]  *
+[C Basic AST Tests]  * This example demonstrates basic C syntax including:
+[C Basic AST Tests]  * - Comments
+[C Basic AST Tests]  * - Include directives
+[C Basic AST Tests]  * - Function declarations
+[C Basic AST Tests]  * - Function definitions
+[C Basic AST Tests]  * - Print statements
+[C Basic AST Tests]  */' to AST[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Found match 3 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 3 with 2 captures[QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file variables_loops_conditions.'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [2025-07-13 22:22:33] [ERROR] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file hello_world.c
+[C Basic AST Tests]  * @brief A s'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file variables_loops_conditions.'[2025-07-13 22:22:33] [WARNING] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[2025-07-13 22:22:33] [WARNING] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @file hello_world.c
+[C Basic AST Tests]  * @brief A s'[QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests]  * @file variables_loops_conditions.c
+[C Basic AST Tests]  * @brief Demonstration of variables, loops, and conditional statements in C
+[C Basic AST Tests]  *
+[C Basic AST Tests]  * This example shows:
+[C Basic AST Tests]  * - Various variable declarations and types
+[C Basic AST Tests]  * - for, while, and do-while loops
+[C Basic AST Tests]  * - if, else if, else conditions
+[C Basic AST Tests]  * - switch statements
+[C Basic AST Tests]  */' to AST
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [2025-07-13 22:22:33] [ERROR] Attempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[QUERY_DEBUG] Found match 4 with 2 captures
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'[QUERY_DEBUG] Added UNKNOWN node '/**
 [C Basic AST Tests]  * @file hello_world.c
 [C Basic AST Tests]  * @brief A simple "Hello, World!" program in C
 [C Basic AST Tests]  *
@@ -838,51 +977,215 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests]  * - Function definitions
 [C Basic AST Tests]  * - Print statements
 [C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 3 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
-[C Basic AST Tests]  * @file hello_world.c
-[C Basic AST Tests]  * @brief A simple "Hello, World!" program in C
-[C Basic AST Tests]  *
-[C Basic AST Tests]  * This example demonstrates basic C syntax including:
-[C Basic AST Tests]  * - Comments
-[C Basic AST Tests]  * - Include directives
-[C Basic AST Tests]  * - Function declarations
-[C Basic AST Tests]  * - Function definitions
-[C Basic AST Tests]  * - Print statements
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 4 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 4 with 2 captures[QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [2025-07-13 22:22:33] [ERROR] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @return Exit status code
+[C Basic AST Tests]  */' to AST[2025-07-13 22:22:33] [WARNING] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Found match 5 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'[QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointerAttempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @return Exit status code
+[C Basic AST Tests]  */' to ASTAttempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @return Exit status code
+[C Basic AST Tests]  */' to AST[QUERY_DEBUG] Found match 5 with 2 captures
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 6 with 2 captures[QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'[2025-07-13 22:22:33] [WARNING] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[2025-07-13 22:22:33] [WARNING] 
+[C Basic AST Tests] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'[QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc14da0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointerAttempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @return Exit status code
+[C Basic AST Tests]  */' to AST[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Added UNKNOWN node '/**
 [C Basic AST Tests]  * @brief Program entry point
 [C Basic AST Tests]  * @return Exit status code
 [C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 5 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 7 with 2 captures[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Found match 6 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='// Variable declarations'
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'Attempt to free untracked memory at 0x55f1fdc05270 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Variable declarations'Attempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc05270 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='/**
+[C Basic AST Tests]  * @brief Program entry point
+[C Basic AST Tests]  * @re'[QUERY_DEBUG] Added UNKNOWN node '// Variable declarations' to AST
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Found match 8 with 2 capturesAttempt to free untracked memory at 0x563ef3a54dd0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='// Variable declarations'
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [WARNING] [QUERY_DEBUG] Added UNKNOWN node '/**
 [C Basic AST Tests]  * @brief Program entry point
 [C Basic AST Tests]  * @return Exit status code
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 6 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
-[C Basic AST Tests]  * @brief Program entry point
-[C Basic AST Tests]  * @return Exit status code
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'docstrings' finished processing: 6 matches, 6 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 6 node(s)
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] AST query processing complete: 1 successful, 6 failed, total AST nodes: 6
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] AST query processing summary: 1 successful, 6 failed, total AST nodes: 6
+[C Basic AST Tests]  */' to ASTAttempt to free untracked memory at 0x55f1fdc04eb0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Variable declarations'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc04eb0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] Query 'docstrings' finished processing: 6 matches, 6 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Variable declarations' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 6 node(s)[QUERY_DEBUG] Found match 9 with 2 captures
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [2025-07-13 22:22:33] [INFO] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='// Variable declarations'AST query processing complete: 2 successful, 5 failed, total AST nodes: 7
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb07340 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[2025-07-13 22:22:33] [ERROR] 
+[C Basic AST Tests] [QUERY_DEBUG] AST query processing summary: 2 successful, 5 failed, total AST nodes: 7
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Variable declarations'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb07340 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Variable declarations' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 10 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='// For loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e0a0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// For loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0e0a0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// For loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 11 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='// For loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0aa30 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// For loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0aa30 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// For loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 12 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='// For loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc12760 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
 [C Basic AST Tests] [----] ./core/tests/src/c/c_basic_ast_tests.c:245: Assertion Failed
-[C Basic AST Tests] [----]   
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// For loop'[----]   
+[C Basic AST Tests] 
 [C Basic AST Tests] [----]   Should find at least one function node
-[C Basic AST Tests] [----]   
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc12760 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer[----]   
+[C Basic AST Tests] 
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// For loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 13 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='// While loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0ba60 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// While loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0ba60 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// While loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 14 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='// While loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc19720 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// While loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc19720 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// While loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 15 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='// While loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc1d500 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// While loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc1d500 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// While loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 16 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='// Do-while loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb047a0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Do-while loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb047a0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Do-while loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 17 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='// Do-while loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb04770 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Do-while loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb04770 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Do-while loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 18 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='// Do-while loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb04740 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Do-while loop'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb04740 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Do-while loop' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 19 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='// If-else statements'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb04710 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// If-else statements'
 [C Basic AST Tests] [FAIL] ast_extraction::c_basic_syntax: (0.24s)
-[C Basic AST Tests] [scopemux] Loading hardcoded node type mappings:
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb04710 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else statements' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 20 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='// If-else statements'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc183b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// If-else statements'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc183b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else statements' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 21 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='// If-else statements'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb05db0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// If-else statements'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb05db0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else statements' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 22 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='// If-else if-else'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb057c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// If-else if-else'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb057c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else if-else' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 23 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='// If-else if-else'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb06fe0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// If-else if-else'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb06fe0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else if-else' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 24 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='// If-else if-else'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0c020 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// If-else if-else'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdc0c020 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else if-else' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 25 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment', text='// Switch statement'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb07750 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Switch statement'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb07750 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Switch statement' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 26 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment', text='// Switch statement'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb07880 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Switch statement'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb07880 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Switch statement' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Found match 27 with 2 captures
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment', text='// Switch statement'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] Attempt to free untracked memory at 0x55f1fdb079b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment', text='// Switch statement'
+[C Basic AST Tests] [2025-07-13 22:22:33] [WARNING] [scopemux] Loading hardcoded node type mappings:
 [C Basic AST Tests]   functions -> NODE_FUNCTION
 [C Basic AST Tests]   classes -> NODE_CLASS
 [C Basic AST Tests]   methods -> NODE_METHOD
@@ -897,362 +1200,17 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [C Basic AST Tests]   docstrings -> NODE_DOCSTRING
 [C Basic AST Tests]   interfaces -> NODE_INTERFACE
 [C Basic AST Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
-[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
-[C Basic AST Tests] ;; Global variable declarations
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   (identifier) @name) @global_variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Global variable with initializer
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   (init_declarator
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (_) @value)) @variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Variables with storage class specifiers (static, extern, etc.)
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (storage_class_specifier) @storage_class
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   [
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (init_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_) @value)
-[C Basic AST Tests]   ]) @variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Variables with type qualifiers (const, volatile)
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (type_qualifier) @type_qualifier
-[C Basic AST Tests]   (_) @variable_type
-[C Basic AST Tests]   [
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (init_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_) @value)
-[C Basic AST Tests]   ]) @variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Array declarations
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @array_type
-[C Basic AST Tests]   (array_declarator
-[C Basic AST Tests]     (identifier) @name
-[C Basic AST Tests]     (_)? @array_size)) @variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Array with initializer
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   (_) @array_type
-[C Basic AST Tests]   (init_declarator
-[C Basic AST Tests]     (array_declarator
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (_)? @array_size)
-[C Basic AST Tests]     (_) @value)) @variable_with_init
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Local variables (inside function body)
-[C Basic AST Tests] (compound_statement
-[C Basic AST Tests]   (declaration
-[C Basic AST Tests]     type: (_) @variable_type
-[C Basic AST Tests]     declarator: [
-[C Basic AST Tests]       (identifier) @name
-[C Basic AST Tests]       (init_declarator
-[C Basic AST Tests]         declarator: (identifier) @name
-[C Basic AST Tests]         value: (_) @value)
-[C Basic AST Tests]     ])) @local_variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Pointer variables
-[C Basic AST Tests] (declaration
-[C Basic AST Tests]   type: (_) @pointer_base_type
-[C Basic AST Tests]   declarator: (pointer_declarator
-[C Basic AST Tests]     declarator: (identifier) @name)) @pointer_variable
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Function parameters (which are also variables)
-[C Basic AST Tests] (parameter_declaration
-[C Basic AST Tests]   type: (_) @param_type
-[C Basic AST Tests]   declarator: (identifier) @param_name) @function_parameter
-[C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'variables' has 9 patterns and 16 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 1 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] No main node found for match 1
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x5632202399c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:559 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 2 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'i' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 3 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] No main node found for match 3
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x56322022c010 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:559 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 4 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'f' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 5 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] No main node found for match 5
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x56322012bbc0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:559 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 6 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='number_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'd' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 7 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='char_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] No main node found for match 7
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x563220236b70 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:559 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 8 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='char_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'c' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 9 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='local_variable', node_type='compound_statement'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='true'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] No main node found for match 9
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x56322023aa70 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:559 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 10 with 4 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='variable_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='value', node_type='true'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added VARIABLE node 'b' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 11 with 5 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='variable_with_init', node_type='declaration'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='array_type', node_type='primitive_type'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 2: name='name', node_type='identifier'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 3: name='array_size', node_type='number_literal'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 4: name='value', node_type='initializer_list'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] No main node found for match 11
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x5632202332f0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:559 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'variables' finished processing: 11 matches, 5 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'variables' SUCCEEDED: Added 5 node(s)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: imports (6 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: imports
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/imports.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/imports.scm (error: No such file or directory)
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/imports.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/imports.scm':
-[C Basic AST Tests] ;; Empty placeholder for C imports (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
-[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
-[C Basic AST Tests] ;; Empty placeholder for C imports (not applicable to C)
-[C Basic AST Tests] ;; This file exists to prevent file not found errors
-[C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Processing query type: docstrings
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Primary path not found: /home/matrillo/apps/scopemux/queries/c/c/docstrings.scm (error: No such file or directory)
-[C Basic AST Tests] [QUERY_PATH_DEBUG] Trying fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
-[C Basic AST Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at fallback path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
-[C Basic AST Tests] [QUERY_DEBUG] Contents of '/home/matrillo/apps/scopemux/queries/c/docstrings.scm':
-[C Basic AST Tests] ;; C docstrings - primarily multi-line /** ... */ style comments
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; File-level docstring (at the start of the file)
-[C Basic AST Tests] (comment) @file_docstring @docstring
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Function docstrings (immediately before a function_definition)
-[C Basic AST Tests] (comment) @function_docstring @docstring
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Structure docstrings (immediately before a structure)
-[C Basic AST Tests] (comment) @struct_docstring @docstring
-[C Basic AST Tests] 
-[C Basic AST Tests] [QUERY_DEBUG] Loaded query content:
-[C Basic AST Tests] ;; C docstrings - primarily multi-line /** ... */ style comments
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; File-level docstring (at the start of the file)
-[C Basic AST Tests] (comment) @file_docstring @docstring
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Function docstrings (immediately before a function_definition)
-[C Basic AST Tests] (comment) @function_docstring @docstring
-[C Basic AST Tests] 
-[C Basic AST Tests] ;; Structure docstrings (immediately before a structure)
-[C Basic AST Tests] (comment) @struct_docstring @docstring
-[C Basic AST Tests] 
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'docstrings' has 3 patterns and 4 possible captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Unknown query type: docstrings
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Unknown query type: docstring
-[C Basic AST Tests] [2025-07-13 20:22:07] [WARNING] Attempt to free untracked memory at 0x56322012d020 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:408 - this may be a library-allocated pointer
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 0
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 1 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
-[C Basic AST Tests]  * @file variables_loops_conditions.c
-[C Basic AST Tests]  * @brief Demonstration of variables, loops, and conditional statements in C
-[C Basic AST Tests]  *
-[C Basic AST Tests]  * This example shows:
-[C Basic AST Tests]  * - Various variable declarations and types
-[C Basic AST Tests]  * - for, while, and do-while loops
-[C Basic AST Tests]  * - if, else if, else conditions
-[C Basic AST Tests]  * - switch statements
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 2 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
-[C Basic AST Tests]  * @file variables_loops_conditions.c
-[C Basic AST Tests]  * @brief Demonstration of variables, loops, and conditional statements in C
-[C Basic AST Tests]  *
-[C Basic AST Tests]  * This example shows:
-[C Basic AST Tests]  * - Various variable declarations and types
-[C Basic AST Tests]  * - for, while, and do-while loops
-[C Basic AST Tests]  * - if, else if, else conditions
-[C Basic AST Tests]  * - switch statements
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 3 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
-[C Basic AST Tests]  * @file variables_loops_conditions.c
-[C Basic AST Tests]  * @brief Demonstration of variables, loops, and conditional statements in C
-[C Basic AST Tests]  *
-[C Basic AST Tests]  * This example shows:
-[C Basic AST Tests]  * - Various variable declarations and types
-[C Basic AST Tests]  * - for, while, and do-while loops
-[C Basic AST Tests]  * - if, else if, else conditions
-[C Basic AST Tests]  * - switch statements
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 4 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
-[C Basic AST Tests]  * @brief Program entry point
-[C Basic AST Tests]  * @return Exit status code
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 5 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
-[C Basic AST Tests]  * @brief Program entry point
-[C Basic AST Tests]  * @return Exit status code
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 6 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '/**
-[C Basic AST Tests]  * @brief Program entry point
-[C Basic AST Tests]  * @return Exit status code
-[C Basic AST Tests]  */' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 7 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Variable declarations' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 8 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Variable declarations' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 9 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Variable declarations' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 10 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// For loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 11 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// For loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 12 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// For loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 13 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// While loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 14 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// While loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 15 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// While loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 16 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Do-while loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 17 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Do-while loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 18 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Do-while loop' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 19 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else statements' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 20 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else statements' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 21 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else statements' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 22 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else if-else' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 23 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else if-else' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 24 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// If-else if-else' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 25 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='file_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Switch statement' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 26 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='function_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Switch statement' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Found match 27 with 2 captures
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 0: name='struct_docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Capture 1: name='docstring', node_type='comment'
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Switch statement' to AST
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'docstrings' finished processing: 27 matches, 27 nodes added
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 27 node(s)
-[C Basic AST Tests] [2025-07-13 20:22:07] [INFO] AST query processing complete: 2 successful, 5 failed, total AST nodes: 32
-[C Basic AST Tests] [2025-07-13 20:22:07] [ERROR] [QUERY_DEBUG] AST query processing summary: 2 successful, 5 failed, total AST nodes: 32
+[C Basic AST Tests] Attempt to free untracked memory at 0x55f1fdb079b0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:453 - this may be a library-allocated pointer
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Added UNKNOWN node '// Switch statement' to AST
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'docstrings' finished processing: 27 matches, 27 nodes added
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 27 node(s)
+[C Basic AST Tests] [2025-07-13 22:22:33] [INFO] AST query processing complete: 3 successful, 4 failed, total AST nodes: 33
+[C Basic AST Tests] [2025-07-13 22:22:33] [ERROR] [QUERY_DEBUG] AST query processing summary: 3 successful, 4 failed, total AST nodes: 33
 [C Basic AST Tests] [----] ./core/tests/src/c/c_basic_ast_tests.c:105: Assertion Failed
 [C Basic AST Tests] [----]   
 [C Basic AST Tests] [----]   Should find at least one function node
 [C Basic AST Tests] [----]   
-[C Basic AST Tests] [FAIL] ast_extraction::c_functions: (0.26s)
+[C Basic AST Tests] [FAIL] ast_extraction::c_functions: (0.24s)
 [C Basic AST Tests] [scopemux] Loading hardcoded node type mappings:
 [C Basic AST Tests]   functions -> NODE_FUNCTION
 [C Basic AST Tests]   classes -> NODE_CLASS

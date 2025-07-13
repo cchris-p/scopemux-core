@@ -442,7 +442,15 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       if (ts_node_is_null(node)) continue;
 
       const char *node_type_str = ts_node_type(node);
-      log_error("[QUERY_DEBUG] Capture %u: name='%.*s', node_type='%s'", i, capture_name_length, capture_name, node_type_str);
+      uint32_t text_len = 0;
+      const char *text = ts_node_text(node, ctx->source_code, ctx->source_code_length, &text_len);
+      char *text_preview = NULL;
+      if (text && text_len > 0) {
+        size_t preview_len = text_len < 40 ? text_len : 40;
+        text_preview = memory_debug_strndup(text, preview_len, __FILE__, __LINE__, "capture_text_preview");
+      }
+      log_error("[QUERY_DEBUG] Capture %u: name='%.*s', node_type='%s', text='%.40s'", i, capture_name_length, capture_name, node_type_str, text_preview ? text_preview : "<null>");
+      if (text_preview) memory_debug_free(text_preview, __FILE__, __LINE__);
 
       // Robust main node and capture logic
       // Identify main node (robust plural/singular and @ handling)

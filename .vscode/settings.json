@@ -46,6 +46,11 @@
     "core/scopemux_core.egg-info": true,
     "core/vendor/pybind11": true,
     "core/vendor": true,
+    "vendor/pybind11": true,
+    "vendor/tree-sitter-cpp": true,
+    "vendor/tree-sitter-javascript": true,
+    "vendor/tree-sitter-python": true,
+    "vendor/tree-sitter-typescript": true
   },
   "search.exclude": {
     "**/main.c": true,
@@ -56,7 +61,7 @@
     "*.dir": true,
     "*.rs": true,
     "*.d.ts": true,
-    "**/vendor": true,
+    "core/vendor/pybind11": true,
     "**/*.c.o.d,": true
   }
 }

@@ -25,11 +25,11 @@
 
 // Controls detailed debug output from the query manager
 // Only enable temporarily when diagnosing issues with query loading or compilation
-#define DIRECT_DEBUG_MODE false
+#define DIRECT_DEBUG_MODE true
 
 // Controls debugging output for query path resolution
 // Shows paths attempted when loading .scm query files
-#define QUERY_PATH_DEBUG_MODE false
+#define QUERY_PATH_DEBUG_MODE true
 
 #define _POSIX_C_SOURCE 200809L // For strdup
 
@@ -435,7 +435,8 @@ static const TSQuery *compile_query(const TSLanguage *language, const char *quer
               *error_offset - start, query_str + start, end - *error_offset,
               query_str + *error_offset);
     }
-    fprintf(stderr, "[QUERY_DEBUG] Loaded query content:\n%s\n", query_str);
+    // Temporarily commenting this out
+    // fprintf(stderr, "[QUERY_DEBUG] Loaded query content:\n%s\n", query_str);
   } else {
     log_debug("Successfully compiled query");
     fprintf(stderr, "[QUERY_DEBUG] Loaded query content:\n%s\n", query_str);
@@ -683,11 +684,13 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
   // Load the query file content
   uint32_t content_len = 0;
   char *query_content = read_query_file(query_path, &content_len);
-  if (query_content) {
-    fprintf(stderr, "[QUERY_DEBUG] Contents of '%s':\n%.*s\n", query_path, (int)content_len,
-            query_content);
-  }
-  safe_free(query_path); // Free the path string as we don't need it anymore
+
+  // Temporarily commenting this out:
+  // if (query_content) {
+  //   fprintf(stderr, "[QUERY_DEBUG] Contents of '%s':\n%.*s\n", query_path, (int)content_len,
+  //           query_content);
+  // }
+  // safe_free(query_path); // Free the path string as we don't need it anymore
 
   if (!query_content) {
     fprintf(stderr, "Failed to read query file for %s/%s\n", lang_name, query_name);
