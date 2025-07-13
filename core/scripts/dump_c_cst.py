@@ -33,7 +33,13 @@ def main():
     if cst is None:
         print(f"ERROR: Failed to parse CST for {filename}", file=sys.stderr)
         sys.exit(3)
-    print(json.dumps(cst, indent=2, ensure_ascii=False))
+    # Write CST JSON to a .txt file with the input base name
+    import os
+    base = os.path.basename(filename)
+    out_path = os.path.abspath(filename + ".cst.txt")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(json.dumps(cst, indent=2, ensure_ascii=False))
+    print(f"CST written to {out_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

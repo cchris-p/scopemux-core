@@ -471,18 +471,7 @@ static PyObject *cst_node_to_py_dict(const CSTNode *node) {
     return NULL;
   }
 
-  // Add method accessors that don't create circular references
-  PyObject *type_ref = PyDict_GetItemString(dict, "type");
-  PyObject *content_ref = PyDict_GetItemString(dict, "content");
-  PyObject *range_ref = PyDict_GetItemString(dict, "range");
-  PyObject *children_ref = PyDict_GetItemString(dict, "children");
-
-  // PyDict_GetItemString returns borrowed references, don't need to incref/decref
-  // We simply store pointers to existing dictionary values
-  PyDict_SetItemString(dict, "get_type", type_ref);
-  PyDict_SetItemString(dict, "get_content", content_ref);
-  PyDict_SetItemString(dict, "get_range", range_ref);
-  PyDict_SetItemString(dict, "get_children", children_ref);
+  // Removed redundant 'get_*' fields from CST serialization for output size sanity.
 
   // Clean up
   Py_DECREF(methods);

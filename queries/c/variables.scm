@@ -1,71 +1,67 @@
-;; Global variable declarations
+;; Variable declarations (global or local, no initializer)
 (declaration
-  (_) @variable_type
-  (identifier) @name) @global_variable
+  declarator: (identifier) @name
+  type: (_) @variable_type) @variable
 
-;; Global variable with initializer
+;; Field-anchored fallback for variable declarations
 (declaration
-  (_) @variable_type
-  (init_declarator
-    (identifier) @name
-    (_) @value)) @variable
+  declarator: (init_declarator
+    declarator: (identifier) @name)
+  type: (_) @variable_type) @variable
 
-;; Variables with storage class specifiers (static, extern, etc.)
+;; Structure-based fallback for variable declarations
 (declaration
-  (storage_class_specifier) @storage_class
-  (_) @variable_type
-  [
-    (identifier) @name
-    (init_declarator
-      (identifier) @name
-      (_) @value)
-  ]) @variable
+  (identifier) @name
+  (_) @variable_type) @variable
 
-;; Variables with type qualifiers (const, volatile)
+;; Variable declarations with initializer
 (declaration
-  (type_qualifier) @type_qualifier
-  (_) @variable_type
-  [
-    (identifier) @name
-    (init_declarator
-      (identifier) @name
-      (_) @value)
-  ]) @variable
+  declarator: (init_declarator
+    declarator: (identifier) @name
+    value: (_) @value)
+  type: (_) @variable_type) @variable_with_init
 
-;; Array declarations
+;; Field-anchored fallback for variable declarations with initializer
 (declaration
-  (_) @array_type
-  (array_declarator
-    (identifier) @name
-    (_)? @array_size)) @variable
+  declarator: (init_declarator
+    declarator: (identifier) @name
+    value: (_))
+  type: (_) @variable_type) @variable_with_init
 
-;; Array with initializer
+;; Structure-based fallback for variable declarations with initializer
 (declaration
-  (_) @array_type
-  (init_declarator
-    (array_declarator
-      (identifier) @name
-      (_)? @array_size)
-    (_) @value)) @variable_with_init
+  (identifier) @name
+  (_) @value
+  (_) @variable_type) @variable_with_init
 
-;; Local variables (inside function body)
-(compound_statement
-  (declaration
-    type: (_) @variable_type
-    declarator: [
-      (identifier) @name
-      (init_declarator
-        declarator: (identifier) @name
-        value: (_) @value)
-    ])) @local_variable
-
-;; Pointer variables
+;; Pointer variable declarations
 (declaration
-  type: (_) @pointer_base_type
   declarator: (pointer_declarator
-    declarator: (identifier) @name)) @pointer_variable
+    declarator: (identifier) @name)
+  type: (_) @pointer_base_type) @pointer_variable
 
-;; Function parameters (which are also variables)
+;; Field-anchored fallback for pointer variable declarations
+(declaration
+  declarator: (pointer_declarator
+    declarator: (identifier) @name)
+  type: (_) @pointer_base_type) @pointer_variable
+
+;; Structure-based fallback for pointer variable declarations
+(declaration
+  (identifier) @name
+  (_) @pointer_base_type) @pointer_variable
+
+;; Function parameter variables
 (parameter_declaration
-  type: (_) @param_type
-  declarator: (identifier) @param_name) @function_parameter
+  declarator: (identifier) @param_name
+  type: (_) @param_type) @function_parameter
+
+;; Field-anchored fallback for function parameter variables
+(parameter_declaration
+  declarator: (identifier) @param_name
+  type: (_) @param_type) @function_parameter
+
+;; Structure-based fallback for function parameter variables
+(parameter_declaration
+  (identifier) @param_name
+  (_) @param_type) @function_parameter
