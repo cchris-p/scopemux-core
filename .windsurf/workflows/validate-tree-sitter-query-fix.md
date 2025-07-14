@@ -43,9 +43,9 @@ Based on the above source code:
 
 Mark any discrepancy between the proposed query fix and the real grammar.
 
-## Step 4: Rewrite the Minimal Matching Pattern
+## Step 4: Implement / Update the Matching Pattern Addition
 
-Create a minimal matching query (e.g., `(function_definition) @function`) that:
+Add or update query (e.g., `(function_definition) @function`) that:
 - Is guaranteed to compile
 - Only uses valid node types and capture targets
 - Avoids double captures on the same node
@@ -74,6 +74,8 @@ If it fails, output:
 * Compiled match count
 * Which patterns failed to match
 
+The results will be sent back via a .txt file.
+
 ## Step 7: Confidence Report & Divergence Summary
 
 Summarize:
@@ -84,7 +86,7 @@ Summarize:
 
 ## Step 8: Repeat or Finalize
 
-If success:w
+If success:
 
 * Save final working query
 * Log grammar-backed rationale

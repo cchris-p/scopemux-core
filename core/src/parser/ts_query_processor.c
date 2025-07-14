@@ -483,6 +483,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
           }
         }
       }
+      log_error("[QUERY_DEBUG] Main node detection: query_type='%s', capture_name='%.*s', clean_capture_name='%.*s', clean_query_type='%s', is_main_node=%d", query_type, (int)capture_name_length, capture_name, (int)clean_length, clean_capture_name, clean_query_type, is_main_node);
       if (is_main_node) {
         main_node = node;
       }

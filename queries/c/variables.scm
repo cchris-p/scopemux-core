@@ -1,43 +1,55 @@
 ;; Variable declarations (global or local, no initializer)
-(declaration
-  declarator: (identifier) @name
-  type: (_) @variable_type) @variable
+;; Minimal variable declaration extraction for C
 
-;; Field-anchored fallback for variable declarations
+;; Match all declarators in a declaration with multiple declarators
 (declaration
-  declarator: (init_declarator
-    declarator: (identifier) @name)
-  type: (_) @variable_type) @variable
+  declarator: (identifier) @name) @variable
 
-;; Structure-based fallback for variable declarations
-(declaration
-  (identifier) @name
-  (_) @variable_type) @variable
-
-;; Variable declarations with initializer
-(declaration
-  declarator: (init_declarator
-    declarator: (identifier) @name
-    value: (_) @value)
-  type: (_) @variable_type) @variable_with_init
-
-;; Field-anchored fallback for variable declarations with initializer
 (declaration
   declarator: (init_declarator
     declarator: (identifier) @name
     value: (_))
-  type: (_) @variable_type) @variable_with_init
+) @variable_with_init
 
-;; Structure-based fallback for variable declarations with initializer
-(declaration
-  (identifier) @name
-  (_) @value
-  (_) @variable_type) @variable_with_init
-
-;; Pointer variable declarations
 (declaration
   declarator: (pointer_declarator
     declarator: (identifier) @name)
+) @pointer_variable
+
+(declaration
+  declarator: (init_declarator
+    declarator: (pointer_declarator
+      declarator: (identifier) @name)
+    value: (_))
+) @pointer_variable_with_init
+
+;; Match all additional declarators in a comma-separated list
+(declaration
+  (declarator) @name
+  (declarator) @name
+  ...)
+
+;; Variable declaration with initializer
+(declaration
+  declarator: (init_declarator
+    declarator: (identifier) @name
+    value: (_))
+) @variable_with_init
+
+;; Pointer variable declaration
+(declaration
+  declarator: (pointer_declarator
+    declarator: (identifier) @name)
+) @pointer_variable
+
+;; Pointer variable declaration with initializer
+(declaration
+  declarator: (init_declarator
+    declarator: (pointer_declarator
+      declarator: (identifier) @name)
+    value: (_))
+) @pointer_variable_with_init
+
   type: (_) @pointer_base_type) @pointer_variable
 
 ;; Field-anchored fallback for pointer variable declarations
