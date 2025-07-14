@@ -100,6 +100,12 @@ const char *ast_node_type_to_string(ASTNodeType type) {
  * This is different from ast_node_free which also frees children
  */
 void ast_node_free_internal(ASTNode *node) {
+    fprintf(stderr, "[TEST] ast_node_free_internal reached for node at %p\n", (void*)node);
+
+    log_debug("[TEST] ast_node_free_internal reached for node at %p", (void*)node);
+
+    log_debug("[ast_node_free_internal] Freeing ASTNode at %p (magic=0x%X owned_fields=0x%X)", (void*)node, node ? node->magic : 0, node ? node->owned_fields : 0);
+
   if (!node) {
     log_debug("Skipping free for NULL ASTNode");
     return;
@@ -138,8 +144,11 @@ void ast_node_free_internal(ASTNode *node) {
   if (node->docstring && node->docstring_source == AST_SOURCE_DEBUG_ALLOC) {
     memory_debug_free(node->docstring, __FILE__, __LINE__);
   }
-  if (node->raw_content) { // Assuming raw_content is always owned if present
+  if (node->raw_content && (node->owned_fields & FIELD_RAW_CONTENT)) {
+    log_debug("Freeing raw_content for ASTNode at %p (owned_fields=0x%X)", (void*)node, node->owned_fields);
     memory_debug_free(node->raw_content, __FILE__, __LINE__);
+    node->raw_content = NULL;
+    node->owned_fields &= ~FIELD_RAW_CONTENT;
   }
   if (node->file_path && node->file_path_source == AST_SOURCE_DEBUG_ALLOC) {
     memory_debug_free(node->file_path, __FILE__, __LINE__);
@@ -222,6 +231,10 @@ ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source)
  * Frees an AST node and all its resources recursively.
  */
 void ast_node_free(ASTNode *node) {
+    fprintf(stderr, "[TEST] ast_node_free reached for node at %p\n", (void*)node);
+
+    log_debug("[ast_node_free] Called for node at %p (magic=0x%X)", (void*)node, node ? node->magic : 0);
+
   if (!node) {
     log_debug("Skipping free for NULL ASTNode");
     return;
@@ -257,21 +270,10 @@ void ast_node_free(ASTNode *node) {
     }
     memory_debug_free(node->children, __FILE__, __LINE__);
     node->children = NULL;
-    node->num_children = 0;
-    node->children_capacity = 0;
   }
-
-  // Free the references array (but not the referenced nodes)
   if (node->references) {
-    memory_debug_free(node->references, __FILE__, __LINE__);
     node->references = NULL;
-    node->num_references = 0;
-    node->references_capacity = 0;
   }
-
-  // Set the magic number to a known bad value after freeing
-  node->magic = 0xDEADBEEF;
-
   // Finally free the node itself
   memory_debug_free(node, __FILE__, __LINE__);
 }
@@ -481,9 +483,11 @@ static void ast_node_free_data(ASTNode *node) {
     node->docstring = NULL;
   }
 
-  if (node->raw_content) { // Assuming raw_content is always owned
+  if (node->raw_content && (node->owned_fields & FIELD_RAW_CONTENT)) {
+    log_debug("[ast_node_free_data] Freeing raw_content for ASTNode at %p (owned_fields=0x%X)", (void*)node, node->owned_fields);
     FREE(node->raw_content);
     node->raw_content = NULL;
+    node->owned_fields &= ~FIELD_RAW_CONTENT;
   }
 
   if (node->file_path && node->file_path_source == AST_SOURCE_DEBUG_ALLOC) {

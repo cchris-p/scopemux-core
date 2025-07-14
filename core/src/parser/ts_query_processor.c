@@ -579,17 +579,15 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         }
 
         ast_node_add_child(ast_root, ast_node);
-        parser_add_ast_node(ctx, ast_node);
+        fprintf(stderr, "[AST_CREATE] Created ASTNode at %p, type=%u\n", (void*)ast_node, node_type);
+        bool reg_result = parser_add_ast_node(ctx, ast_node);
+        fprintf(stderr, "[AST_REGISTER_CALL] parser_add_ast_node(ctx, %p) returned %d\n", (void*)ast_node, reg_result);
         // If this is a function node, extract and assign raw content
         if (node_type == NODE_FUNCTION) {
             char *raw_content = extract_raw_content(main_node, ctx->source_code);
             if (raw_content) {
-#ifdef ast_node_set_content
-                ast_node_set_content(ast_node, raw_content, AST_SOURCE_DEBUG_ALLOC);
-#else
-                ast_node->content = raw_content;
-                ast_node->content_source = AST_SOURCE_DEBUG_ALLOC;
-#endif
+                ast_node->raw_content = raw_content;
+                ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
                 log_error("[QUERY_DEBUG] Set content for function node '%s'", ast_node->name);
             } else {
                 log_error("[QUERY_DEBUG] Failed to extract content for function node '%s'", ast_node->name);

@@ -146,20 +146,24 @@ void parser_clear(ParserContext *ctx) {
   if (ctx->all_ast_nodes) {
     for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
       ASTNode *node = ctx->all_ast_nodes[i];
-      if (!node)
+      if (!node) {
+        log_debug("[AST_FREE] Skipping NULL node at index %zu", i);
         continue;
+      }
+      log_debug("[AST_FREE] About to free ASTNode at index %zu, ptr=%p, magic=0x%X", i, (void*)node, node->magic);
       if (!memory_debug_check_canary(node, sizeof(ASTNode))) {
-        log_error("Memory corruption detected in AST node %zu (buffer overflow)", i);
+        log_error("[AST_FREE] Memory corruption detected in AST node %zu (buffer overflow)", i);
         ctx->all_ast_nodes[i] = NULL;
         continue;
       }
       if (node->magic != ASTNODE_MAGIC) {
-        log_error("Invalid magic number in AST node %zu: expected 0x%X, found 0x%X", i,
+        log_error("[AST_FREE] Invalid magic number in AST node %zu: expected 0x%X, found 0x%X", i,
                   ASTNODE_MAGIC, node->magic);
         ctx->all_ast_nodes[i] = NULL;
         continue;
       }
       ast_node_free(node);
+      log_debug("[AST_FREE] Freed ASTNode at index %zu, ptr=%p", i, (void*)node);
       freed_nodes++;
       ctx->all_ast_nodes[i] = NULL;
     }
@@ -277,7 +281,9 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
   }
 
   // Add the node to the tracking array
+  size_t idx = ctx->num_ast_nodes;
   ctx->all_ast_nodes[ctx->num_ast_nodes++] = node;
+  log_debug("[AST_REGISTER] Registered ASTNode at idx=%zu, ptr=%p, total now=%zu", idx, (void*)node, ctx->num_ast_nodes);
   return true;
 }
 

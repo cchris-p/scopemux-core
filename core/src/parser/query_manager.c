@@ -609,7 +609,7 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
 
   // SPECIAL CASE: For "functions" query, try a simple fallback query if normal loading fails
   bool is_functions_query = (strcmp(query_name, "functions") == 0);
-  
+
   if (is_functions_query) {
     fprintf(stderr, "[FUNCTIONS_DEBUG] *** DETECTED functions query request ***\n");
   }

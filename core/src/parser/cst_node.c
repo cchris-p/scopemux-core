@@ -35,6 +35,7 @@ CSTNode *cst_node_new(const char *type, char *content) {
   node->children = NULL;
   node->children_count = 0;
   node->is_freed = 0; // DEBUG: Not freed yet
+  node->owns_content = (content != NULL) ? 1 : 0;
 
   // Register the node for tracking
   register_cst_node(node, type);
@@ -134,6 +135,8 @@ void cst_node_free(CSTNode *node) {
     return;
   }
 
+  fprintf(stderr, "[CST_FREE] Entered for node=%p type=%s content=%p is_freed=%d\n", (void *)node,
+          SAFE_STR(node->type), (void *)node->content, node->is_freed);
   log_debug("[CSTNode FREE] node=%p type=%s content=%p is_freed=%d", (void *)node,
             SAFE_STR(node->type), (void *)node->content, node->is_freed);
 
@@ -155,6 +158,8 @@ void cst_node_free(CSTNode *node) {
         node->children[i] = NULL; // Prevent double-free
       }
     }
+    fprintf(stderr, "[CST_FREE] Freeing children array for node=%p children=%p\n", (void *)node,
+            (void *)node->children);
     memory_debug_free(node->children, __FILE__, __LINE__);
     node->children = NULL;
   }
@@ -169,11 +174,20 @@ void cst_node_free(CSTNode *node) {
 
   // Free the content if it exists and is owned
   if (node->content) {
-    memory_debug_free(node->content, __FILE__, __LINE__);
-    node->content = NULL;
+    if (node->owns_content) {
+      fprintf(stderr, "[CST_FREE] Freeing content for node=%p content=%p (owns_content=1)\n",
+              (void *)node, (void *)node->content);
+      memory_debug_free(node->content, __FILE__, __LINE__);
+      node->content = NULL;
+    } else {
+      fprintf(stderr,
+              "[CST_FREE] Skipping free of content for node=%p content=%p (owns_content=0)\n",
+              (void *)node, (void *)node->content);
+    }
   }
 
   // Finally free the node itself
+  fprintf(stderr, "[CST_FREE] Freeing node struct itself: node=%p\n", (void *)node);
   memory_debug_free(node, __FILE__, __LINE__);
 }
 

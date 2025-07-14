@@ -1,5 +1,5 @@
 /**
- * @file project_context_stubs.c
+ * @file reference_resolver_project_context_stubs.c
  * @brief Stub implementations for project context API for testing
  *
  * This file provides minimal implementations of project context functions
