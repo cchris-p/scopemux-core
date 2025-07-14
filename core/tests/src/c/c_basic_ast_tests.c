@@ -1,4 +1,4 @@
-#define DEBUG_MODE false
+#define DEBUG_MODE true
 
 #include <criterion/criterion.h>
 #include <criterion/logging.h>

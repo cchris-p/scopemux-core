@@ -64,11 +64,15 @@ typedef enum {
 /**
  * @enum ASTStringSource
  * @brief Describes the allocation source of a string field in an ASTNode.
+ *
+ * AST_SOURCE_ALIAS is used if a string field points to the same buffer as another field (e.g., node_name aliases docstring).
+ * In this case, only the original field (with AST_SOURCE_DEBUG_ALLOC) will be freed, and the alias will not be freed.
  */
 typedef enum {
     AST_SOURCE_NONE,         /**< Source is unknown or not set */
     AST_SOURCE_DEBUG_ALLOC,  /**< String was allocated by memory_debug_malloc and must be freed */
     AST_SOURCE_STATIC,       /**< String is a static literal or library-managed, and must not be freed */
+    AST_SOURCE_ALIAS,        /**< String is an alias of another field (do not free; freeing handled by original owner) */
 } ASTStringSource;
 
 /**

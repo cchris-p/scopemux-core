@@ -1,10 +1,31 @@
-;; C docstrings - primarily multi-line /** ... */ style comments
+;; C docstrings - Tree-sitter patterns for C documentation comments
 
-;; File-level docstring (at the start of the file)
-(comment) @file_docstring @docstring
+;; Capture function docstrings (preceding function definitions)
+(translation_unit
+  (comment) @docstring
+  . ;; Sibling relationship (comment immediately followed by function)
+  (function_definition)
+  (#match? @docstring "^/\*\*")
+)
 
-;; Function docstrings (immediately before a function_definition)
-(comment) @function_docstring @docstring
+;; Capture struct docstrings (preceding struct definitions)
+(translation_unit
+  (comment) @docstring
+  . ;; Sibling relationship (comment immediately followed by struct)
+  (struct_specifier)
+  (#match? @docstring "^/\*\*")
+)
 
-;; Structure docstrings (immediately before a structure)
-(comment) @struct_docstring @docstring
+;; Capture enum docstrings
+(translation_unit
+  (comment) @docstring
+  . ;; Sibling relationship
+  (enum_specifier)
+  (#match? @docstring "^/\*\*")
+)
+
+;; Capture file-level docstrings (usually at the top of file)
+(translation_unit
+  (comment) @docstring
+  (#match? @docstring "^/\*\*")
+)

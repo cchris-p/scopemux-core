@@ -283,8 +283,8 @@ static char *construct_query_path(const QueryManager *manager, const char *langu
     return NULL;
   }
 
-  // Primary path
-  snprintf(full_path, path_len, "%s/%s/%s.scm", manager->queries_dir, language_name, query_name);
+  // Primary path - manager->queries_dir already includes the language subdirectory
+  snprintf(full_path, path_len, "%s/%s.scm", manager->queries_dir, query_name);
   fprintf(stderr, "[QUERY_PATH_DEBUG] Trying primary path: %s\n", full_path);
   if (access(full_path, F_OK) == 0) {
     fprintf(stderr, "[QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: %s\n", full_path);
@@ -609,6 +609,10 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
 
   // SPECIAL CASE: For "functions" query, try a simple fallback query if normal loading fails
   bool is_functions_query = (strcmp(query_name, "functions") == 0);
+  
+  if (is_functions_query) {
+    fprintf(stderr, "[FUNCTIONS_DEBUG] *** DETECTED functions query request ***\n");
+  }
 
   // Step 1: Find language index
   size_t lang_idx = get_language_index(q_manager, language);

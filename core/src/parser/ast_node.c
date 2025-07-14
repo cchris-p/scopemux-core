@@ -460,6 +460,7 @@ static void ast_node_free_data(ASTNode *node) {
     return;
   }
 
+  // Only free if source is AST_SOURCE_DEBUG_ALLOC; do NOT free if AST_SOURCE_ALIAS or AST_SOURCE_STATIC.
   if (node->name && node->name_source == AST_SOURCE_DEBUG_ALLOC) {
     FREE(node->name);
     node->name = NULL;

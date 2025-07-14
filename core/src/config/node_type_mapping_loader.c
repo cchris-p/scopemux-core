@@ -110,7 +110,9 @@ void load_node_type_mapping(void) {
   // Clear existing mappings
   for (int i = 0; i < mapping_count; ++i) {
     if (mappings[i].query_type) {
-      memory_debug_free(mappings[i].query_type, __FILE__, __LINE__);
+      // Do NOT free mappings[i].query_type here unless it is known to be dynamically allocated.
+      // Most entries are static string literals from default_mappings and must not be freed.
+      // TODO: Track allocation source if dynamic assignment is ever used.
       mappings[i].query_type = NULL;
     }
   }

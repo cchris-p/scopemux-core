@@ -82,7 +82,7 @@ static uint32_t map_query_type_to_node_type(const char *query_type) {
   }
 
   // Use the node type mapping system with error handling
-  uint32_t node_type;
+  uint32_t node_type = NODE_UNKNOWN; // Initialize to avoid undefined behavior
 
   // Strip @ prefix if present for mapping lookup
   const char *clean_query_type = query_type;
@@ -114,6 +114,12 @@ static uint32_t map_query_type_to_node_type(const char *query_type) {
       return NODE_INCLUDE;
     } else if (strcmp(clean_query_type, "imports") == 0 || strcmp(clean_query_type, "includes") == 0) {
       return NODE_INCLUDE;
+    } else if (strcmp(clean_query_type, "docstring") == 0) {
+      log_error("[QUERY_DEBUG] Mapped docstring query to NODE_DOCSTRING");
+      return NODE_DOCSTRING;
+    } else if (strcmp(clean_query_type, "docstrings") == 0) {
+      log_error("[QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING");
+      return NODE_DOCSTRING;
     } else {
       log_error("[QUERY_DEBUG] Unknown query type: %s", clean_query_type);
     }
@@ -472,14 +478,27 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       if (strncmp(clean_capture_name, clean_query_type, clean_length) == 0) {
         is_main_node = true;
       } else {
-        // Handle singular/plural forms
-        const char *singular_forms[] = {"function", "struct", "class", "variable", "method"};
-        const char *plural_forms[] = {"functions", "structs", "classes", "variables", "methods"};
+        // Handle singular/plural forms - enhanced to be more robust with partial matches
+        const char *singular_forms[] = {"function", "struct", "class", "variable", "method", "docstring"};
+        const char *plural_forms[] = {"functions", "structs", "classes", "variables", "methods", "docstrings"};
         for (size_t j = 0; j < sizeof(singular_forms) / sizeof(singular_forms[0]); j++) {
-          if ((strcmp(clean_query_type, plural_forms[j]) == 0 && strncmp(clean_capture_name, singular_forms[j], clean_length) == 0) ||
-              (strcmp(clean_query_type, singular_forms[j]) == 0 && strncmp(clean_capture_name, plural_forms[j], clean_length) == 0)) {
-            is_main_node = true;
-            break;
+          // Check if clean_capture_name contains the singular form (for @function in a functions query)
+          if (strcmp(clean_query_type, plural_forms[j]) == 0) {
+            size_t sing_len = strlen(singular_forms[j]);
+            if (clean_length >= sing_len && strncmp(clean_capture_name, singular_forms[j], sing_len) == 0) {
+              is_main_node = true;
+              fprintf(stderr, "[SINGPLUR_DEBUG] Found singular form '%s' in query type '%s'\n", 
+                      singular_forms[j], clean_query_type);
+              break;
+            }
+          }
+          // Check for plural form in a singular query type (less common)
+          else if (strcmp(clean_query_type, singular_forms[j]) == 0) {
+            size_t plur_len = strlen(plural_forms[j]);
+            if (clean_length >= plur_len && strncmp(clean_capture_name, plural_forms[j], plur_len) == 0) {
+              is_main_node = true;
+              break;
+            }
           }
         }
       }
@@ -516,7 +535,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         if (!node_name) {
             if (strcmp(query_type, "docstrings") == 0 && docstring) {
                 node_name = docstring;
-                name_source = docstring_source;
+                name_source = AST_SOURCE_ALIAS; // Prevent double free: node_name is an alias of docstring
                 docstring_is_name = true;
             } else {
                 const char *type_str = ts_node_type(main_node);
@@ -560,14 +579,47 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         }
 
         ast_node_add_child(ast_root, ast_node);
+        parser_add_ast_node(ctx, ast_node);
+        // If this is a function node, extract and assign raw content
+        if (node_type == NODE_FUNCTION) {
+            char *raw_content = extract_raw_content(main_node, ctx->source_code);
+            if (raw_content) {
+#ifdef ast_node_set_content
+                ast_node_set_content(ast_node, raw_content, AST_SOURCE_DEBUG_ALLOC);
+#else
+                ast_node->content = raw_content;
+                ast_node->content_source = AST_SOURCE_DEBUG_ALLOC;
+#endif
+                log_error("[QUERY_DEBUG] Set content for function node '%s'", ast_node->name);
+            } else {
+                log_error("[QUERY_DEBUG] Failed to extract content for function node '%s'", ast_node->name);
+            }
+        }
         successful_captures++;
-        log_error("[QUERY_DEBUG] Added %s node '%s' to AST", ast_node_type_to_string(node_type), ast_node->name);
+        log_error("[QUERY_DEBUG] Added %s node '%s' to AST (and registered in context)", ast_node_type_to_string(node_type), ast_node->name);
 
     } else {
         log_error("[QUERY_DEBUG] No main node found for match %d", match_count);
-        if (node_name && name_source == AST_SOURCE_DEBUG_ALLOC) memory_debug_free(node_name, __FILE__, __LINE__);
-        if (signature && signature_source == AST_SOURCE_DEBUG_ALLOC) memory_debug_free(signature, __FILE__, __LINE__);
-        if (docstring && docstring_source == AST_SOURCE_DEBUG_ALLOC) memory_debug_free(docstring, __FILE__, __LINE__);
+        // Free node_name and docstring safely (avoid double-free)
+        bool freed_docstring = false;
+        if (node_name && name_source == AST_SOURCE_DEBUG_ALLOC) {
+            if (node_name == docstring && docstring_source == AST_SOURCE_DEBUG_ALLOC) {
+                memory_debug_free(node_name, __FILE__, __LINE__);
+                freed_docstring = true;
+                log_error("[QUERY_DEBUG] Freed shared node_name/docstring pointer");
+            } else {
+                memory_debug_free(node_name, __FILE__, __LINE__);
+                log_error("[QUERY_DEBUG] Freed node_name pointer");
+            }
+        }
+        if (signature && signature_source == AST_SOURCE_DEBUG_ALLOC) {
+            memory_debug_free(signature, __FILE__, __LINE__);
+            log_error("[QUERY_DEBUG] Freed signature pointer");
+        }
+        if (docstring && docstring_source == AST_SOURCE_DEBUG_ALLOC && !freed_docstring) {
+            memory_debug_free(docstring, __FILE__, __LINE__);
+            log_error("[QUERY_DEBUG] Freed docstring pointer");
+        }
     }
   }
 
@@ -656,6 +708,11 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
 
   // Process queries in semantic order
   for (size_t i = 0; i < num_query_types; i++) {
+    // Special debug for functions query
+    if (query_types[i] && strcmp(query_types[i], "functions") == 0) {
+      fprintf(stderr, "[FUNCTIONS_DEBUG] About to process FUNCTIONS query at index %zu\n", i);
+    }
+    
     // ENHANCED LOGGING: Log query processing start with more detail
     log_error("[QUERY_DEBUG] Processing query type: %s (%zu of %zu)", SAFE_STR(query_types[i]),
               i + 1, num_query_types);
