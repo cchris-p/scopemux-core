@@ -23,21 +23,27 @@
 #include <string.h>
 
 /**
- * @brief C language reference resolver stub implementation
- *
- * Creates a dummy symbol and attaches it to the provided node
- *
- * @param node ASTNode to resolve references for
- * @param ref_type Type of reference being resolved
- * @param name Symbol name to resolve
- * @param symbol_table Global symbol table for lookups
- * @param resolver_data Optional resolver-specific data
- * @return ResolutionStatus indicating success or failure
+ * @file reference_resolver_stubs.c
+ * @brief Stub implementations for reference resolver tests
  */
 
-/* (Removed duplicate definition of reference_resolver_generic_resolve) */
+/* Test-specific private header must come first */
+#include "reference_resolver_private.h"
 
-/* (Removed duplicate definition of reference_resolver_generic_resolve) */
+/* ScopeMux core headers */
+#include "../src/parser/parser_internal.h" // For ASTNODE_MAGIC
+#include "../src/parser/reference_resolvers/c_cpp_resolver_shared_utils.h"
+#include "../src/parser/reference_resolvers/js_ts_resolver_shared_utils.h"
+#include "../src/parser/reference_resolvers/language_resolvers.h"
+#include "reference_resolver_stubs.h"
+#include "scopemux/ast.h"
+#include "scopemux/language.h"
+#include "scopemux/logging.h"
+#include "scopemux/memory_debug.h"
+#include "scopemux/parser.h"
+#include "scopemux/reference_resolver.h"
+#include "scopemux/symbol_table.h"
+#include "symbol_test_helpers.h" // For test_symbol_table_add
 
 /* Standard library includes */
 #include <stdbool.h>
@@ -48,19 +54,8 @@
 /* Test framework */
 #include <criterion/criterion.h>
 
-/* Include private test header first to avoid redefinitions */
-#include "reference_resolver_private.h"
-
-/* ScopeMux headers with relative paths for the project structure */
-#include "../../include/scopemux/ast.h"
-#include "../../include/scopemux/logging.h"
-#include "../../include/scopemux/reference_resolver.h"
-#include "../../include/scopemux/symbol_table.h"
-
 /* Define constants for our stub implementation */
 #define MAX_LANGUAGE_RESOLVERS 10
-
-/* (Removed duplicate struct ReferenceResolver_Private definition; use the one from the header) */
 
 /* Define ASTNODE_MAGIC for tests if not already defined */
 #ifndef ASTNODE_MAGIC
@@ -137,45 +132,27 @@ static ResolutionStatus create_and_attach_symbol(ASTNode *node, ReferenceType re
  * @brief Private structure for reference resolver stubs
  */
 /* Duplicate definition removed. See earlier definition for struct ReferenceResolver_Private. */
-
-/* (Removed duplicate and malformed block) */
-
-/**
- * @brief C language reference resolver stub implementation
- */
-ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, const char *name,
+*@brief C language reference resolver stub implementation * /
+    ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, const char *name,
                                       GlobalSymbolTable *symbol_table, void *resolver_data) {
-  (void)resolver_data;
-  return create_and_attach_symbol(node, ref_type, name, symbol_table, LANG_C);
+  return reference_resolver_c_cpp_resolve(node, ref_type, name, symbol_table, resolver_data, false);
 }
 
-/**
- * @brief Python language reference resolver stub implementation
- */
 ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type, const char *name,
                                            GlobalSymbolTable *symbol_table, void *resolver_data) {
-  (void)resolver_data;
   return create_and_attach_symbol(node, ref_type, name, symbol_table, LANG_PYTHON);
 }
 
-/**
- * @brief JavaScript language reference resolver stub implementation
- */
 ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_type,
                                                const char *name, GlobalSymbolTable *symbol_table,
                                                void *resolver_data) {
-  (void)resolver_data;
-  return create_and_attach_symbol(node, ref_type, name, symbol_table, LANG_JAVASCRIPT);
+  return reference_resolver_js_ts_resolve(node, ref_type, name, symbol_table, resolver_data, false);
 }
 
-/**
- * @brief TypeScript language reference resolver stub implementation
- */
 ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_type,
                                                const char *name, GlobalSymbolTable *symbol_table,
                                                void *resolver_data) {
-  (void)resolver_data;
-  return create_and_attach_symbol(node, ref_type, name, symbol_table, LANG_TYPESCRIPT);
+  return reference_resolver_js_ts_resolve(node, ref_type, name, symbol_table, resolver_data, true);
 }
 
 /**
@@ -299,7 +276,7 @@ bool reference_resolver_init_builtin(ReferenceResolver *resolver) {
   bool success = true;
   success &= reference_resolver_register(resolver, LANG_C, mock_resolver_func, NULL, NULL);
   success &= reference_resolver_register(resolver, LANG_PYTHON, mock_resolver_func, NULL, NULL);
-  success &= reference_resolver_register(resolver, LANG_JAVASCRIPT, mock_resolver_func, NULL, NULL);
+  er(resolver, LANG_JAVASCRIPT, mock_resolver_func, NULL, NULL);
   success &= reference_resolver_register(resolver, LANG_TYPESCRIPT, mock_resolver_func, NULL, NULL);
 
   return success;
