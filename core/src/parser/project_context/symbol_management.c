@@ -25,7 +25,8 @@ void reference_resolver_free(ReferenceResolver *resolver);
 ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, ASTNode *node,
                                                  ReferenceType type, const char *name,
                                                  Language language);
-void reference_resolver_get_stats(int *total_lookups, int *resolved_count, int *failed_count);
+void reference_resolver_get_stats(const ReferenceResolver *resolver, size_t *out_total_references,
+                                  size_t *out_resolved_references);
 
 /**
  * @brief Helper function to recursively register symbols from an AST node
@@ -305,13 +306,11 @@ bool project_resolve_references_impl(ProjectContext *project) {
   }
 
   // Log resolution statistics
-  size_t total_lookups = 0;
-  size_t resolved_count = 0;
-  size_t failed_count = 0;
-  reference_resolver_get_stats(&total_lookups, &resolved_count, &failed_count);
+  size_t total_lookups = 0, resolved_count = 0;
+  reference_resolver_get_stats(resolver, &total_lookups, &resolved_count);
 
-  log_info("Reference resolution complete: %zu lookups, %zu resolved, %zu failed", total_lookups,
-           resolved_count, failed_count);
+  log_info("Reference resolution complete: %zu lookups, %zu resolved", total_lookups,
+           resolved_count);
 
   return true;
 }

@@ -8,34 +8,12 @@
 
 /* ScopeMux core headers */
 #include "../src/parser/parser_internal.h" // For ASTNODE_MAGIC
-#include "scopemux/ast.h"
-#include "scopemux/language.h"
-#include "scopemux/logging.h"
-#include "scopemux/memory_debug.h"
-#include "scopemux/parser.h"
-#include "scopemux/reference_resolver.h"
-#include "scopemux/symbol_table.h"
-#include "symbol_test_helpers.h" // For test_symbol_table_add
-
-/* Standard library includes */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-/**
- * @file reference_resolver_stubs.c
- * @brief Stub implementations for reference resolver tests
- */
-
-/* Test-specific private header must come first */
-#include "reference_resolver_private.h"
-
-/* ScopeMux core headers */
-#include "../src/parser/parser_internal.h" // For ASTNODE_MAGIC
 #include "../src/parser/reference_resolvers/c_cpp_resolver_shared_utils.h"
 #include "../src/parser/reference_resolvers/js_ts_resolver_shared_utils.h"
 #include "../src/parser/reference_resolvers/language_resolvers.h"
 #include "reference_resolver_stubs.h"
+
+/* ScopeMux core headers */
 #include "scopemux/ast.h"
 #include "scopemux/language.h"
 #include "scopemux/logging.h"

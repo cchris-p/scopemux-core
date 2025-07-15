@@ -10,6 +10,7 @@ ts_language_test
 core/src/info_block/*
 core/include/scopemux/info_block.h
 core/tests/tools/cst_dump_tool
+diff-output.txt
 
 # These directories may interfere with coding agents
 core/tests/build*

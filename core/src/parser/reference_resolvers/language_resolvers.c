@@ -11,11 +11,12 @@
  * Each resolver handles language-specific scoping rules and symbol resolution.
  */
 
-#include "scopemux/ast.h"
-#include "scopemux/language.h"
-#include "scopemux/logging.h"
-#include "scopemux/reference_resolver.h"
-#include "scopemux/symbol_table.h"
+#include "../../../include/scopemux/ast.h"
+#include "../../../include/scopemux/language.h"
+#include "../../../include/scopemux/logging.h"
+#include "../../../include/scopemux/reference_resolver.h"
+#include "../../../include/scopemux/symbol_table.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -246,4 +246,7 @@ ResolutionStatus reference_resolver_generic_resolve(ASTNode *node, ReferenceType
                                                     const char *name,
                                                     GlobalSymbolTable *symbol_table);
 
+void reference_resolver_get_stats(const ReferenceResolver *resolver, size_t *out_total_references,
+                                  size_t *out_resolved_references);
+
 #endif /* SCOPEMUX_REFERENCE_RESOLVER_H */

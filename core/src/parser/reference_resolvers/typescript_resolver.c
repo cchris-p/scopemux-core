@@ -2,6 +2,7 @@
 #include "../../../include/scopemux/parser.h"
 #include "../../../include/scopemux/reference_resolver.h"
 #include "../../../include/scopemux/symbol_table.h"
+
 #include "../ast_node.h"
 #include "js_ts_resolver_shared_utils.h"
 #include "language_resolvers.h"

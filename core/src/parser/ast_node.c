@@ -11,6 +11,7 @@
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/memory_debug.h"
 #include "parser_internal.h"
+#include <execinfo.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -100,11 +101,12 @@ const char *ast_node_type_to_string(ASTNodeType type) {
  * This is different from ast_node_free which also frees children
  */
 void ast_node_free_internal(ASTNode *node) {
-    fprintf(stderr, "[TEST] ast_node_free_internal reached for node at %p\n", (void*)node);
+  fprintf(stderr, "[TEST] ast_node_free_internal reached for node at %p\n", (void *)node);
 
-    log_debug("[TEST] ast_node_free_internal reached for node at %p", (void*)node);
+  log_debug("[TEST] ast_node_free_internal reached for node at %p", (void *)node);
 
-    log_debug("[ast_node_free_internal] Freeing ASTNode at %p (magic=0x%X owned_fields=0x%X)", (void*)node, node ? node->magic : 0, node ? node->owned_fields : 0);
+  log_debug("[ast_node_free_internal] Freeing ASTNode at %p (magic=0x%X owned_fields=0x%X)",
+            (void *)node, node ? node->magic : 0, node ? node->owned_fields : 0);
 
   if (!node) {
     log_debug("Skipping free for NULL ASTNode");
@@ -145,7 +147,8 @@ void ast_node_free_internal(ASTNode *node) {
     memory_debug_free(node->docstring, __FILE__, __LINE__);
   }
   if (node->raw_content && (node->owned_fields & FIELD_RAW_CONTENT)) {
-    log_debug("Freeing raw_content for ASTNode at %p (owned_fields=0x%X)", (void*)node, node->owned_fields);
+    log_debug("Freeing raw_content for ASTNode at %p (owned_fields=0x%X)", (void *)node,
+              node->owned_fields);
     memory_debug_free(node->raw_content, __FILE__, __LINE__);
     node->raw_content = NULL;
     node->owned_fields &= ~FIELD_RAW_CONTENT;
@@ -231,41 +234,42 @@ ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source)
  * Frees an AST node and all its resources recursively.
  */
 void ast_node_free(ASTNode *node) {
-    fprintf(stderr, "[TEST] ast_node_free reached for node at %p\n", (void*)node);
-
-    log_debug("[ast_node_free] Called for node at %p (magic=0x%X)", (void*)node, node ? node->magic : 0);
-
+  fprintf(stderr, "[TEST] ast_node_free reached for node at %p\n", (void *)node);
+  void *callstack[16];
+  int frames = backtrace(callstack, 16);
+  char **symbols = backtrace_symbols(callstack, frames);
+  fprintf(stderr, "[TRACE] ast_node_free stack trace for node %p:\n", (void *)node);
+  for (int i = 0; i < frames; i++) {
+    fprintf(stderr, "  %s\n", symbols[i]);
+  }
+  free(symbols);
+  log_debug("[ast_node_free] Called for node at %p (magic=0x%X)", (void *)node,
+            node ? node->magic : 0);
   if (!node) {
     log_debug("Skipping free for NULL ASTNode");
     return;
   }
-
-  // First check memory canary to detect buffer overflows
   if (!memory_debug_check_canary(node, sizeof(ASTNode))) {
     log_error("Memory corruption detected in ASTNode at %p (buffer overflow)", (void *)node);
   }
-
-  // Validate magic number to detect double-frees
   if (node->magic != ASTNODE_MAGIC) {
     if (node->magic == 0) {
       log_error("Double-free detected: attempt to free already freed ASTNode at %p", (void *)node);
+      fprintf(stderr, "[ERROR] Double-free detected for ASTNode at %p\n", (void *)node);
     } else {
       log_error("Invalid magic number in ASTNode at %p: expected 0x%X, found 0x%X", (void *)node,
                 ASTNODE_MAGIC, node->magic);
+      fprintf(stderr, "[ERROR] Invalid magic number in ASTNode at %p: expected 0x%X, found 0x%X\n",
+              (void *)node, ASTNODE_MAGIC, node->magic);
     }
-    // NOTE: Defensive: Do not proceed with freeing if magic is invalid
     return;
   }
-
-  // Free internal resources (name, signature, etc.)
   ast_node_free_internal(node);
-
-  // Free all children recursively
   if (node->children && node->num_children > 0) {
     for (size_t i = 0; i < node->num_children; i++) {
       if (node->children[i]) {
         ast_node_free(node->children[i]);
-        node->children[i] = NULL; // Prevent double-free
+        node->children[i] = NULL;
       }
     }
     memory_debug_free(node->children, __FILE__, __LINE__);
@@ -274,8 +278,8 @@ void ast_node_free(ASTNode *node) {
   if (node->references) {
     node->references = NULL;
   }
-  // Finally free the node itself
   memory_debug_free(node, __FILE__, __LINE__);
+  fprintf(stderr, "[TEST] ast_node_free completed for node at %p\n", (void *)node);
 }
 
 /**
@@ -360,8 +364,9 @@ bool ast_node_add_reference(ASTNode *from, ASTNode *to) {
 /**
  * Create a new AST node with full attributes.
  */
-ASTNode *ast_node_create(ASTNodeType type, char *name, ASTStringSource name_source, char *qualified_name,
-                          ASTStringSource qualified_name_source, SourceRange range) {
+ASTNode *ast_node_create(ASTNodeType type, char *name, ASTStringSource name_source,
+                         char *qualified_name, ASTStringSource qualified_name_source,
+                         SourceRange range) {
   // Create node with name - this will set FIELD_NAME ownership if needed
   ASTNode *node = ast_node_new(type, name, name_source);
   if (!node) {
@@ -462,7 +467,8 @@ static void ast_node_free_data(ASTNode *node) {
     return;
   }
 
-  // Only free if source is AST_SOURCE_DEBUG_ALLOC; do NOT free if AST_SOURCE_ALIAS or AST_SOURCE_STATIC.
+  // Only free if source is AST_SOURCE_DEBUG_ALLOC; do NOT free if AST_SOURCE_ALIAS or
+  // AST_SOURCE_STATIC.
   if (node->name && node->name_source == AST_SOURCE_DEBUG_ALLOC) {
     FREE(node->name);
     node->name = NULL;
@@ -484,7 +490,8 @@ static void ast_node_free_data(ASTNode *node) {
   }
 
   if (node->raw_content && (node->owned_fields & FIELD_RAW_CONTENT)) {
-    log_debug("[ast_node_free_data] Freeing raw_content for ASTNode at %p (owned_fields=0x%X)", (void*)node, node->owned_fields);
+    log_debug("[ast_node_free_data] Freeing raw_content for ASTNode at %p (owned_fields=0x%X)",
+              (void *)node, node->owned_fields);
     FREE(node->raw_content);
     node->raw_content = NULL;
     node->owned_fields &= ~FIELD_RAW_CONTENT;

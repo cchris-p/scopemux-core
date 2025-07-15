@@ -109,9 +109,14 @@ add_library(parser_core_obj OBJECT
     src/parser/parser_context.c
     src/parser/query_processing.c
     # Project context components
-    src/parser/project_context/project_context_facade.c
     src/parser/project_context/project_utils.c
     src/parser/project_context/project_symbol_extraction.c
+    # Reference resolver components
+    src/parser/reference_resolvers/reference_resolver_core.c
+    src/parser/reference_resolvers/resolver_core.c
+    src/parser/reference_resolvers/resolver_implementation.c
+    src/parser/reference_resolvers/resolver_registration.c
+    src/parser/reference_resolvers/resolver_resolution.c
     src/parser/project_context/symbol_management.c
     src/parser/project_context/symbol_collection.c
     src/parser/project_context/file_management.c
@@ -129,14 +134,19 @@ add_library(parser_core_obj OBJECT
     src/parser/reference_resolvers/resolver_registration.c
     src/parser/reference_resolvers/resolver_implementation.c
     src/parser/reference_resolvers/resolver_core.c
-    src/parser/reference_resolvers/reference_resolver_facade.c
+
     src/parser/reference_resolvers/reference_resolver_core.c
     src/parser/reference_resolvers/c_resolver.c
     src/parser/reference_resolvers/cpp_resolver.c
     src/parser/reference_resolvers/typescript_resolver.c
     src/parser/reference_resolvers/python_resolver.c
     src/parser/reference_resolvers/javascript_resolver.c
-    # Add the main reference_resolver.c
+    # Reference resolver components
+    src/parser/reference_resolvers/reference_resolver_core.c
+    src/parser/reference_resolvers/resolver_core.c
+    src/parser/reference_resolvers/resolver_implementation.c
+    src/parser/reference_resolvers/resolver_registration.c
+    src/parser/reference_resolvers/resolver_resolution.c
     src/parser/reference_resolver.c
     # Language compliance system (add all .c files)
     src/ast_compliance.c

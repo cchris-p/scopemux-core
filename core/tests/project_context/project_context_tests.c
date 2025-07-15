@@ -243,15 +243,15 @@ Test(project_context_delegation, interfile_symbols, .init = setup_project,
   project_parse_all_files(project);
 
   // Create AST nodes for each file
-  ASTNode *ast1 = ast_node_new(NODE_ROOT, NULL);
+  ASTNode *ast1 = ast_node_new(NODE_ROOT, NULL, AST_SOURCE_NONE);
   ast1->lang = LANG_C;
-  ASTNode *func1 = ast_node_new(NODE_FUNCTION, "func1");
+  ASTNode *func1 = ast_node_new(NODE_FUNCTION, "func1", AST_SOURCE_DEBUG_ALLOC);
   func1->lang = LANG_C;
   ast_node_add_child(ast1, func1);
 
-  ASTNode *ast2 = ast_node_new(NODE_ROOT, NULL);
+  ASTNode *ast2 = ast_node_new(NODE_ROOT, NULL, AST_SOURCE_NONE);
   ast2->lang = LANG_C;
-  ASTNode *func2 = ast_node_new(NODE_FUNCTION, "func2");
+  ASTNode *func2 = ast_node_new(NODE_FUNCTION, "func2", AST_SOURCE_DEBUG_ALLOC);
   func2->lang = LANG_C;
   ast_node_add_child(ast2, func2);
 

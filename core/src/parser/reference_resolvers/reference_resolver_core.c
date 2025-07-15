@@ -7,10 +7,10 @@
  * tracking, and core resolution logic.
  */
 
-#include "scopemux/logging.h"
-#include "scopemux/parser.h"
-#include "scopemux/reference_resolver.h"
-#include "scopemux/symbol_table.h"
+#include "../../../include/scopemux/logging.h"
+#include "../../../include/scopemux/parser.h"
+#include "../../../include/scopemux/reference_resolver.h"
+#include "../../../include/scopemux/symbol_table.h"
 
 #include <stdio.h>
 #include <stdlib.h>

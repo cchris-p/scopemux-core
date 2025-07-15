@@ -2,12 +2,12 @@
 Building shared libraries in /home/matrillo/apps/scopemux/build/tree-sitter-libs
 Converting static libraries to shared libraries...
 Created shared libraries:
--rwxrwxr-x 1 matrillo matrillo 3566904 Jul 14 01:26 libtree-sitter-cpp.so
--rwxrwxr-x 1 matrillo matrillo  627536 Jul 14 01:26 libtree-sitter-c.so
--rwxrwxr-x 1 matrillo matrillo  386944 Jul 14 01:26 libtree-sitter-javascript.so
--rwxrwxr-x 1 matrillo matrillo  484368 Jul 14 01:26 libtree-sitter-python.so
--rwxrwxr-x 1 matrillo matrillo  237264 Jul 14 01:26 libtree-sitter.so
--rwxrwxr-x 1 matrillo matrillo 1443832 Jul 14 01:26 libtree-sitter-typescript.so
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul 14 22:09 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul 14 22:09 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul 14 22:09 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul 14 22:09 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  237264 Jul 14 22:09 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul 14 22:09 libtree-sitter-typescript.so
 Done building shared libraries.
 [test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux/build/tree-sitter-libs
 DEBUG: prepare_clean_build_dir received build_dir='/home/matrillo/apps/scopemux/build-interfile'
@@ -22,118 +22,923 @@ DEBUG: prepare_clean_build_dir received build_dir='/home/matrillo/apps/scopemux/
 [Symbol Table Tests] [====] Synthesis: Tested: 1 | Passing: 1 | Failing: 0 | Crashing: 0 
 [1;32m PASS: Symbol Table Tests (All tests passed)[0m
 [test_runner_lib] Building Project Context Tests in /home/matrillo/apps/scopemux/build-interfile...
- ERROR: Failed to build test target 'Project Context Tests'.
-Build log output:
-make: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[1]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[2]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 45%] Built target parser_core_obj
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 52%] Built target tree_sitter_core
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 59%] Built target tree_sitter_c
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 66%] Built target tree_sitter_cpp
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 72%] Built target tree_sitter_python
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 79%] Built target tree_sitter_javascript
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 86%] Built target tree_sitter_typescript
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 87%] Built target parser_core
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 91%] Built target test_utilities
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 98%] Built target context_engine
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-make[3]: Entering directory '/home/matrillo/apps/scopemux/build-interfile'
-[ 98%] Building C object core/tests/CMakeFiles/project_context_tests.dir/project_context/project_context_tests.c.o
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:65:6: warning: no previous prototype for ‘setup_project’ [-Wmissing-prototypes]
-   65 | void setup_project(void) {
-      |      ^~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:115:6: warning: no previous prototype for ‘teardown_project’ [-Wmissing-prototypes]
-  115 | void teardown_project(void) {
-      |      ^~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c: In function ‘project_context_delegation_dependency_management_impl’:
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:208:74: warning: passing argument 3 of ‘project_context_get_dependencies’ from incompatible pointer type [-Wincompatible-pointer-types]
-  208 |   size_t num_deps = project_context_get_dependencies(project, main_path, &deps);
-      |                                                                          ^~~~~
-      |                                                                          |
-      |                                                                          char ***
-In file included from /home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:20:
-/home/matrillo/apps/scopemux/core/include/scopemux/project_context.h:264:55: note: expected ‘const char ***’ but argument is of type ‘char ***’
-  264 |                                         const char ***out_dependencies);
-      |                                         ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c: In function ‘project_context_delegation_interfile_symbols_impl’:
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:246:19: error: too few arguments to function ‘ast_node_new’
-  246 |   ASTNode *ast1 = ast_node_new(NODE_ROOT, NULL);
-      |                   ^~~~~~~~~~~~
-In file included from /home/matrillo/apps/scopemux/core/include/scopemux/parser.h:23,
-                 from /home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:19:
-/home/matrillo/apps/scopemux/core/include/scopemux/ast.h:131:10: note: declared here
-  131 | ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source);
-      |          ^~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:248:20: error: too few arguments to function ‘ast_node_new’
-  248 |   ASTNode *func1 = ast_node_new(NODE_FUNCTION, "func1");
-      |                    ^~~~~~~~~~~~
-In file included from /home/matrillo/apps/scopemux/core/include/scopemux/parser.h:23,
-                 from /home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:19:
-/home/matrillo/apps/scopemux/core/include/scopemux/ast.h:131:10: note: declared here
-  131 | ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source);
-      |          ^~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:252:19: error: too few arguments to function ‘ast_node_new’
-  252 |   ASTNode *ast2 = ast_node_new(NODE_ROOT, NULL);
-      |                   ^~~~~~~~~~~~
-In file included from /home/matrillo/apps/scopemux/core/include/scopemux/parser.h:23,
-                 from /home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:19:
-/home/matrillo/apps/scopemux/core/include/scopemux/ast.h:131:10: note: declared here
-  131 | ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source);
-      |          ^~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:254:20: error: too few arguments to function ‘ast_node_new’
-  254 |   ASTNode *func2 = ast_node_new(NODE_FUNCTION, "func2");
-      |                    ^~~~~~~~~~~~
-In file included from /home/matrillo/apps/scopemux/core/include/scopemux/parser.h:23,
-                 from /home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:19:
-/home/matrillo/apps/scopemux/core/include/scopemux/ast.h:131:10: note: declared here
-  131 | ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source);
-      |          ^~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:266:18: warning: initialization of ‘Symbol *’ from incompatible pointer type ‘SymbolEntry *’ [-Wincompatible-pointer-types]
-  266 |   Symbol *sym1 = symbol_table_lookup(symbols, "func1");
-      |                  ^~~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:267:18: warning: initialization of ‘Symbol *’ from incompatible pointer type ‘SymbolEntry *’ [-Wincompatible-pointer-types]
-  267 |   Symbol *sym2 = symbol_table_lookup(symbols, "func2");
-      |                  ^~~~~~~~~~~~~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c: In function ‘setup_project’:
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:102:41: warning: ‘/file1.c’ directive output may be truncated writing 8 bytes into a region of size between 1 and 512 [-Wformat-truncation=]
-  102 |   snprintf(abspath, sizeof(abspath), "%s/file1.c", test_project_abspath);
-      |                                         ^~~~~~~~
-/home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:102:3: note: ‘snprintf’ output between 9 and 520 bytes into a destination of size 512
-  102 |   snprintf(abspath, sizeof(abspath), "%s/file1.c", test_project_abspath);
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-make[3]: *** [core/tests/CMakeFiles/project_context_tests.dir/build.make:79: core/tests/CMakeFiles/project_context_tests.dir/project_context/project_context_tests.c.o] Error 1
-make[3]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-make[2]: *** [CMakeFiles/Makefile2:1130: core/tests/CMakeFiles/project_context_tests.dir/all] Error 2
-make[2]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-make[1]: *** [CMakeFiles/Makefile2:1137: core/tests/CMakeFiles/project_context_tests.dir/rule] Error 2
-make[1]: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
-make: *** [Makefile:468: project_context_tests] Error 2
-make: Leaving directory '/home/matrillo/apps/scopemux/build-interfile'
+[test_runner_lib] Successfully built Project Context Tests
 [test_runner_lib] Checking for test executable: /home/matrillo/apps/scopemux/build-interfile/core/tests/project_context_tests
- FAIL: Project Context Tests. Executable not found: /home/matrillo/apps/scopemux/build-interfile/core/tests/project_context_tests
-[test_runner_lib] Searching for the missing executable...
+[test_runner_lib] Running Project Context Tests: /home/matrillo/apps/scopemux/build-interfile/core/tests/project_context_tests
+[test_runner_lib] Test output from Project Context Tests:
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered C language compliance callbacks
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered language-specific compliance callbacks[2025-07-14 22:09:36] [INFO] 
+[Project Context Tests] Registered C language compliance callbacks[scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered language-specific compliance callbacks[scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] 
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Initialized node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] Successfully initialized parser context at 0x5559ecdfe520
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Initialized node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Successfully initialized parser context at 0x5631833e85e0
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing 3 discovered files
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing file: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/main.c
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered C language compliance callbacks
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered language-specific compliance callbacks
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Initialized node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Successfully initialized parser context at 0x5631833e9c60
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing file: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/main.c
+[Project Context Tests] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x5631833e9c60, content=0x56318339e190, content_length=25, filename=/home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/main.c, language=1
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x5631833e9c60
+[Project Context Tests] [DEBUG] CWD: /home/matrillo/apps/scopemux/build-interfile
+[Project Context Tests] [DEBUG] test_project/file1.c absolute path: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c
+[Project Context Tests] [scopemux] Loading hardcoded node type mappings:
+[Project Context Tests]   functions -> NODE_FUNCTION
+[Project Context Tests]   classes -> NODE_CLASS
+[Project Context Tests]   methods -> NODE_METHOD
+[Project Context Tests]   variables -> NODE_VARIABLE
+[Project Context Tests]   modules -> NODE_MODULE
+[Project Context Tests]   structs -> NODE_STRUCT
+[Project Context Tests]   unions -> NODE_UNION
+[Project Context Tests]   enums -> NODE_ENUM
+[Project Context Tests]   typedefs -> NODE_TYPEDEF
+[Project Context Tests]   includes -> NODE_INCLUDE
+[Project Context Tests]   macros -> NODE_MACRO
+[Project Context Tests]   docstrings -> NODE_DOCSTRING
+[Project Context Tests]   interfaces -> NODE_INTERFACE
+[Project Context Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[Project Context Tests] [scopemux] Loading hardcoded node type mappings:
+[Project Context Tests]   functions -> NODE_FUNCTION
+[Project Context Tests]   classes -> NODE_CLASS
+[Project Context Tests]   methods -> NODE_METHOD
+[Project Context Tests]   variables -> NODE_VARIABLE
+[Project Context Tests]   modules -> NODE_MODULE
+[Project Context Tests]   structs -> NODE_STRUCT
+[Project Context Tests]   unions -> NODE_UNION
+[Project Context Tests]   enums -> NODE_ENUM
+[Project Context Tests]   typedefs -> NODE_TYPEDEF
+[Project Context Tests]   includes -> NODE_INCLUDE
+[Project Context Tests]   macros -> NODE_MACRO
+[Project Context Tests]   docstrings -> NODE_DOCSTRING
+[Project Context Tests]   interfaces -> NODE_INTERFACE
+[Project Context Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[Project Context Tests] [QUERY_MANAGER_FREE] ENTER: manager=0x5631833ea870
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x5631833ea8b0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x5631833ea980 (language_count=6)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x5631833eaa00 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5631833eaa00
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x5631833eab10 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5631833eab10
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x5631833eac20 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5631833eac20
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x5631833ead30 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5631833ead30
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x5631833eae40 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5631833eae40
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x5631833eaf50 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5631833eaf50
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x5631833ea980
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing languages array at 0x5631833ea8d0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing language_types array at 0x5631833ea910
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x5631833ea9c0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing manager struct at 0x5631833ea870
+[Project Context Tests] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x5631833e9c60
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[Project Context Tests] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x5631833e9c60, language=1
+[Project Context Tests] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x5631833e9c60, language=1
+[Project Context Tests] 
+[Project Context Tests] ***** PARSER INITIALIZATION DIAGNOSTIC *****
+[Project Context Tests] Test executable pid: 2892707
+[Project Context Tests] Using statically linked Tree-sitter libraries
+[Project Context Tests] SYMBOL RESOLUTION CHECK:
+[Project Context Tests]   dlsym(tree_sitter_c): 0x563169066e02
+[Project Context Tests]   dlsym(tree_sitter_cpp): 0x56316907d0ef
+[Project Context Tests]   dlsym(tree_sitter_python): 0x563169082eaf
+[Project Context Tests]   dlsym(tree_sitter_javascript): 0x56316908abd2
+[Project Context Tests]   dlsym(tree_sitter_typescript): 0x563169091f97
+[Project Context Tests] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[Project Context Tests] [DIAGNOSTIC] Language name: C
+[Project Context Tests] [DIAGNOSTIC] Adapter lookup result: 0x5631696842c0
+[Project Context Tests] [DIAGNOSTIC] Adapter language_name: C
+[Project Context Tests] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x563169066e02
+[Project Context Tests] [DIAGNOSTIC] Result of get_ts_language(): 0x563169680200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Successfully retrieved language object for language type 1, address: 0x563169680200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Calling ts_parser_set_language with parser=0x5631833e9d00, language=0x563169680200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ts_parser_set_language succeeded
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Verification: ts_parser_language() returned: 0x563169680200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Language verification successful - pointer match confirmed
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ===================================================================
+[Project Context Tests] DEBUG: Using queries directory: /home/matrillo/apps/scopemux/queries/c
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Entering parser_free for ctx=0x5559ecdfe520[2025-07-14 22:09:36] [ERROR] 
+[Project Context Tests] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x5559ecdfe520[2025-07-14 22:09:36] [ERROR] 
+[Project Context Tests] Loading hardcoded node type mappings (source of truth)...[DEBUG] CWD: /home/matrillo/apps/scopemux/build-interfile
+[Project Context Tests] [DEBUG] test_project/file1.c absolute path: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c
+[Project Context Tests] [scopemux] Loading hardcoded node type mappings:
+[Project Context Tests]   functions -> NODE_FUNCTION
+[Project Context Tests]   classes -> NODE_CLASS
+[Project Context Tests]   methods -> NODE_METHOD
+[Project Context Tests]   variables -> NODE_VARIABLE
+[Project Context Tests]   modules -> NODE_MODULE
+[Project Context Tests]   structs -> NODE_STRUCT
+[Project Context Tests]   unions -> NODE_UNION
+[Project Context Tests]   enums -> NODE_ENUM
+[Project Context Tests]   typedefs -> NODE_TYPEDEF
+[Project Context Tests]   includes -> NODE_INCLUDE
+[Project Context Tests]   macros -> NODE_MACRO
+[Project Context Tests]   docstrings -> NODE_DOCSTRING
+[Project Context Tests]   interfaces -> NODE_INTERFACE
+[Project Context Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[Project Context Tests] [QUERY_MANAGER_FREE] ENTER: manager=0x5559ecdfa180
+[Project Context Tests] 
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x5559ecdff110
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x5559ecdff190 (language_count=6)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x5559ecdff210 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5559ecdff210
+[Project Context Tests] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x5559ecdff320 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5559ecdff320
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x5559ecdff430 (query_count=0)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5559ecdff430
+[Project Context Tests] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c[QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x5559ecdff540 (query_count=0)
+[Project Context Tests] 
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5559ecdff540
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x5559ecdff650 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5559ecdff650
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x5559ecdff760 (query_count=0)
+[Project Context Tests] ts_init_parser returned: TRUE[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x5559ecdff760
+[Project Context Tests] 
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x5559ecdff190
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing languages array at 0x5559ecdff130
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing language_types array at 0x5559ecdff170
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x5559ecdff1d0
+[Project Context Tests] After initialization: Tree-sitter parser=0x5631833e9d00, language=0x563169680200[QUERY_MANAGER_FREE] Freeing manager struct at 0x5559ecdfa180
+[Project Context Tests] 
+[Project Context Tests] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [2025-07-14 22:09:36] [INFO] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====AST node cleanup summary: freed 0 of 0 nodes, errors: NO
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x5559ecdfe520
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x5559ecdfe520 in /home/matrillo/apps/scopemux/core/src/parser/parser_context.c:227 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Exiting parser_free for ctx=0x5559ecdfe520
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] ctx->filename: '/home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/main.c' (basename: 'main.c')
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] Created root node with name: 'main.c'
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] Set qualified_name: 'main.c'
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Source code preview (first 25 bytes): 'int main() { return 0; }
+[Project Context Tests] '
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Child 0: type='function_definition', named=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: classes
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered C language compliance callbacks
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered language-specific compliance callbacks
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Initialized node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Successfully initialized parser context at 0x561376e0c520
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing 2 discovered files
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing file: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered C language compliance callbacks
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered language-specific compliance callbacks
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Initialized node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Successfully initialized parser context at 0x561376e0dbf0
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing file: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c
+[Project Context Tests] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x561376e0dbf0, content=0x561376dc2190, content_length=25, filename=/home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c, language=1
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x561376e0dbf0
+[Project Context Tests] [DEBUG] CWD: /home/matrillo/apps/scopemux/build-interfile
+[Project Context Tests] [DEBUG] test_project/file1.c absolute path: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c
+[Project Context Tests] [scopemux] Loading hardcoded node type mappings:
+[Project Context Tests]   functions -> NODE_FUNCTION
+[Project Context Tests]   classes -> NODE_CLASS
+[Project Context Tests]   methods -> NODE_METHOD
+[Project Context Tests]   variables -> NODE_VARIABLE
+[Project Context Tests]   modules -> NODE_MODULE
+[Project Context Tests]   structs -> NODE_STRUCT
+[Project Context Tests]   unions -> NODE_UNION
+[Project Context Tests]   enums -> NODE_ENUM
+[Project Context Tests]   typedefs -> NODE_TYPEDEF
+[Project Context Tests]   includes -> NODE_INCLUDE
+[Project Context Tests]   macros -> NODE_MACRO
+[Project Context Tests]   docstrings -> NODE_DOCSTRING
+[Project Context Tests]   interfaces -> NODE_INTERFACE
+[Project Context Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[Project Context Tests] [scopemux] Loading hardcoded node type mappings:
+[Project Context Tests]   functions -> NODE_FUNCTION
+[Project Context Tests]   classes -> NODE_CLASS
+[Project Context Tests]   methods -> NODE_METHOD
+[Project Context Tests]   variables -> NODE_VARIABLE
+[Project Context Tests]   modules -> NODE_MODULE
+[Project Context Tests]   structs -> NODE_STRUCT
+[Project Context Tests]   unions -> NODE_UNION
+[Project Context Tests]   enums -> NODE_ENUM
+[Project Context Tests]   typedefs -> NODE_TYPEDEF
+[Project Context Tests]   includes -> NODE_INCLUDE
+[Project Context Tests]   macros -> NODE_MACRO
+[Project Context Tests]   docstrings -> NODE_DOCSTRING
+[Project Context Tests]   interfaces -> NODE_INTERFACE
+[Project Context Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[Project Context Tests] [QUERY_MANAGER_FREE] ENTER: manager=0x561376e0e800
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x561376e0e840
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x561376e0e8e0 (language_count=6)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x561376e0e960 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x561376e0e960
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x561376e0ea70 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x561376e0ea70
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x561376e0eb80 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x561376e0eb80
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x561376e0ec90 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x561376e0ec90
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x561376e0eda0 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x561376e0eda0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x561376e0eeb0 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x561376e0eeb0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x561376e0e8e0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing languages array at 0x561376e0e860
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing language_types array at 0x561376e0e8c0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x561376e0e920
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing manager struct at 0x561376e0e800
+[Project Context Tests] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x561376e0dbf0
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[Project Context Tests] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x561376e0dbf0, language=1
+[Project Context Tests] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x561376e0dbf0, language=1
+[Project Context Tests] 
+[Project Context Tests] ***** PARSER INITIALIZATION DIAGNOSTIC *****
+[Project Context Tests] Test executable pid: 2892708
+[Project Context Tests] Using statically linked Tree-sitter libraries
+[Project Context Tests] SYMBOL RESOLUTION CHECK:
+[Project Context Tests]   dlsym(tree_sitter_c): 0x561350d29e02
+[Project Context Tests]   dlsym(tree_sitter_cpp): 0x561350d400ef
+[Project Context Tests]   dlsym(tree_sitter_python): 0x561350d45eaf
+[Project Context Tests]   dlsym(tree_sitter_javascript): 0x561350d4dbd2
+[Project Context Tests]   dlsym(tree_sitter_typescript): 0x561350d54f97
+[Project Context Tests] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[Project Context Tests] [DIAGNOSTIC] Language name: C
+[Project Context Tests] [DIAGNOSTIC] Adapter lookup result: 0x5613513472c0
+[Project Context Tests] [DIAGNOSTIC] Adapter language_name: C
+[Project Context Tests] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x561350d29e02
+[Project Context Tests] [DIAGNOSTIC] Result of get_ts_language(): 0x561351343200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Successfully retrieved language object for language type 1, address: 0x561351343200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Calling ts_parser_set_language with parser=0x561376e0dc90, language=0x561351343200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ts_parser_set_language succeeded
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Verification: ts_parser_language() returned: 0x561351343200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Language verification successful - pointer match confirmed
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ===================================================================
+[Project Context Tests] DEBUG: Using queries directory: /home/matrillo/apps/scopemux/queries/c
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Loading hardcoded node type mappings (source of truth)...
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ts_init_parser returned: TRUE
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] After initialization: Tree-sitter parser=0x561376e0dc90, language=0x561351343200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] ctx->filename: '/home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c' (basename: 'file1.c')
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] Created root node with name: 'file1.c'
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] Set qualified_name: 'file1.c'
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Source code preview (first 25 bytes): 'int main() { return 0; }
+[Project Context Tests] '
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Child 0: type='function_definition', named=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: classes
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C classes (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: structs
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C classes (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: structs
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered C language compliance callbacks
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered language-specific compliance callbacks
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Initialized node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Successfully initialized parser context at 0x55c6ff0bf580
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing 2 discovered files
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing file: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered C language compliance callbacks
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Registered language-specific compliance callbacks
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Initialized node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Successfully initialized parser context at 0x55c6ff0c0c00
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] Parsing file: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c
+[Project Context Tests] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x55c6ff0c0c00, content=0x55c6ff075190, content_length=25, filename=/home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c, language=1
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x55c6ff0c0c00
+[Project Context Tests] [DEBUG] CWD: /home/matrillo/apps/scopemux/build-interfile
+[Project Context Tests] [DEBUG] test_project/file1.c absolute path: /home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c
+[Project Context Tests] [scopemux] Loading hardcoded node type mappings:
+[Project Context Tests]   functions -> NODE_FUNCTION
+[Project Context Tests]   classes -> NODE_CLASS
+[Project Context Tests]   methods -> NODE_METHOD
+[Project Context Tests]   variables -> NODE_VARIABLE
+[Project Context Tests]   modules -> NODE_MODULE
+[Project Context Tests]   structs -> NODE_STRUCT
+[Project Context Tests]   unions -> NODE_UNION
+[Project Context Tests]   enums -> NODE_ENUM
+[Project Context Tests]   typedefs -> NODE_TYPEDEF
+[Project Context Tests]   includes -> NODE_INCLUDE
+[Project Context Tests]   macros -> NODE_MACRO
+[Project Context Tests]   docstrings -> NODE_DOCSTRING
+[Project Context Tests]   interfaces -> NODE_INTERFACE
+[Project Context Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[Project Context Tests] [scopemux] Loading hardcoded node type mappings:
+[Project Context Tests]   functions -> NODE_FUNCTION
+[Project Context Tests]   classes -> NODE_CLASS
+[Project Context Tests]   methods -> NODE_METHOD
+[Project Context Tests]   variables -> NODE_VARIABLE
+[Project Context Tests]   modules -> NODE_MODULE
+[Project Context Tests]   structs -> NODE_STRUCT
+[Project Context Tests]   unions -> NODE_UNION
+[Project Context Tests]   enums -> NODE_ENUM
+[Project Context Tests]   typedefs -> NODE_TYPEDEF
+[Project Context Tests]   includes -> NODE_INCLUDE
+[Project Context Tests]   macros -> NODE_MACRO
+[Project Context Tests]   docstrings -> NODE_DOCSTRING
+[Project Context Tests]   interfaces -> NODE_INTERFACE
+[Project Context Tests]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[Project Context Tests] [QUERY_MANAGER_FREE] ENTER: manager=0x55c6ff0c1810
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x55c6ff0c1850
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x55c6ff0c1920 (language_count=6)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x55c6ff0c19a0 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55c6ff0c19a0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x55c6ff0c1ab0 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55c6ff0c1ab0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x55c6ff0c1bc0 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55c6ff0c1bc0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x55c6ff0c1cd0 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55c6ff0c1cd0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x55c6ff0c1de0 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55c6ff0c1de0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x55c6ff0c1ef0 (query_count=0)
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x55c6ff0c1ef0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x55c6ff0c1920
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing languages array at 0x55c6ff0c1870
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing language_types array at 0x55c6ff0c18b0
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x55c6ff0c1960
+[Project Context Tests] [QUERY_MANAGER_FREE] Freeing manager struct at 0x55c6ff0c1810
+[Project Context Tests] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] AST node cleanup summary: freed 0 of 0 nodes, errors: NO
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x55c6ff0c0c00
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Language type: 1 (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)
+[Project Context Tests] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x55c6ff0c0c00, language=1
+[Project Context Tests] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x55c6ff0c0c00, language=1
+[Project Context Tests] 
+[Project Context Tests] ***** PARSER INITIALIZATION DIAGNOSTIC *****
+[Project Context Tests] Test executable pid: 2892711
+[Project Context Tests] Using statically linked Tree-sitter libraries
+[Project Context Tests] SYMBOL RESOLUTION CHECK:
+[Project Context Tests]   dlsym(tree_sitter_c): 0x55c6f369be02
+[Project Context Tests]   dlsym(tree_sitter_cpp): 0x55c6f36b20ef
+[Project Context Tests]   dlsym(tree_sitter_python): 0x55c6f36b7eaf
+[Project Context Tests]   dlsym(tree_sitter_javascript): 0x55c6f36bfbd2
+[Project Context Tests]   dlsym(tree_sitter_typescript): 0x55c6f36c6f97
+[Project Context Tests] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[Project Context Tests] [DIAGNOSTIC] Language name: C
+[Project Context Tests] [DIAGNOSTIC] Adapter lookup result: 0x55c6f3cb92c0
+[Project Context Tests] [DIAGNOSTIC] Adapter language_name: C
+[Project Context Tests] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x55c6f369be02
+[Project Context Tests] [DIAGNOSTIC] Result of get_ts_language(): 0x55c6f3cb5200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Successfully retrieved language object for language type 1, address: 0x55c6f3cb5200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Calling ts_parser_set_language with parser=0x55c6ff0c0ca0, language=0x55c6f3cb5200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ts_parser_set_language succeeded
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Verification: ts_parser_language() returned: 0x55c6f3cb5200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Language verification successful - pointer match confirmed
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ===================================================================
+[Project Context Tests] DEBUG: Using queries directory: /home/matrillo/apps/scopemux/queries/c
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Found docstrings.scm at: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Loading hardcoded node type mappings (source of truth)...
+[Project Context Tests] [scopemux] INFO: Loading hardcoded node type mappings
+[Project Context Tests] [scopemux] Loaded 14 hardcoded node type mappings
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Initialized query manager with queries directory: /home/matrillo/apps/scopemux/queries/c
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ts_init_parser returned: TRUE
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] After initialization: Tree-sitter parser=0x55c6ff0c0ca0, language=0x55c6f3cb5200
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] ctx->filename: '/home/matrillo/apps/scopemux/build-interfile/core/tests/test_project/file1.c' (basename: 'file1.c')
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] Created root node with name: 'file1.c'
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] [create_ast_root_node] Set qualified_name: 'file1.c'
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Source code preview (first 25 bytes): 'int main() { return 0; }
+[Project Context Tests] '
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Child 0: type='function_definition', named=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: classes
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/classes.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C classes (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: structs
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/structs.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Named struct definition (not typedef)
+[Project Context Tests] (declaration
+[Project Context Tests]   type: (struct_specifier
+[Project Context Tests]           name: (type_identifier) @name
+[Project Context Tests]         ) @struct
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Typedef struct (anonymous or named)
+[Project Context Tests] (type_definition
+[Project Context Tests]   type: (struct_specifier) @struct
+[Project Context Tests]   declarator: (type_identifier) @name
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Unknown query type: structs
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Unknown query type: struct
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x56318337a490 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:414 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[Project Context Tests] [FUNCTIONS_DEBUG] About to process FUNCTIONS query at index 2
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: functions
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[Project Context Tests] [FUNCTIONS_DEBUG] *** DETECTED functions query request ***
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Named struct definition (not typedef)
+[Project Context Tests] (declaration
+[Project Context Tests]   type: (struct_specifier
+[Project Context Tests]           name: (type_identifier) @name
+[Project Context Tests]         ) @struct
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Typedef struct (anonymous or named)
+[Project Context Tests] (type_definition
+[Project Context Tests]   type: (struct_specifier) @struct
+[Project Context Tests]   declarator: (type_identifier) @name
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Unknown query type: structs
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Unknown query type: struct
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x561376d9e490 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:414 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[Project Context Tests] [FUNCTIONS_DEBUG] About to process FUNCTIONS query at index 2
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: functions
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[Project Context Tests] [FUNCTIONS_DEBUG] *** DETECTED functions query request ***
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Function definitions (direct, pointer, parenthesized)
+[Project Context Tests] ;; Minimal compiling pattern for function definitions
+[Project Context Tests] ;; (Backed by vendor/tree-sitter-c/grammar.js and node-types.json)
+[Project Context Tests] 
+[Project Context Tests] ;; Canonical function name extraction (one layer of nesting)
+[Project Context Tests] ;; (function_definition declarator: (function_declarator declarator: (identifier) @name)) @function
+[Project Context Tests] (function_definition
+[Project Context Tests]   declarator: (function_declarator
+[Project Context Tests]     declarator: (identifier) @name
+[Project Context Tests]   )
+[Project Context Tests] ) @function
+[Project Context Tests] 
+[Project Context Tests] ;; Pointer declarator nesting
+[Project Context Tests] (function_definition
+[Project Context Tests]   declarator: (function_declarator
+[Project Context Tests]     declarator: (pointer_declarator
+[Project Context Tests]       declarator: (identifier) @name
+[Project Context Tests]     )
+[Project Context Tests]   )
+[Project Context Tests] ) @function
+[Project Context Tests] 
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Found match 1 with 2 captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main() { return 0; }'
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x5631833f0ca0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:459 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x5631833f1320 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:459 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[Project Context Tests] [AST_CREATE] Created ASTNode at 0x563183507880, type=2
+[Project Context Tests] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x563183507880) returned 1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Set content for function node 'main'
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: methods
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Function definitions (direct, pointer, parenthesized)
+[Project Context Tests] ;; Minimal compiling pattern for function definitions
+[Project Context Tests] ;; (Backed by vendor/tree-sitter-c/grammar.js and node-types.json)
+[Project Context Tests] 
+[Project Context Tests] ;; Canonical function name extraction (one layer of nesting)
+[Project Context Tests] ;; (function_definition declarator: (function_declarator declarator: (identifier) @name)) @function
+[Project Context Tests] (function_definition
+[Project Context Tests]   declarator: (function_declarator
+[Project Context Tests]     declarator: (identifier) @name
+[Project Context Tests]   )
+[Project Context Tests] ) @function
+[Project Context Tests] 
+[Project Context Tests] ;; Pointer declarator nesting
+[Project Context Tests] (function_definition
+[Project Context Tests]   declarator: (function_declarator
+[Project Context Tests]     declarator: (pointer_declarator
+[Project Context Tests]       declarator: (identifier) @name
+[Project Context Tests]     )
+[Project Context Tests]   )
+[Project Context Tests] ) @function
+[Project Context Tests] 
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Found match 1 with 2 captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main() { return 0; }'
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x561376e14c20 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:459 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x561376e152a0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:459 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[Project Context Tests] [AST_CREATE] Created ASTNode at 0x561376f2b800, type=2
+[Project Context Tests] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x561376f2b800) returned 1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Set content for function node 'main'
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: methods
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C methods (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: variables
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Failed to compile query: NodeType error at offset 700
+[Project Context Tests] [QUERY_DEBUG] Query error context: ...ist
+[Project Context Tests] (declaration
+[Project Context Tests]   ([ERROR]declarator) @name
+[Project Context Tests]   ...
+[Project Context Tests] Failed to compile query c/variables
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_PROCESSOR] Failed to get query for variables
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Named struct definition (not typedef)
+[Project Context Tests] (declaration
+[Project Context Tests]   type: (struct_specifier
+[Project Context Tests]           name: (type_identifier) @name
+[Project Context Tests]         ) @struct
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Typedef struct (anonymous or named)
+[Project Context Tests] (type_definition
+[Project Context Tests]   type: (struct_specifier) @struct
+[Project Context Tests]   declarator: (type_identifier) @name
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: imports[QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[Project Context Tests] 
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Unknown query type: structs
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Unknown query type: struct
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x55c6ff051490 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:414 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[Project Context Tests] [FUNCTIONS_DEBUG] About to process FUNCTIONS query at index 2
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: functions
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[Project Context Tests] [FUNCTIONS_DEBUG] *** DETECTED functions query request ***
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/functions.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C methods (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: variables
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Failed to compile query: NodeType error at offset 700
+[Project Context Tests] [QUERY_DEBUG] Query error context: ...ist
+[Project Context Tests] (declaration
+[Project Context Tests]   ([ERROR]declarator) @name
+[Project Context Tests]   ...
+[Project Context Tests] Failed to compile query c/variables
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_PROCESSOR] Failed to get query for variables
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: imports
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C imports (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: docstrings
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C imports (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: docstrings
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; C docstrings - Tree-sitter patterns for C documentation comments
+[Project Context Tests] 
+[Project Context Tests] ;; Capture function docstrings (preceding function definitions)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship (comment immediately followed by function)
+[Project Context Tests]   (function_definition)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture struct docstrings (preceding struct definitions)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship (comment immediately followed by struct)
+[Project Context Tests]   (struct_specifier)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture enum docstrings
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship
+[Project Context Tests]   (enum_specifier)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture file-level docstrings (usually at the top of file)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] AST query processing complete: 1 successful, 6 failed, total AST nodes: 1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] AST query processing summary: 1 successful, 6 failed, total AST nodes: 1
+[Project Context Tests] free(): invalid pointer
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; C docstrings - Tree-sitter patterns for C documentation comments
+[Project Context Tests] 
+[Project Context Tests] ;; Capture function docstrings (preceding function definitions)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship (comment immediately followed by function)
+[Project Context Tests]   (function_definition)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture struct docstrings (preceding struct definitions)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship (comment immediately followed by struct)
+[Project Context Tests]   (struct_specifier)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture enum docstrings
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship
+[Project Context Tests]   (enum_specifier)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture file-level docstrings (usually at the top of file)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] AST query processing complete: 1 successful, 6 failed, total AST nodes: 1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] AST query processing summary: 1 successful, 6 failed, total AST nodes: 1
+[Project Context Tests] free(): invalid pointer
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Function definitions (direct, pointer, parenthesized)
+[Project Context Tests] ;; Minimal compiling pattern for function definitions
+[Project Context Tests] ;; (Backed by vendor/tree-sitter-c/grammar.js and node-types.json)
+[Project Context Tests] 
+[Project Context Tests] ;; Canonical function name extraction (one layer of nesting)
+[Project Context Tests] ;; (function_definition declarator: (function_declarator declarator: (identifier) @name)) @function
+[Project Context Tests] (function_definition
+[Project Context Tests]   declarator: (function_declarator
+[Project Context Tests]     declarator: (identifier) @name
+[Project Context Tests]   )
+[Project Context Tests] ) @function
+[Project Context Tests] 
+[Project Context Tests] ;; Pointer declarator nesting
+[Project Context Tests] (function_definition
+[Project Context Tests]   declarator: (function_declarator
+[Project Context Tests]     declarator: (pointer_declarator
+[Project Context Tests]       declarator: (identifier) @name
+[Project Context Tests]     )
+[Project Context Tests]   )
+[Project Context Tests] ) @function
+[Project Context Tests] 
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Found match 1 with 2 captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main() { return 0; }'
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x55c6ff0c7c40 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:459 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
+[Project Context Tests] [2025-07-14 22:09:36] [WARNING] Attempt to free untracked memory at 0x55c6ff0c82c0 in /home/matrillo/apps/scopemux/core/src/parser/ts_query_processor.c:459 - this may be a library-allocated pointer
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[Project Context Tests] [AST_CREATE] Created ASTNode at 0x55c6ff1de820, type=2
+[Project Context Tests] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x55c6ff1de820) returned 1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Set content for function node 'main'
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: methods
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/methods.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C methods (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: variables
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/variables.scm
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] Failed to compile query: NodeType error at offset 700
+[Project Context Tests] [QUERY_DEBUG] Query error context: ...ist
+[Project Context Tests] (declaration
+[Project Context Tests]   ([ERROR]declarator) @name
+[Project Context Tests]   ...
+[Project Context Tests] Failed to compile query c/variables
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_PROCESSOR] Failed to get query for variables
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: imports
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/imports.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; Empty placeholder for C imports (not applicable to C)
+[Project Context Tests] ;; This file exists to prevent file not found errors
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Processing query type: docstrings
+[Project Context Tests] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[Project Context Tests] [QUERY_PATH_DEBUG] Trying primary path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: /home/matrillo/apps/scopemux/queries/c/docstrings.scm
+[Project Context Tests] [QUERY_DEBUG] Loaded query content:
+[Project Context Tests] ;; C docstrings - Tree-sitter patterns for C documentation comments
+[Project Context Tests] 
+[Project Context Tests] ;; Capture function docstrings (preceding function definitions)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship (comment immediately followed by function)
+[Project Context Tests]   (function_definition)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture struct docstrings (preceding struct definitions)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship (comment immediately followed by struct)
+[Project Context Tests]   (struct_specifier)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture enum docstrings
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   . ;; Sibling relationship
+[Project Context Tests]   (enum_specifier)
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] ;; Capture file-level docstrings (usually at the top of file)
+[Project Context Tests] (translation_unit
+[Project Context Tests]   (comment) @docstring
+[Project Context Tests]   (#match? @docstring "^/\*\*")
+[Project Context Tests] )
+[Project Context Tests] 
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' finished processing: 0 matches, 0 nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] Query 'docstrings' FAILED: No nodes added
+[Project Context Tests] [2025-07-14 22:09:36] [INFO] AST query processing complete: 1 successful, 6 failed, total AST nodes: 1
+[Project Context Tests] [2025-07-14 22:09:36] [ERROR] [QUERY_DEBUG] AST query processing summary: 1 successful, 6 failed, total AST nodes: 1
+[Project Context Tests] free(): invalid pointer
+[Project Context Tests] [----] /home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:232: Unexpected signal caught below this line!
+[Project Context Tests] [FAIL] project_context_delegation::interfile_symbols: CRASH!
+[Project Context Tests] [----] /home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:184: Unexpected signal caught below this line!
+[Project Context Tests] [FAIL] project_context_delegation::dependency_management: CRASH!
+[Project Context Tests] [----] /home/matrillo/apps/scopemux/core/tests/project_context/project_context_tests.c:151: Unexpected signal caught below this line!
+[Project Context Tests] [FAIL] project_context_delegation::file_management: CRASH!
+[Project Context Tests] [====] Synthesis: Tested: 4 | Passing: 1 | Failing: 3 | Crashing: 3 
+[1;31m FAIL: Project Context Tests (One or more tests failed)[0m
 [run_interfile_tests.sh] Running integrated cross-module tests
 
 ===== INTERFILE TEST SUMMARY =====

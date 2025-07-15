@@ -3,6 +3,7 @@
 #include "../../../include/scopemux/project_context.h"
 #include "../../../include/scopemux/reference_resolver.h"
 #include "../../../include/scopemux/symbol_table.h"
+
 #include "../ast_node.h"
 #include "c_cpp_resolver_shared_utils.h"
 #include "language_resolvers.h"
@@ -10,8 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "language_resolvers.h"
 
 // Public API implementation
 ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, const char *name,

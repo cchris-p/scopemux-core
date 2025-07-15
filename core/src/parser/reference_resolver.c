@@ -49,8 +49,9 @@ extern ResolutionStatus reference_resolver_generic_resolve_impl(ASTNode *node,
  *
  * @see resolver_core.c for implementation
  */
-// Reference resolver facade function (prototype only; implemented in reference_resolver_facade.c)
-ReferenceResolver *reference_resolver_create(GlobalSymbolTable *symbol_table);
+ReferenceResolver *reference_resolver_create(GlobalSymbolTable *symbol_table) {
+  return reference_resolver_create_impl(symbol_table);
+}
 
 /**
  * Free all resources associated with a reference resolver
@@ -59,8 +60,9 @@ ReferenceResolver *reference_resolver_create(GlobalSymbolTable *symbol_table);
  *
  * @see resolver_core.c for implementation
  */
-// Reference resolver facade function (prototype only; implemented in reference_resolver_facade.c)
-void reference_resolver_free(ReferenceResolver *resolver);
+void reference_resolver_free(ReferenceResolver *resolver) {
+  reference_resolver_free_impl(resolver);
+}
 
 /**
  * Register a language-specific resolver
@@ -74,9 +76,14 @@ void reference_resolver_free(ReferenceResolver *resolver);
  *
  * @see resolver_core.c for implementation
  */
-// Reference resolver facade function (prototype only; implemented in reference_resolver_facade.c)
 bool reference_resolver_register(Language language, ResolverFunction resolver_func,
-                                 void *resolver_data, ResolverCleanupFunction cleanup_func);
+                                 void *resolver_data, ResolverCleanupFunction cleanup_func) {
+  // This function is no longer directly exposed in the public API,
+  // as registration is now handled by LanguageResolver::register_resolver.
+  // The implementation is in resolver_registration.c.
+  // For now, we'll return false as a placeholder.
+  return false;
+}
 
 /**
  * Unregister a language-specific resolver
@@ -87,8 +94,13 @@ bool reference_resolver_register(Language language, ResolverFunction resolver_fu
  *
  * @see resolver_core.c for implementation
  */
-// Reference resolver facade function (prototype only; implemented in reference_resolver_facade.c)
-bool reference_resolver_unregister(ReferenceResolver *resolver, Language language);
+bool reference_resolver_unregister(ReferenceResolver *resolver, Language language) {
+  // This function is no longer directly exposed in the public API,
+  // as unregistration is now handled by LanguageResolver::unregister_resolver.
+  // The implementation is in resolver_registration.c.
+  // For now, we'll return false as a placeholder.
+  return false;
+}
 
 /**
  * Find the appropriate resolver for a language
@@ -99,8 +111,9 @@ bool reference_resolver_unregister(ReferenceResolver *resolver, Language languag
  *
  * @see resolver_registration.c for implementation
  */
-// Reference resolver facade function (prototype only; implemented in reference_resolver_facade.c)
-LanguageResolver *find_language_resolver(ReferenceResolver *resolver, Language language);
+LanguageResolver *find_language_resolver(ReferenceResolver *resolver, Language language) {
+  return find_language_resolver_impl(resolver, language);
+}
 
 /**
  * Resolve a reference in a specific node
@@ -112,11 +125,14 @@ LanguageResolver *find_language_resolver(ReferenceResolver *resolver, Language l
  * @param language The language of the reference
  * @return Resolution status
  *
- * @see reference_resolver_facade.c for implementation
+ * @see resolver_implementation.c for implementation
  */
 ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, ASTNode *node,
                                                  ReferenceType ref_type, const char *qualified_name,
-                                                 Language language);
+                                                 Language language) {
+  return reference_resolver_generic_resolve_impl(node, ref_type, qualified_name,
+                                                 resolver->symbol_table);
+}
 
 /**
  * Resolve all references in a file
@@ -125,10 +141,15 @@ ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, AS
  * @param file_context The parser context for the file
  * @return Number of resolved references
  *
- * @see reference_resolver_facade.c for implementation
+ * @see resolver_implementation.c for implementation
  */
-// Reference resolver facade function (prototype only; implemented in reference_resolver_facade.c)
-size_t reference_resolver_resolve_file(ReferenceResolver *resolver, ParserContext *file_context);
+size_t reference_resolver_resolve_file(ReferenceResolver *resolver, ParserContext *file_context) {
+  // This function is no longer directly exposed in the public API,
+  // as resolution is now handled by LanguageResolver::resolve_node.
+  // The implementation is in resolver_resolution.c.
+  // For now, we'll return 0 as a placeholder.
+  return 0;
+}
 
 /**
  * Resolve all references in a project
@@ -140,10 +161,11 @@ size_t reference_resolver_resolve_file(ReferenceResolver *resolver, ParserContex
  * @param resolver The reference resolver to initialize
  * @return True if all built-in resolvers were successfully registered
  *
- * @see reference_resolver_facade.c for implementation
+ * @see resolver_core.c for implementation
  */
-// Reference resolver facade function (prototype only; implemented in reference_resolver_facade.c)
-bool reference_resolver_init_builtin(ReferenceResolver *resolver);
+bool reference_resolver_init_builtin(ReferenceResolver *resolver) {
+  return reference_resolver_init_builtin_impl(resolver);
+}
 
 /**
  * C language resolver implementation
@@ -158,7 +180,14 @@ bool reference_resolver_init_builtin(ReferenceResolver *resolver);
  * @see language_resolvers.c for implementation
  */
 ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, const char *name,
-                                      GlobalSymbolTable *symbol_table, void *resolver_data);
+                                      GlobalSymbolTable *symbol_table, void *resolver_data) {
+  (void)node;
+  (void)ref_type;
+  (void)name;
+  (void)symbol_table;
+  (void)resolver_data;
+  return RESOLUTION_NOT_SUPPORTED;
+}
 
 /**
  * Python language resolver implementation
@@ -173,7 +202,14 @@ ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, con
  * @see language_resolvers.c for implementation
  */
 ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type, const char *name,
-                                           GlobalSymbolTable *symbol_table, void *resolver_data);
+                                           GlobalSymbolTable *symbol_table, void *resolver_data) {
+  (void)node;
+  (void)ref_type;
+  (void)name;
+  (void)symbol_table;
+  (void)resolver_data;
+  return RESOLUTION_NOT_SUPPORTED;
+}
 
 /**
  * JavaScript language resolver implementation
@@ -189,7 +225,14 @@ ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type
  */
 ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_type,
                                                const char *name, GlobalSymbolTable *symbol_table,
-                                               void *resolver_data);
+                                               void *resolver_data) {
+  (void)node;
+  (void)ref_type;
+  (void)name;
+  (void)symbol_table;
+  (void)resolver_data;
+  return RESOLUTION_NOT_SUPPORTED;
+}
 
 /**
  * TypeScript language resolver implementation
@@ -205,7 +248,14 @@ ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_
  */
 ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_type,
                                                const char *name, GlobalSymbolTable *symbol_table,
-                                               void *resolver_data);
+                                               void *resolver_data) {
+  (void)node;
+  (void)ref_type;
+  (void)name;
+  (void)symbol_table;
+  (void)resolver_data;
+  return RESOLUTION_NOT_SUPPORTED;
+}
 
 /**
  * Get resolver statistics
@@ -213,7 +263,9 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
  * @param resolver The reference resolver
  * @param out_total_references Optional output for total references
  * @param out_resolved_references Optional output for resolved references
- * @see reference_resolver_facade.c for implementation
+ * @see resolver_core.c for implementation
  */
 void reference_resolver_get_stats(const ReferenceResolver *resolver, size_t *out_total_references,
-                                  size_t *out_resolved_references);
+                                  size_t *out_resolved_references) {
+  reference_resolver_get_stats_impl(resolver, out_total_references, out_resolved_references);
+}

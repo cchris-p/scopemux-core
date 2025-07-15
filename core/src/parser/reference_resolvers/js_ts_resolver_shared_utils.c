@@ -1,4 +1,5 @@
 #include "js_ts_resolver_shared_utils.h"
+
 #include <string.h>
 
 static ReferenceResolverJsTsStats js_ts_stats = {0};
