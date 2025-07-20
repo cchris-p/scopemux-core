@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(scopemux_project VERSION 0.1.0 LANGUAGES C CXX)
 
+# --- Build type setup ---
+# Set default build type to Debug if not specified (can override with -DCMAKE_BUILD_TYPE=Release, etc.)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+endif()
+message(STATUS "CMake build type: ${CMAKE_BUILD_TYPE}")
+# To override: cmake -B build-dir -DCMAKE_BUILD_TYPE=Release
+
 # Set C and C++ standards
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)

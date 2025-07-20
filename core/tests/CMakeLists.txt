@@ -3,6 +3,12 @@ project(scopemux_tests)
 # Configuration for ScopeMux Bindings C Tests
 # C/C++ standards are set in the root CMakeLists.txt
 
+# Always use debug info for Debug builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Forcing -g debug info for all test targets")
+    add_compile_options(-g)
+endif()
+
 # Include test utilities
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/TestUtils.cmake)
 
@@ -16,7 +22,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     # Memory safety flags (enable in debug builds)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=undefined")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -g")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
         message(STATUS "Memory sanitizers enabled for debug build")
     endif()
 endif()

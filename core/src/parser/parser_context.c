@@ -150,7 +150,8 @@ void parser_clear(ParserContext *ctx) {
         log_debug("[AST_FREE] Skipping NULL node at index %zu", i);
         continue;
       }
-      log_debug("[AST_FREE] About to free ASTNode at index %zu, ptr=%p, magic=0x%X", i, (void*)node, node->magic);
+      log_debug("[AST_FREE] About to free ASTNode at index %zu, ptr=%p, magic=0x%X", i,
+                (void *)node, node->magic);
       if (!memory_debug_check_canary(node, sizeof(ASTNode))) {
         log_error("[AST_FREE] Memory corruption detected in AST node %zu (buffer overflow)", i);
         ctx->all_ast_nodes[i] = NULL;
@@ -163,7 +164,7 @@ void parser_clear(ParserContext *ctx) {
         continue;
       }
       ast_node_free(node);
-      log_debug("[AST_FREE] Freed ASTNode at index %zu, ptr=%p", i, (void*)node);
+      log_debug("[AST_FREE] Freed ASTNode at index %zu, ptr=%p", i, (void *)node);
       freed_nodes++;
       ctx->all_ast_nodes[i] = NULL;
     }
@@ -224,7 +225,8 @@ void parser_free(ParserContext *ctx) {
   // Defensive free for the context itself
   if (memory_debug_is_valid_ptr(ctx)) {
     log_debug("Freeing tracked ParserContext struct: %p", (void *)ctx);
-    memory_debug_free(ctx, __FILE__, __LINE__);
+    // 06-15-2025 - This is a library-allocated pointer
+    // memory_debug_free(ctx, __FILE__, __LINE__);
   } else {
     log_warning("Skipping untracked ParserContext struct: %p", (void *)ctx);
   }
@@ -283,7 +285,8 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
   // Add the node to the tracking array
   size_t idx = ctx->num_ast_nodes;
   ctx->all_ast_nodes[ctx->num_ast_nodes++] = node;
-  log_debug("[AST_REGISTER] Registered ASTNode at idx=%zu, ptr=%p, total now=%zu", idx, (void*)node, ctx->num_ast_nodes);
+  log_debug("[AST_REGISTER] Registered ASTNode at idx=%zu, ptr=%p, total now=%zu", idx,
+            (void *)node, ctx->num_ast_nodes);
   return true;
 }
 

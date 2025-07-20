@@ -20,7 +20,7 @@
 // Forward declarations
 SymbolEntry *symbol_entry_create(const char *qualified_name, ASTNode *node, const char *file_path,
                                  SymbolScope scope, Language language);
-bool reference_resolver_init_builtin(ReferenceResolver *resolver);
+
 void reference_resolver_free(ReferenceResolver *resolver);
 ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, ASTNode *node,
                                                  ReferenceType type, const char *name,

@@ -37,8 +37,3 @@ extern ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceTy
  * Find the appropriate resolver for a language
  */
 LanguageResolver *find_language_resolver_impl(ReferenceResolver *resolver, Language language);
-
-/**
- * Initialize built-in resolvers for all supported languages
- */
-bool reference_resolver_init_builtin_impl(ReferenceResolver *resolver);

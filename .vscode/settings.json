@@ -31,7 +31,9 @@
     "utility": "c",
     "cstdint": "c",
     "ranges": "c",
-    "complex": "c"
+    "complex": "c",
+    "unordered_map": "c",
+    "unordered_set": "c"
   },
   "files.exclude": {
     "**/.git": true,
