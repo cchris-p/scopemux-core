@@ -21,7 +21,7 @@ CSTNode *cst_node_new(const char *type, char *content) {
     return NULL;
   }
 
-  CSTNode *node = (CSTNode *)memory_debug_malloc(sizeof(CSTNode), __FILE__, __LINE__, "cst_node");
+  CSTNode *node = (CSTNode *)safe_malloc(sizeof(CSTNode));
   if (!node) {
     log_error("Failed to allocate memory for CST node");
     return NULL;
@@ -57,7 +57,7 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
   // Create a new node with the same type
   char *content_copy = NULL;
   if (node->content) {
-    content_copy = STRDUP(node->content, "cst_node_content_copy");
+    content_copy = safe_strdup(node->content);
     if (!content_copy) {
       log_error("Failed to duplicate CST node content");
       return NULL;
@@ -73,15 +73,14 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
   }
   if (!new_node) {
     if (content_copy) {
-      FREE(content_copy);
+      safe_free(content_copy);
     }
     return NULL;
   }
 
   // Recursively copy all children
   if (node->children_count > 0 && node->children) {
-    new_node->children = (CSTNode **)memory_debug_malloc(sizeof(CSTNode *) * node->children_count,
-                                                         __FILE__, __LINE__, "cst_node_children");
+    new_node->children = (CSTNode **)safe_malloc(sizeof(CSTNode *) * node->children_count);
 
     if (!new_node->children) {
       log_error("Failed to allocate memory for CST node children");
@@ -98,14 +97,15 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
           for (unsigned int j = 0; j < i; j++) {
             cst_node_free(new_node->children[j]);
           }
-          memory_debug_free(new_node->children, __FILE__, __LINE__);
-          new_node->children = NULL;
+          safe_free(new_node->children);
           cst_node_free(new_node);
           return NULL;
         }
-        new_node->children_count++;
+      } else {
+        new_node->children[i] = NULL;
       }
     }
+    new_node->children_count = node->children_count;
   }
 
   return new_node;
@@ -160,7 +160,7 @@ void cst_node_free(CSTNode *node) {
     }
     fprintf(stderr, "[CST_FREE] Freeing children array for node=%p children=%p\n", (void *)node,
             (void *)node->children);
-    memory_debug_free(node->children, __FILE__, __LINE__);
+    safe_free(node->children);
     node->children = NULL;
   }
 
@@ -177,7 +177,7 @@ void cst_node_free(CSTNode *node) {
     if (node->owns_content) {
       fprintf(stderr, "[CST_FREE] Freeing content for node=%p content=%p (owns_content=1)\n",
               (void *)node, (void *)node->content);
-      memory_debug_free(node->content, __FILE__, __LINE__);
+      safe_free(node->content);
       node->content = NULL;
     } else {
       fprintf(stderr,
@@ -188,7 +188,7 @@ void cst_node_free(CSTNode *node) {
 
   // Finally free the node itself
   fprintf(stderr, "[CST_FREE] Freeing node struct itself: node=%p\n", (void *)node);
-  memory_debug_free(node, __FILE__, __LINE__);
+  safe_free(node);
 }
 
 /**
@@ -208,12 +208,10 @@ bool cst_node_add_child(CSTNode *parent, CSTNode *child) {
 
   if (!parent->children) {
     // Initial allocation
-    new_children = (CSTNode **)memory_debug_malloc(sizeof(CSTNode *) * new_count, __FILE__,
-                                                   __LINE__, "cst_node_children");
+    new_children = (CSTNode **)safe_malloc(sizeof(CSTNode *) * new_count);
   } else {
     // Reallocation for additional child
-    new_children = (CSTNode **)memory_debug_realloc(parent->children, sizeof(CSTNode *) * new_count,
-                                                    __FILE__, __LINE__, "cst_node_children");
+    new_children = (CSTNode **)safe_realloc(parent->children, sizeof(CSTNode *) * new_count);
   }
 
   if (!new_children) {

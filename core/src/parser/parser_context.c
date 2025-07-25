@@ -36,8 +36,8 @@
  * Initialize a new parser context.
  */
 ParserContext *parser_init(void) {
-  ParserContext *ctx = (ParserContext *)memory_debug_malloc(sizeof(ParserContext), __FILE__,
-                                                            __LINE__, "parser_context");
+  // Allocate memory for the context
+  ParserContext *ctx = (ParserContext *)safe_malloc(sizeof(ParserContext));
   if (!ctx) {
     log_error("Failed to allocate memory for parser context");
     return NULL;
@@ -50,7 +50,7 @@ ParserContext *parser_init(void) {
   ctx->ts_parser = ts_parser_new();
   if (!ctx->ts_parser) {
     log_error("Failed to initialize Tree-sitter parser");
-    memory_debug_free(ctx, __FILE__, __LINE__);
+    safe_free(ctx);
     return NULL;
   }
 
@@ -59,7 +59,7 @@ ParserContext *parser_init(void) {
   if (!ctx->q_manager) {
     log_error("Failed to initialize query manager");
     ts_parser_delete(ctx->ts_parser);
-    memory_debug_free(ctx, __FILE__, __LINE__);
+    safe_free(ctx);
     return NULL;
   }
 
@@ -124,12 +124,23 @@ void parser_clear(ParserContext *ctx) {
     log_debug("CST root freed successfully");
   }
 
-  // Defensive free for source_code
-  DEFENSIVE_FREE(ctx->source_code, "source_code");
-  // Defensive free for filename
-  DEFENSIVE_FREE(ctx->filename, "filename");
-  // Defensive free for last_error
-  DEFENSIVE_FREE(ctx->last_error, "last_error");
+  // Free source_code
+  if (ctx->source_code) {
+    safe_free(ctx->source_code);
+    ctx->source_code = NULL;
+  }
+
+  // Free filename
+  if (ctx->filename) {
+    safe_free(ctx->filename);
+    ctx->filename = NULL;
+  }
+
+  // Free last_error
+  if (ctx->last_error) {
+    safe_free(ctx->last_error);
+    ctx->last_error = NULL;
+  }
 
   // Note: Tree-sitter tree is not stored in the context anymore
   // It should be freed immediately after use in parser.c
@@ -171,13 +182,20 @@ void parser_clear(ParserContext *ctx) {
   }
   log_info("AST node cleanup summary: freed %zu of %zu nodes, errors: NO", freed_nodes,
            ctx->num_ast_nodes);
-  // Defensive free for all_ast_nodes array
-  DEFENSIVE_FREE(ctx->all_ast_nodes, "all_ast_nodes");
+
+  // Free all_ast_nodes array
+  if (ctx->all_ast_nodes) {
+    safe_free(ctx->all_ast_nodes);
+    ctx->all_ast_nodes = NULL;
+  }
   ctx->num_ast_nodes = 0;
   ctx->ast_nodes_capacity = 0;
 
-  // Defensive free for dependencies array
-  DEFENSIVE_FREE(ctx->dependencies, "dependencies");
+  // Free dependencies array
+  if (ctx->dependencies) {
+    safe_free(ctx->dependencies);
+    ctx->dependencies = NULL;
+  }
   ctx->num_dependencies = 0;
   ctx->dependencies_capacity = 0;
 
@@ -199,43 +217,29 @@ void parser_free(ParserContext *ctx) {
     return;
   }
 
-  log_info("[LIFECYCLE] Entering parser_free for ctx=%p", (void *)ctx);
-
-  int encountered_error = 0;
-
-  // Clear all resources
+  // First clear all resources
   parser_clear(ctx);
 
-  // Defensive free for query manager
-  if (ctx->q_manager) {
-    log_debug("Freeing query manager at %p", (void *)ctx->q_manager);
-    query_manager_free(ctx->q_manager);
-    ctx->q_manager = NULL;
-    log_debug("Query manager freed successfully");
-  }
-
-  // Defensive free for Tree-sitter parser
+  // Free the Tree-sitter parser
   if (ctx->ts_parser) {
-    log_debug("Freeing Tree-sitter parser at %p", (void *)ctx->ts_parser);
     ts_parser_delete(ctx->ts_parser);
     ctx->ts_parser = NULL;
-    log_debug("Tree-sitter parser freed successfully");
   }
 
-  // Defensive free for the context itself
-  if (memory_debug_is_valid_ptr(ctx)) {
-    log_debug("Freeing tracked ParserContext struct: %p", (void *)ctx);
-    // 06-15-2025 - This is a library-allocated pointer
-    // memory_debug_free(ctx, __FILE__, __LINE__);
-  } else {
-    log_warning("Skipping untracked ParserContext struct: %p", (void *)ctx);
+  // Free the query manager
+  if (ctx->q_manager) {
+    query_manager_free(ctx->q_manager);
+    ctx->q_manager = NULL;
   }
 
-  if (encountered_error) {
-    log_warning("Encountered errors during cleanup, but continued safely");
+  // Free the dependencies array
+  if (ctx->dependencies) {
+    safe_free(ctx->dependencies);
+    ctx->dependencies = NULL;
   }
 
-  log_info("[LIFECYCLE] Exiting parser_free for ctx=%p", (void *)ctx);
+  // Free the context itself
+  safe_free(ctx);
 }
 
 /**

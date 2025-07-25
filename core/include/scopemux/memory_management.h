@@ -17,34 +17,43 @@ extern "C" {
 #endif
 
 /**
- * @brief Allocate memory safely.
+ * @brief Allocate memory with error checking
  *
- * @param size Number of bytes to allocate.
- * @return Pointer to allocated memory, or NULL on failure.
+ * @param size Size in bytes to allocate
+ * @return void* Pointer to allocated memory or NULL on failure
  */
 void *safe_malloc(size_t size);
 
 /**
- * @brief Reallocate memory safely.
+ * @brief Allocate zeroed memory with error checking
  *
- * @param ptr Pointer to previously allocated memory.
- * @param size New size in bytes.
- * @return Pointer to reallocated memory, or NULL on failure.
+ * @param nmemb Number of elements to allocate
+ * @param size Size of each element in bytes
+ * @return void* Pointer to allocated memory or NULL on failure
+ */
+void *safe_calloc(size_t nmemb, size_t size);
+
+/**
+ * @brief Reallocate memory with error checking
+ *
+ * @param ptr Pointer to memory to reallocate
+ * @param size New size in bytes
+ * @return void* Pointer to reallocated memory or NULL on failure
  */
 void *safe_realloc(void *ptr, size_t size);
 
 /**
- * @brief Free memory safely.
+ * @brief Free memory safely
  *
- * @param ptr Pointer to memory to free.
+ * @param ptr Pointer to memory to free
  */
 void safe_free(void *ptr);
 
 /**
- * @brief Duplicate a string safely.
+ * @brief Duplicate a string with error checking
  *
- * @param str String to duplicate.
- * @return Pointer to duplicated string, or NULL on failure.
+ * @param str String to duplicate
+ * @return char* Pointer to duplicated string or NULL on failure
  */
 char *safe_strdup(const char *str);
 

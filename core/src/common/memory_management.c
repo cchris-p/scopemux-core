@@ -16,12 +16,37 @@
  * @param size Size of memory to allocate
  * @return void* Pointer to allocated memory or NULL on failure
  */
-void *safe_malloc(size_t size) {
-  void *ptr = malloc(size);
-  if (ptr == NULL) {
-    // Handle out of memory error
-    // In a real implementation, we might log this or set an error
+void *safe_calloc(size_t nmemb, size_t size) {
+  if (nmemb == 0 || size == 0) {
+    return NULL;
   }
+
+  // Check for multiplication overflow
+  size_t total_size;
+  if (__builtin_mul_overflow(nmemb, size, &total_size)) {
+    return NULL;
+  }
+
+  void *ptr = calloc(nmemb, size);
+  if (!ptr) {
+    log_error("Failed to allocate memory: calloc(%zu, %zu) failed", nmemb, size);
+    return NULL;
+  }
+
+  return ptr;
+}
+
+void *safe_malloc(size_t size) {
+  if (size == 0) {
+    return NULL;
+  }
+
+  void *ptr = malloc(size);
+  if (!ptr) {
+    log_error("Failed to allocate memory: malloc(%zu) failed", size);
+    return NULL;
+  }
+
   return ptr;
 }
 
@@ -33,14 +58,17 @@ void *safe_malloc(size_t size) {
  * @return void* Pointer to reallocated memory or NULL on failure
  */
 void *safe_realloc(void *ptr, size_t size) {
-  void *new_ptr = realloc(ptr, size);
-  if (new_ptr == NULL && size > 0) {
-    // Handle out of memory error
-    // In a real implementation, we might log this or set an error
-
-    // Note: We don't free ptr here, as realloc keeps the original
-    // allocation intact if it fails
+  if (size == 0) {
+    safe_free(ptr);
+    return NULL;
   }
+
+  void *new_ptr = realloc(ptr, size);
+  if (!new_ptr) {
+    log_error("Failed to reallocate memory: realloc(%p, %zu) failed", ptr, size);
+    return NULL;
+  }
+
   return new_ptr;
 }
 
@@ -50,7 +78,7 @@ void *safe_realloc(void *ptr, size_t size) {
  * @param ptr Pointer to memory to free
  */
 void safe_free(void *ptr) {
-  if (ptr != NULL) {
+  if (ptr) {
     free(ptr);
   }
 }
@@ -62,15 +90,17 @@ void safe_free(void *ptr) {
  * @return char* Pointer to duplicated string or NULL on failure
  */
 char *safe_strdup(const char *str) {
-  if (str == NULL) {
+  if (!str) {
     return NULL;
   }
 
   size_t len = strlen(str) + 1;
   char *dup = (char *)safe_malloc(len);
-  if (dup != NULL) {
-    memcpy(dup, str, len);
+  if (!dup) {
+    return NULL;
   }
+
+  memcpy(dup, str, len);
   return dup;
 }
 

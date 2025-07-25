@@ -135,31 +135,37 @@ void ast_node_free_internal(ASTNode *node) {
 
   // Free string fields based on their source
   if (node->name && node->name_source == AST_SOURCE_DEBUG_ALLOC) {
-    memory_debug_free(node->name, __FILE__, __LINE__);
+    safe_free(node->name);
+    node->name = NULL;
   }
   if (node->qualified_name && node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
-    memory_debug_free(node->qualified_name, __FILE__, __LINE__);
+    safe_free(node->qualified_name);
+    node->qualified_name = NULL;
   }
   if (node->signature && node->signature_source == AST_SOURCE_DEBUG_ALLOC) {
-    memory_debug_free(node->signature, __FILE__, __LINE__);
+    safe_free(node->signature);
+    node->signature = NULL;
   }
   if (node->docstring && node->docstring_source == AST_SOURCE_DEBUG_ALLOC) {
-    memory_debug_free(node->docstring, __FILE__, __LINE__);
+    safe_free(node->docstring);
+    node->docstring = NULL;
   }
   if (node->raw_content && (node->owned_fields & FIELD_RAW_CONTENT)) {
     log_debug("Freeing raw_content for ASTNode at %p (owned_fields=0x%X)", (void *)node,
               node->owned_fields);
-    memory_debug_free(node->raw_content, __FILE__, __LINE__);
+    safe_free(node->raw_content);
     node->raw_content = NULL;
     node->owned_fields &= ~FIELD_RAW_CONTENT;
   }
   if (node->file_path && node->file_path_source == AST_SOURCE_DEBUG_ALLOC) {
-    memory_debug_free(node->file_path, __FILE__, __LINE__);
+    safe_free(node->file_path);
+    node->file_path = NULL;
   }
 
   // Free additional data if it exists
   if (node->additional_data) { // Assuming always owned
-    memory_debug_free(node->additional_data, __FILE__, __LINE__);
+    safe_free(node->additional_data);
+    node->additional_data = NULL;
   }
 }
 
@@ -400,7 +406,7 @@ bool ast_node_set_property(ASTNode *node, const char *key, const char *value) {
   // TODO: Implement a proper dictionary for properties
   // For now, just create a placeholder in additional_data if it doesn't exist
   if (!node->additional_data) {
-    node->additional_data = memory_debug_malloc(1, __FILE__, __LINE__, "ast_property_placeholder");
+    node->additional_data = safe_malloc(1);
     if (!node->additional_data) {
       log_error("Failed to allocate property placeholder");
       return false;
@@ -432,7 +438,8 @@ bool ast_node_set_signature(ASTNode *node, char *signature, ASTStringSource sour
 
   // Free existing signature if it's owned
   if (node->signature && node->signature_source == AST_SOURCE_DEBUG_ALLOC) {
-    memory_debug_free(node->signature, __FILE__, __LINE__);
+    safe_free(node->signature);
+    node->signature = NULL;
   }
 
   node->signature = signature;
@@ -454,7 +461,8 @@ bool ast_node_set_docstring(ASTNode *node, char *docstring, ASTStringSource sour
 
   // Free existing docstring if it's owned
   if (node->docstring && node->docstring_source == AST_SOURCE_DEBUG_ALLOC) {
-    memory_debug_free(node->docstring, __FILE__, __LINE__);
+    safe_free(node->docstring);
+    node->docstring = NULL;
   }
 
   node->docstring = docstring;
@@ -470,40 +478,40 @@ static void ast_node_free_data(ASTNode *node) {
   // Only free if source is AST_SOURCE_DEBUG_ALLOC; do NOT free if AST_SOURCE_ALIAS or
   // AST_SOURCE_STATIC.
   if (node->name && node->name_source == AST_SOURCE_DEBUG_ALLOC) {
-    FREE(node->name);
+    safe_free(node->name);
     node->name = NULL;
   }
 
   if (node->qualified_name && node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
-    FREE(node->qualified_name);
+    safe_free(node->qualified_name);
     node->qualified_name = NULL;
   }
 
   if (node->signature && node->signature_source == AST_SOURCE_DEBUG_ALLOC) {
-    FREE(node->signature);
+    safe_free(node->signature);
     node->signature = NULL;
   }
 
   if (node->docstring && node->docstring_source == AST_SOURCE_DEBUG_ALLOC) {
-    FREE(node->docstring);
+    safe_free(node->docstring);
     node->docstring = NULL;
   }
 
   if (node->raw_content && (node->owned_fields & FIELD_RAW_CONTENT)) {
     log_debug("[ast_node_free_data] Freeing raw_content for ASTNode at %p (owned_fields=0x%X)",
               (void *)node, node->owned_fields);
-    FREE(node->raw_content);
+    safe_free(node->raw_content);
     node->raw_content = NULL;
     node->owned_fields &= ~FIELD_RAW_CONTENT;
   }
 
   if (node->file_path && node->file_path_source == AST_SOURCE_DEBUG_ALLOC) {
-    FREE(node->file_path);
+    safe_free(node->file_path);
     node->file_path = NULL;
   }
 
   if (node->additional_data) { // Assuming always owned
-    FREE(node->additional_data);
+    safe_free(node->additional_data);
     node->additional_data = NULL;
   }
 }

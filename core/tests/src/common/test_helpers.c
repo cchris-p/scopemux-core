@@ -38,55 +38,33 @@ char *read_test_file(const char *language, const char *category, const char *fil
   fprintf(stderr, "DEBUG: read_test_file called for category=%s file_name=%s\n", category,
           file_name);
 
-  char filepath[1024];
-  FILE *f = NULL;
+  // Try build directory first
+  char build_path[1024];
+  snprintf(build_path, sizeof(build_path), "build/core/tests/examples/%s/%s", category, file_name);
+  fprintf(stderr, "DEBUG: Trying build directory path: %s\n", build_path);
 
-  // 1. Try build/core/tests/examples/<category>/<file_name>
-  size_t path_len = snprintf(NULL, 0, "build/core/tests/examples/%s/%s", category, file_name);
-  if (path_len < sizeof(filepath)) {
-    snprintf(filepath, sizeof(filepath), "build/core/tests/examples/%s/%s", category, file_name);
-    fprintf(stderr, "DEBUG: Trying build directory path: %s\n", filepath);
-    f = fopen(filepath, "rb");
-    if (f) {
-      cr_log_info("Successfully opened file in build directory: %s", filepath);
-      goto file_found;
-    }
-  }
-
-  // 2. Try submodule path: core/tests/examples/c/<category>/<file_name>
-  path_len = snprintf(NULL, 0, "core/tests/examples/c/%s/%s", category, file_name);
-  if (path_len < sizeof(filepath)) {
-    snprintf(filepath, sizeof(filepath), "core/tests/examples/c/%s/%s", category, file_name);
-    fprintf(stderr, "DEBUG: Trying submodule path: %s\n", filepath);
-    f = fopen(filepath, "rb");
-    if (f) {
-      cr_log_info("Successfully opened file in submodule path: %s", filepath);
-      goto file_found;
-    }
-  }
-
-  // 3. Try legacy canonical path: core/examples/<category>/<file_name>
-  path_len = snprintf(NULL, 0, "core/examples/%s/%s", category, file_name);
-  if (path_len < sizeof(filepath)) {
-    snprintf(filepath, sizeof(filepath), "core/examples/%s/%s", category, file_name);
-    fprintf(stderr, "DEBUG: Trying legacy canonical path: %s\n", filepath);
-    f = fopen(filepath, "rb");
-    if (f) {
-      cr_log_info("Successfully opened file using legacy canonical path: %s", filepath);
-      goto file_found;
-    }
-  }
-
-  // If not found at any location, error
-  fprintf(stderr, "ERROR: Failed to open test file at any known location for category=%s file_name=%s\n", category, file_name);
-  cr_log_error("Failed to open test file at any known location for category=%s file_name=%s", category, file_name);
-  return NULL;
-
-file_found:
+  FILE *f = fopen(build_path, "rb");
   if (!f) {
-    fprintf(stderr, "ERROR: File handle is NULL despite reaching file_found label\n");
-    cr_log_error("File handle is NULL despite reaching file_found label");
-    return NULL;
+    // Try submodule path
+    char submodule_path[1024];
+    snprintf(submodule_path, sizeof(submodule_path), "core/tests/examples/c/%s/%s", category,
+             file_name);
+    fprintf(stderr, "DEBUG: Trying submodule path: %s\n", submodule_path);
+
+    f = fopen(submodule_path, "rb");
+    if (!f) {
+      // Try legacy canonical path
+      char legacy_path[1024];
+      snprintf(legacy_path, sizeof(legacy_path), "core/examples/%s/%s", category, file_name);
+      fprintf(stderr, "DEBUG: Trying legacy canonical path: %s\n", legacy_path);
+
+      f = fopen(legacy_path, "rb");
+      if (!f) {
+        fprintf(stderr, "ERROR: Failed to open test file: %s\n", strerror(errno));
+        cr_log_error("Failed to open test file: %s", strerror(errno));
+        return NULL;
+      }
+    }
   }
 
   // Get file size
@@ -114,7 +92,7 @@ file_found:
   }
 
   // Allocate buffer with extra null terminator
-  char *buffer = (char *)malloc(length + 1);
+  char *buffer = (char *)safe_malloc(length + 1);
   if (!buffer) {
     fprintf(stderr, "ERROR: Failed to allocate memory for file contents (%ld bytes)\n", length + 1);
     cr_log_error("Failed to allocate memory for file contents (%ld bytes)", length + 1);
@@ -128,7 +106,7 @@ file_found:
     fprintf(stderr, "ERROR: Failed to read entire file (read %zu of %ld bytes): %s\n", bytes_read,
             length, ferror(f) ? strerror(errno) : "Unknown error");
     cr_log_error("Failed to read entire file (read %zu of %ld bytes)", bytes_read, length);
-    free(buffer);
+    safe_free(buffer);
     fclose(f);
     return NULL;
   }

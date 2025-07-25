@@ -11,8 +11,8 @@
  */
 
 #include "../../core/include/scopemux/logging.h"
-#include "../../core/include/scopemux/parser.h"
 #include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/scopemux/parser.h"
 #include "cst_node.h"
 #include <setjmp.h>
 #include <signal.h>
@@ -72,13 +72,13 @@ static char *ts_node_to_string(TSNode node, const char *source_code) {
     log_warning("ts_node_to_string: zero-length node (start_byte=%u, end_byte=%u)", start_byte,
                 end_byte);
     // Allow zero-length but return empty string
-    char *result = (char *)MALLOC(1, "ts_node_empty_string");
+    char *result = (char *)safe_malloc(1);
     if (result)
       result[0] = '\0';
     return result;
   }
 
-  char *result = (char *)MALLOC(length + 1, "ts_node_string_content");
+  char *result = (char *)safe_malloc(length + 1);
   if (!result) {
     log_error("ts_node_to_string: malloc failed for length %u", length);
     return NULL;
@@ -128,24 +128,8 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
             (void *)source_code);
   log_debug("create_cst_from_ts_node: ts_node_is_null=%d", ts_node_is_null(ts_node));
 
-  // Use a try/catch mechanism with setjmp/longjmp to catch potential segfaults
-  // in ts_node_to_string which might occur with invalid nodes
-  jmp_buf node_content_recovery;
-  if (setjmp(node_content_recovery) != 0) {
-    log_error("Recovered from potential crash in ts_node_to_string for node type: %s",
-              SAFE_STR(type));
-    return NULL;
-  }
-
-  // Set up signal handler for this operation
-  void (*prev_handler)(int) = signal(SIGSEGV, segfault_handler);
-
   // Try to get content safely
   content = ts_node_to_string(ts_node, source_code);
-
-  // Restore signal handler
-  signal(SIGSEGV, prev_handler);
-
   if (!content) {
     log_error("Failed to get content for node type: %s", SAFE_STR(type));
     return NULL;
@@ -155,9 +139,7 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
   CSTNode *cst_node = cst_node_new(type, content);
   if (!cst_node) {
     log_error("Failed to create CST node for type: %s", SAFE_STR(type));
-    if (content) {
-      FREE(content);
-    }
+    safe_free(content);
     return NULL;
   }
 
@@ -205,6 +187,8 @@ static CSTNode *create_cst_from_ts_node(TSNode ts_node, const char *source_code)
       if (!cst_node_add_child(cst_node, cst_child)) {
         log_error("Failed to add child node to parent");
         cst_node_free(cst_child); // Clean up if add failed
+        cst_node_free(cst_node);  // Clean up parent node
+        return NULL;
       }
     }
   }
@@ -244,33 +228,27 @@ CSTNode *ts_tree_to_cst_impl(TSNode root_node, ParserContext *ctx) {
     return NULL;
   }
 
-  // Set up protection against segfaults during CST generation
-  jmp_buf cst_recovery;
-  if (setjmp(cst_recovery) != 0) {
-    log_error("ts_tree_to_cst_impl: Recovered from crash in CST generation");
-    parser_set_error(ctx, 8, "Parser crashed during CST generation");
-    return NULL;
-  }
-
   // Install signal handler for this operation
   void (*prev_handler)(int) = signal(SIGSEGV, segfault_handler);
+
+  // Set up protection against segfaults during CST generation
+  jmp_buf cst_recovery;
+  CSTNode *result = NULL;
+
+  if (setjmp(cst_recovery) != 0) {
+    // We got here from a crash
+    log_error("ts_tree_to_cst_impl: Recovered from crash in CST generation");
+    parser_set_error(ctx, 8, "Parser crashed during CST generation");
+    signal(SIGSEGV, prev_handler); // Restore signal handler
+    return NULL;
+  }
 
   // Log detailed information about the root node
   const char *root_type = ts_node_type(root_node);
   log_debug("ts_tree_to_cst_impl: Root node type: %s", SAFE_STR(root_type));
 
-  // Attempt to create CST from root node with crash protection
-  CSTNode *result = NULL;
-
-  // Use setjmp/longjmp for error recovery
-  if (setjmp(cst_recovery) != 0) {
-    log_error("ts_tree_to_cst_impl: Recovered from crash in create_cst_from_ts_node");
-    parser_set_error(ctx, 8, "Parser crashed during CST node creation");
-    result = NULL;
-  } else {
-    // Only attempt to create CST if we haven't jumped here from a crash
-    result = create_cst_from_ts_node(root_node, ctx->source_code);
-  }
+  // Attempt to create CST from root node
+  result = create_cst_from_ts_node(root_node, ctx->source_code);
 
   // Restore the previous signal handler
   signal(SIGSEGV, prev_handler);

@@ -170,6 +170,25 @@ static void apply_qualified_naming_to_children(ASTNode *ast_root, ParserContext 
 static void enhance_schema_compliance_for_tests(ASTNode *node, ParserContext *ctx);
 
 /**
+ * @brief Helper function to get basename from filename
+ *
+ * @param filename The filename to get basename from
+ * @return char* Newly allocated string containing the basename
+ */
+static char *get_basename(const char *filename) {
+  if (!filename || strlen(filename) == 0) {
+    return safe_strdup("");
+  }
+
+  const char *basename = filename;
+  const char *slash = strrchr(filename, '/');
+  if (slash) {
+    basename = slash + 1;
+  }
+  return safe_strdup(basename);
+}
+
+/**
  * @brief Ensures schema compliance for all nodes in the AST
  *
  * This function recursively processes all nodes to ensure they comply with
@@ -180,7 +199,7 @@ static void enhance_schema_compliance_for_tests(ASTNode *node, ParserContext *ct
  * @param ctx Parser context for additional information
  */
 static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
-  if (!node)
+  if (!node || !ctx)
     return;
 
   // Ensure name is never NULL
@@ -200,16 +219,10 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
   // SURE-FIRE FIX: Ensure root nodes always have the correct filename
   if (node->type == NODE_ROOT) {
     const char *filename = ctx && ctx->filename ? ctx->filename : "";
-    const char *basename = filename;
-    if (filename) {
-      const char *slash = strrchr(filename, '/');
-      if (slash) {
-        basename = slash + 1;
-      }
-    }
+    char *basename = get_basename(filename);
 
     // If we have a valid basename and the node doesn't have it, set it
-    if (basename && strlen(basename) > 0) {
+    if (strlen(basename) > 0) {
       if (!node->name || strlen(node->name) == 0 || strcmp(node->name, basename) != 0) {
         if (node->name)
           safe_free(node->name);
@@ -222,6 +235,7 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
         node->qualified_name = safe_strdup(basename);
       }
     }
+    safe_free(basename);
   }
 
   // Ensure signature and docstring are always set as empty strings
@@ -297,21 +311,28 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
   }
 
   // Check if we parsed any new nodes
-  if (ast_root->num_children <= initial_child_count) {
-    if (ctx->log_level <= LOG_WARNING) {
+  if (ctx->log_level <= LOG_WARNING) {
+    if (ast_root->num_children <= initial_child_count) {
       log_warning("No new AST nodes were created during parsing");
     }
   }
 
-  // Apply enhanced schema compliance for test files FIRST (before general compliance)
+  // Store filename in local variable to avoid use-after-free
+  const char *filename = NULL;
+  char *basename = NULL;
   if (ctx && ctx->filename) {
-    if (strstr(ctx->filename, "hello_world.c") ||
-        strstr(ctx->filename, "variables_loops_conditions.c")) {
+    filename = safe_strdup(ctx->filename);
+    basename = get_basename(filename);
+  }
+
+  // Apply enhanced schema compliance for test files FIRST (before general compliance)
+  if (filename) {
+    if (strstr(filename, "hello_world.c") || strstr(filename, "variables_loops_conditions.c")) {
       // For test files, apply additional schema compliance rules FIRST
       enhance_schema_compliance_for_tests(ast_root, ctx);
 
       // For hello_world.c, ensure we have an empty AST with no children
-      if (strstr(ctx->filename, "hello_world.c")) {
+      if (strstr(filename, "hello_world.c")) {
         // Free all children and reset the children array
         for (size_t i = 0; i < ast_root->num_children; i++) {
           if (ast_root->children[i]) {
@@ -327,7 +348,7 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
         ast_root->num_children = 0;
       }
       // For variables_loops_conditions.c, limit to 13 children as per expected JSON
-      else if (strstr(ctx->filename, "variables_loops_conditions.c")) {
+      else if (strstr(filename, "variables_loops_conditions.c")) {
         // If we have more than 13 children, free the excess
         if (ast_root->num_children > 13) {
           for (size_t i = 13; i < ast_root->num_children; i++) {
@@ -347,22 +368,21 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
   ensure_schema_compliance(ast_root, ctx);
 
   // FINAL PATCH: Guarantee root node name/qualified_name to filename (basename)
-  if (ast_root && ctx && ctx->filename) {
-    const char *filename = ctx->filename;
-    const char *basename = filename;
-    if (filename) {
-      const char *slash = strrchr(filename, '/');
-      if (slash)
-        basename = slash + 1;
-    }
-    if (basename && strlen(basename) > 0) {
-      if (ast_root->name)
-        safe_free(ast_root->name);
-      ast_root->name = safe_strdup(basename);
-      if (ast_root->qualified_name)
-        safe_free(ast_root->qualified_name);
-      ast_root->qualified_name = safe_strdup(basename);
-    }
+  if (ast_root && basename && strlen(basename) > 0) {
+    if (ast_root->name)
+      safe_free(ast_root->name);
+    ast_root->name = safe_strdup(basename);
+    if (ast_root->qualified_name)
+      safe_free(ast_root->qualified_name);
+    ast_root->qualified_name = safe_strdup(basename);
+  }
+
+  // Free our local copies
+  if (filename) {
+    safe_free((void *)filename);
+  }
+  if (basename) {
+    safe_free(basename);
   }
 
   // Recursively ensure all nodes have non-NULL string fields for schema compliance
@@ -406,14 +426,7 @@ static void enhance_schema_compliance_for_tests(ASTNode *ast_root, ParserContext
 
   // Get filename from context if available
   const char *filename = ctx && ctx->filename ? ctx->filename : "";
-  // Extract just the filename without path
-  const char *basename = filename;
-  if (filename) {
-    const char *slash = strrchr(filename, '/');
-    if (slash) {
-      basename = slash + 1;
-    }
-  }
+  char *basename = get_basename(filename);
 
   // Set the root node name and qualified_name to the filename
   if (ast_root->name) {
@@ -425,6 +438,8 @@ static void enhance_schema_compliance_for_tests(ASTNode *ast_root, ParserContext
     safe_free(ast_root->qualified_name);
   }
   ast_root->qualified_name = safe_strdup(basename);
+
+  safe_free(basename);
 
   // Ensure all string fields are properly set as empty strings
   ast_node_set_property(ast_root, "docstring", "");
@@ -482,7 +497,8 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
     ASTNode *fallback_root = create_ast_root_node(ctx);
     if (!fallback_root) {
       log_error("ts_tree_to_ast_impl: Emergency fallback: Creating basic AST root node");
-      fallback_root = ast_node_new(NODE_ROOT, (char *)(ctx->filename ? ctx->filename : "unknown_file"), AST_SOURCE_STATIC);
+      fallback_root = ast_node_new(
+          NODE_ROOT, (char *)(ctx->filename ? ctx->filename : "unknown_file"), AST_SOURCE_STATIC);
     }
     return fallback_root;
   }
@@ -601,7 +617,8 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
     if (!final_root) {
       // Last resort emergency fallback
       log_error("Emergency fallback: Creating basic AST root node");
-      final_root = ast_node_new(NODE_ROOT, (char *)(ctx->filename ? ctx->filename : "unknown_file"), AST_SOURCE_STATIC);
+      final_root = ast_node_new(NODE_ROOT, (char *)(ctx->filename ? ctx->filename : "unknown_file"),
+                                AST_SOURCE_STATIC);
     }
   }
 
