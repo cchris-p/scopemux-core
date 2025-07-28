@@ -1,4 +1,5 @@
 #include "js_ts_resolver_shared_utils.h"
+#include "scopemux/reference_resolver.h"
 
 #include <string.h>
 
@@ -14,7 +15,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
   js_ts_stats.num_total_lookups++;
 
   // Handle imports first
-  if (ref_type == REFERENCE_IMPORT) {
+  if (ref_type == REF_IMPORT) {
     SymbolEntry *import = symbol_table_lookup(symbol_table, name);
     if (import && import->node) {
       js_ts_stats.num_import_resolved++;
@@ -25,7 +26,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
   }
 
   // Handle modules
-  if (ref_type == REFERENCE_MODULE) {
+  if (ref_type == REF_USE) {
     SymbolEntry *module = symbol_table_lookup(symbol_table, name);
     if (module && module->node) {
       js_ts_stats.num_module_resolved++;
@@ -36,7 +37,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
   }
 
   // Handle classes
-  if (ref_type == REFERENCE_CLASS) {
+  if (ref_type == REF_TYPE) {
     SymbolEntry *class_entry = symbol_table_lookup(symbol_table, name);
     if (class_entry && class_entry->node) {
       js_ts_stats.num_class_resolved++;
@@ -48,7 +49,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
   // TypeScript-specific features
   if (typescript_mode) {
     // Handle types
-    if (ref_type == REFERENCE_TYPE) {
+    if (ref_type == REF_TYPE) {
       SymbolEntry *type_entry = symbol_table_lookup(symbol_table, name);
       if (type_entry && type_entry->node) {
         js_ts_stats.num_type_resolved++;
@@ -58,7 +59,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
     }
 
     // Handle interfaces
-    if (ref_type == REFERENCE_INTERFACE) {
+    if (ref_type == REF_INTERFACE) {
       SymbolEntry *interface_entry = symbol_table_lookup(symbol_table, name);
       if (interface_entry && interface_entry->node) {
         js_ts_stats.num_interface_resolved++;

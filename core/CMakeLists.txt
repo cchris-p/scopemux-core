@@ -132,19 +132,19 @@ add_library(parser_core_obj OBJECT
     # Reference resolver system (add all .c files)
     src/parser/reference_resolvers/language_resolvers.c
     src/parser/reference_resolvers/resolver_registration.c
-    src/parser/reference_resolvers/resolver_implementation.c
     src/parser/reference_resolvers/resolver_core.c
 
     src/parser/reference_resolvers/reference_resolver_core.c
     src/parser/reference_resolvers/c_resolver.c
     src/parser/reference_resolvers/cpp_resolver.c
+    src/parser/reference_resolvers/c_cpp_resolver_shared_utils.c
     src/parser/reference_resolvers/typescript_resolver.c
     src/parser/reference_resolvers/python_resolver.c
     src/parser/reference_resolvers/javascript_resolver.c
+    src/parser/reference_resolvers/js_ts_resolver_shared_utils.c
     # Reference resolver components
     src/parser/reference_resolvers/reference_resolver_core.c
     src/parser/reference_resolvers/resolver_core.c
-    src/parser/reference_resolvers/resolver_implementation.c
     src/parser/reference_resolvers/resolver_registration.c
     src/parser/reference_resolvers/resolver_resolution.c
     src/parser/reference_resolver.c

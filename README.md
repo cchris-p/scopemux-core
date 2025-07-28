@@ -80,7 +80,56 @@ c-bindings/
 └── examples/                   # Example usage
 ```
 
-## Build Instructions
+## Project Setup and Build Instructions
+
+### Prerequisites
+
+1. Install required system packages:
+```bash
+# Install Criterion testing framework
+sudo apt-get install libcriterion-dev
+```
+
+### Initial Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/your-org/scopemux-core.git
+cd scopemux-core
+```
+
+2. Set up vendor dependencies (tree-sitter and pybind11):
+```bash
+./setup_vendor_deps.sh
+```
+
+This script will:
+- Clone all required tree-sitter repositories into the vendor directory
+- Build tree-sitter libraries with -fPIC flag
+- Clone pybind11
+
+3. Set up tree-sitter API header symlink:
+```bash
+# Create symlink to tree-sitter API header (using relative path for portability)
+mkdir -p core/include/tree_sitter
+ln -sf ../../../vendor/tree-sitter/lib/include/tree_sitter/api.h core/include/tree_sitter/api.h
+```
+
+### Building and Testing
+
+1. Run C tests:
+```bash
+./run_c_tests.sh
+```
+
+2. Build Python bindings:
+```bash
+./build_all_and_pybind.sh
+```
+
+### Manual Build
+
+If you prefer to build manually:
 
 ```bash
 # Create a build directory
@@ -173,3 +222,35 @@ ln -s /home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include/tree_sitter/ap
 ```
 
 The `ls -l` output showed that the existing symlink on your system uses an absolute path. For better project portability, a relative symlink is preferred if you need to recreate it.
+
+### Troubleshooting Python Binding Build Issues
+
+If you encounter undefined symbol errors when building or importing the Python bindings:
+
+1. Ensure all required source files are included in `core/CMakeLists.txt`. Common missing files:
+   - `js_ts_resolver_shared_utils.c`
+   - `c_cpp_resolver_shared_utils.c`
+   - `resolver_implementation.c`
+
+2. Check that enum values in source files match the definitions in header files. For example, reference types in `reference_resolver.h` should be used consistently:
+   ```c
+   // Use these enum values from reference_resolver.h
+   REF_IMPORT
+   REF_EXPORT
+   REF_CALL
+   ```
+
+3. Verify that function implementations exist for all declarations in header files.
+
+4. Remove any duplicate source file entries in CMakeLists.txt to avoid linker conflicts.
+
+5. After making changes, rebuild using:
+   ```bash
+   ./build_all_and_pybind.sh
+   ```
+
+6. If you see a warning about ASan runtime:
+   ```
+   ASan runtime does not come first in initial library list; you should either link runtime to your application or manually preload it with LD_PRELOAD.
+   ```
+   This is expected and does not affect functionality. It's just informing you about the order of loading libraries.

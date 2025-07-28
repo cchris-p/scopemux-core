@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Enable AddressSanitizer logging to a file for all test runs
+export ASAN_OPTIONS=log_path=asan.log:verbosity=1
+rm asan.log*
+
 # All output from this script (stdout and stderr) is written to a file named after the script.
 # Filename format: run_c_tests.txt
 # This is useful for preserving logs for each test run.

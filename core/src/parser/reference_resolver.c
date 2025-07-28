@@ -167,94 +167,12 @@ bool reference_resolver_init_builtin(ReferenceResolver *resolver) {
   return reference_resolver_init_builtin_impl(resolver);
 }
 
-/**
- * C language resolver implementation
- *
- * @param node The AST node containing the reference
- * @param ref_type The type of reference
- * @param name The name of the reference to resolve
- * @param symbol_table The symbol table to look up in
- * @param resolver_data Optional C-specific resolver data
- * @return Resolution status
- *
- * @see language_resolvers.c for implementation
- */
-ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, const char *name,
-                                      GlobalSymbolTable *symbol_table, void *resolver_data) {
-  (void)node;
-  (void)ref_type;
-  (void)name;
-  (void)symbol_table;
-  (void)resolver_data;
-  return RESOLUTION_NOT_SUPPORTED;
-}
+// Language-specific resolvers are implemented in their respective files under reference_resolvers/
 
-/**
- * Python language resolver implementation
- *
- * @param node The AST node containing the reference
- * @param ref_type The type of reference
- * @param name The name of the reference to resolve
- * @param symbol_table The symbol table to look up in
- * @param resolver_data Optional Python-specific resolver data
- * @return Resolution status
- *
- * @see language_resolvers.c for implementation
- */
-ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type, const char *name,
-                                           GlobalSymbolTable *symbol_table, void *resolver_data) {
-  (void)node;
-  (void)ref_type;
-  (void)name;
-  (void)symbol_table;
-  (void)resolver_data;
-  return RESOLUTION_NOT_SUPPORTED;
-}
-
-/**
- * JavaScript language resolver implementation
- *
- * @param node The AST node containing the reference
- * @param ref_type The type of reference
- * @param name The name of the reference to resolve
- * @param symbol_table The symbol table to look up in
- * @param resolver_data Optional JavaScript-specific resolver data
- * @return Resolution status
- *
- * @see language_resolvers.c for implementation
- */
-ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_type,
-                                               const char *name, GlobalSymbolTable *symbol_table,
-                                               void *resolver_data) {
-  (void)node;
-  (void)ref_type;
-  (void)name;
-  (void)symbol_table;
-  (void)resolver_data;
-  return RESOLUTION_NOT_SUPPORTED;
-}
-
-/**
- * TypeScript language resolver implementation
- *
- * @param node The AST node containing the reference
- * @param ref_type The type of reference
- * @param name The name of the reference to resolve
- * @param symbol_table The symbol table to look up in
- * @param resolver_data Optional TypeScript-specific resolver data
- * @return Resolution status
- *
- * @see language_resolvers.c for implementation
- */
-ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_type,
-                                               const char *name, GlobalSymbolTable *symbol_table,
-                                               void *resolver_data) {
-  (void)node;
-  (void)ref_type;
-  (void)name;
-  (void)symbol_table;
-  (void)resolver_data;
-  return RESOLUTION_NOT_SUPPORTED;
+ResolutionStatus reference_resolver_generic_resolve(ASTNode *node, ReferenceType ref_type,
+                                                    const char *name,
+                                                    GlobalSymbolTable *symbol_table) {
+  return reference_resolver_generic_resolve_impl(node, ref_type, name, symbol_table);
 }
 
 /**

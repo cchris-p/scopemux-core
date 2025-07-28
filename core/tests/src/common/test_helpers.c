@@ -92,16 +92,20 @@ char *read_test_file(const char *language, const char *category, const char *fil
   }
 
   // Allocate buffer with extra null terminator
-  char *buffer = (char *)safe_malloc(length + 1);
+  fprintf(stderr, "DEBUG: About to allocate %ld + 1 = %ld bytes\n", length, length + 1);
+  char *buffer = (char *)malloc(length + 1);
   if (!buffer) {
     fprintf(stderr, "ERROR: Failed to allocate memory for file contents (%ld bytes)\n", length + 1);
     cr_log_error("Failed to allocate memory for file contents (%ld bytes)", length + 1);
     fclose(f);
     return NULL;
   }
+  fprintf(stderr, "DEBUG: Successfully allocated buffer at %p\n", (void*)buffer);
 
   // Read file contents
+  fprintf(stderr, "DEBUG: About to read %ld bytes into buffer at %p\n", length, (void*)buffer);
   size_t bytes_read = fread(buffer, 1, length, f);
+  fprintf(stderr, "DEBUG: fread completed, read %zu bytes\n", bytes_read);
   if (bytes_read != (size_t)length) {
     fprintf(stderr, "ERROR: Failed to read entire file (read %zu of %ld bytes): %s\n", bytes_read,
             length, ferror(f) ? strerror(errno) : "Unknown error");

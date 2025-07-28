@@ -37,14 +37,18 @@
  */
 ParserContext *parser_init(void) {
   // Allocate memory for the context
+  fprintf(stderr, "DEBUG: About to allocate ParserContext of size %zu\n", sizeof(ParserContext));
   ParserContext *ctx = (ParserContext *)safe_malloc(sizeof(ParserContext));
+  fprintf(stderr, "DEBUG: safe_malloc returned %p\n", (void*)ctx);
   if (!ctx) {
     log_error("Failed to allocate memory for parser context");
     return NULL;
   }
 
   // Initialize with default values
+  fprintf(stderr, "DEBUG: About to memset ctx=%p with size %zu\n", (void*)ctx, sizeof(ParserContext));
   memset(ctx, 0, sizeof(ParserContext));
+  fprintf(stderr, "DEBUG: memset completed successfully\n");
 
   // Initialize Tree-sitter parser through the integration layer
   ctx->ts_parser = ts_parser_new();

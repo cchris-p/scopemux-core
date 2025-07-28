@@ -13,7 +13,7 @@ ResolutionStatus reference_resolver_c_cpp_resolve(ASTNode *node, ReferenceType r
   c_cpp_stats.num_total_lookups++;
 
   // Handle header includes first
-  if (ref_type == REFERENCE_INCLUDE) {
+  if (ref_type == REF_INCLUDE) {
     SymbolEntry *header = symbol_table_lookup(symbol_table, name);
     if (header && header->node) {
       c_cpp_stats.num_header_resolved++;
@@ -24,7 +24,7 @@ ResolutionStatus reference_resolver_c_cpp_resolve(ASTNode *node, ReferenceType r
   }
 
   // Handle macros
-  if (ref_type == REFERENCE_MACRO) {
+  if (ref_type == REF_USE) {
     SymbolEntry *macro = symbol_table_lookup(symbol_table, name);
     if (macro && macro->node) {
       c_cpp_stats.num_macro_resolved++;
@@ -35,7 +35,7 @@ ResolutionStatus reference_resolver_c_cpp_resolve(ASTNode *node, ReferenceType r
   }
 
   // Handle struct/class field access
-  if (ref_type == REFERENCE_FIELD) {
+  if (ref_type == REF_PROPERTY) {
     char struct_name[256] = {0};
     const char *separator = strchr(name, '.');
     if (!separator) {
