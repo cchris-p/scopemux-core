@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// File-local conditional logging toggle for memory management debug output
+static const int MEMORY_DEBUG_LOGGING = 0;
+
 /**
  * @brief Allocate memory with error checking
  *
@@ -38,20 +41,28 @@ void *safe_calloc(size_t nmemb, size_t size) {
 }
 
 void *safe_malloc(size_t size) {
-  fprintf(stderr, "DEBUG: safe_malloc called with size=%zu\n", size);
+  if (MEMORY_DEBUG_LOGGING) {
+    fprintf(stderr, "DEBUG: safe_malloc called with size=%zu\n", size);
+  }
   if (size == 0) {
-    fprintf(stderr, "DEBUG: safe_malloc returning NULL for size=0\n");
+    if (MEMORY_DEBUG_LOGGING) {
+      fprintf(stderr, "DEBUG: safe_malloc returning NULL for size=0\n");
+    }
     return NULL;
   }
 
   void *ptr = malloc(size);
-  fprintf(stderr, "DEBUG: malloc(%zu) returned %p\n", size, ptr);
+  if (MEMORY_DEBUG_LOGGING) {
+    fprintf(stderr, "DEBUG: malloc(%zu) returned %p\n", size, ptr);
+  }
   if (!ptr) {
     log_error("Failed to allocate memory: malloc(%zu) failed", size);
     return NULL;
   }
 
-  fprintf(stderr, "DEBUG: safe_malloc returning %p\n", ptr);
+  if (MEMORY_DEBUG_LOGGING) {
+    fprintf(stderr, "DEBUG: safe_malloc returning %p\n", ptr);
+  }
   return ptr;
 }
 

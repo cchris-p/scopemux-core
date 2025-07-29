@@ -55,8 +55,6 @@
     value: (_))
 ) @pointer_variable_with_init
 
-  type: (_) @pointer_base_type) @pointer_variable
-
 ;; Field-anchored fallback for pointer variable declarations
 (declaration
   declarator: (pointer_declarator

@@ -2,12 +2,12 @@
 Building shared libraries in /home/matrillo/apps/scopemux-core/build/tree-sitter-libs
 Converting static libraries to shared libraries...
 Created shared libraries:
--rwxrwxr-x 1 matrillo matrillo 3566904 Jul 29 05:16 libtree-sitter-cpp.so
--rwxrwxr-x 1 matrillo matrillo  627536 Jul 29 05:16 libtree-sitter-c.so
--rwxrwxr-x 1 matrillo matrillo  386944 Jul 29 05:16 libtree-sitter-javascript.so
--rwxrwxr-x 1 matrillo matrillo  484368 Jul 29 05:16 libtree-sitter-python.so
--rwxrwxr-x 1 matrillo matrillo  267048 Jul 29 05:16 libtree-sitter.so
--rwxrwxr-x 1 matrillo matrillo 1443832 Jul 29 05:16 libtree-sitter-typescript.so
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul 29 05:31 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul 29 05:31 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul 29 05:31 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul 29 05:31 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  267048 Jul 29 05:31 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul 29 05:31 libtree-sitter-typescript.so
 Done building shared libraries.
 [test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux-core/build/tree-sitter-libs
 rm: cannot remove 'asan.log*': No such file or directory
@@ -28,4 +28,3 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
 -- CMake build type: Debug
--- Found Python: /home/matrillo/.pyenv/shims/python3.10 (found suitable version "3.10.12", required range is "3.10...3.11") found components: Interpreter Development Development.Module Development.Embed 

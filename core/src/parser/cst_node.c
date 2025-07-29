@@ -13,6 +13,9 @@
 #include "../../core/src/parser/parser_internal.h"
 #include <assert.h>
 
+// File-local conditional logging toggle for CST_FREE debug output
+static const int CST_FREE_DEBUG_LOGGING = 0;
+
 /**
  * Creates a new CST node with the specified type and content.
  */
@@ -136,8 +139,10 @@ void cst_node_free(CSTNode *node) {
     return;
   }
 
-  fprintf(stderr, "[CST_FREE] Entered for node=%p type=%s content=%p is_freed=%d\n", (void *)node,
-          SAFE_STR(node->type), (void *)node->content, node->is_freed);
+  if (CST_FREE_DEBUG_LOGGING) {
+    fprintf(stderr, "[CST_FREE] Entered for node=%p type=%s content=%p is_freed=%d\n", (void *)node,
+            SAFE_STR(node->type), (void *)node->content, node->is_freed);
+  }
   log_debug("[CSTNode FREE] node=%p type=%s content=%p is_freed=%d", (void *)node,
             SAFE_STR(node->type), (void *)node->content, node->is_freed);
 
@@ -159,8 +164,10 @@ void cst_node_free(CSTNode *node) {
         node->children[i] = NULL; // Prevent double-free
       }
     }
-    fprintf(stderr, "[CST_FREE] Freeing children array for node=%p children=%p\n", (void *)node,
-            (void *)node->children);
+    if (CST_FREE_DEBUG_LOGGING) {
+      fprintf(stderr, "[CST_FREE] Freeing children array for node=%p children=%p\n", (void *)node,
+              (void *)node->children);
+    }
     safe_free(node->children);
     node->children = NULL;
   }
@@ -176,19 +183,25 @@ void cst_node_free(CSTNode *node) {
   // Free the content if it exists and is owned
   if (node->content) {
     if (node->owns_content) {
-      fprintf(stderr, "[CST_FREE] Freeing content for node=%p content=%p (owns_content=1)\n",
-              (void *)node, (void *)node->content);
+      if (CST_FREE_DEBUG_LOGGING) {
+        fprintf(stderr, "[CST_FREE] Freeing content for node=%p content=%p (owns_content=1)\n",
+                (void *)node, (void *)node->content);
+      }
       safe_free(node->content);
       node->content = NULL;
     } else {
-      fprintf(stderr,
-              "[CST_FREE] Skipping free of content for node=%p content=%p (owns_content=0)\n",
-              (void *)node, (void *)node->content);
+      if (CST_FREE_DEBUG_LOGGING) {
+        fprintf(stderr,
+                "[CST_FREE] Skipping free of content for node=%p content=%p (owns_content=0)\n",
+                (void *)node, (void *)node->content);
+      }
     }
   }
 
   // Finally free the node itself
-  fprintf(stderr, "[CST_FREE] Freeing node struct itself: node=%p\n", (void *)node);
+  if (CST_FREE_DEBUG_LOGGING) {
+    fprintf(stderr, "[CST_FREE] Freeing node struct itself: node=%p\n", (void *)node);
+  }
   safe_free(node);
 }
 
