@@ -53,16 +53,24 @@ char *read_test_file(const char *language, const char *category, const char *fil
 
     f = fopen(submodule_path, "rb");
     if (!f) {
-      // Try legacy canonical path
-      char legacy_path[1024];
-      snprintf(legacy_path, sizeof(legacy_path), "core/examples/%s/%s", category, file_name);
-      fprintf(stderr, "DEBUG: Trying legacy canonical path: %s\n", legacy_path);
+      // Try submodule path with ../ prefix (for build directory)
+      char parent_submodule_path[1024];
+      snprintf(parent_submodule_path, sizeof(parent_submodule_path), "../core/tests/examples/c/%s/%s", category, file_name);
+      fprintf(stderr, "DEBUG: Trying parent submodule path: %s\n", parent_submodule_path);
 
-      f = fopen(legacy_path, "rb");
+      f = fopen(parent_submodule_path, "rb");
       if (!f) {
-        fprintf(stderr, "ERROR: Failed to open test file: %s\n", strerror(errno));
-        cr_log_error("Failed to open test file: %s", strerror(errno));
-        return NULL;
+        // Try legacy canonical path
+        char legacy_path[1024];
+        snprintf(legacy_path, sizeof(legacy_path), "core/examples/%s/%s", category, file_name);
+        fprintf(stderr, "DEBUG: Trying legacy canonical path: %s\n", legacy_path);
+
+        f = fopen(legacy_path, "rb");
+        if (!f) {
+          fprintf(stderr, "ERROR: Failed to open test file: %s\n", strerror(errno));
+          cr_log_error("Failed to open test file: %s", strerror(errno));
+          return NULL;
+        }
       }
     }
   }

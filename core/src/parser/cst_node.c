@@ -8,6 +8,7 @@
 
 #include "../../core/src/parser/cst_node.h"
 #include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/scopemux/memory_management.h"
 #include "../../core/src/parser/memory_tracking.h"
 #include "../../core/src/parser/parser_internal.h"
 #include <assert.h>

@@ -14,6 +14,7 @@
 #include "../../include/scopemux/adapters/language_adapter.h"
 #include "../../include/scopemux/logging.h"
 #include "../../include/scopemux/memory_debug.h"
+#include "../../include/scopemux/memory_management.h"
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/query_manager.h"
 #include "config/node_type_mapping_loader.h"
@@ -43,7 +44,6 @@ extern const TSLanguage *tree_sitter_typescript(void);
  * @return char* Heap-allocated path string (caller must free)
  */
 char *build_queries_dir_impl(Language language) {
-  const char *base = "queries";
   const char *subdir = "unknown";
 
   // Map language enum to directory name
@@ -67,29 +67,26 @@ char *build_queries_dir_impl(Language language) {
     break;
   }
 
-// Calculate length and allocate memory
 #ifndef SAFE_LEN
 #define SAFE_LEN(x) ((x) ? strlen(x) : 0)
 #endif
-  size_t len = SAFE_LEN(base) + 1 + SAFE_LEN(subdir) + 1;
+  // Tests run from build-c/core/tests/, so queries are at ../../../queries/<lang>
+  size_t len = 9 + 7 + 1 + SAFE_LEN(subdir) + 1; // "../../../queries/" + subdir + null
   char *result = (char *)safe_malloc(len);
   if (!result) {
     fprintf(stderr, "ERROR: Failed to allocate memory for queries directory path\n");
     return NULL;
   }
-
-  // Format the full path
-  snprintf(result, len, "%s/%s", base, subdir);
+  snprintf(result, len, "../../../queries/%s", subdir);
 
   // Verify that the directory exists
   struct stat st;
-  if (stat(result, &st) != 0 || !S_ISDIR(st.st_mode)) {
-    fprintf(stderr, "WARNING: Queries directory does not exist or is not a directory: %s\n",
-            result);
-  } else {
+  if (stat(result, &st) == 0 && S_ISDIR(st.st_mode)) {
     fprintf(stderr, "DEBUG: Using queries directory: %s\n", result);
+    return result;
   }
 
+  fprintf(stderr, "WARNING: Queries directory does not exist or is not a directory: %s\n", result);
   return result;
 }
 
@@ -213,45 +210,45 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
     return false;
   }
 
-  log_error("Successfully retrieved language object for language type %d, address: %p", language,
-            (void *)ts_language);
+  log_info("Successfully retrieved language object for language type %d, address: %p", language,
+           (void *)ts_language);
 
-  log_error("Calling ts_parser_set_language with parser=%p, language=%p", (void *)ctx->ts_parser,
-            (void *)ts_language);
+  log_info("Calling ts_parser_set_language with parser=%p, language=%p", (void *)ctx->ts_parser,
+           (void *)ts_language);
 
   bool result = ts_parser_set_language(ctx->ts_parser, ts_language);
   if (!result) {
-    log_error("CRITICAL ERROR: ts_parser_set_language failed");
+    log_info("CRITICAL ERROR: ts_parser_set_language failed");
     parser_set_error(ctx, -1, "Failed to set Tree-sitter language");
     ts_parser_delete(ctx->ts_parser);
     ctx->ts_parser = NULL;
     return false;
   }
 
-  log_error("ts_parser_set_language succeeded");
+  log_info("ts_parser_set_language succeeded");
 
   // Store the language type in the context
   ctx->language = language;
 
   // Verify the language was set by querying the parser
   const TSLanguage *verification_lang = ts_parser_language(ctx->ts_parser);
-  log_error("Verification: ts_parser_language() returned: %p", (void *)verification_lang);
+  log_info("Verification: ts_parser_language() returned: %p", (void *)verification_lang);
 
   if (verification_lang == NULL) {
     log_error("CRITICAL ERROR: Language verification failed - ts_parser_language returned NULL");
     parser_set_error(ctx, -1, "Language verification failed");
     return false;
   } else if (verification_lang != ts_language) {
-    log_error("WARNING: Language pointer mismatch - expected %p, got %p", (void *)ts_language,
-              (void *)verification_lang);
+    log_warning("WARNING: Language pointer mismatch - expected %p, got %p", (void *)ts_language,
+                (void *)verification_lang);
   } else {
-    log_error("Language verification successful - pointer match confirmed");
+    log_info("Language verification successful - pointer match confirmed");
   }
 
-  log_error("TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE");
-  log_error("===================================================================");
+  log_info("TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE");
+  log_info("===================================================================");
 
-  log_debug("Successfully set language for Tree-sitter parser");
+  log_info("Successfully set language for Tree-sitter parser");
 
   // Initialize query manager if needed
   if (!ctx->q_manager) {

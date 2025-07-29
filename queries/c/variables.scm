@@ -23,11 +23,16 @@
     value: (_))
 ) @pointer_variable_with_init
 
-;; Match all additional declarators in a comma-separated list
+;; Match declarators in comma-separated variable declarations
 (declaration
-  (declarator) @name
-  (declarator) @name
-  ...)
+  declarator: (identifier) @name
+) @variable
+
+(declaration
+  declarator: (init_declarator
+    declarator: (identifier) @name
+  )
+) @variable
 
 ;; Variable declaration with initializer
 (declaration

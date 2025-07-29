@@ -39,6 +39,9 @@ START_TIME=$(date +%s)
 # Associative array for per-suite results (Bash 4+)
 declare -A TEST_SUITE_RESULTS
 
+# Clear Address Sanitizer logs
+rm asan.log*
+
 # Global build directory variable (should be set by each test runner)
 # CMAKE_BUILD_DIR=""
 

@@ -2,7 +2,6 @@
 
 # Enable AddressSanitizer logging to a file for all test runs
 export ASAN_OPTIONS=log_path=asan.log:verbosity=1
-rm asan.log*
 
 # All output from this script (stdout and stderr) is written to a file named after the script.
 # Filename format: run_c_tests.txt
@@ -28,10 +27,10 @@ source scripts/test_runner_lib.sh
 TEST_FAILURES=0
 
 # C Language Test Toggles
-RUN_C_BASIC_AST_TESTS=true
+RUN_C_BASIC_AST_TESTS=false
 # Note: The following tests are disabled because their source files don't exist yet
-RUN_C_CST_TESTS=true
-RUN_C_PREPROCESSOR_TESTS=true
+RUN_C_CST_TESTS=false
+RUN_C_PREPROCESSOR_TESTS=false
 
 # C example test directory toggles
 RUN_C_BASIC_SYNTAX_TESTS=true

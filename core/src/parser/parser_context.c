@@ -7,6 +7,7 @@
  */
 
 #include "parser_context.h"
+#include "../../core/include/scopemux/memory_management.h"
 #include "../../core/include/scopemux/query_manager.h"
 #include "../../include/scopemux/ast_compliance.h"
 #include "../../include/scopemux/lang_compliance.h"
@@ -38,15 +39,18 @@
 ParserContext *parser_init(void) {
   // Allocate memory for the context
   fprintf(stderr, "DEBUG: About to allocate ParserContext of size %zu\n", sizeof(ParserContext));
-  ParserContext *ctx = (ParserContext *)safe_malloc(sizeof(ParserContext));
-  fprintf(stderr, "DEBUG: safe_malloc returned %p\n", (void*)ctx);
+  void *raw_ptr = safe_malloc(sizeof(ParserContext));
+  fprintf(stderr, "DEBUG: safe_malloc returned raw_ptr=%p\n", raw_ptr);
+  ParserContext *ctx = (ParserContext *)raw_ptr;
+  fprintf(stderr, "DEBUG: after cast ctx=%p\n", (void *)ctx);
   if (!ctx) {
     log_error("Failed to allocate memory for parser context");
     return NULL;
   }
 
   // Initialize with default values
-  fprintf(stderr, "DEBUG: About to memset ctx=%p with size %zu\n", (void*)ctx, sizeof(ParserContext));
+  fprintf(stderr, "DEBUG: About to memset ctx=%p with size %zu\n", (void *)ctx,
+          sizeof(ParserContext));
   memset(ctx, 0, sizeof(ParserContext));
   fprintf(stderr, "DEBUG: memset completed successfully\n");
 

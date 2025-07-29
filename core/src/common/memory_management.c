@@ -7,6 +7,7 @@
  */
 
 #include "../../core/include/scopemux/memory_management.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,16 +38,20 @@ void *safe_calloc(size_t nmemb, size_t size) {
 }
 
 void *safe_malloc(size_t size) {
+  fprintf(stderr, "DEBUG: safe_malloc called with size=%zu\n", size);
   if (size == 0) {
+    fprintf(stderr, "DEBUG: safe_malloc returning NULL for size=0\n");
     return NULL;
   }
 
   void *ptr = malloc(size);
+  fprintf(stderr, "DEBUG: malloc(%zu) returned %p\n", size, ptr);
   if (!ptr) {
     log_error("Failed to allocate memory: malloc(%zu) failed", size);
     return NULL;
   }
 
+  fprintf(stderr, "DEBUG: safe_malloc returning %p\n", ptr);
   return ptr;
 }
 

@@ -12,6 +12,7 @@
 
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/scopemux/memory_management.h"
 #include "../../core/include/scopemux/parser.h"
 #include "cst_node.h"
 #include <setjmp.h>

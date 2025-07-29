@@ -15,6 +15,7 @@
 #include "query_processing.h"
 #include "scopemux/ast.h"
 #include "scopemux/tree_sitter_integration.h"
+#include "scopemux/memory_management.h"
 
 #include <setjmp.h>
 #include <signal.h>

@@ -10,6 +10,7 @@
 #include "../../core/include/scopemux/ast.h"
 #include "../../core/include/scopemux/logging.h"
 #include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/scopemux/memory_management.h"
 #include "parser_internal.h"
 #include <execinfo.h>
 #include <stdlib.h>
