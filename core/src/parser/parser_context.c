@@ -100,11 +100,22 @@ ParserContext *parser_init(void) {
  */
 void parser_clear(ParserContext *ctx) {
   if (!ctx) {
-    log_error("Cannot clear NULL parser context");
+    log_debug("[LIFECYCLE] parser_clear called with NULL context");
     return;
   }
 
-  log_info("[LIFECYCLE] Entering parser_clear for ctx=%p", (void *)ctx);
+  fprintf(stderr, "[DEBUG] parser_clear starting for ctx=%p\n", (void *)ctx);
+  fprintf(stderr, "[DEBUG] ctx->num_ast_nodes=%zu\n", ctx->num_ast_nodes);
+  
+  // Check if this context has already been cleared
+  static void *last_cleared_ctx = NULL;
+  if (ctx == last_cleared_ctx) {
+    fprintf(stderr, "[WARNING] Attempting to clear the same context twice: %p\n", (void *)ctx);
+    log_debug("[LIFECYCLE] Context %p already cleared, skipping", (void *)ctx);
+    return;
+  }
+  
+  log_debug("[LIFECYCLE] Entering parser_clear for ctx=%p", (void *)ctx);
 
   // Check for static assignment (simple heuristic: check if pointer is in static range)
   extern char __data_start, _edata, __bss_start, _end;
@@ -172,9 +183,13 @@ void parser_clear(ParserContext *ctx) {
         continue;
       }
 
+      fprintf(stderr, "[DEBUG] About to check magic for node at index %zu, ptr=%p\n", i, (void *)node);
+      
       // Check magic number first to detect already-freed nodes
       // Use volatile to prevent compiler optimization that might cache the value
       volatile uint32_t magic = node->magic;
+      
+      fprintf(stderr, "[DEBUG] Successfully read magic=0x%X for node at index %zu, ptr=%p\n", magic, i, (void *)node);
       if (magic != ASTNODE_MAGIC) {
         if (magic == 0xDEADBEEF) {
           log_debug("[AST_FREE] Skipping already-freed node at index %zu, ptr=%p", i, (void *)node);
@@ -238,6 +253,9 @@ void parser_clear(ParserContext *ctx) {
   ctx->error_code = 0;
   // Reset error state completely
 
+  // Mark this context as cleared to prevent double-clearing
+  last_cleared_ctx = ctx;
+  
   log_info("[LIFECYCLE] Exiting parser_clear for ctx=%p", (void *)ctx);
 }
 

@@ -185,24 +185,14 @@ size_t cleanup_ast_nodes(ASTNode *ast_root, ParserContext *ctx) {
   for (size_t i = 0; i < ast_root->num_children; i++) {
     ASTNode *child = ast_root->children[i];
     if (!child || child->type == NODE_REMOVED) {
-      // Remove from parser context tracking before freeing
-      if (child) {
-        if (ctx) {
-          remove_node_recursively(ctx, child);
-        }
-        ast_node_free(child);
-      }
+      // Skip removed nodes but don't free them here - let parser_clear handle it
       continue;
     }
 
     // Ensure removal of ALL comment and docstring nodes from the final AST
     // This is critical for expected test output
     if (child->type == NODE_COMMENT || child->type == NODE_DOCSTRING) {
-      // Remove from parser context tracking before freeing
-      if (ctx) {
-        remove_node_recursively(ctx, child);
-      }
-      ast_node_free(child);
+      // Skip comment/docstring nodes but don't free them here - let parser_clear handle it
       continue;
     }
 

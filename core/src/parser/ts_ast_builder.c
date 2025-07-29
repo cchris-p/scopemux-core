@@ -342,18 +342,8 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
     }
     ast_root->num_children = 0;
   }
-  // For larger ASTs (like variables_loops_conditions.c), limit to reasonable size
-  else if (ast_root->num_children > 13) {
-    // If we have more than 13 children, free the excess
-    for (size_t i = 13; i < ast_root->num_children; i++) {
-      if (ast_root->children[i]) {
-        ast_node_free(ast_root->children[i]);
-        ast_root->children[i] = NULL;
-      }
-    }
-    // Resize the children array to exactly 13
-    ast_root->num_children = 13;
-  }
+  // Note: Removed problematic code that was limiting AST children to 13
+  // This was causing double-free issues when parser_clear tried to free the same nodes
 
   // Apply schema compliance checks AFTER test-specific adjustments
   ensure_schema_compliance(ast_root, ctx);
