@@ -443,10 +443,12 @@ static const TSQuery *compile_query(const TSLanguage *language, const char *quer
     }
     // Temporarily commenting this out
     // fprintf(stderr, "[QUERY_DEBUG] Loaded query content:\n%s\n", query_str);
-  } else {
-    log_debug("Successfully compiled query");
-    fprintf(stderr, "[QUERY_DEBUG] Loaded query content:\n%s\n", query_str);
   }
+  // We don't need to print the contents
+  // else {
+  //   log_debug("Successfully compiled query");
+  //   fprintf(stderr, "[QUERY_DEBUG] Loaded query content:\n%s\n", query_str);
+  // }
 
   return query;
 }

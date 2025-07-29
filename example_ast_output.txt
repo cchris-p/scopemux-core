@@ -1,0 +1,153 @@
+DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/hello_world.c
+DEBUG: Current working directory: /home/matrillo/apps/scopemux-core
+DEBUG: Directory listing for core/tests/examples/c/basic_syntax:
+  hello_world.c
+  .
+  hello_world.c.expected.json
+  variables_loops_conditions.c
+  variables_loops_conditions.c.expected.json
+  variables_loops_conditions.c.cst.txt
+  ..
+DEBUG: file size for core/tests/examples/c/basic_syntax/hello_world.c is 378 bytes
+DEBUG: About to allocate ParserContext of size 136
+DEBUG: safe_malloc returned raw_ptr=0x60d000000110
+DEBUG: after cast ctx=0x60d000000110
+DEBUG: About to memset ctx=0x60d000000110 with size 136
+DEBUG: memset completed successfully
+[2025-07-29 07:17:50] [INFO] Registered C language compliance callbacks
+[2025-07-29 07:17:50] [INFO] Registered language-specific compliance callbacks
+[scopemux] INFO: Loading hardcoded node type mappings
+[scopemux] Loaded 14 hardcoded node type mappings
+[2025-07-29 07:17:50] [INFO] Initialized node type mappings
+[2025-07-29 07:17:50] [INFO] Successfully initialized parser context at 0x60d000000110
+[DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x60d000000110, content=0x613000012100, content_length=378, filename=hello_world, language=1
+[2025-07-29 07:17:50] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
+[scopemux] Loading hardcoded node type mappings:
+  functions -> NODE_FUNCTION
+  classes -> NODE_CLASS
+  methods -> NODE_METHOD
+  variables -> NODE_VARIABLE
+  modules -> NODE_MODULE
+  structs -> NODE_STRUCT
+  unions -> NODE_UNION
+  enums -> NODE_ENUM
+  typedefs -> NODE_TYPEDEF
+  includes -> NODE_INCLUDE
+  macros -> NODE_MACRO
+  docstrings -> NODE_DOCSTRING
+  interfaces -> NODE_INTERFACE
+  template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[QUERY_MANAGER_FREE] ENTER: manager=0x606000013a60
+[QUERY_MANAGER_FREE] Freeing queries_dir at 0x6020000013d0
+[QUERY_MANAGER_FREE] Freeing cached queries array at 0x604000001e90 (language_count=6)
+[QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x611000000680 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000680
+[QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x6110000007c0 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000007c0
+[QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x611000000900 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000900
+[QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x611000000a40 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000a40
+[QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x611000000b80 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000b80
+[QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x611000000cc0 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000cc0
+[QUERY_MANAGER_FREE] Freeing cached_queries array at 0x604000001e90
+[QUERY_MANAGER_FREE] Freeing languages array at 0x604000001e50
+[QUERY_MANAGER_FREE] Freeing language_types array at 0x603000012190
+[QUERY_MANAGER_FREE] Freeing query_counts array at 0x604000001ed0
+[QUERY_MANAGER_FREE] Freeing manager struct at 0x606000013a60
+[QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[2025-07-29 07:17:50] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
+[2025-07-29 07:17:50] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d000000110
+[DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x60d000000110, language=1
+[DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x60d000000110, language=1
+
+***** PARSER INITIALIZATION DIAGNOSTIC *****
+Test executable pid: 816763
+Using statically linked Tree-sitter libraries
+SYMBOL RESOLUTION CHECK:
+  dlsym(tree_sitter_c): 0x55b1e6d66765
+  dlsym(tree_sitter_cpp): 0x55b1e6d7ca52
+  dlsym(tree_sitter_python): 0x55b1e6d82812
+  dlsym(tree_sitter_javascript): 0x55b1e6d8a535
+  dlsym(tree_sitter_typescript): 0x55b1e6d918fa
+[DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[DIAGNOSTIC] Language name: C
+[DIAGNOSTIC] Adapter lookup result: 0x55b1e7442160
+[DIAGNOSTIC] Adapter language_name: C
+[DIAGNOSTIC] Adapter get_ts_language pointer: 0x55b1e6d66765
+[DIAGNOSTIC] Result of get_ts_language(): 0x55b1e73a80c0
+[2025-07-29 07:17:50] [INFO] Successfully retrieved language object for language type 1, address: 0x55b1e73a80c0
+[2025-07-29 07:17:50] [INFO] Calling ts_parser_set_language with parser=0x61b00001d580, language=0x55b1e73a80c0
+[2025-07-29 07:17:50] [INFO] ts_parser_set_language succeeded
+[2025-07-29 07:17:50] [INFO] Verification: ts_parser_language() returned: 0x55b1e73a80c0
+[2025-07-29 07:17:50] [INFO] Language verification successful - pointer match confirmed
+[2025-07-29 07:17:50] [INFO] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[2025-07-29 07:17:50] [INFO] ===================================================================
+[2025-07-29 07:17:50] [INFO] Successfully set language for Tree-sitter parser
+WARNING: Queries directory does not exist or is not a directory: ../../../queries/c
+[2025-07-29 07:17:50] [ERROR] CRITICAL ERROR: Queries directory does not exist or is not accessible: ../../../queries/c
+[2025-07-29 07:17:50] [ERROR] Parser error set: [-1] Queries directory does not exist or is not accessible
+[2025-07-29 07:17:50] [INFO] ts_init_parser returned: FALSE
+[2025-07-29 07:17:50] [ERROR] Failed to initialize Tree-sitter parser
+[----] ./core/tests/src/utilities/ast_test_utils.c:267: Assertion Failed
+[----]   
+[----]   Failed to parse source file
+[----]   
+[FAIL] c_examples::all_examples: (0.01s)
+
+=================================================================
+==816763==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 32816 byte(s) in 1 object(s) allocated from:
+    #0 0x7fb929300887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x7fb928aa930a in __alloc_dir ../sysdeps/unix/sysv/linux/opendir.c:115
+    #2 0x7fb928aa930a in opendir_tail ../sysdeps/unix/sysv/linux/opendir.c:63
+    #3 0x7fb928aa930a in __opendir ../sysdeps/unix/sysv/linux/opendir.c:86
+
+Direct leak of 379 byte(s) in 1 object(s) allocated from:
+    #0 0x7fb929300887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x55b1e6cd4ff1 in read_file_contents /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:124
+    #2 0x55b1e6cd6cd6 in run_ast_test /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:228
+    #3 0x55b1e6cd27bc in test_c_example /home/matrillo/apps/scopemux-core/core/tests/src/c/c_example_ast_tests.c:40
+    #4 0x55b1e6cd979a in process_category_files /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:362
+    #5 0x55b1e6cd2fe7 in c_examples_all_examples_impl /home/matrillo/apps/scopemux-core/core/tests/src/c/c_example_ast_tests.c:67
+    #6 0x7fb929233656 in criterion_internal_test_main (/lib/x86_64-linux-gnu/libcriterion.so.3+0x12656)
+    #7 0x7fb92923584c  (/lib/x86_64-linux-gnu/libcriterion.so.3+0x1484c)
+
+Direct leak of 136 byte(s) in 1 object(s) allocated from:
+    #0 0x7fb929300887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x55b1e6d0bcfe in safe_malloc /home/matrillo/apps/scopemux-core/core/src/common/memory_management.c:54
+    #2 0x55b1e6cee832 in parser_init /home/matrillo/apps/scopemux-core/core/src/parser/parser_context.c:42
+    #3 0x55b1e6cd71b6 in run_ast_test /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:243
+    #4 0x55b1e6cd27bc in test_c_example /home/matrillo/apps/scopemux-core/core/tests/src/c/c_example_ast_tests.c:40
+    #5 0x55b1e6cd979a in process_category_files /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:362
+    #6 0x55b1e6cd2fe7 in c_examples_all_examples_impl /home/matrillo/apps/scopemux-core/core/tests/src/c/c_example_ast_tests.c:67
+    #7 0x7fb929233656 in criterion_internal_test_main (/lib/x86_64-linux-gnu/libcriterion.so.3+0x12656)
+    #8 0x7fb92923584c  (/lib/x86_64-linux-gnu/libcriterion.so.3+0x1484c)
+
+Direct leak of 14 byte(s) in 1 object(s) allocated from:
+    #0 0x7fb9292a79a7 in __interceptor_strdup ../../../../src/libsanitizer/asan/asan_interceptors.cpp:454
+    #1 0x55b1e6cd925c in construct_test_paths /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:328
+    #2 0x55b1e6cd213c in test_c_example /home/matrillo/apps/scopemux-core/core/tests/src/c/c_example_ast_tests.c:24
+    #3 0x55b1e6cd979a in process_category_files /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:362
+    #4 0x55b1e6cd2fe7 in c_examples_all_examples_impl /home/matrillo/apps/scopemux-core/core/tests/src/c/c_example_ast_tests.c:67
+    #5 0x7fb929233656 in criterion_internal_test_main (/lib/x86_64-linux-gnu/libcriterion.so.3+0x12656)
+    #6 0x7fb92923584c  (/lib/x86_64-linux-gnu/libcriterion.so.3+0x1484c)
+
+Indirect leak of 54 byte(s) in 1 object(s) allocated from:
+    #0 0x7fb9292a79a7 in __interceptor_strdup ../../../../src/libsanitizer/asan/asan_interceptors.cpp:454
+    #1 0x55b1e6cf1c5d in parser_set_error /home/matrillo/apps/scopemux-core/core/src/parser/parser_context.c:339
+    #2 0x55b1e6cf5b20 in ts_init_parser_impl /home/matrillo/apps/scopemux-core/core/src/parser/ts_init.c:272
+    #3 0x55b1e6ce7786 in ts_init_parser /home/matrillo/apps/scopemux-core/core/src/parser/parser.c:510
+    #4 0x55b1e6ce5688 in parser_parse_string /home/matrillo/apps/scopemux-core/core/src/parser/parser.c:292
+    #5 0x55b1e6cd7ce7 in run_ast_test /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:264
+    #6 0x55b1e6cd27bc in test_c_example /home/matrillo/apps/scopemux-core/core/tests/src/c/c_example_ast_tests.c:40
+    #7 0x55b1e6cd979a in process_category_files /home/matrillo/apps/scopemux-core/core/tests/src/utilities/ast_test_utils.c:362
+    #8 0x55b1e6cd2fe7 in c_examples_all_examples_impl /home/matrillo/apps/scopemux-core/core/tests/src/c/c_example_ast_tests.c:67
+    #9 0x7fb929233656 in criterion_internal_test_main (/lib/x86_64-linux-gnu/libcriterion.so.3+0x12656)
+    #10 0x7fb92923584c  (/lib/x86_64-linux-gnu/libcriterion.so.3+0x1484c)
+
+SUMMARY: AddressSanitizer: 33399 byte(s) leaked in 5 allocation(s).
+[====] Synthesis: Tested: 1 | Passing: 0 | Failing: 1 | Crashing: 0 

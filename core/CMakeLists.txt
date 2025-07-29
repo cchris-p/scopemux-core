@@ -160,6 +160,7 @@ add_library(parser_core_obj OBJECT
     src/common/memory_management.c
     src/common/error_handling.c
     src/common/logging.c
+    src/common/language.c
     # Memory debugging utilities
     src/utils/memory_debug.c
     src/utils/ts_resource_manager.c
@@ -327,6 +328,28 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/config)
 endif()
 
 # Print configuration summary
+# Add standalone parser utilities
+add_executable(parse_ast src/parser/parse_ast.c)
+target_link_libraries(parse_ast parser_core)
+
+add_executable(parse_cst src/parser/parse_cst.c)
+target_link_libraries(parse_cst parser_core)
+
+add_executable(test_parser_output ../scripts/test_parser_output.c)
+target_link_libraries(test_parser_output parser_core)
+
+add_executable(simple_parser_demo ../scripts/simple_parser_demo.c)
+target_link_libraries(simple_parser_demo parser_core)
+
+# Copy executables to scripts directory after build
+add_custom_command(TARGET parse_ast POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:parse_ast> ${CMAKE_SOURCE_DIR}/scripts/
+    COMMENT "Copying parse_ast to scripts directory")
+
+add_custom_command(TARGET parse_cst POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:parse_cst> ${CMAKE_SOURCE_DIR}/scripts/
+    COMMENT "Copying parse_cst to scripts directory")
+
 message(STATUS "Configuration summary:")
 message(STATUS "  C Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
 message(STATUS "  Python: ${Python_VERSION}")

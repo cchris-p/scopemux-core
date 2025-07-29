@@ -67,26 +67,58 @@ char *build_queries_dir_impl(Language language) {
     break;
   }
 
-#ifndef SAFE_LEN
-#define SAFE_LEN(x) ((x) ? strlen(x) : 0)
-#endif
-  // Tests run from build-c/core/tests/, so queries are at ../../../queries/<lang>
-  size_t len = 9 + 7 + 1 + SAFE_LEN(subdir) + 1; // "../../../queries/" + subdir + null
+  // Check environment variable first
+  const char *env_queries_dir = getenv("SCMU_QUERIES_DIR");
+  if (env_queries_dir) {
+    size_t len = strlen(env_queries_dir) + 1 + strlen(subdir) + 1;
+    char *result = (char *)safe_malloc(len);
+    if (result) {
+      snprintf(result, len, "%s/%s", env_queries_dir, subdir);
+      struct stat st;
+      if (stat(result, &st) == 0 && S_ISDIR(st.st_mode)) {
+        fprintf(stderr, "DEBUG: Using environment queries directory: %s\n", result);
+        return result;
+      }
+      safe_free(result);
+    }
+  }
+
+  // Try multiple fallback paths
+  const char *paths[] = {
+    "queries",           // From project root
+    "../queries",       // One level up
+    "../../queries",    // Two levels up (for build/core/ execution)
+    "../../../queries"  // Three levels up (for build/core/tests/ execution)
+  };
+  size_t num_paths = sizeof(paths) / sizeof(paths[0]);
+
+  for (size_t i = 0; i < num_paths; i++) {
+    size_t len = strlen(paths[i]) + 1 + strlen(subdir) + 1;
+    char *result = (char *)safe_malloc(len);
+    if (!result) {
+      fprintf(stderr, "ERROR: Failed to allocate memory for queries directory path\n");
+      continue;
+    }
+    snprintf(result, len, "%s/%s", paths[i], subdir);
+
+    // Verify that the directory exists
+    struct stat st;
+    if (stat(result, &st) == 0 && S_ISDIR(st.st_mode)) {
+      fprintf(stderr, "DEBUG: Using queries directory: %s\n", result);
+      return result;
+    }
+    
+    fprintf(stderr, "DEBUG: Tried queries directory: %s (not found)\n", result);
+    safe_free(result);
+  }
+
+  // If all paths failed, return the first fallback path anyway
+  size_t len = strlen(paths[0]) + 1 + strlen(subdir) + 1;
   char *result = (char *)safe_malloc(len);
-  if (!result) {
-    fprintf(stderr, "ERROR: Failed to allocate memory for queries directory path\n");
-    return NULL;
+  if (result) {
+    snprintf(result, len, "%s/%s", paths[0], subdir);
+    fprintf(stderr, "WARNING: No queries directory found, using fallback: %s\n", result);
   }
-  snprintf(result, len, "../../../queries/%s", subdir);
-
-  // Verify that the directory exists
-  struct stat st;
-  if (stat(result, &st) == 0 && S_ISDIR(st.st_mode)) {
-    fprintf(stderr, "DEBUG: Using queries directory: %s\n", result);
-    return result;
-  }
-
-  fprintf(stderr, "WARNING: Queries directory does not exist or is not a directory: %s\n", result);
   return result;
 }
 
