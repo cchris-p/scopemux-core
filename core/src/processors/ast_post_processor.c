@@ -27,20 +27,21 @@ static bool enable_logging = false;
  * @return The post-processed AST root
  */
 ASTNode *post_process_ast(ASTNode *ast_root, ParserContext *ctx) {
-  (void)ctx; // Mark unused parameter to silence compiler warning
   if (!ast_root) {
     return NULL;
   }
 
-  if (enable_logging) log_debug("Starting AST post-processing");
+  if (enable_logging)
+    log_debug("Starting AST post-processing");
 
   // Order nodes by priority type
   order_ast_nodes(ast_root);
 
   // Clean up temporary nodes and finalize structure
-  cleanup_ast_nodes(ast_root);
+  cleanup_ast_nodes(ast_root, ctx);
 
-  if (enable_logging) log_debug("AST post-processing complete");
+  if (enable_logging)
+    log_debug("AST post-processing complete");
   return ast_root;
 }
 
@@ -55,7 +56,8 @@ void order_ast_nodes(ASTNode *ast_root) {
     return;
   }
 
-  if (enable_logging) log_debug("Reordering AST nodes by priority type");
+  if (enable_logging)
+    log_debug("Reordering AST nodes by priority type");
 
   // Create temporary arrays to categorize nodes
   ASTNode **docstring_nodes = malloc(sizeof(ASTNode *) * ast_root->num_children);
@@ -65,7 +67,8 @@ void order_ast_nodes(ASTNode *ast_root) {
 
   if (!docstring_nodes || !include_nodes || !function_nodes || !other_nodes) {
     // Handle allocation failure
-    if (enable_logging) log_error("Memory allocation failed during AST node reordering");
+    if (enable_logging)
+      log_error("Memory allocation failed during AST node reordering");
     if (docstring_nodes)
       free(docstring_nodes);
     if (include_nodes)
@@ -100,8 +103,9 @@ void order_ast_nodes(ASTNode *ast_root) {
     }
   }
 
-  if (enable_logging) log_debug("Categorized nodes - Docstrings: %zu, Includes: %zu, Functions: %zu, Other: %zu",
-            doc_count, inc_count, func_count, other_count);
+  if (enable_logging)
+    log_debug("Categorized nodes - Docstrings: %zu, Includes: %zu, Functions: %zu, Other: %zu",
+              doc_count, inc_count, func_count, other_count);
 
   // Reconstruct children array in order: DOCSTRING -> INCLUDE -> FUNCTION -> OTHER
   size_t new_index = 0;
@@ -132,36 +136,72 @@ void order_ast_nodes(ASTNode *ast_root) {
   free(function_nodes);
   free(other_nodes);
 
-  if (enable_logging) log_debug("Reordered AST nodes by priority");
+  if (enable_logging)
+    log_debug("Reordered AST nodes by priority");
 }
 
 /**
- * Removes temporary and unwanted nodes from the AST
+ * Recursively remove a node and all its children from parser context tracking.
+ * This must be called before freeing nodes to prevent use-after-free errors.
+ *
+ * @param ctx Parser context for node tracking
+ * @param node The node to remove recursively
+ */
+static void remove_node_recursively(ParserContext *ctx, ASTNode *node) {
+  if (!ctx || !node) {
+    return;
+  }
+
+  // First, recursively remove all children
+  if (node->children && node->num_children > 0) {
+    for (size_t i = 0; i < node->num_children; i++) {
+      if (node->children[i]) {
+        remove_node_recursively(ctx, node->children[i]);
+      }
+    }
+  }
+
+  // Then remove this node from parser context
+  parser_remove_ast_node(ctx, node);
+}
+
+/**
+ * Cleans up temporary nodes and finalizes the AST structure
  *
  * @param ast_root The root AST node
+ * @param ctx Parser context for node tracking
  * @return The number of remaining nodes after cleanup
  */
-size_t cleanup_ast_nodes(ASTNode *ast_root) {
+size_t cleanup_ast_nodes(ASTNode *ast_root, ParserContext *ctx) {
   if (!ast_root) {
     return 0;
   }
 
-  if (enable_logging) log_debug("Cleaning up temporary and removed nodes");
+  if (enable_logging)
+    log_debug("Cleaning up temporary and removed nodes");
 
   // Final cleanup pass - remove any nodes marked as NODE_REMOVED
   size_t final_count = 0;
   for (size_t i = 0; i < ast_root->num_children; i++) {
     ASTNode *child = ast_root->children[i];
     if (!child || child->type == NODE_REMOVED) {
-      // Free the removed node
-      if (child)
+      // Remove from parser context tracking before freeing
+      if (child) {
+        if (ctx) {
+          remove_node_recursively(ctx, child);
+        }
         ast_node_free(child);
+      }
       continue;
     }
 
     // Ensure removal of ALL comment and docstring nodes from the final AST
     // This is critical for expected test output
     if (child->type == NODE_COMMENT || child->type == NODE_DOCSTRING) {
+      // Remove from parser context tracking before freeing
+      if (ctx) {
+        remove_node_recursively(ctx, child);
+      }
       ast_node_free(child);
       continue;
     }
@@ -176,6 +216,7 @@ size_t cleanup_ast_nodes(ASTNode *ast_root) {
   // Update the child count
   ast_root->num_children = final_count;
 
-  if (enable_logging) log_debug("AST cleanup complete, %zu nodes remaining", final_count);
+  if (enable_logging)
+    log_debug("AST cleanup complete, %zu nodes remaining", final_count);
   return final_count;
 }

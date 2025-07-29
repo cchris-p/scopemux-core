@@ -121,10 +121,11 @@ static ASTNode *create_ast_root_node(ParserContext *ctx) {
   log_info("[create_ast_root_node] Created root node with name: '%s'", node_name);
 
   // Set qualified_name to match the filename for schema compliance
-  if (root->qualified_name) {
+  if (root->qualified_name && root->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
     safe_free(root->qualified_name);
   }
   root->qualified_name = safe_strdup(node_name);
+  root->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
 
   log_info("[create_ast_root_node] Set qualified_name: '%s'", node_name);
 
@@ -205,6 +206,7 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
   // Ensure name is never NULL
   if (!node->name) {
     node->name = safe_strdup("");
+    node->name_source = AST_SOURCE_DEBUG_ALLOC;
   }
 
   // Ensure qualified_name is never NULL
@@ -214,6 +216,7 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
     } else {
       node->qualified_name = safe_strdup("");
     }
+    node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
   }
 
   // SURE-FIRE FIX: Ensure root nodes always have the correct filename
@@ -224,14 +227,16 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
     if (!node->name || strlen(node->name) == 0) {
       // Use a safe default name for root nodes to avoid memory issues
       if (!node->name || strlen(node->name) == 0) {
-        if (node->name)
+        if (node->name && node->name_source == AST_SOURCE_DEBUG_ALLOC)
           safe_free(node->name);
         node->name = safe_strdup("root_file.c");
+        node->name_source = AST_SOURCE_DEBUG_ALLOC;
       }
       if (!node->qualified_name || strlen(node->qualified_name) == 0) {
-        if (node->qualified_name)
+        if (node->qualified_name && node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC)
           safe_free(node->qualified_name);
         node->qualified_name = safe_strdup("root_file.c");
+        node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
       }
     }
   }
@@ -283,14 +288,22 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
 static void ensure_nonnull_string_fields(ASTNode *node) {
   if (!node)
     return;
-  if (!node->name)
+  if (!node->name) {
     node->name = safe_strdup("");
-  if (!node->qualified_name)
+    node->name_source = AST_SOURCE_DEBUG_ALLOC;
+  }
+  if (!node->qualified_name) {
     node->qualified_name = safe_strdup("");
-  if (!node->signature)
+    node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
+  }
+  if (!node->signature) {
     node->signature = safe_strdup("");
-  if (!node->docstring)
+    node->signature_source = AST_SOURCE_DEBUG_ALLOC;
+  }
+  if (!node->docstring) {
     node->docstring = safe_strdup("");
+    node->docstring_source = AST_SOURCE_DEBUG_ALLOC;
+  }
   for (size_t i = 0; i < node->num_children; i++) {
     ensure_nonnull_string_fields(node->children[i]);
   }
@@ -345,8 +358,6 @@ static ASTNode *validate_and_finalize_ast(ASTNode *ast_root, ParserContext *ctx,
   // Apply schema compliance checks AFTER test-specific adjustments
   ensure_schema_compliance(ast_root, ctx);
 
-
-
   // Recursively ensure all nodes have non-NULL string fields for schema compliance
   ensure_nonnull_string_fields(ast_root);
 
@@ -397,15 +408,17 @@ static void enhance_schema_compliance_for_tests(ASTNode *ast_root, ParserContext
   char *basename = safe_strdup(basename_start);
 
   // Set the root node name and qualified_name to the filename
-  if (ast_root->name) {
+  if (ast_root->name && ast_root->name_source == AST_SOURCE_DEBUG_ALLOC) {
     safe_free(ast_root->name);
   }
   ast_root->name = safe_strdup(basename);
+  ast_root->name_source = AST_SOURCE_DEBUG_ALLOC;
 
-  if (ast_root->qualified_name) {
+  if (ast_root->qualified_name && ast_root->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
     safe_free(ast_root->qualified_name);
   }
   ast_root->qualified_name = safe_strdup(basename);
+  ast_root->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
 
   safe_free(basename);
 
@@ -455,8 +468,6 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
     return NULL;
   }
 
-
-
   // Set up protection against segfaults during AST generation
   jmp_buf ast_recovery;
   if (setjmp(ast_recovery) != 0) {
@@ -467,8 +478,7 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
     ASTNode *fallback_root = create_ast_root_node(ctx);
     if (!fallback_root) {
       log_error("ts_tree_to_ast_impl: Emergency fallback: Creating basic AST root node");
-      fallback_root = ast_node_new(
-          NODE_ROOT, "unknown_file", AST_SOURCE_STATIC);
+      fallback_root = ast_node_new(NODE_ROOT, "unknown_file", AST_SOURCE_STATIC);
     }
     return fallback_root;
   }
@@ -599,8 +609,6 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
 
   // Restore the previous signal handler
   signal(SIGSEGV, prev_handler);
-
-
 
   return final_root;
 }

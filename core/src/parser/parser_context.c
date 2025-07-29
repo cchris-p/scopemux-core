@@ -172,6 +172,27 @@ void parser_clear(ParserContext *ctx) {
         continue;
       }
 
+      // Check magic number first to detect already-freed nodes
+      // Use volatile to prevent compiler optimization that might cache the value
+      volatile uint32_t magic = node->magic;
+      if (magic != ASTNODE_MAGIC) {
+        if (magic == 0xDEADBEEF) {
+          log_debug("[AST_FREE] Skipping already-freed node at index %zu, ptr=%p", i, (void *)node);
+        } else {
+          log_debug("[AST_FREE] Invalid magic number in AST node %zu: expected 0x%X, found 0x%X "
+                    "(possibly freed)",
+                    i, ASTNODE_MAGIC, magic);
+        }
+        ctx->all_ast_nodes[i] = NULL;
+        continue;
+      }
+
+      if (!memory_debug_check_canary(node, sizeof(ASTNode))) {
+        log_error("[AST_FREE] Memory corruption detected in AST node %zu (buffer overflow)", i);
+        ctx->all_ast_nodes[i] = NULL;
+        continue;
+      }
+
       // CRITICAL: Only free root nodes (nodes without parents)
       // Child nodes will be freed recursively by their parents
       if (node->parent != NULL) {
@@ -184,17 +205,6 @@ void parser_clear(ParserContext *ctx) {
 
       log_debug("[AST_FREE] About to free ROOT ASTNode at index %zu, ptr=%p, magic=0x%X", i,
                 (void *)node, node->magic);
-      if (!memory_debug_check_canary(node, sizeof(ASTNode))) {
-        log_error("[AST_FREE] Memory corruption detected in AST node %zu (buffer overflow)", i);
-        ctx->all_ast_nodes[i] = NULL;
-        continue;
-      }
-      if (node->magic != ASTNODE_MAGIC) {
-        log_error("[AST_FREE] Invalid magic number in AST node %zu: expected 0x%X, found 0x%X", i,
-                  ASTNODE_MAGIC, node->magic);
-        ctx->all_ast_nodes[i] = NULL;
-        continue;
-      }
       ast_node_free(node); // This will recursively free all children
       log_debug("[AST_FREE] Freed ROOT ASTNode at index %zu, ptr=%p (and all its children)", i,
                 (void *)node);
@@ -315,6 +325,37 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
   log_debug("[AST_REGISTER] Registered ASTNode at idx=%zu, ptr=%p, total now=%zu", idx,
             (void *)node, ctx->num_ast_nodes);
   return true;
+}
+
+/**
+ * Remove an AST node from the parser context's tracking array.
+ */
+bool parser_remove_ast_node(ParserContext *ctx, ASTNode *node) {
+  if (!ctx || !node) {
+    log_error("Cannot remove AST node: %s", !ctx ? "context is NULL" : "node is NULL");
+    return false;
+  }
+
+  if (!ctx->all_ast_nodes || ctx->num_ast_nodes == 0) {
+    log_debug("[AST_UNREGISTER] No nodes to remove from context");
+    return false;
+  }
+
+  // Find the node in the tracking array
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    if (ctx->all_ast_nodes[i] == node) {
+      log_debug("[AST_UNREGISTER] Found node at idx=%zu, ptr=%p", i, (void *)node);
+
+      // Remove by setting to NULL (don't shift array to avoid invalidating indices)
+      ctx->all_ast_nodes[i] = NULL;
+
+      log_debug("[AST_UNREGISTER] Removed ASTNode at idx=%zu, ptr=%p", i, (void *)node);
+      return true;
+    }
+  }
+
+  log_debug("[AST_UNREGISTER] Node not found in tracking array: ptr=%p", (void *)node);
+  return false;
 }
 
 /**

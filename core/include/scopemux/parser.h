@@ -175,13 +175,22 @@ typedef struct ParserContext {
 } ParserContext;
 
 /**
- * @brief Adds an AST node to the parser context's tracking list
+ * @brief Add an AST node to the parser context for tracking
  *
  * @param ctx Parser context
  * @param node Node to add to tracking
  * @return bool True on success, false on failure
  */
 bool parser_add_ast_node(ParserContext *ctx, ASTNode *node);
+
+/**
+ * @brief Remove an AST node from the parser context tracking
+ *
+ * @param ctx Parser context
+ * @param node Node to remove from tracking
+ * @return bool True if node was found and removed, false otherwise
+ */
+bool parser_remove_ast_node(ParserContext *ctx, ASTNode *node);
 
 /**
  * @brief Initialize the parser

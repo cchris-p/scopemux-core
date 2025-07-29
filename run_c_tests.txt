@@ -2,12 +2,12 @@
 Building shared libraries in /home/matrillo/apps/scopemux-core/build/tree-sitter-libs
 Converting static libraries to shared libraries...
 Created shared libraries:
--rwxrwxr-x 1 matrillo matrillo 3566904 Jul 29 08:18 libtree-sitter-cpp.so
--rwxrwxr-x 1 matrillo matrillo  627536 Jul 29 08:18 libtree-sitter-c.so
--rwxrwxr-x 1 matrillo matrillo  386944 Jul 29 08:18 libtree-sitter-javascript.so
--rwxrwxr-x 1 matrillo matrillo  484368 Jul 29 08:18 libtree-sitter-python.so
--rwxrwxr-x 1 matrillo matrillo  267048 Jul 29 08:18 libtree-sitter.so
--rwxrwxr-x 1 matrillo matrillo 1443832 Jul 29 08:18 libtree-sitter-typescript.so
+-rwxrwxr-x 1 matrillo matrillo 3566904 Jul 29 08:47 libtree-sitter-cpp.so
+-rwxrwxr-x 1 matrillo matrillo  627536 Jul 29 08:47 libtree-sitter-c.so
+-rwxrwxr-x 1 matrillo matrillo  386944 Jul 29 08:47 libtree-sitter-javascript.so
+-rwxrwxr-x 1 matrillo matrillo  484368 Jul 29 08:47 libtree-sitter-python.so
+-rwxrwxr-x 1 matrillo matrillo  267048 Jul 29 08:47 libtree-sitter.so
+-rwxrwxr-x 1 matrillo matrillo 1443832 Jul 29 08:47 libtree-sitter-typescript.so
 Done building shared libraries.
 [test_runner_lib] Setting LD_LIBRARY_PATH to include: /home/matrillo/apps/scopemux-core/build/tree-sitter-libs
 rm: cannot remove 'asan.log*': No such file or directory
@@ -66,13 +66,13 @@ DEBUG: setup_cmake_config received project_root_dir='/home/matrillo/apps/scopemu
 [test_runner_lib] Found 2 test files
 [test_runner_lib] Testing: core/tests/examples/c/basic_syntax/hello_world.c
 [DEBUG] Directory listing before test execution:
-total 9292
--rwxrwxr-x  1 matrillo matrillo 8832256 Jul 29 08:18 c_example_ast_tests
-drwxrwxr-x 20 matrillo matrillo    4096 Jul 29 08:18 CMakeFiles
--rw-rw-r--  1 matrillo matrillo    2386 Jul 29 08:18 cmake_install.cmake
-drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
--rw-rw-r--  1 matrillo matrillo  611496 Jul 29 08:18 libtest_utilities.a
--rw-rw-r--  1 matrillo matrillo   51663 Jul 29 08:18 Makefile
+total 9312
+-rwxrwxr-x  1 matrillo matrillo 8851608 Jul 29 08:47 c_example_ast_tests
+drwxrwxr-x 20 matrillo matrillo    4096 Jul 29 08:47 CMakeFiles
+-rw-rw-r--  1 matrillo matrillo    2386 Jul 29 08:47 cmake_install.cmake
+drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:47 core
+-rw-rw-r--  1 matrillo matrillo  611496 Jul 29 08:47 libtest_utilities.a
+-rw-rw-r--  1 matrillo matrillo   51663 Jul 29 08:47 Makefile
 [c Example Test: hello_world.c] DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/hello_world.c
 [c Example Test: hello_world.c] DEBUG: Current working directory: /home/matrillo/apps/scopemux-core/build-c/core/tests
 [c Example Test: hello_world.c] DEBUG: Directory listing for core/tests/examples/c/basic_syntax:
@@ -89,14 +89,14 @@ drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
 [c Example Test: hello_world.c] DEBUG: after cast ctx=0x60d000000110
 [c Example Test: hello_world.c] DEBUG: About to memset ctx=0x60d000000110 with size 136
 [c Example Test: hello_world.c] DEBUG: memset completed successfully
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Registered C language compliance callbacks
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Registered language-specific compliance callbacks
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Registered C language compliance callbacks
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Registered language-specific compliance callbacks
 [c Example Test: hello_world.c] [scopemux] INFO: Loading hardcoded node type mappings
 [c Example Test: hello_world.c] [scopemux] Loaded 14 hardcoded node type mappings
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Initialized node type mappings
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Successfully initialized parser context at 0x60d000000110
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Initialized node type mappings
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Successfully initialized parser context at 0x60d000000110
 [c Example Test: hello_world.c] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x60d000000110, content=0x613000012100, content_length=378, filename=hello_world.c, language=1
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
 [c Example Test: hello_world.c] [scopemux] Loading hardcoded node type mappings:
 [c Example Test: hello_world.c]   functions -> NODE_FUNCTION
 [c Example Test: hello_world.c]   classes -> NODE_CLASS
@@ -133,144 +133,144 @@ drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
 [c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x604000001ed0
 [c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x606000013a60
 [c Example Test: hello_world.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d000000110
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d000000110
 [c Example Test: hello_world.c] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x60d000000110, language=1
 [c Example Test: hello_world.c] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x60d000000110, language=1
 [c Example Test: hello_world.c] 
 [c Example Test: hello_world.c] ***** PARSER INITIALIZATION DIAGNOSTIC *****
-[c Example Test: hello_world.c] Test executable pid: 870538
+[c Example Test: hello_world.c] Test executable pid: 910506
 [c Example Test: hello_world.c] Using statically linked Tree-sitter libraries
 [c Example Test: hello_world.c] SYMBOL RESOLUTION CHECK:
-[c Example Test: hello_world.c]   dlsym(tree_sitter_c): 0x55f84dfef1a8
-[c Example Test: hello_world.c]   dlsym(tree_sitter_cpp): 0x55f84e005495
-[c Example Test: hello_world.c]   dlsym(tree_sitter_python): 0x55f84e00b255
-[c Example Test: hello_world.c]   dlsym(tree_sitter_javascript): 0x55f84e012f78
-[c Example Test: hello_world.c]   dlsym(tree_sitter_typescript): 0x55f84e01a33d
+[c Example Test: hello_world.c]   dlsym(tree_sitter_c): 0x55c90bf55004
+[c Example Test: hello_world.c]   dlsym(tree_sitter_cpp): 0x55c90bf6b2f1
+[c Example Test: hello_world.c]   dlsym(tree_sitter_python): 0x55c90bf710b1
+[c Example Test: hello_world.c]   dlsym(tree_sitter_javascript): 0x55c90bf78dd4
+[c Example Test: hello_world.c]   dlsym(tree_sitter_typescript): 0x55c90bf80199
 [c Example Test: hello_world.c] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
 [c Example Test: hello_world.c] [DIAGNOSTIC] Language name: C
-[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter lookup result: 0x55f84e6cb0c0
+[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter lookup result: 0x55c90c6329c0
 [c Example Test: hello_world.c] [DIAGNOSTIC] Adapter language_name: C
-[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x55f84dfef1a8
-[c Example Test: hello_world.c] [DIAGNOSTIC] Result of get_ts_language(): 0x55f84e6300c0
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Successfully retrieved language object for language type 1, address: 0x55f84e6300c0
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Calling ts_parser_set_language with parser=0x61b00001d580, language=0x55f84e6300c0
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] ts_parser_set_language succeeded
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Verification: ts_parser_language() returned: 0x55f84e6300c0
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Language verification successful - pointer match confirmed
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] ===================================================================
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Successfully set language for Tree-sitter parser
+[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x55c90bf55004
+[c Example Test: hello_world.c] [DIAGNOSTIC] Result of get_ts_language(): 0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Successfully retrieved language object for language type 1, address: 0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Calling ts_parser_set_language with parser=0x61b00001d580, language=0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] ts_parser_set_language succeeded
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Verification: ts_parser_language() returned: 0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Language verification successful - pointer match confirmed
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] ===================================================================
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Successfully set language for Tree-sitter parser
 [c Example Test: hello_world.c] DEBUG: Tried queries directory: queries/c (not found)
 [c Example Test: hello_world.c] DEBUG: Tried queries directory: ../queries/c (not found)
 [c Example Test: hello_world.c] DEBUG: Tried queries directory: ../../queries/c (not found)
 [c Example Test: hello_world.c] DEBUG: Using queries directory: ../../../queries/c
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Loading hardcoded node type mappings (source of truth)...
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Loading hardcoded node type mappings (source of truth)...
 [c Example Test: hello_world.c] [scopemux] INFO: Loading hardcoded node type mappings
 [c Example Test: hello_world.c] [scopemux] Loaded 14 hardcoded node type mappings
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] Initialized query manager with queries directory: ../../../queries/c
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] ts_init_parser returned: TRUE
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] After initialization: Tree-sitter parser=0x61b00001d580, language=0x55f84e6300c0
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [create_ast_root_node] ctx->filename: 'hello_world.c' (basename: 'hello_world.c')
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [create_ast_root_node] Created root node with name: 'hello_world.c'
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [create_ast_root_node] Set qualified_name: 'hello_world.c'
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Initialized query manager with queries directory: ../../../queries/c
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] ts_init_parser returned: TRUE
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] After initialization: Tree-sitter parser=0x61b00001d580, language=0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [create_ast_root_node] ctx->filename: 'hello_world.c' (basename: 'hello_world.c')
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [create_ast_root_node] Created root node with name: 'hello_world.c'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [create_ast_root_node] Set qualified_name: 'hello_world.c'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
 [c Example Test: hello_world.c]  * @file hello_world.c
 [c Example Test: hello_world.c]  * @brief A simple "Hello, World!" program in C
 [c Example Test: hello_world.c]  *
 [c Example Test: hello_world.c]  * This example demons...'
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Child 0: type='comment', named=1
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Child 2: type='comment', named=1
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Child 3: type='function_definition', named=1
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: classes (1 of 7)
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: classes
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Child 0: type='comment', named=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Child 2: type='comment', named=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Child 3: type='function_definition', named=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: classes
 [c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/classes.scm
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/classes.scm
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: structs (2 of 7)
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: structs
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: structs
 [c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/structs.scm
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/structs.scm
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Unknown query type: structs
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Unknown query type: struct
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Unknown query type: structs
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Unknown query type: struct
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
 [c Example Test: hello_world.c] [FUNCTIONS_DEBUG] About to process FUNCTIONS query at index 2
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: functions (3 of 7)
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: functions
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: functions
 [c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
 [c Example Test: hello_world.c] [FUNCTIONS_DEBUG] *** DETECTED functions query request ***
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/functions.scm
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/functions.scm
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main(void) {
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main(void) {
 [c Example Test: hello_world.c]   printf("Hello, world!'
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
 [c Example Test: hello_world.c] [AST_CREATE] Created ASTNode at 0x611000016ac0, type=2
 [c Example Test: hello_world.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000016ac0) returned 1
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Set content for function node 'main'
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: methods (4 of 7)
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: methods
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Set content for function node 'main'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: methods
 [c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/methods.scm
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/methods.scm
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: variables (5 of 7)
-[c Example Test: hello_world.c] [2025-07-29 08:18:49] [INFO] [QUERY_DEBUG] Processing query type: variables
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: variables
 [c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/variables.scm
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/variables.scm
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'variables' has 11 patterns and 2 possible captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'variables' finished processing: 0 matches, 0 nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: imports (6 of 7)
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: imports
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'variables' has 11 patterns and 2 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'variables' finished processing: 0 matches, 0 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: imports
 [c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/imports.scm
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/imports.scm
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: docstrings
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: docstrings
 [c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/docstrings.scm
 [c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/docstrings.scm
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Found match 1 with 1 captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Found match 1 with 1 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
 [c Example Test: hello_world.c]  * @file hello_world.c
 [c Example Test: hello_world.c]  * @brief A s'
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
 [c Example Test: hello_world.c] [AST_CREATE] Created ASTNode at 0x61100000db00, type=19
 [c Example Test: hello_world.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100000db00) returned 1
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
 [c Example Test: hello_world.c]  * @file hello_world.c
 [c Example Test: hello_world.c]  * @brief A simple "Hello, World!" program in C
 [c Example Test: hello_world.c]  *
@@ -281,90 +281,90 @@ drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
 [c Example Test: hello_world.c]  * - Function definitions
 [c Example Test: hello_world.c]  * - Print statements
 [c Example Test: hello_world.c]  */' to AST (and registered in context)
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Found match 2 with 1 captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Found match 2 with 1 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
 [c Example Test: hello_world.c]  * @brief A simple hello world progr'
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
 [c Example Test: hello_world.c] [AST_CREATE] Created ASTNode at 0x61100000dc40, type=19
 [c Example Test: hello_world.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100000dc40) returned 1
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
 [c Example Test: hello_world.c]  * @brief A simple hello world program
 [c Example Test: hello_world.c]  */' to AST (and registered in context)
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Found match 3 with 1 captures
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Found match 3 with 1 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
 [c Example Test: hello_world.c]  * @brief A simple hello world progr'
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
 [c Example Test: hello_world.c] [AST_CREATE] Created ASTNode at 0x61100000dd80, type=19
 [c Example Test: hello_world.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100000dd80) returned 1
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
 [c Example Test: hello_world.c]  * @brief A simple hello world program
 [c Example Test: hello_world.c]  */' to AST (and registered in context)
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'docstrings' finished processing: 3 matches, 3 nodes added
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 3 node(s)
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] AST query processing complete: 2 successful, 5 failed, total AST nodes: 4
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] AST query processing summary: 2 successful, 5 failed, total AST nodes: 4
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'docstrings' finished processing: 3 matches, 3 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 3 node(s)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] AST query processing complete: 2 successful, 5 failed, total AST nodes: 4
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] AST query processing summary: 2 successful, 5 failed, total AST nodes: 4
 [c Example Test: hello_world.c] [TEST] ast_node_free reached for node at 0x61100000db00
 [c Example Test: hello_world.c] [TRACE] ast_node_free stack trace for node 0x61100000db00:
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7f34195ffc0e]
-[c Example Test: hello_world.c]   boxfort-worker(+0xbaca1) [0x55f84df71ca1]
-[c Example Test: hello_world.c]   boxfort-worker(+0xe893d) [0x55f84df9f93d]
-[c Example Test: hello_world.c]   boxfort-worker(+0xe7112) [0x55f84df9e112]
-[c Example Test: hello_world.c]   boxfort-worker(+0xcc04d) [0x55f84df8304d]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb88f0) [0x55f84df6f8f0]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb549e) [0x55f84df6c49e]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb76f0) [0x55f84df6e6f0]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa8d92) [0x55f84df5fd92]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa37bd) [0x55f84df5a7bd]
-[c Example Test: hello_world.c]   boxfort-worker(+0xaa890) [0x55f84df61890]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa3fe8) [0x55f84df5afe8]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7f34195a1657]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa3d12) [0x55f84df5ad12]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7f34195a384d]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7f34195a84a9]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fb2058bfc0e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xbcca1) [0x55c90bed6ca1]
+[c Example Test: hello_world.c]   boxfort-worker(+0xeb799) [0x55c90bf05799]
+[c Example Test: hello_world.c]   boxfort-worker(+0xe9f36) [0x55c90bf03f36]
+[c Example Test: hello_world.c]   boxfort-worker(+0xcee6a) [0x55c90bee8e6a]
+[c Example Test: hello_world.c]   boxfort-worker(+0xba8f0) [0x55c90bed48f0]
+[c Example Test: hello_world.c]   boxfort-worker(+0xb749e) [0x55c90bed149e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xb96f0) [0x55c90bed36f0]
+[c Example Test: hello_world.c]   boxfort-worker(+0xaad92) [0x55c90bec4d92]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa57bd) [0x55c90bebf7bd]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac890) [0x55c90bec6890]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5fe8) [0x55c90bebffe8]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fb205861657]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5d12) [0x55c90bebfd12]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fb20586384d]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fb2058684a9]
 [c Example Test: hello_world.c] [TEST] ast_node_free_internal reached for node at 0x61100000db00
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [WARNING] Attempt to free untracked memory at 0x61100000db00 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [WARNING] Attempt to free untracked memory at 0x61100000db00 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
 [c Example Test: hello_world.c] [TEST] ast_node_free completed for node at 0x61100000db00
 [c Example Test: hello_world.c] [TEST] ast_node_free reached for node at 0x61100000dc40
 [c Example Test: hello_world.c] [TRACE] ast_node_free stack trace for node 0x61100000dc40:
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7f34195ffc0e]
-[c Example Test: hello_world.c]   boxfort-worker(+0xbaca1) [0x55f84df71ca1]
-[c Example Test: hello_world.c]   boxfort-worker(+0xe893d) [0x55f84df9f93d]
-[c Example Test: hello_world.c]   boxfort-worker(+0xe7112) [0x55f84df9e112]
-[c Example Test: hello_world.c]   boxfort-worker(+0xcc04d) [0x55f84df8304d]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb88f0) [0x55f84df6f8f0]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb549e) [0x55f84df6c49e]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb76f0) [0x55f84df6e6f0]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa8d92) [0x55f84df5fd92]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa37bd) [0x55f84df5a7bd]
-[c Example Test: hello_world.c]   boxfort-worker(+0xaa890) [0x55f84df61890]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa3fe8) [0x55f84df5afe8]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7f34195a1657]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa3d12) [0x55f84df5ad12]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7f34195a384d]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7f34195a84a9]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fb2058bfc0e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xbcca1) [0x55c90bed6ca1]
+[c Example Test: hello_world.c]   boxfort-worker(+0xeb799) [0x55c90bf05799]
+[c Example Test: hello_world.c]   boxfort-worker(+0xe9f36) [0x55c90bf03f36]
+[c Example Test: hello_world.c]   boxfort-worker(+0xcee6a) [0x55c90bee8e6a]
+[c Example Test: hello_world.c]   boxfort-worker(+0xba8f0) [0x55c90bed48f0]
+[c Example Test: hello_world.c]   boxfort-worker(+0xb749e) [0x55c90bed149e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xb96f0) [0x55c90bed36f0]
+[c Example Test: hello_world.c]   boxfort-worker(+0xaad92) [0x55c90bec4d92]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa57bd) [0x55c90bebf7bd]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac890) [0x55c90bec6890]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5fe8) [0x55c90bebffe8]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fb205861657]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5d12) [0x55c90bebfd12]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fb20586384d]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fb2058684a9]
 [c Example Test: hello_world.c] [TEST] ast_node_free_internal reached for node at 0x61100000dc40
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [WARNING] Attempt to free untracked memory at 0x61100000dc40 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [WARNING] Attempt to free untracked memory at 0x61100000dc40 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
 [c Example Test: hello_world.c] [TEST] ast_node_free completed for node at 0x61100000dc40
 [c Example Test: hello_world.c] [TEST] ast_node_free reached for node at 0x61100000dd80
 [c Example Test: hello_world.c] [TRACE] ast_node_free stack trace for node 0x61100000dd80:
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7f34195ffc0e]
-[c Example Test: hello_world.c]   boxfort-worker(+0xbaca1) [0x55f84df71ca1]
-[c Example Test: hello_world.c]   boxfort-worker(+0xe893d) [0x55f84df9f93d]
-[c Example Test: hello_world.c]   boxfort-worker(+0xe7112) [0x55f84df9e112]
-[c Example Test: hello_world.c]   boxfort-worker(+0xcc04d) [0x55f84df8304d]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb88f0) [0x55f84df6f8f0]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb549e) [0x55f84df6c49e]
-[c Example Test: hello_world.c]   boxfort-worker(+0xb76f0) [0x55f84df6e6f0]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa8d92) [0x55f84df5fd92]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa37bd) [0x55f84df5a7bd]
-[c Example Test: hello_world.c]   boxfort-worker(+0xaa890) [0x55f84df61890]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa3fe8) [0x55f84df5afe8]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7f34195a1657]
-[c Example Test: hello_world.c]   boxfort-worker(+0xa3d12) [0x55f84df5ad12]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7f34195a384d]
-[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7f34195a84a9]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fb2058bfc0e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xbcca1) [0x55c90bed6ca1]
+[c Example Test: hello_world.c]   boxfort-worker(+0xeb799) [0x55c90bf05799]
+[c Example Test: hello_world.c]   boxfort-worker(+0xe9f36) [0x55c90bf03f36]
+[c Example Test: hello_world.c]   boxfort-worker(+0xcee6a) [0x55c90bee8e6a]
+[c Example Test: hello_world.c]   boxfort-worker(+0xba8f0) [0x55c90bed48f0]
+[c Example Test: hello_world.c]   boxfort-worker(+0xb749e) [0x55c90bed149e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xb96f0) [0x55c90bed36f0]
+[c Example Test: hello_world.c]   boxfort-worker(+0xaad92) [0x55c90bec4d92]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa57bd) [0x55c90bebf7bd]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac890) [0x55c90bec6890]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5fe8) [0x55c90bebffe8]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fb205861657]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5d12) [0x55c90bebfd12]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fb20586384d]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fb2058684a9]
 [c Example Test: hello_world.c] [TEST] ast_node_free_internal reached for node at 0x61100000dd80
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [WARNING] Attempt to free untracked memory at 0x61100000dd80 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [WARNING] Attempt to free untracked memory at 0x61100000dd80 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
 [c Example Test: hello_world.c] [TEST] ast_node_free completed for node at 0x61100000dd80
 [c Example Test: hello_world.c] DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/hello_world.c.expected.json
 [c Example Test: hello_world.c] DEBUG: Current working directory: /home/matrillo/apps/scopemux-core/build-c/core/tests
@@ -377,20 +377,319 @@ drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
 [c Example Test: hello_world.c]   variables_loops_conditions.c.cst.txt
 [c Example Test: hello_world.c]   ..
 [c Example Test: hello_world.c] DEBUG: file size for core/tests/examples/c/basic_syntax/hello_world.c.expected.json is 1094490 bytes
-[c Example Test: hello_world.c] [2025-07-29 08:18:50] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
+[c Example Test: hello_world.c] [scopemux] Loading hardcoded node type mappings:
+[c Example Test: hello_world.c]   functions -> NODE_FUNCTION
+[c Example Test: hello_world.c]   classes -> NODE_CLASS
+[c Example Test: hello_world.c]   methods -> NODE_METHOD
+[c Example Test: hello_world.c]   variables -> NODE_VARIABLE
+[c Example Test: hello_world.c]   modules -> NODE_MODULE
+[c Example Test: hello_world.c]   structs -> NODE_STRUCT
+[c Example Test: hello_world.c]   unions -> NODE_UNION
+[c Example Test: hello_world.c]   enums -> NODE_ENUM
+[c Example Test: hello_world.c]   typedefs -> NODE_TYPEDEF
+[c Example Test: hello_world.c]   includes -> NODE_INCLUDE
+[c Example Test: hello_world.c]   macros -> NODE_MACRO
+[c Example Test: hello_world.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: hello_world.c]   interfaces -> NODE_INTERFACE
+[c Example Test: hello_world.c]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] ENTER: manager=0x606000013b80
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x6030000124c0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x604000002090 (language_count=6)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x611000001080 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001080
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x6110000011c0 (query_count=7)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000011c0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x611000001300 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001300
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x611000001440 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001440
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x611000001580 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001580
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x6110000016c0 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000016c0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x604000002090
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x604000002050
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x6030000124f0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x6040000020d0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x606000013b80
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[c Example Test: hello_world.c] [TEST] ast_node_free reached for node at 0x611000002980
+[c Example Test: hello_world.c] [TRACE] ast_node_free stack trace for node 0x611000002980:
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fb2058bfc0e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xbcca1) [0x55c90bed6ca1]
+[c Example Test: hello_world.c]   boxfort-worker(+0xc358f) [0x55c90bedd58f]
+[c Example Test: hello_world.c]   boxfort-worker(+0xc3e7e) [0x55c90bedde7e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac0b6) [0x55c90bec60b6]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa57bd) [0x55c90bebf7bd]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac890) [0x55c90bec6890]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5fe8) [0x55c90bebffe8]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fb205861657]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5d12) [0x55c90bebfd12]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fb20586384d]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fb2058684a9]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libc.so.6(+0x29d90) [0x7fb20501ad90]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80) [0x7fb20501ae40]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa4ed5) [0x55c90bebeed5]
+[c Example Test: hello_world.c] [TEST] ast_node_free_internal reached for node at 0x611000002980
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [WARNING] Attempt to free untracked memory at 0x611000002980 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [TEST] ast_node_free completed for node at 0x611000002980
+[c Example Test: hello_world.c] [TEST] ast_node_free reached for node at 0x611000002ac0
+[c Example Test: hello_world.c] [TRACE] ast_node_free stack trace for node 0x611000002ac0:
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fb2058bfc0e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xbcca1) [0x55c90bed6ca1]
+[c Example Test: hello_world.c]   boxfort-worker(+0xc358f) [0x55c90bedd58f]
+[c Example Test: hello_world.c]   boxfort-worker(+0xc3e7e) [0x55c90bedde7e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac0b6) [0x55c90bec60b6]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa57bd) [0x55c90bebf7bd]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac890) [0x55c90bec6890]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5fe8) [0x55c90bebffe8]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fb205861657]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5d12) [0x55c90bebfd12]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fb20586384d]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fb2058684a9]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libc.so.6(+0x29d90) [0x7fb20501ad90]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80) [0x7fb20501ae40]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa4ed5) [0x55c90bebeed5]
+[c Example Test: hello_world.c] [TEST] ast_node_free_internal reached for node at 0x611000002ac0
+[c Example Test: hello_world.c] [TEST] ast_node_free reached for node at 0x611000016ac0
+[c Example Test: hello_world.c] [TRACE] ast_node_free stack trace for node 0x611000016ac0:
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fb2058bfc0e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xbcca1) [0x55c90bed6ca1]
+[c Example Test: hello_world.c]   boxfort-worker(+0xbd5b1) [0x55c90bed75b1]
+[c Example Test: hello_world.c]   boxfort-worker(+0xc358f) [0x55c90bedd58f]
+[c Example Test: hello_world.c]   boxfort-worker(+0xc3e7e) [0x55c90bedde7e]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac0b6) [0x55c90bec60b6]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa57bd) [0x55c90bebf7bd]
+[c Example Test: hello_world.c]   boxfort-worker(+0xac890) [0x55c90bec6890]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5fe8) [0x55c90bebffe8]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fb205861657]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa5d12) [0x55c90bebfd12]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fb20586384d]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fb2058684a9]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libc.so.6(+0x29d90) [0x7fb20501ad90]
+[c Example Test: hello_world.c]   /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80) [0x7fb20501ae40]
+[c Example Test: hello_world.c]   boxfort-worker(+0xa4ed5) [0x55c90bebeed5]
+[c Example Test: hello_world.c] [TEST] ast_node_free_internal reached for node at 0x611000016ac0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [WARNING] Attempt to free untracked memory at 0x611000016ac0 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [TEST] ast_node_free completed for node at 0x611000016ac0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [WARNING] Attempt to free untracked memory at 0x604000005190 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:282 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [WARNING] Attempt to free untracked memory at 0x611000002ac0 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: hello_world.c] [TEST] ast_node_free completed for node at 0x611000002ac0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] AST node cleanup summary: freed 2 root nodes, skipped 1 child nodes (freed recursively), total tracked: 6
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d000000110
+[c Example Test: hello_world.c] DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/variables_loops_conditions.c
+[c Example Test: hello_world.c] DEBUG: Current working directory: /home/matrillo/apps/scopemux-core/build-c/core/tests
+[c Example Test: hello_world.c] DEBUG: Directory listing for core/tests/examples/c/basic_syntax:
+[c Example Test: hello_world.c]   hello_world.c
+[c Example Test: hello_world.c]   .
+[c Example Test: hello_world.c]   hello_world.c.expected.json
+[c Example Test: hello_world.c]   variables_loops_conditions.c
+[c Example Test: hello_world.c]   variables_loops_conditions.c.expected.json
+[c Example Test: hello_world.c]   variables_loops_conditions.c.cst.txt
+[c Example Test: hello_world.c]   ..
+[c Example Test: hello_world.c] DEBUG: file size for core/tests/examples/c/basic_syntax/variables_loops_conditions.c is 1032 bytes
+[c Example Test: hello_world.c] DEBUG: About to allocate ParserContext of size 136
+[c Example Test: hello_world.c] DEBUG: safe_malloc returned raw_ptr=0x60d0000053f0
+[c Example Test: hello_world.c] DEBUG: after cast ctx=0x60d0000053f0
+[c Example Test: hello_world.c] DEBUG: About to memset ctx=0x60d0000053f0 with size 136
+[c Example Test: hello_world.c] DEBUG: memset completed successfully
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Registered C language compliance callbacks
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Registered language-specific compliance callbacks
+[c Example Test: hello_world.c] [scopemux] INFO: Loading hardcoded node type mappings
+[c Example Test: hello_world.c] [scopemux] Loaded 14 hardcoded node type mappings
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Initialized node type mappings
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Successfully initialized parser context at 0x60d0000053f0
+[c Example Test: hello_world.c] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x60d0000053f0, content=0x619000058780, content_length=1032, filename=variables_loops_conditions.c, language=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d0000053f0
+[c Example Test: hello_world.c] [scopemux] Loading hardcoded node type mappings:
+[c Example Test: hello_world.c]   functions -> NODE_FUNCTION
+[c Example Test: hello_world.c]   classes -> NODE_CLASS
+[c Example Test: hello_world.c]   methods -> NODE_METHOD
+[c Example Test: hello_world.c]   variables -> NODE_VARIABLE
+[c Example Test: hello_world.c]   modules -> NODE_MODULE
+[c Example Test: hello_world.c]   structs -> NODE_STRUCT
+[c Example Test: hello_world.c]   unions -> NODE_UNION
+[c Example Test: hello_world.c]   enums -> NODE_ENUM
+[c Example Test: hello_world.c]   typedefs -> NODE_TYPEDEF
+[c Example Test: hello_world.c]   includes -> NODE_INCLUDE
+[c Example Test: hello_world.c]   macros -> NODE_MACRO
+[c Example Test: hello_world.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: hello_world.c]   interfaces -> NODE_INTERFACE
+[c Example Test: hello_world.c]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] ENTER: manager=0x606000160940
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x6020000b8170
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x6040000096d0 (language_count=6)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x611000020340 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020340
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x611000020480 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020480
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x6110000205c0 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000205c0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x611000020700 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020700
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x611000020840 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020840
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x611000020980 (query_count=0)
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020980
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x6040000096d0
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x604000009690
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x60300016ad40
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x604000009710
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x606000160940
+[c Example Test: hello_world.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d0000053f0
+[c Example Test: hello_world.c] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x60d0000053f0, language=1
+[c Example Test: hello_world.c] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x60d0000053f0, language=1
+[c Example Test: hello_world.c] 
+[c Example Test: hello_world.c] ***** PARSER INITIALIZATION DIAGNOSTIC *****
+[c Example Test: hello_world.c] Test executable pid: 910506
+[c Example Test: hello_world.c] Using statically linked Tree-sitter libraries
+[c Example Test: hello_world.c] SYMBOL RESOLUTION CHECK:
+[c Example Test: hello_world.c]   dlsym(tree_sitter_c): 0x55c90bf55004
+[c Example Test: hello_world.c]   dlsym(tree_sitter_cpp): 0x55c90bf6b2f1
+[c Example Test: hello_world.c]   dlsym(tree_sitter_python): 0x55c90bf710b1
+[c Example Test: hello_world.c]   dlsym(tree_sitter_javascript): 0x55c90bf78dd4
+[c Example Test: hello_world.c]   dlsym(tree_sitter_typescript): 0x55c90bf80199
+[c Example Test: hello_world.c] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[c Example Test: hello_world.c] [DIAGNOSTIC] Language name: C
+[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter lookup result: 0x55c90c6329c0
+[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter language_name: C
+[c Example Test: hello_world.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x55c90bf55004
+[c Example Test: hello_world.c] [DIAGNOSTIC] Result of get_ts_language(): 0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Successfully retrieved language object for language type 1, address: 0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Calling ts_parser_set_language with parser=0x61b000063c80, language=0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] ts_parser_set_language succeeded
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Verification: ts_parser_language() returned: 0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Language verification successful - pointer match confirmed
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] ===================================================================
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Successfully set language for Tree-sitter parser
+[c Example Test: hello_world.c] DEBUG: Tried queries directory: queries/c (not found)
+[c Example Test: hello_world.c] DEBUG: Tried queries directory: ../queries/c (not found)
+[c Example Test: hello_world.c] DEBUG: Tried queries directory: ../../queries/c (not found)
+[c Example Test: hello_world.c] DEBUG: Using queries directory: ../../../queries/c
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Loading hardcoded node type mappings (source of truth)...
+[c Example Test: hello_world.c] [scopemux] INFO: Loading hardcoded node type mappings
+[c Example Test: hello_world.c] [scopemux] Loaded 14 hardcoded node type mappings
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] Initialized query manager with queries directory: ../../../queries/c
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] ts_init_parser returned: TRUE
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] After initialization: Tree-sitter parser=0x61b000063c80, language=0x55c90c5960c0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [create_ast_root_node] ctx->filename: 'variables_loops_conditions.c' (basename: 'variables_loops_conditions.c')
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [create_ast_root_node] Created root node with name: 'variables_loops_conditions.c'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [create_ast_root_node] Set qualified_name: 'variables_loops_conditions.c'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
+[c Example Test: hello_world.c]  * @file variables_loops_conditions.c
+[c Example Test: hello_world.c]  * @brief Demonstration of variables, loops, and condition...'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Child 0: type='comment', named=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Child 2: type='comment', named=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Child 3: type='function_definition', named=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: classes
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/classes.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/classes.scm
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: structs
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/structs.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/structs.scm
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Unknown query type: structs
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Unknown query type: struct
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: hello_world.c] [FUNCTIONS_DEBUG] About to process FUNCTIONS query at index 2
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: functions
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[c Example Test: hello_world.c] [FUNCTIONS_DEBUG] *** DETECTED functions query request ***
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/functions.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/functions.scm
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main(void) {
+[c Example Test: hello_world.c]   // Variables
+[c Example Test: hello_world.c]   int co'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[c Example Test: hello_world.c] [AST_CREATE] Created ASTNode at 0x611000037680, type=2
+[c Example Test: hello_world.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000037680) returned 1
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Set content for function node 'main'
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: methods
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/methods.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/methods.scm
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[c Example Test: hello_world.c] [2025-07-29 08:47:41] [INFO] [QUERY_DEBUG] Processing query type: variables
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/variables.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/variables.scm
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'variables' has 11 patterns and 2 possible captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='int count = 0;'
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='count'
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
+[c Example Test: hello_world.c] [AST_CREATE] Created ASTNode at 0x61100003f880, type=5
+[c Example Test: hello_world.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100003f880) returned 1
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Added VARIABLE node 'count' to AST (and registered in context)
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Found match 2 with 2 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='int count = 0;'
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='count'
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
+[c Example Test: hello_world.c] [AST_CREATE] Created ASTNode at 0x61100003f9c0, type=5
+[c Example Test: hello_world.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100003f9c0) returned 1
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Added VARIABLE node 'count' to AST (and registered in context)
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Found match 3 with 2 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='float pi = 3.14159f;'
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='pi'
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
+[c Example Test: hello_world.c] [AST_CREATE] Created ASTNode at 0x61100003fb00, type=5
+[c Example Test: hello_world.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100003fb00) returned 1
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Added VARIABLE node 'pi' to AST (and registered in context)
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Found match 4 with 2 captures
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='float pi = 3.14159f;'
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='pi'
+[c Example Test: hello_world.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
 [c Example Test: hello_world.c] [FAIL] c_examples::all_examples: (0.00s)
  FAIL: c Example Test: hello_world.c (3/)
 [test_runner_lib] Testing: core/tests/examples/c/basic_syntax/variables_loops_conditions.c
 [DEBUG] Directory listing before test execution:
-total 9304
--rw-rw----  1 matrillo matrillo    2128 Jul 29 08:18 asan.log.870536
--rw-rw----  1 matrillo matrillo    6711 Jul 29 08:18 asan.log.870538
--rwxrwxr-x  1 matrillo matrillo 8832256 Jul 29 08:18 c_example_ast_tests
-drwxrwxr-x 20 matrillo matrillo    4096 Jul 29 08:18 CMakeFiles
--rw-rw-r--  1 matrillo matrillo    2386 Jul 29 08:18 cmake_install.cmake
-drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
--rw-rw-r--  1 matrillo matrillo  611496 Jul 29 08:18 libtest_utilities.a
--rw-rw-r--  1 matrillo matrillo   51663 Jul 29 08:18 Makefile
+total 9324
+-rw-rw----  1 matrillo matrillo    2128 Jul 29 08:47 asan.log.910504
+-rw-rw----  1 matrillo matrillo    7901 Jul 29 08:47 asan.log.910506
+-rwxrwxr-x  1 matrillo matrillo 8851608 Jul 29 08:47 c_example_ast_tests
+drwxrwxr-x 20 matrillo matrillo    4096 Jul 29 08:47 CMakeFiles
+-rw-rw-r--  1 matrillo matrillo    2386 Jul 29 08:47 cmake_install.cmake
+drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:47 core
+-rw-rw-r--  1 matrillo matrillo  611496 Jul 29 08:47 libtest_utilities.a
+-rw-rw-r--  1 matrillo matrillo   51663 Jul 29 08:47 Makefile
 [c Example Test: variables_loops_conditions.c] DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/hello_world.c
 [c Example Test: variables_loops_conditions.c] DEBUG: Current working directory: /home/matrillo/apps/scopemux-core/build-c/core/tests
 [c Example Test: variables_loops_conditions.c] DEBUG: Directory listing for core/tests/examples/c/basic_syntax:
@@ -407,14 +706,14 @@ drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
 [c Example Test: variables_loops_conditions.c] DEBUG: after cast ctx=0x60d000000110
 [c Example Test: variables_loops_conditions.c] DEBUG: About to memset ctx=0x60d000000110 with size 136
 [c Example Test: variables_loops_conditions.c] DEBUG: memset completed successfully
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Registered C language compliance callbacks
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Registered language-specific compliance callbacks
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Registered C language compliance callbacks
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Registered language-specific compliance callbacks
 [c Example Test: variables_loops_conditions.c] [scopemux] INFO: Loading hardcoded node type mappings
 [c Example Test: variables_loops_conditions.c] [scopemux] Loaded 14 hardcoded node type mappings
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Initialized node type mappings
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Successfully initialized parser context at 0x60d000000110
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Initialized node type mappings
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Successfully initialized parser context at 0x60d000000110
 [c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x60d000000110, content=0x613000012100, content_length=378, filename=hello_world.c, language=1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
 [c Example Test: variables_loops_conditions.c] [scopemux] Loading hardcoded node type mappings:
 [c Example Test: variables_loops_conditions.c]   functions -> NODE_FUNCTION
 [c Example Test: variables_loops_conditions.c]   classes -> NODE_CLASS
@@ -451,144 +750,144 @@ drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
 [c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x604000001ed0
 [c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x606000013a60
 [c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d000000110
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d000000110
 [c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x60d000000110, language=1
 [c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x60d000000110, language=1
 [c Example Test: variables_loops_conditions.c] 
 [c Example Test: variables_loops_conditions.c] ***** PARSER INITIALIZATION DIAGNOSTIC *****
-[c Example Test: variables_loops_conditions.c] Test executable pid: 870556
+[c Example Test: variables_loops_conditions.c] Test executable pid: 910539
 [c Example Test: variables_loops_conditions.c] Using statically linked Tree-sitter libraries
 [c Example Test: variables_loops_conditions.c] SYMBOL RESOLUTION CHECK:
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_c): 0x557eeda881a8
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_cpp): 0x557eeda9e495
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_python): 0x557eedaa4255
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_javascript): 0x557eedaabf78
-[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_typescript): 0x557eedab333d
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_c): 0x5649270b0004
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_cpp): 0x5649270c62f1
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_python): 0x5649270cc0b1
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_javascript): 0x5649270d3dd4
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_typescript): 0x5649270db199
 [c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
 [c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Language name: C
-[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter lookup result: 0x557eee1640c0
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter lookup result: 0x56492778d9c0
 [c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter language_name: C
-[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x557eeda881a8
-[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Result of get_ts_language(): 0x557eee0c90c0
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Successfully retrieved language object for language type 1, address: 0x557eee0c90c0
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Calling ts_parser_set_language with parser=0x61b00001d580, language=0x557eee0c90c0
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] ts_parser_set_language succeeded
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Verification: ts_parser_language() returned: 0x557eee0c90c0
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Language verification successful - pointer match confirmed
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] ===================================================================
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Successfully set language for Tree-sitter parser
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x5649270b0004
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Result of get_ts_language(): 0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Successfully retrieved language object for language type 1, address: 0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Calling ts_parser_set_language with parser=0x61b00001d580, language=0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] ts_parser_set_language succeeded
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Verification: ts_parser_language() returned: 0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Language verification successful - pointer match confirmed
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] ===================================================================
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Successfully set language for Tree-sitter parser
 [c Example Test: variables_loops_conditions.c] DEBUG: Tried queries directory: queries/c (not found)
 [c Example Test: variables_loops_conditions.c] DEBUG: Tried queries directory: ../queries/c (not found)
 [c Example Test: variables_loops_conditions.c] DEBUG: Tried queries directory: ../../queries/c (not found)
 [c Example Test: variables_loops_conditions.c] DEBUG: Using queries directory: ../../../queries/c
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Loading hardcoded node type mappings (source of truth)...
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Loading hardcoded node type mappings (source of truth)...
 [c Example Test: variables_loops_conditions.c] [scopemux] INFO: Loading hardcoded node type mappings
 [c Example Test: variables_loops_conditions.c] [scopemux] Loaded 14 hardcoded node type mappings
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] Initialized query manager with queries directory: ../../../queries/c
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] ts_init_parser returned: TRUE
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] After initialization: Tree-sitter parser=0x61b00001d580, language=0x557eee0c90c0
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [create_ast_root_node] ctx->filename: 'hello_world.c' (basename: 'hello_world.c')
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [create_ast_root_node] Created root node with name: 'hello_world.c'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [create_ast_root_node] Set qualified_name: 'hello_world.c'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] Initialized query manager with queries directory: ../../../queries/c
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] ts_init_parser returned: TRUE
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] After initialization: Tree-sitter parser=0x61b00001d580, language=0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [create_ast_root_node] ctx->filename: 'hello_world.c' (basename: 'hello_world.c')
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [create_ast_root_node] Created root node with name: 'hello_world.c'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [create_ast_root_node] Set qualified_name: 'hello_world.c'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
 [c Example Test: variables_loops_conditions.c]  * @file hello_world.c
 [c Example Test: variables_loops_conditions.c]  * @brief A simple "Hello, World!" program in C
 [c Example Test: variables_loops_conditions.c]  *
 [c Example Test: variables_loops_conditions.c]  * This example demons...'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Child 0: type='comment', named=1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Child 2: type='comment', named=1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Child 3: type='function_definition', named=1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: classes (1 of 7)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: classes
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Child 0: type='comment', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Child 2: type='comment', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Child 3: type='function_definition', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: classes
 [c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/classes.scm
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/classes.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: structs (2 of 7)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: structs
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: structs
 [c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/structs.scm
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/structs.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Unknown query type: structs
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Unknown query type: struct
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Unknown query type: structs
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Unknown query type: struct
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
 [c Example Test: variables_loops_conditions.c] [FUNCTIONS_DEBUG] About to process FUNCTIONS query at index 2
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: functions (3 of 7)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: functions
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: functions
 [c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
 [c Example Test: variables_loops_conditions.c] [FUNCTIONS_DEBUG] *** DETECTED functions query request ***
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/functions.scm
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/functions.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main(void) {
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main(void) {
 [c Example Test: variables_loops_conditions.c]   printf("Hello, world!'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
 [c Example Test: variables_loops_conditions.c] [AST_CREATE] Created ASTNode at 0x611000016ac0, type=2
 [c Example Test: variables_loops_conditions.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000016ac0) returned 1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Set content for function node 'main'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: methods (4 of 7)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: methods
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Set content for function node 'main'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: methods
 [c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/methods.scm
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/methods.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: variables (5 of 7)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: variables
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: variables
 [c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/variables.scm
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/variables.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'variables' has 11 patterns and 2 possible captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'variables' finished processing: 0 matches, 0 nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: imports (6 of 7)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:50] [INFO] [QUERY_DEBUG] Processing query type: imports
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'variables' has 11 patterns and 2 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'variables' finished processing: 0 matches, 0 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: imports
 [c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/imports.scm
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/imports.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Processing query type: docstrings
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Processing query type: docstrings
 [c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/docstrings.scm
 [c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/docstrings.scm
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Found match 1 with 1 captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Found match 1 with 1 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
 [c Example Test: variables_loops_conditions.c]  * @file hello_world.c
 [c Example Test: variables_loops_conditions.c]  * @brief A s'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
 [c Example Test: variables_loops_conditions.c] [AST_CREATE] Created ASTNode at 0x61100000db00, type=19
 [c Example Test: variables_loops_conditions.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100000db00) returned 1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
 [c Example Test: variables_loops_conditions.c]  * @file hello_world.c
 [c Example Test: variables_loops_conditions.c]  * @brief A simple "Hello, World!" program in C
 [c Example Test: variables_loops_conditions.c]  *
@@ -599,90 +898,90 @@ drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
 [c Example Test: variables_loops_conditions.c]  * - Function definitions
 [c Example Test: variables_loops_conditions.c]  * - Print statements
 [c Example Test: variables_loops_conditions.c]  */' to AST (and registered in context)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Found match 2 with 1 captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Found match 2 with 1 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
 [c Example Test: variables_loops_conditions.c]  * @brief A simple hello world progr'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
 [c Example Test: variables_loops_conditions.c] [AST_CREATE] Created ASTNode at 0x61100000dc40, type=19
 [c Example Test: variables_loops_conditions.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100000dc40) returned 1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
 [c Example Test: variables_loops_conditions.c]  * @brief A simple hello world program
 [c Example Test: variables_loops_conditions.c]  */' to AST (and registered in context)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Found match 3 with 1 captures
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Found match 3 with 1 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
 [c Example Test: variables_loops_conditions.c]  * @brief A simple hello world progr'
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
 [c Example Test: variables_loops_conditions.c] [AST_CREATE] Created ASTNode at 0x61100000dd80, type=19
 [c Example Test: variables_loops_conditions.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100000dd80) returned 1
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
 [c Example Test: variables_loops_conditions.c]  * @brief A simple hello world program
 [c Example Test: variables_loops_conditions.c]  */' to AST (and registered in context)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Query 'docstrings' finished processing: 3 matches, 3 nodes added
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 3 node(s)
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] AST query processing complete: 2 successful, 5 failed, total AST nodes: 4
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [QUERY_DEBUG] AST query processing summary: 2 successful, 5 failed, total AST nodes: 4
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'docstrings' finished processing: 3 matches, 3 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 3 node(s)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] AST query processing complete: 2 successful, 5 failed, total AST nodes: 4
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [INFO] [QUERY_DEBUG] AST query processing summary: 2 successful, 5 failed, total AST nodes: 4
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free reached for node at 0x61100000db00
 [c Example Test: variables_loops_conditions.c] [TRACE] ast_node_free stack trace for node 0x61100000db00:
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fe0b46d4c0e]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbaca1) [0x557eeda0aca1]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe893d) [0x557eeda3893d]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe7112) [0x557eeda37112]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xcc04d) [0x557eeda1c04d]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb88f0) [0x557eeda088f0]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb549e) [0x557eeda0549e]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb76f0) [0x557eeda076f0]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa8d92) [0x557eed9f8d92]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa37bd) [0x557eed9f37bd]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xaa890) [0x557eed9fa890]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa3fe8) [0x557eed9f3fe8]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fe0b4676657]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa3d12) [0x557eed9f3d12]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fe0b467884d]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fe0b467d4a9]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fc98a3d9c0e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbcca1) [0x564927031ca1]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xeb799) [0x564927060799]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe9f36) [0x56492705ef36]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xcee6a) [0x564927043e6a]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xba8f0) [0x56492702f8f0]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb749e) [0x56492702c49e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb96f0) [0x56492702e6f0]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xaad92) [0x56492701fd92]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa57bd) [0x56492701a7bd]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac890) [0x564927021890]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5fe8) [0x56492701afe8]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fc98a37b657]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5d12) [0x56492701ad12]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fc98a37d84d]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fc98a3824a9]
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free_internal reached for node at 0x61100000db00
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [WARNING] Attempt to free untracked memory at 0x61100000db00 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [WARNING] Attempt to free untracked memory at 0x61100000db00 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free completed for node at 0x61100000db00
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free reached for node at 0x61100000dc40
 [c Example Test: variables_loops_conditions.c] [TRACE] ast_node_free stack trace for node 0x61100000dc40:
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fe0b46d4c0e]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbaca1) [0x557eeda0aca1]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe893d) [0x557eeda3893d]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe7112) [0x557eeda37112]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xcc04d) [0x557eeda1c04d]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb88f0) [0x557eeda088f0]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb549e) [0x557eeda0549e]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb76f0) [0x557eeda076f0]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa8d92) [0x557eed9f8d92]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa37bd) [0x557eed9f37bd]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xaa890) [0x557eed9fa890]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa3fe8) [0x557eed9f3fe8]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fe0b4676657]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa3d12) [0x557eed9f3d12]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fe0b467884d]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fe0b467d4a9]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fc98a3d9c0e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbcca1) [0x564927031ca1]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xeb799) [0x564927060799]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe9f36) [0x56492705ef36]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xcee6a) [0x564927043e6a]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xba8f0) [0x56492702f8f0]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb749e) [0x56492702c49e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb96f0) [0x56492702e6f0]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xaad92) [0x56492701fd92]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa57bd) [0x56492701a7bd]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac890) [0x564927021890]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5fe8) [0x56492701afe8]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fc98a37b657]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5d12) [0x56492701ad12]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fc98a37d84d]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fc98a3824a9]
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free_internal reached for node at 0x61100000dc40
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [WARNING] Attempt to free untracked memory at 0x61100000dc40 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [WARNING] Attempt to free untracked memory at 0x61100000dc40 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free completed for node at 0x61100000dc40
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free reached for node at 0x61100000dd80
 [c Example Test: variables_loops_conditions.c] [TRACE] ast_node_free stack trace for node 0x61100000dd80:
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fe0b46d4c0e]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbaca1) [0x557eeda0aca1]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe893d) [0x557eeda3893d]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe7112) [0x557eeda37112]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xcc04d) [0x557eeda1c04d]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb88f0) [0x557eeda088f0]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb549e) [0x557eeda0549e]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb76f0) [0x557eeda076f0]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa8d92) [0x557eed9f8d92]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa37bd) [0x557eed9f37bd]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xaa890) [0x557eed9fa890]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa3fe8) [0x557eed9f3fe8]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fe0b4676657]
-[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa3d12) [0x557eed9f3d12]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fe0b467884d]
-[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fe0b467d4a9]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fc98a3d9c0e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbcca1) [0x564927031ca1]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xeb799) [0x564927060799]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xe9f36) [0x56492705ef36]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xcee6a) [0x564927043e6a]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xba8f0) [0x56492702f8f0]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb749e) [0x56492702c49e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xb96f0) [0x56492702e6f0]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xaad92) [0x56492701fd92]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa57bd) [0x56492701a7bd]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac890) [0x564927021890]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5fe8) [0x56492701afe8]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fc98a37b657]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5d12) [0x56492701ad12]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fc98a37d84d]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fc98a3824a9]
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free_internal reached for node at 0x61100000dd80
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [WARNING] Attempt to free untracked memory at 0x61100000dd80 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:42] [WARNING] Attempt to free untracked memory at 0x61100000dd80 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
 [c Example Test: variables_loops_conditions.c] [TEST] ast_node_free completed for node at 0x61100000dd80
 [c Example Test: variables_loops_conditions.c] DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/hello_world.c.expected.json
 [c Example Test: variables_loops_conditions.c] DEBUG: Current working directory: /home/matrillo/apps/scopemux-core/build-c/core/tests
@@ -695,7 +994,306 @@ drwxrwxr-x  3 matrillo matrillo    4096 Jul 29 08:18 core
 [c Example Test: variables_loops_conditions.c]   variables_loops_conditions.c.cst.txt
 [c Example Test: variables_loops_conditions.c]   ..
 [c Example Test: variables_loops_conditions.c] DEBUG: file size for core/tests/examples/c/basic_syntax/hello_world.c.expected.json is 1094490 bytes
-[c Example Test: variables_loops_conditions.c] [2025-07-29 08:18:51] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d000000110
+[c Example Test: variables_loops_conditions.c] [scopemux] Loading hardcoded node type mappings:
+[c Example Test: variables_loops_conditions.c]   functions -> NODE_FUNCTION
+[c Example Test: variables_loops_conditions.c]   classes -> NODE_CLASS
+[c Example Test: variables_loops_conditions.c]   methods -> NODE_METHOD
+[c Example Test: variables_loops_conditions.c]   variables -> NODE_VARIABLE
+[c Example Test: variables_loops_conditions.c]   modules -> NODE_MODULE
+[c Example Test: variables_loops_conditions.c]   structs -> NODE_STRUCT
+[c Example Test: variables_loops_conditions.c]   unions -> NODE_UNION
+[c Example Test: variables_loops_conditions.c]   enums -> NODE_ENUM
+[c Example Test: variables_loops_conditions.c]   typedefs -> NODE_TYPEDEF
+[c Example Test: variables_loops_conditions.c]   includes -> NODE_INCLUDE
+[c Example Test: variables_loops_conditions.c]   macros -> NODE_MACRO
+[c Example Test: variables_loops_conditions.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: variables_loops_conditions.c]   interfaces -> NODE_INTERFACE
+[c Example Test: variables_loops_conditions.c]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] ENTER: manager=0x606000013b80
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x6030000124c0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x604000002090 (language_count=6)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x611000001080 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001080
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x6110000011c0 (query_count=7)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000011c0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x611000001300 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001300
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x611000001440 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001440
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x611000001580 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001580
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x6110000016c0 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000016c0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x604000002090
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x604000002050
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x6030000124f0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x6040000020d0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x606000013b80
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free reached for node at 0x611000002980
+[c Example Test: variables_loops_conditions.c] [TRACE] ast_node_free stack trace for node 0x611000002980:
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fc98a3d9c0e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbcca1) [0x564927031ca1]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xc358f) [0x56492703858f]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xc3e7e) [0x564927038e7e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac0b6) [0x5649270210b6]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa57bd) [0x56492701a7bd]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac890) [0x564927021890]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5fe8) [0x56492701afe8]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fc98a37b657]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5d12) [0x56492701ad12]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fc98a37d84d]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fc98a3824a9]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libc.so.6(+0x29d90) [0x7fc989b34d90]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80) [0x7fc989b34e40]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa4ed5) [0x564927019ed5]
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free_internal reached for node at 0x611000002980
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [WARNING] Attempt to free untracked memory at 0x611000002980 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free completed for node at 0x611000002980
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free reached for node at 0x611000002ac0
+[c Example Test: variables_loops_conditions.c] [TRACE] ast_node_free stack trace for node 0x611000002ac0:
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fc98a3d9c0e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbcca1) [0x564927031ca1]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xc358f) [0x56492703858f]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xc3e7e) [0x564927038e7e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac0b6) [0x5649270210b6]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa57bd) [0x56492701a7bd]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac890) [0x564927021890]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5fe8) [0x56492701afe8]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fc98a37b657]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5d12) [0x56492701ad12]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fc98a37d84d]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fc98a3824a9]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libc.so.6(+0x29d90) [0x7fc989b34d90]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80) [0x7fc989b34e40]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa4ed5) [0x564927019ed5]
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free_internal reached for node at 0x611000002ac0
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free reached for node at 0x611000016ac0
+[c Example Test: variables_loops_conditions.c] [TRACE] ast_node_free stack trace for node 0x611000016ac0:
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libasan.so.6(+0x45c0e) [0x7fc98a3d9c0e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbcca1) [0x564927031ca1]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xbd5b1) [0x5649270325b1]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xc358f) [0x56492703858f]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xc3e7e) [0x564927038e7e]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac0b6) [0x5649270210b6]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa57bd) [0x56492701a7bd]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xac890) [0x564927021890]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5fe8) [0x56492701afe8]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(criterion_internal_test_main+0x147) [0x7fc98a37b657]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa5d12) [0x56492701ad12]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x1484d) [0x7fc98a37d84d]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libcriterion.so.3(+0x194a9) [0x7fc98a3824a9]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libc.so.6(+0x29d90) [0x7fc989b34d90]
+[c Example Test: variables_loops_conditions.c]   /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80) [0x7fc989b34e40]
+[c Example Test: variables_loops_conditions.c]   boxfort-worker(+0xa4ed5) [0x564927019ed5]
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free_internal reached for node at 0x611000016ac0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [WARNING] Attempt to free untracked memory at 0x611000016ac0 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free completed for node at 0x611000016ac0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [WARNING] Attempt to free untracked memory at 0x604000005190 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:282 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [WARNING] Attempt to free untracked memory at 0x611000002ac0 in /home/matrillo/apps/scopemux-core/core/src/parser/ast_node.c:288 - this may be a library-allocated pointer
+[c Example Test: variables_loops_conditions.c] [TEST] ast_node_free completed for node at 0x611000002ac0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] AST node cleanup summary: freed 2 root nodes, skipped 1 child nodes (freed recursively), total tracked: 6
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d000000110
+[c Example Test: variables_loops_conditions.c] DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/variables_loops_conditions.c
+[c Example Test: variables_loops_conditions.c] DEBUG: Current working directory: /home/matrillo/apps/scopemux-core/build-c/core/tests
+[c Example Test: variables_loops_conditions.c] DEBUG: Directory listing for core/tests/examples/c/basic_syntax:
+[c Example Test: variables_loops_conditions.c]   hello_world.c
+[c Example Test: variables_loops_conditions.c]   .
+[c Example Test: variables_loops_conditions.c]   hello_world.c.expected.json
+[c Example Test: variables_loops_conditions.c]   variables_loops_conditions.c
+[c Example Test: variables_loops_conditions.c]   variables_loops_conditions.c.expected.json
+[c Example Test: variables_loops_conditions.c]   variables_loops_conditions.c.cst.txt
+[c Example Test: variables_loops_conditions.c]   ..
+[c Example Test: variables_loops_conditions.c] DEBUG: file size for core/tests/examples/c/basic_syntax/variables_loops_conditions.c is 1032 bytes
+[c Example Test: variables_loops_conditions.c] DEBUG: About to allocate ParserContext of size 136
+[c Example Test: variables_loops_conditions.c] DEBUG: safe_malloc returned raw_ptr=0x60d0000053f0
+[c Example Test: variables_loops_conditions.c] DEBUG: after cast ctx=0x60d0000053f0
+[c Example Test: variables_loops_conditions.c] DEBUG: About to memset ctx=0x60d0000053f0 with size 136
+[c Example Test: variables_loops_conditions.c] DEBUG: memset completed successfully
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Registered C language compliance callbacks
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Registered language-specific compliance callbacks
+[c Example Test: variables_loops_conditions.c] [scopemux] INFO: Loading hardcoded node type mappings
+[c Example Test: variables_loops_conditions.c] [scopemux] Loaded 14 hardcoded node type mappings
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Initialized node type mappings
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Successfully initialized parser context at 0x60d0000053f0
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x60d0000053f0, content=0x619000058780, content_length=1032, filename=variables_loops_conditions.c, language=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [LIFECYCLE] Entering parser_clear for ctx=0x60d0000053f0
+[c Example Test: variables_loops_conditions.c] [scopemux] Loading hardcoded node type mappings:
+[c Example Test: variables_loops_conditions.c]   functions -> NODE_FUNCTION
+[c Example Test: variables_loops_conditions.c]   classes -> NODE_CLASS
+[c Example Test: variables_loops_conditions.c]   methods -> NODE_METHOD
+[c Example Test: variables_loops_conditions.c]   variables -> NODE_VARIABLE
+[c Example Test: variables_loops_conditions.c]   modules -> NODE_MODULE
+[c Example Test: variables_loops_conditions.c]   structs -> NODE_STRUCT
+[c Example Test: variables_loops_conditions.c]   unions -> NODE_UNION
+[c Example Test: variables_loops_conditions.c]   enums -> NODE_ENUM
+[c Example Test: variables_loops_conditions.c]   typedefs -> NODE_TYPEDEF
+[c Example Test: variables_loops_conditions.c]   includes -> NODE_INCLUDE
+[c Example Test: variables_loops_conditions.c]   macros -> NODE_MACRO
+[c Example Test: variables_loops_conditions.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: variables_loops_conditions.c]   interfaces -> NODE_INTERFACE
+[c Example Test: variables_loops_conditions.c]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] ENTER: manager=0x606000160940
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x6020000b8170
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x6040000096d0 (language_count=6)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x611000020340 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020340
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x611000020480 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020480
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x6110000205c0 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000205c0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x611000020700 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020700
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x611000020840 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020840
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x611000020980 (query_count=0)
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000020980
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x6040000096d0
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x604000009690
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x60300016ad40
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x604000009710
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x606000160940
+[c Example Test: variables_loops_conditions.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d0000053f0
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x60d0000053f0, language=1
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x60d0000053f0, language=1
+[c Example Test: variables_loops_conditions.c] 
+[c Example Test: variables_loops_conditions.c] ***** PARSER INITIALIZATION DIAGNOSTIC *****
+[c Example Test: variables_loops_conditions.c] Test executable pid: 910539
+[c Example Test: variables_loops_conditions.c] Using statically linked Tree-sitter libraries
+[c Example Test: variables_loops_conditions.c] SYMBOL RESOLUTION CHECK:
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_c): 0x5649270b0004
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_cpp): 0x5649270c62f1
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_python): 0x5649270cc0b1
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_javascript): 0x5649270d3dd4
+[c Example Test: variables_loops_conditions.c]   dlsym(tree_sitter_typescript): 0x5649270db199
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Language name: C
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter lookup result: 0x56492778d9c0
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter language_name: C
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x5649270b0004
+[c Example Test: variables_loops_conditions.c] [DIAGNOSTIC] Result of get_ts_language(): 0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Successfully retrieved language object for language type 1, address: 0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Calling ts_parser_set_language with parser=0x61b000063c80, language=0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] ts_parser_set_language succeeded
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Verification: ts_parser_language() returned: 0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Language verification successful - pointer match confirmed
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] ===================================================================
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Successfully set language for Tree-sitter parser
+[c Example Test: variables_loops_conditions.c] DEBUG: Tried queries directory: queries/c (not found)
+[c Example Test: variables_loops_conditions.c] DEBUG: Tried queries directory: ../queries/c (not found)
+[c Example Test: variables_loops_conditions.c] DEBUG: Tried queries directory: ../../queries/c (not found)
+[c Example Test: variables_loops_conditions.c] DEBUG: Using queries directory: ../../../queries/c
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Loading hardcoded node type mappings (source of truth)...
+[c Example Test: variables_loops_conditions.c] [scopemux] INFO: Loading hardcoded node type mappings
+[c Example Test: variables_loops_conditions.c] [scopemux] Loaded 14 hardcoded node type mappings
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] Initialized query manager with queries directory: ../../../queries/c
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] ts_init_parser returned: TRUE
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] After initialization: Tree-sitter parser=0x61b000063c80, language=0x5649276f10c0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [create_ast_root_node] ctx->filename: 'variables_loops_conditions.c' (basename: 'variables_loops_conditions.c')
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [create_ast_root_node] Created root node with name: 'variables_loops_conditions.c'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [create_ast_root_node] Set qualified_name: 'variables_loops_conditions.c'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Source code preview (first 100 bytes): '/**
+[c Example Test: variables_loops_conditions.c]  * @file variables_loops_conditions.c
+[c Example Test: variables_loops_conditions.c]  * @brief Demonstration of variables, loops, and condition...'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Child 0: type='comment', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Child 1: type='preproc_include', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Child 2: type='comment', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Child 3: type='function_definition', named=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: classes
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/classes.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/classes.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: structs
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/structs.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/structs.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Unknown query type: structs
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Unknown query type: struct
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Mapped 'structs' query to AST node type 0
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [FUNCTIONS_DEBUG] About to process FUNCTIONS query at index 2
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: functions
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[c Example Test: variables_loops_conditions.c] [FUNCTIONS_DEBUG] *** DETECTED functions query request ***
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/functions.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/functions.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int main(void) {
+[c Example Test: variables_loops_conditions.c]   // Variables
+[c Example Test: variables_loops_conditions.c]   int co'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='main'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[c Example Test: variables_loops_conditions.c] [AST_CREATE] Created ASTNode at 0x611000037680, type=2
+[c Example Test: variables_loops_conditions.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000037680) returned 1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Set content for function node 'main'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Added FUNCTION node 'main' to AST (and registered in context)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'functions' finished processing: 1 matches, 1 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 1 node(s)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: methods
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/methods.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/methods.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Processing query type: variables
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/variables.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/variables.scm
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Query 'variables' has 11 patterns and 2 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='int count = 0;'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='count'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
+[c Example Test: variables_loops_conditions.c] [AST_CREATE] Created ASTNode at 0x61100003f880, type=5
+[c Example Test: variables_loops_conditions.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100003f880) returned 1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Added VARIABLE node 'count' to AST (and registered in context)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Found match 2 with 2 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='int count = 0;'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='count'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
+[c Example Test: variables_loops_conditions.c] [AST_CREATE] Created ASTNode at 0x61100003f9c0, type=5
+[c Example Test: variables_loops_conditions.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100003f9c0) returned 1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Added VARIABLE node 'count' to AST (and registered in context)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Found match 3 with 2 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='float pi = 3.14159f;'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='pi'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
+[c Example Test: variables_loops_conditions.c] [AST_CREATE] Created ASTNode at 0x61100003fb00, type=5
+[c Example Test: variables_loops_conditions.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100003fb00) returned 1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Added VARIABLE node 'pi' to AST (and registered in context)
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Found match 4 with 2 captures
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='declaration', text='float pi = 3.14159f;'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='pi'
+[c Example Test: variables_loops_conditions.c] [2025-07-29 08:47:43] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
 [c Example Test: variables_loops_conditions.c] [FAIL] c_examples::all_examples: (0.00s)
  FAIL: c Example Test: variables_loops_conditions.c (3/)
 [test_runner_lib] 2 tests failed in directory: core/tests/examples/c/basic_syntax

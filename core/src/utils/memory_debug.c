@@ -366,14 +366,14 @@ void *memory_debug_realloc(void *ptr, size_t size, const char *file, int line, c
   pthread_mutex_unlock(&memory_debug_mutex);
 
   if (!was_tracked) {
-    // This is an untracked pointer - just allocate new memory and copy the old
-    void *new_ptr = memory_debug_malloc(size, file, line, tag);
+    // This is an untracked pointer - we can't safely determine its size
+    // So we'll use standard realloc and track the result
+    void *new_ptr = realloc(ptr, size);
     if (!new_ptr) {
+      log_error("realloc failed for untracked pointer at %s:%d", SAFE_STR(file), line);
       return NULL;
     }
-    // We don't know the old size, so copy the minimum of old and new
-    memcpy(new_ptr, ptr, size);
-    // Don't free the old pointer since it wasn't allocated by us
+    memory_debug_track(new_ptr, size, file, line, tag);
     return new_ptr;
   }
 
