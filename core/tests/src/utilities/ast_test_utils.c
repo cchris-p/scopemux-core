@@ -1,4 +1,5 @@
 #include "../../include/ast_test_utils.h"
+#include "../../include/json_validation.h"
 #include "scopemux/parser.h"
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
@@ -258,10 +259,18 @@ bool run_ast_test(const ASTTestConfig *config) {
   // Commenting this out because it causes issues in the tests
   // parser_set_language(ctx, config->language);
 
+  // Extract filename with extension from source_file path
+  const char *filename_with_ext = strrchr(config->source_file, '/');
+  if (filename_with_ext) {
+    filename_with_ext++; // Skip the '/'
+  } else {
+    filename_with_ext = config->source_file; // No path separator found
+  }
+  
   // Parse the source code
-  cr_log_info("Parsing source code");
+  cr_log_info("Parsing source code with filename: %s", filename_with_ext);
   bool parse_success =
-      parser_parse_string(ctx, source_content, strlen(source_content), config->base_filename, config->language);
+      parser_parse_string(ctx, source_content, strlen(source_content), filename_with_ext, config->language);
 
   if (!parse_success) {
     cr_assert_fail("Failed to parse source file");
@@ -300,15 +309,22 @@ bool run_ast_test(const ASTTestConfig *config) {
   }
 
   if (expected_json) {
-    // Compare AST with expected JSON
-    test_passed = validate_ast_against_json(ast_root, expected_json);
-    if (!test_passed && config->debug_mode) {
-      fprintf(stderr, "\n========== AST/JSON MISMATCH ==========" "\n");
-      fprintf(stderr, "ACTUAL AST (as JSON):\n");
-      print_ast_node_json(ast_root, 0);
-      fprintf(stderr, "\nEXPECTED JSON:\n");
-      print_json_value(expected_json, 0);
-      fprintf(stderr, "\n=======================================\n");
+    // Extract the "ast" section from the expected JSON
+    JsonValue *ast_section = find_json_field(expected_json, "ast");
+    if (!ast_section) {
+      cr_log_error("Expected JSON does not contain 'ast' section");
+      test_passed = false;
+    } else {
+      // Compare AST with expected AST section
+      test_passed = validate_ast_against_json(ast_root, ast_section);
+      if (!test_passed && config->debug_mode) {
+        fprintf(stderr, "\n========== AST/JSON MISMATCH ==========" "\n");
+        fprintf(stderr, "ACTUAL AST (as JSON):\n");
+        print_ast_node_json(ast_root, 0);
+        fprintf(stderr, "\nEXPECTED AST SECTION:\n");
+        print_json_value(ast_section, 0);
+        fprintf(stderr, "\n=======================================\n");
+      }
     }
     json_value_free(expected_json);
   }

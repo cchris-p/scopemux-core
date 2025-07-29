@@ -66,6 +66,15 @@ JsonValue *parse_json_string(const char *json_str);
 bool validate_ast_against_json(const ASTNode *node, JsonValue *expected);
 
 /**
+ * Find a field in a JSON object
+ *
+ * @param obj JSON object to search in
+ * @param field_name Name of field to find
+ * @return JsonValue pointer if found, NULL otherwise
+ */
+JsonValue *find_json_field(JsonValue *obj, const char *field_name);
+
+/**
  * Print JSON structure for debugging
  *
  * @param json JSON value to print

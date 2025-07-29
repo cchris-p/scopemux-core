@@ -386,8 +386,15 @@ static void enhance_schema_compliance_for_tests(ASTNode *ast_root, ParserContext
   ast_root->range.end.line = 0;
   ast_root->range.end.column = 0;
 
-  // Use a safe hardcoded basename for test files to avoid memory issues
-  char *basename = safe_strdup("test_file.c");
+  // Extract basename from context filename, fallback to test_file.c if not available
+  const char *filename = ctx && ctx->filename ? ctx->filename : "test_file.c";
+  const char *basename_start = strrchr(filename, '/');
+  if (basename_start) {
+    basename_start++; // Skip the '/'
+  } else {
+    basename_start = filename; // No path separator found, use whole string
+  }
+  char *basename = safe_strdup(basename_start);
 
   // Set the root node name and qualified_name to the filename
   if (ast_root->name) {

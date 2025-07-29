@@ -198,7 +198,7 @@ static ASTNode *find_child_by_name(ASTNode *parent, const char *name) {
 /**
  * Find a JSON object field by name
  */
-static JsonValue *find_json_field(JsonValue *obj, const char *field_name) {
+JsonValue *find_json_field(JsonValue *obj, const char *field_name) {
   if (!obj || obj->type != JSON_OBJECT || !field_name) {
     return NULL;
   }

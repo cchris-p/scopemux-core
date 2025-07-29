@@ -335,12 +335,6 @@ target_link_libraries(parse_ast parser_core)
 add_executable(parse_cst src/parser/parse_cst.c)
 target_link_libraries(parse_cst parser_core)
 
-add_executable(test_parser_output ../scripts/test_parser_output.c)
-target_link_libraries(test_parser_output parser_core)
-
-add_executable(simple_parser_demo ../scripts/simple_parser_demo.c)
-target_link_libraries(simple_parser_demo parser_core)
-
 # Copy executables to scripts directory after build
 add_custom_command(TARGET parse_ast POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:parse_ast> ${CMAKE_SOURCE_DIR}/scripts/

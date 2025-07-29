@@ -1,0 +1,36 @@
+[scopemux] Loading hardcoded node type mappings:
+  functions -> NODE_FUNCTION
+  classes -> NODE_CLASS
+  methods -> NODE_METHOD
+  variables -> NODE_VARIABLE
+  modules -> NODE_MODULE
+  structs -> NODE_STRUCT
+  unions -> NODE_UNION
+  enums -> NODE_ENUM
+  typedefs -> NODE_TYPEDEF
+  includes -> NODE_INCLUDE
+  macros -> NODE_MACRO
+  docstrings -> NODE_DOCSTRING
+  interfaces -> NODE_INTERFACE
+  template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[QUERY_MANAGER_FREE] ENTER: manager=0x606000000080
+[QUERY_MANAGER_FREE] Freeing queries_dir at 0x602000000010
+[QUERY_MANAGER_FREE] Freeing cached queries array at 0x604000000050 (language_count=6)
+[QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x6110000002c0 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000002c0
+[QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x611000000400 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000400
+[QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x611000000540 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000540
+[QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x611000000680 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000680
+[QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x6110000007c0 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000007c0
+[QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x611000000900 (query_count=0)
+[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000900
+[QUERY_MANAGER_FREE] Freeing cached_queries array at 0x604000000050
+[QUERY_MANAGER_FREE] Freeing languages array at 0x604000000010
+[QUERY_MANAGER_FREE] Freeing language_types array at 0x603000000070
+[QUERY_MANAGER_FREE] Freeing query_counts array at 0x604000000090
+[QUERY_MANAGER_FREE] Freeing manager struct at 0x606000000080
+[QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
