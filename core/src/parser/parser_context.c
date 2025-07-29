@@ -159,9 +159,11 @@ void parser_clear(ParserContext *ctx) {
     ctx->q_manager = NULL;
   }
 
-  // Free the AST nodes as before
-  log_debug("Freeing %zu AST nodes", ctx->num_ast_nodes);
+  // Free the AST nodes - ONLY free root nodes to avoid double-free
+  // Root nodes will recursively free their children
+  log_debug("Freeing AST nodes (root nodes only to avoid double-free)");
   size_t freed_nodes = 0;
+  size_t skipped_children = 0;
   if (ctx->all_ast_nodes) {
     for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
       ASTNode *node = ctx->all_ast_nodes[i];
@@ -169,7 +171,18 @@ void parser_clear(ParserContext *ctx) {
         log_debug("[AST_FREE] Skipping NULL node at index %zu", i);
         continue;
       }
-      log_debug("[AST_FREE] About to free ASTNode at index %zu, ptr=%p, magic=0x%X", i,
+
+      // CRITICAL: Only free root nodes (nodes without parents)
+      // Child nodes will be freed recursively by their parents
+      if (node->parent != NULL) {
+        log_debug("[AST_FREE] Skipping child node at index %zu, ptr=%p (parent=%p)", i,
+                  (void *)node, (void *)node->parent);
+        skipped_children++;
+        ctx->all_ast_nodes[i] = NULL;
+        continue;
+      }
+
+      log_debug("[AST_FREE] About to free ROOT ASTNode at index %zu, ptr=%p, magic=0x%X", i,
                 (void *)node, node->magic);
       if (!memory_debug_check_canary(node, sizeof(ASTNode))) {
         log_error("[AST_FREE] Memory corruption detected in AST node %zu (buffer overflow)", i);
@@ -182,14 +195,16 @@ void parser_clear(ParserContext *ctx) {
         ctx->all_ast_nodes[i] = NULL;
         continue;
       }
-      ast_node_free(node);
-      log_debug("[AST_FREE] Freed ASTNode at index %zu, ptr=%p", i, (void *)node);
+      ast_node_free(node); // This will recursively free all children
+      log_debug("[AST_FREE] Freed ROOT ASTNode at index %zu, ptr=%p (and all its children)", i,
+                (void *)node);
       freed_nodes++;
       ctx->all_ast_nodes[i] = NULL;
     }
   }
-  log_info("AST node cleanup summary: freed %zu of %zu nodes, errors: NO", freed_nodes,
-           ctx->num_ast_nodes);
+  log_info("AST node cleanup summary: freed %zu root nodes, skipped %zu child nodes (freed "
+           "recursively), total tracked: %zu",
+           freed_nodes, skipped_children, ctx->num_ast_nodes);
 
   // Free all_ast_nodes array
   if (ctx->all_ast_nodes) {

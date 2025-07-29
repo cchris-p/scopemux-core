@@ -285,16 +285,16 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
     if (stat(docstrings_path, &st) != 0) {
       log_error("WARNING: docstrings.scm not found at: %s", SAFE_STR(docstrings_path));
     } else {
-      log_error("Found docstrings.scm at: %s", SAFE_STR(docstrings_path));
+      log_info("Found docstrings.scm at: %s", SAFE_STR(docstrings_path));
     }
 
     // Load hardcoded node type mappings
-    log_error("Loading hardcoded node type mappings (source of truth)...");
+    log_info("Loading hardcoded node type mappings (source of truth)...");
     load_node_type_mapping();
 
     // Initialize query manager with the queries directory
     ctx->q_manager = query_manager_init(queries_dir);
-    log_error("Initialized query manager with queries directory: %s", SAFE_STR(queries_dir));
+    log_info("Initialized query manager with queries directory: %s", SAFE_STR(queries_dir));
     safe_free(queries_dir);
 
     if (!ctx->q_manager) {

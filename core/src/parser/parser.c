@@ -14,8 +14,8 @@
 #include "parser_internal.h"
 #include "query_processing.h"
 #include "scopemux/ast.h"
-#include "scopemux/tree_sitter_integration.h"
 #include "scopemux/memory_management.h"
+#include "scopemux/tree_sitter_integration.h"
 
 #include <setjmp.h>
 #include <signal.h>
@@ -290,7 +290,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 
   // Initialize the Tree-sitter parser for the specified language
   bool init_result = ts_init_parser(ctx, language);
-  log_error("ts_init_parser returned: %s", init_result ? "TRUE" : "FALSE");
+  log_info("ts_init_parser returned: %s", init_result ? "TRUE" : "FALSE");
 
   if (!init_result) {
     safe_free(ctx->source_code);
@@ -304,8 +304,8 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
   // Verify the parser language was actually set
   TSParser *ts_parser = ctx->ts_parser;
   const TSLanguage *current_lang = ts_parser_language(ts_parser);
-  log_error("After initialization: Tree-sitter parser=%p, language=%p", (void *)ts_parser,
-            (void *)current_lang);
+  log_info("After initialization: Tree-sitter parser=%p, language=%p", (void *)ts_parser,
+           (void *)current_lang);
 
   if (!current_lang) {
     safe_free(ctx->source_code);
@@ -316,7 +316,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     return false;
   }
 
-  log_error("===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====");
+  log_info("===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====");
 
   log_debug("Successfully initialized Tree-sitter parser for language %d", language);
 
