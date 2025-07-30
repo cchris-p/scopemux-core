@@ -25,6 +25,13 @@ For tests, the examples will be located in examples/ inside of the build directo
 
 build/core/tests/examples/*
 
+!IMPORTANT! 
+
+For the easiest method of debugging, run the test shell script runner once and verify contents via the .txt file of the same name.
+
+!IMPORTANT!
+
+
 # 🔍 Tree-sitter Parsing in ScopeMux
 
 ## 📚 Role of Tree-sitter
@@ -75,6 +82,9 @@ ScopeMux now supports dual-mode parsing:
 * Symbol IR
 * Call-Graph IR
 * Refactoring and semantic tools
+
+
+Utility: Always keep in mind when attempting to get the structure correct in the unit tests, there exists utility executables `scripts/parse_ast` and `scripts/parse_cst` available
 
 ***
 

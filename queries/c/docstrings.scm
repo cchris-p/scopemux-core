@@ -24,8 +24,5 @@
   (#match? @docstring "^/\*\*")
 )
 
-;; Capture file-level docstrings (usually at the top of file)
-(translation_unit
-  (comment) @docstring
-  (#match? @docstring "^/\*\*")
-)
+;; File-level docstrings removed to prevent duplicates
+;; Function, struct, and enum-specific patterns above will capture relevant docstrings

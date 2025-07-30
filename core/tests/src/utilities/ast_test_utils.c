@@ -17,43 +17,55 @@ static void print_ast_node_json(const ASTNode *node, int level) {
     return;
   }
   // Indent
-  for (int i = 0; i < level; ++i) fprintf(stderr, "  ");
+  for (int i = 0; i < level; ++i)
+    fprintf(stderr, "  ");
   fprintf(stderr, "{\n");
 
-  for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+  for (int i = 0; i < level + 1; ++i)
+    fprintf(stderr, "  ");
   fprintf(stderr, "\"type\": \"%s\",\n", ast_node_type_to_string(node->type));
   if (node->name) {
-    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    for (int i = 0; i < level + 1; ++i)
+      fprintf(stderr, "  ");
     fprintf(stderr, "\"name\": \"%s\",\n", node->name);
   }
   if (node->qualified_name) {
-    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    for (int i = 0; i < level + 1; ++i)
+      fprintf(stderr, "  ");
     fprintf(stderr, "\"qualified_name\": \"%s\",\n", node->qualified_name);
   }
   if (node->signature) {
-    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    for (int i = 0; i < level + 1; ++i)
+      fprintf(stderr, "  ");
     fprintf(stderr, "\"signature\": \"%s\",\n", node->signature);
   }
   if (node->docstring) {
-    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    for (int i = 0; i < level + 1; ++i)
+      fprintf(stderr, "  ");
     fprintf(stderr, "\"docstring\": \"%s\",\n", node->docstring);
   }
   if (node->file_path) {
-    for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+    for (int i = 0; i < level + 1; ++i)
+      fprintf(stderr, "  ");
     fprintf(stderr, "\"file_path\": \"%s\",\n", node->file_path);
   }
   // Print children
-  for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+  for (int i = 0; i < level + 1; ++i)
+    fprintf(stderr, "  ");
   fprintf(stderr, "\"children\": [");
-  if (node->num_children > 0) fprintf(stderr, "\n");
+  if (node->num_children > 0)
+    fprintf(stderr, "\n");
   for (size_t i = 0; i < node->num_children; ++i) {
     print_ast_node_json(node->children[i], level + 2);
-    if (i + 1 < node->num_children) fprintf(stderr, ",");
+    if (i + 1 < node->num_children)
+      fprintf(stderr, ",");
     fprintf(stderr, "\n");
   }
-  for (int i = 0; i < level + 1; ++i) fprintf(stderr, "  ");
+  for (int i = 0; i < level + 1; ++i)
+    fprintf(stderr, "  ");
   fprintf(stderr, "]\n");
-  for (int i = 0; i < level; ++i) fprintf(stderr, "  ");
+  for (int i = 0; i < level; ++i)
+    fprintf(stderr, "  ");
   fprintf(stderr, "}");
 }
 ASTTestConfig ast_test_config_init(void) {
@@ -231,13 +243,12 @@ bool run_ast_test(const ASTTestConfig *config) {
     cr_assert_fail("Failed to read source file");
     goto cleanup;
   }
-  
+
   // Debug: Show source content preview
   size_t src_len = strlen(source_content);
   size_t preview_len = src_len < 200 ? src_len : 200;
-  cr_log_info("Source content preview (%zu bytes total):\n%.*s%s", 
-              src_len, (int)preview_len, source_content, 
-              src_len > preview_len ? "..." : "");
+  cr_log_info("Source content preview (%zu bytes total):\n%.*s%s", src_len, (int)preview_len,
+              source_content, src_len > preview_len ? "..." : "");
 
   // 2. Parse the file and get the AST
   cr_log_info("Initializing parser context");
@@ -266,11 +277,11 @@ bool run_ast_test(const ASTTestConfig *config) {
   } else {
     filename_with_ext = config->source_file; // No path separator found
   }
-  
+
   // Parse the source code
   cr_log_info("Parsing source code with filename: %s", filename_with_ext);
-  bool parse_success =
-      parser_parse_string(ctx, source_content, strlen(source_content), filename_with_ext, config->language);
+  bool parse_success = parser_parse_string(ctx, source_content, strlen(source_content),
+                                           filename_with_ext, config->language);
 
   if (!parse_success) {
     cr_assert_fail("Failed to parse source file");
@@ -318,7 +329,8 @@ bool run_ast_test(const ASTTestConfig *config) {
       // Compare AST with expected AST section
       test_passed = validate_ast_against_json(ast_root, ast_section);
       if (!test_passed && config->debug_mode) {
-        fprintf(stderr, "\n========== AST/JSON MISMATCH ==========" "\n");
+        fprintf(stderr, "\n========== AST/JSON MISMATCH =========="
+                        "\n");
         fprintf(stderr, "ACTUAL AST (as JSON):\n");
         print_ast_node_json(ast_root, 0);
         fprintf(stderr, "\nEXPECTED AST SECTION:\n");
@@ -332,8 +344,10 @@ bool run_ast_test(const ASTTestConfig *config) {
   free(expected_content);
 
 cleanup:
-  if (source_content) free(source_content);
-  if (ctx) parser_free(ctx);
+  if (source_content)
+    free(source_content);
+  if (ctx)
+    parser_free(ctx);
   return test_passed;
 }
 
@@ -372,14 +386,73 @@ void process_category_files(const char *lang, const char *category,
     return;
   }
 
+  // Collect all test files first
+  char **test_files = NULL;
+  size_t file_count = 0;
+  size_t file_capacity = 10;
+
+  test_files = malloc(file_capacity * sizeof(char *));
+  if (!test_files) {
+    cr_log_error("Failed to allocate memory for test files list");
+    closedir(dir);
+    return;
+  }
+
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
     if (entry->d_type == DT_REG && is_test_file(entry->d_name)) {
-      test_file(category, entry->d_name);
+      // Expand array if needed
+      if (file_count >= file_capacity) {
+        file_capacity *= 2;
+        char **new_files = realloc(test_files, file_capacity * sizeof(char *));
+        if (!new_files) {
+          cr_log_error("Failed to reallocate memory for test files list");
+          // Clean up existing allocations
+          for (size_t i = 0; i < file_count; i++) {
+            free(test_files[i]);
+          }
+          free(test_files);
+          closedir(dir);
+          return;
+        }
+        test_files = new_files;
+      }
+
+      // Store filename
+      test_files[file_count] = strdup(entry->d_name);
+      if (!test_files[file_count]) {
+        cr_log_error("Failed to duplicate filename: %s", entry->d_name);
+        // Clean up existing allocations
+        for (size_t i = 0; i < file_count; i++) {
+          free(test_files[i]);
+        }
+        free(test_files);
+        closedir(dir);
+        return;
+      }
+      file_count++;
+    }
+  }
+  closedir(dir);
+
+  // Sort the filenames to ensure consistent order
+  for (size_t i = 0; i < file_count - 1; i++) {
+    for (size_t j = i + 1; j < file_count; j++) {
+      if (strcmp(test_files[i], test_files[j]) > 0) {
+        char *temp = test_files[i];
+        test_files[i] = test_files[j];
+        test_files[j] = temp;
+      }
     }
   }
 
-  closedir(dir);
+  // Process files in sorted order
+  for (size_t i = 0; i < file_count; i++) {
+    test_file(category, test_files[i]);
+    free(test_files[i]);
+  }
+
+  free(test_files);
 }
 
 const char *get_language_name(Language lang) {

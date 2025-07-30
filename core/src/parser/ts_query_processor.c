@@ -143,8 +143,20 @@ static uint32_t map_query_type_to_node_type(const char *query_type) {
     } else if (strcmp(clean_query_type, "docstrings") == 0) {
       log_info("[QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING");
       return NODE_DOCSTRING;
+    } else if (strcmp(clean_query_type, "struct") == 0) {
+      log_info("[QUERY_DEBUG] Mapped struct query to NODE_STRUCT");
+      return NODE_STRUCT;
+    } else if (strcmp(clean_query_type, "structs") == 0) {
+      log_info("[QUERY_DEBUG] Mapped structs query to NODE_STRUCT");
+      return NODE_STRUCT;
+    } else if (strcmp(clean_query_type, "enum") == 0) {
+      log_info("[QUERY_DEBUG] Mapped enum query to NODE_ENUM");
+      return NODE_ENUM;
+    } else if (strcmp(clean_query_type, "enums") == 0) {
+      log_info("[QUERY_DEBUG] Mapped enums query to NODE_ENUM");
+      return NODE_ENUM;
     } else {
-      log_info("[QUERY_DEBUG] Unknown query type: %s", clean_query_type);
+      log_info("[QUERY_ERROR] Unknown query type: %s", clean_query_type);
     }
   }
 
@@ -399,7 +411,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
   uint32_t pattern_count = ts_query_pattern_count(query);
   uint32_t capture_count = ts_query_capture_count(query);
   log_info("[QUERY_DEBUG] Query '%s' has %u patterns and %u possible captures", query_type,
-            pattern_count, capture_count);
+           pattern_count, capture_count);
 
   // DEBUG: Tree-sitter does not provide pattern string introspection in the C API.
   // This block is a placeholder for future Tree-sitter API upgrades or custom debug info.
@@ -484,8 +496,8 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
             memory_debug_strndup(text, preview_len, __FILE__, __LINE__, "capture_text_preview");
       }
       log_info("[QUERY_DEBUG] Capture %u: name='%.*s', node_type='%s', text='%.40s'", i,
-                capture_name_length, capture_name, node_type_str,
-                text_preview ? text_preview : "<null>");
+               capture_name_length, capture_name, node_type_str,
+               text_preview ? text_preview : "<null>");
       // 06-15-2025 - This is a library-allocated pointer
       // if (text_preview)
       //   memory_debug_free(text_preview, __FILE__, __LINE__);
@@ -540,9 +552,9 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         }
       }
       log_info("[QUERY_DEBUG] Main node detection: query_type='%s', capture_name='%.*s', "
-                "clean_capture_name='%.*s', clean_query_type='%s', is_main_node=%d",
-                query_type, (int)capture_name_length, capture_name, (int)clean_length,
-                clean_capture_name, clean_query_type, is_main_node);
+               "clean_capture_name='%.*s', clean_query_type='%s', is_main_node=%d",
+               query_type, (int)capture_name_length, capture_name, (int)clean_length,
+               clean_capture_name, clean_query_type, is_main_node);
       if (is_main_node) {
         main_node = node;
       }
@@ -641,12 +653,12 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
           log_info("[QUERY_DEBUG] Set content for function node '%s'", ast_node->name);
         } else {
           log_info("[QUERY_DEBUG] Failed to extract content for function node '%s'",
-                    ast_node->name);
+                   ast_node->name);
         }
       }
       successful_captures++;
       log_info("[QUERY_DEBUG] Added %s node '%s' to AST (and registered in context)",
-                ast_node_type_to_string(node_type), ast_node->name);
+               ast_node_type_to_string(node_type), ast_node->name);
 
     } else {
       log_info("[QUERY_DEBUG] No main node found for match %d", match_count);
@@ -675,7 +687,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
 
   // Final statistics
   log_info("[QUERY_DEBUG] Query '%s' finished processing: %d matches, %d nodes added", query_type,
-            match_count, successful_captures);
+           match_count, successful_captures);
 
   // Free the query cursor
   ts_query_cursor_delete(cursor);
@@ -731,20 +743,20 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
     char preview[101] = {0};
     strncpy(preview, ctx->source_code, preview_len);
     log_info("[QUERY_DEBUG] Source code preview (first %zu bytes): '%s%s'", preview_len, preview,
-              ctx->source_code_length > 100 ? "..." : "");
+             ctx->source_code_length > 100 ? "..." : "");
   } else {
     log_info("[QUERY_DEBUG] Source code is NULL or empty!");
   }
 
   // ENHANCED LOGGING: Log Tree-sitter node structure
   log_info("[QUERY_DEBUG] Tree-sitter root node: type='%s', named=%d, child_count=%u",
-            ts_node_type(root_node), ts_node_is_named(root_node), ts_node_child_count(root_node));
+           ts_node_type(root_node), ts_node_is_named(root_node), ts_node_child_count(root_node));
 
   // Log a few children for context
   for (uint32_t i = 0; i < ts_node_child_count(root_node) && i < 5; i++) {
     TSNode child = ts_node_child(root_node, i);
     log_info("[QUERY_DEBUG] Child %u: type='%s', named=%d", i, ts_node_type(child),
-              ts_node_is_named(child));
+             ts_node_is_named(child));
   }
 
   // Allocate node map for tracking parents
@@ -765,7 +777,7 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
 
     // ENHANCED LOGGING: Log query processing start with more detail
     log_info("[QUERY_DEBUG] Processing query type: %s (%zu of %zu)", SAFE_STR(query_types[i]),
-              i + 1, num_query_types);
+             i + 1, num_query_types);
 
     // Track AST node count before processing this query
     size_t prev_child_count = ast_root->num_children;
@@ -778,7 +790,7 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
       successful_queries++;
       // ENHANCED LOGGING: Log successful query with more detail
       log_info("[QUERY_DEBUG] Query '%s' SUCCEEDED: Added %zu node(s)", SAFE_STR(query_types[i]),
-                ast_root->num_children - prev_child_count);
+               ast_root->num_children - prev_child_count);
     } else {
       failed_queries++;
       // ENHANCED LOGGING: Log failed query with more detail
