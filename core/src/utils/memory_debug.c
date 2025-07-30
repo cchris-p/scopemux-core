@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// File-local conditional logging toggle for memory debug output
+static const int MEMORY_DEBUG_LOGGING = 1;
 // Define the canary pattern for detecting buffer overflows
 #define CANARY_PATTERN 0xCACA5E5E
 #define CANARY_SIZE 8
@@ -68,8 +70,10 @@ void memory_debug_init(void) {
   }
   pthread_mutex_unlock(&memory_debug_mutex);
 
-  log_info("Memory debugger initialized (tracking=%d, bounds_check=%d, leak_detection=%d)",
-           tracking_enabled, bounds_check_enabled, leak_detection_enabled);
+  if (MEMORY_DEBUG_LOGGING) {
+    log_info("Memory debugger initialized (tracking=%d, bounds_check=%d, leak_detection=%d)",
+             tracking_enabled, bounds_check_enabled, leak_detection_enabled);
+  }
 }
 
 void memory_debug_cleanup(void) {
@@ -83,23 +87,31 @@ void memory_debug_cleanup(void) {
       if (!allocations[i].freed) {
         leaks++;
         leak_bytes += allocations[i].size;
-        log_error("MEMORY LEAK: %zu bytes at %p allocated in %s:%d [%s]", allocations[i].size,
-                  allocations[i].ptr, SAFE_STR(allocations[i].file), allocations[i].line,
-                  SAFE_STR(allocations[i].tag));
+        if (MEMORY_DEBUG_LOGGING) {
+          log_error("MEMORY LEAK: %zu bytes at %p allocated in %s:%d [%s]", allocations[i].size,
+                    allocations[i].ptr, SAFE_STR(allocations[i].file), allocations[i].line,
+                    SAFE_STR(allocations[i].tag));
+        }
       }
     }
 
     if (leaks > 0) {
-      log_error("Memory leak summary: %zu leaks, %zu bytes total", leaks, leak_bytes);
+      if (MEMORY_DEBUG_LOGGING) {
+        log_error("Memory leak summary: %zu leaks, %zu bytes total", leaks, leak_bytes);
+      }
     } else {
-      log_info("No memory leaks detected");
+      if (MEMORY_DEBUG_LOGGING) {
+        log_info("No memory leaks detected");
+      }
     }
   }
 
   if (tracking_enabled) {
-    log_info("Memory tracking summary:");
-    log_info("  Peak memory usage: %zu bytes", peak_allocated);
-    log_info("  Total allocations: %zu", allocation_count_total);
+    if (MEMORY_DEBUG_LOGGING) {
+      log_info("Memory tracking summary:");
+      log_info("  Peak memory usage: %zu bytes", peak_allocated);
+      log_info("  Total allocations: %zu", allocation_count_total);
+    }
   }
 
   initialized = false;
@@ -116,8 +128,10 @@ void memory_debug_track(void *ptr, size_t size, const char *file, int line, cons
   // Find an empty slot or grow the array if needed
   size_t index = allocation_count;
   if (index >= MAX_TRACKED_ALLOCATIONS) {
-    log_error("Maximum tracked allocations (%d) exceeded; memory tracking will be incomplete",
-              MAX_TRACKED_ALLOCATIONS);
+    if (MEMORY_DEBUG_LOGGING) {
+      log_error("Maximum tracked allocations (%d) exceeded; memory tracking will be incomplete",
+                MAX_TRACKED_ALLOCATIONS);
+    }
     pthread_mutex_unlock(&memory_debug_mutex);
     return;
   }
@@ -164,7 +178,9 @@ void memory_debug_untrack(void *ptr, const char *file, int line) {
   }
 
   if (!found) {
-    log_error("Attempt to free untracked memory at %p in %s:%d", ptr, SAFE_STR(file), line);
+    if (MEMORY_DEBUG_LOGGING) {
+      log_error("Attempt to free untracked memory at %p in %s:%d", ptr, SAFE_STR(file), line);
+    }
   }
 
   pthread_mutex_unlock(&memory_debug_mutex);
@@ -205,7 +221,9 @@ bool memory_debug_ptr_in_range(const void *ptr, const void *start, size_t size) 
 
 void memory_debug_print_stats(void) {
   if (!tracking_enabled || !initialized) {
-    log_info("Memory tracking not enabled");
+    if (MEMORY_DEBUG_LOGGING) {
+      log_info("Memory tracking not enabled");
+    }
     return;
   }
 
@@ -218,27 +236,35 @@ void memory_debug_print_stats(void) {
     }
   }
 
-  log_info("Memory tracking statistics:");
-  log_info("  Current allocations: %zu (%zu bytes)", active_allocations, total_allocated);
-  log_info("  Peak memory usage: %zu bytes", peak_allocated);
-  log_info("  Total allocations: %zu", allocation_count_total);
+  if (MEMORY_DEBUG_LOGGING) {
+    log_info("Memory tracking statistics:");
+    log_info("  Current allocations: %zu (%zu bytes)", active_allocations, total_allocated);
+    log_info("  Peak memory usage: %zu bytes", peak_allocated);
+    log_info("  Total allocations: %zu", allocation_count_total);
+  }
 
   pthread_mutex_unlock(&memory_debug_mutex);
 }
 
 void memory_debug_dump_allocations(void) {
   if (!tracking_enabled || !initialized) {
-    log_info("Memory tracking not enabled");
+    if (MEMORY_DEBUG_LOGGING) {
+      log_info("Memory tracking not enabled");
+    }
     return;
   }
 
   pthread_mutex_lock(&memory_debug_mutex);
 
-  log_info("Current active allocations:");
+  if (MEMORY_DEBUG_LOGGING) {
+    log_info("Current active allocations:");
+  }
   for (size_t i = 0; i < allocation_count; i++) {
     if (!allocations[i].freed) {
-      log_info("  %p: %zu bytes [%s] at %s:%d", allocations[i].ptr, allocations[i].size,
-               SAFE_STR(allocations[i].tag), SAFE_STR(allocations[i].file), allocations[i].line);
+      if (MEMORY_DEBUG_LOGGING) {
+        log_info("  %p: %zu bytes [%s] at %s:%d", allocations[i].ptr, allocations[i].size,
+                 SAFE_STR(allocations[i].tag), SAFE_STR(allocations[i].file), allocations[i].line);
+      }
     }
   }
 
@@ -290,11 +316,15 @@ bool memory_debug_check_corruption(void *ptr) {
     // Check the canary pattern
     valid = memory_debug_check_canary(ptr, size);
     if (!valid) {
-      log_error("Memory corruption detected: buffer overflow at %p", ptr);
+      if (MEMORY_DEBUG_LOGGING) {
+        log_error("Memory corruption detected: buffer overflow at %p", ptr);
+      }
     }
   } else {
     valid = false;
-    log_error("Memory corruption check failed: %p is not a tracked allocation", ptr);
+    if (MEMORY_DEBUG_LOGGING) {
+      log_error("Memory corruption check failed: %p is not a tracked allocation", ptr);
+    }
   }
 
   pthread_mutex_unlock(&memory_debug_mutex);
@@ -311,7 +341,9 @@ void *memory_debug_malloc(size_t size, const char *file, int line, const char *t
 
   void *ptr = malloc(alloc_size);
   if (!ptr) {
-    log_error("malloc failed for %zu bytes at %s:%d", size, SAFE_STR(file), line);
+    if (MEMORY_DEBUG_LOGGING) {
+      log_error("malloc failed for %zu bytes at %s:%d", size, SAFE_STR(file), line);
+    }
     return NULL;
   }
 
@@ -332,8 +364,10 @@ void *memory_debug_calloc(size_t nmemb, size_t size, const char *file, int line,
 
   void *ptr = calloc(1, alloc_size); // Use calloc(1, size) to handle overflow checking
   if (!ptr) {
-    log_error("calloc failed for %zu elements of %zu bytes at %s:%d", nmemb, size, SAFE_STR(file),
-              line);
+    if (MEMORY_DEBUG_LOGGING) {
+      log_error("calloc failed for %zu elements of %zu bytes at %s:%d", nmemb, size, SAFE_STR(file),
+                line);
+    }
     return NULL;
   }
 
@@ -370,7 +404,9 @@ void *memory_debug_realloc(void *ptr, size_t size, const char *file, int line, c
     // So we'll use standard realloc and track the result
     void *new_ptr = realloc(ptr, size);
     if (!new_ptr) {
-      log_error("realloc failed for untracked pointer at %s:%d", SAFE_STR(file), line);
+      if (MEMORY_DEBUG_LOGGING) {
+        log_error("realloc failed for untracked pointer at %s:%d", SAFE_STR(file), line);
+      }
       return NULL;
     }
     memory_debug_track(new_ptr, size, file, line, tag);
@@ -387,10 +423,12 @@ void *memory_debug_realloc(void *ptr, size_t size, const char *file, int line, c
 
   void *new_ptr = realloc(ptr, alloc_size);
   if (!new_ptr) {
-    log_error("realloc failed for %zu bytes at %s:%d", size, SAFE_STR(file), line);
-    // Re-track the old allocation since realloc failed
-    memory_debug_track(ptr, old_size, file, line, tag);
-    return NULL;
+    if (MEMORY_DEBUG_LOGGING) {
+      log_error("realloc failed for %zu bytes at %s:%d", size, SAFE_STR(file), line);
+      // Re-track the old allocation since realloc failed
+      memory_debug_track(ptr, old_size, file, line, tag);
+      return NULL;
+    }
   }
 
   if (bounds_check_enabled) {
@@ -419,9 +457,11 @@ void memory_debug_free(void *ptr, const char *file, int line) {
   pthread_mutex_unlock(&memory_debug_mutex);
 
   if (!was_tracked) {
-    log_warning(
-        "Attempt to free untracked memory at %p in %s:%d - this may be a library-allocated pointer",
-        ptr, SAFE_STR(file), line);
+    if (MEMORY_DEBUG_LOGGING) {
+      log_warning("Attempt to free untracked memory at %p in %s:%d - this may be a "
+                  "library-allocated pointer",
+                  ptr, SAFE_STR(file), line);
+    }
     free(ptr); // Free it anyway since it might be from a library
     return;
   }
