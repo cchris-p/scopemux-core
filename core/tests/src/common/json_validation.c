@@ -180,7 +180,7 @@ static const char *ast_type_to_string(ASTNodeType type) {
 /**
  * Find an ASTNode child by name
  */
-static ASTNode *find_child_by_name(ASTNode *parent, const char *name) {
+static ASTNode *find_child_by_name(const ASTNode *parent, const char *name) {
   if (!parent || !parent->children || parent->num_children == 0 || !name) {
     return NULL;
   }
@@ -561,6 +561,143 @@ bool validate_ast_against_json(const ASTNode *node, JsonValue *expected) {
         }
       }
     }
+  }
+
+  return valid;
+}
+
+bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, TestGranularityLevel granularity_level) {
+  // Ensure we have a valid path string to use in error messages
+  const char *node_path = node ? node->file_path : NULL;
+  const char *safe_path = node_path ? node_path : "<unknown>";
+
+  // Ensure node exists
+  if (!node) {
+    cr_log_error("%s: AST node is NULL", safe_path);
+    return false;
+  }
+
+  // Ensure expected JSON exists
+  if (!expected) {
+    cr_log_error("%s: Expected JSON is NULL", safe_path);
+    return false;
+  }
+
+  // Ensure expected JSON is an object
+  if (expected->type != JSON_OBJECT) {
+    cr_log_error("%s: Expected JSON is not an object (type: %d)", safe_path, expected->type);
+    return false;
+  }
+
+  bool valid = true;
+
+  // Log debugging information
+  cr_log_info("%s: Validating node (granularity level %d) of type '%s' with name '%s'", 
+              SAFE_STR(safe_path), granularity_level,
+              SAFE_STR(ast_type_to_string(node->type)), node->name ? node->name : "<unnamed>");
+
+  // Level 1 (SMOKE): Just verify we can parse without crashing
+  if (granularity_level == GRANULARITY_SMOKE) {
+    cr_log_info("%s: SMOKE test passed - parser did not crash", safe_path);
+    return true;
+  }
+
+  // Level 2 (STRUCTURAL): Validate root node type and basic structure
+  if (granularity_level >= GRANULARITY_STRUCTURAL) {
+    JsonValue *type_field = find_json_field(expected, "type");
+    if (type_field && type_field->type == JSON_STRING) {
+      const char *expected_type = type_field->value.string;
+      const char *node_type = ast_type_to_string(node->type);
+      if (strcmp(expected_type, node_type) != 0) {
+        cr_log_error("%s: Type mismatch - expected '%s', got '%s'", safe_path, expected_type, node_type);
+        valid = false;
+      }
+    }
+    
+    // For structural level, also check if we have children when expected
+    JsonValue *children_field = find_json_field(expected, "children");
+    if (children_field && children_field->type == JSON_ARRAY) {
+      size_t expected_children = children_field->value.array.size;
+      if (node->num_children != expected_children) {
+        cr_log_error("%s: Child count mismatch - expected %zu, got %zu", 
+                     safe_path, expected_children, node->num_children);
+        valid = false;
+      }
+    }
+  }
+
+  // Level 3 (SEMANTIC): Validate node types, names, and child counts
+  if (granularity_level >= GRANULARITY_SEMANTIC) {
+    // Check node name
+    JsonValue *name_field = find_json_field(expected, "name");
+    if (name_field && name_field->type == JSON_STRING) {
+      const char *expected_name = name_field->value.string;
+      if (!node->name) {
+        cr_log_error("%s: Expected name '%s', but node name is NULL", safe_path, expected_name);
+        valid = false;
+      } else if (strcmp(expected_name, node->name) != 0) {
+        cr_log_error("%s: Name mismatch - expected '%s', got '%s'", 
+                     safe_path, expected_name, node->name);
+        valid = false;
+      }
+    }
+    
+    // Recursively validate children
+    JsonValue *children_field = find_json_field(expected, "children");
+    if (children_field && children_field->type == JSON_ARRAY) {
+      for (size_t i = 0; i < children_field->value.array.size && i < node->num_children; i++) {
+        if (!validate_ast_with_granularity(node->children[i], children_field->value.array.items[i], granularity_level)) {
+          valid = false;
+        }
+      }
+    }
+  }
+
+  // Level 4 (DETAILED): Validate all node properties
+  if (granularity_level >= GRANULARITY_DETAILED) {
+    // Check qualified name
+    JsonValue *qualified_name_field = find_json_field(expected, "qualified_name");
+    if (qualified_name_field && qualified_name_field->type == JSON_STRING) {
+      const char *expected_qname = qualified_name_field->value.string;
+      if (!node->qualified_name) {
+        cr_log_error("%s: Expected qualified_name '%s', but node qualified_name is NULL", 
+                     safe_path, expected_qname);
+        valid = false;
+      } else if (strcmp(expected_qname, node->qualified_name) != 0) {
+        cr_log_error("%s: Qualified name mismatch - expected '%s', got '%s'", 
+                     safe_path, expected_qname, node->qualified_name);
+        valid = false;
+      }
+    }
+
+    // Check signature
+    JsonValue *signature_field = find_json_field(expected, "signature");
+    if (signature_field && signature_field->type == JSON_STRING) {
+      const char *expected_signature = signature_field->value.string;
+      const char *node_signature = node->signature ? node->signature : "";
+      if (strcmp(expected_signature, node_signature) != 0) {
+        cr_log_error("%s: Signature mismatch - expected '%s', got '%s'", 
+                     safe_path, expected_signature, node_signature);
+        valid = false;
+      }
+    }
+
+    // Check docstring
+    JsonValue *docstring_field = find_json_field(expected, "docstring");
+    if (docstring_field && docstring_field->type == JSON_STRING) {
+      const char *expected_docstring = docstring_field->value.string;
+      const char *node_docstring = node->docstring ? node->docstring : "";
+      if (strcmp(expected_docstring, node_docstring) != 0) {
+        cr_log_error("%s: Docstring mismatch - expected '%s', got '%s'", 
+                     safe_path, expected_docstring, node_docstring);
+        valid = false;
+      }
+    }
+  }
+
+  // Level 5 (EXACT): Every field must match exactly (use original function)
+  if (granularity_level >= GRANULARITY_EXACT) {
+    return validate_ast_against_json(node, expected);
   }
 
   return valid;

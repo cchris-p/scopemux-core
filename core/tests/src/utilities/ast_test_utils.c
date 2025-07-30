@@ -10,6 +10,27 @@
 #include <string.h>
 #include <unistd.h>
 
+// Get test granularity level from environment variable (set by run_c_tests.sh)
+TestGranularityLevel get_test_granularity_level(void) {
+  const char *env_level = getenv("TEST_GRANULARITY_LEVEL");
+  if (!env_level) {
+    // Default level when not set by script (should not happen in normal usage)
+    return GRANULARITY_SEMANTIC;
+  }
+  
+  int level = atoi(env_level);
+  switch (level) {
+    case 1: return GRANULARITY_SMOKE;
+    case 2: return GRANULARITY_STRUCTURAL;
+    case 3: return GRANULARITY_SEMANTIC;
+    case 4: return GRANULARITY_DETAILED;
+    case 5: return GRANULARITY_EXACT;
+    default:
+      fprintf(stderr, "Warning: Invalid TEST_GRANULARITY_LEVEL '%s', using default (3)\n", env_level);
+      return GRANULARITY_SEMANTIC;
+  }
+}
+
 // Debug utility: Print ASTNode as JSON (minimal, for test debug output only)
 static void print_ast_node_json(const ASTNode *node, int level) {
   if (!node) {
@@ -74,7 +95,8 @@ ASTTestConfig ast_test_config_init(void) {
                           .category = NULL,
                           .base_filename = NULL,
                           .language = LANG_UNKNOWN,
-                          .debug_mode = true};
+                          .debug_mode = true,
+                          .granularity_level = get_test_granularity_level()};
   return config;
 }
 
@@ -236,6 +258,7 @@ bool run_ast_test(const ASTTestConfig *config) {
   cr_log_info("===== BEGIN AST TEST =====");
   cr_log_info("Source file: %s", config->source_file);
   cr_log_info("Expected JSON file: %s", config->json_file);
+  cr_log_info("Test granularity level: %d", config->granularity_level);
 
   // 1. Read the source file
   source_content = read_file_contents(config->source_file);
@@ -326,8 +349,8 @@ bool run_ast_test(const ASTTestConfig *config) {
       cr_log_error("Expected JSON does not contain 'ast' section");
       test_passed = false;
     } else {
-      // Compare AST with expected AST section
-      test_passed = validate_ast_against_json(ast_root, ast_section);
+      // Compare AST with expected AST section using granularity-aware validation
+      test_passed = validate_ast_with_granularity(ast_root, ast_section, config->granularity_level);
       if (!test_passed && config->debug_mode) {
         fprintf(stderr, "\n========== AST/JSON MISMATCH =========="
                         "\n");

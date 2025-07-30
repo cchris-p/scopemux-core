@@ -18,6 +18,37 @@
 # Usage:
 #   Source this script in your test runners to ensure a consistent and robust test environment.
 
+# ========================================
+# TEST GRANULARITY LEVEL CONFIGURATION
+# ========================================
+# Controls how fine-tuned the AST validation tests are across ALL language test runners:
+# Level 1 (SMOKE): Basic parsing success - just verify parser doesn't crash
+# Level 2 (STRUCTURAL): Validate root node type and basic structure
+# Level 3 (SEMANTIC): Validate node types, names, and child counts (DEFAULT)
+# Level 4 (DETAILED): Validate all node properties (signatures, docstrings, qualified_names)
+# Level 5 (EXACT): Every node must match expected JSON exactly (finest granularity)
+#
+# CHANGE THIS VALUE TO SET THE GRANULARITY LEVEL FOR ALL LANGUAGE TESTS:
+TEST_GRANULARITY_LEVEL=5
+
+# Export test granularity level for test executables
+export TEST_GRANULARITY_LEVEL
+
+# Function to display granularity level name
+get_granularity_name() {
+    case $TEST_GRANULARITY_LEVEL in
+        1) echo "SMOKE" ;;
+        2) echo "STRUCTURAL" ;;
+        3) echo "SEMANTIC" ;;
+        4) echo "DETAILED" ;;
+        5) echo "EXACT" ;;
+        *) echo "UNKNOWN" ;;
+    esac
+}
+
+# Display current test granularity level
+echo "[test_runner_lib] Test granularity level: $TEST_GRANULARITY_LEVEL ($(get_granularity_name))"
+
 # Ensure Tree-sitter shared libraries exist (build if missing)
 if [ ! -f "${TS_LIBS_DIR}/libtree-sitter-c.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-cpp.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-python.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-javascript.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-typescript.so" ]; then
     echo "[test_runner_lib] Shared libraries missing, running scripts/build_shared_libs.sh..."
@@ -380,4 +411,29 @@ print_test_summary() {
         echo " TESTS FAILED: $TEST_FAILURES"
         exit 1
     fi
+}
+
+# Shared help function for test granularity system
+show_test_granularity_help() {
+    local script_name="$1"
+    echo "Usage: $script_name [options]"
+    echo "Options:"
+    echo "  --no-clean      : Skip cleaning build directory"
+    echo "  --help          : Show this help message"
+    echo ""
+    echo "Test Granularity Configuration:"
+    echo "  Granularity level is set in scripts/test_runner_lib.sh (TEST_GRANULARITY_LEVEL)"
+    echo "  Edit scripts/test_runner_lib.sh to change the validation level (1-5) for ALL language tests:"
+    echo "    1 (SMOKE)      : Basic parsing success - just verify parser doesn't crash"
+    echo "    2 (STRUCTURAL) : Validate root node type and basic structure"
+    echo "    3 (SEMANTIC)   : Validate node types, names, and child counts (DEFAULT)"
+    echo "    4 (DETAILED)   : Validate all node properties (signatures, docstrings, qualified_names)"
+    echo "    5 (EXACT)      : Every node must match expected JSON exactly (finest granularity)"
+    echo ""
+    echo "To change granularity for ALL language tests:"
+    echo "  1. Edit the shared library: nano scripts/test_runner_lib.sh"
+    echo "  2. Change TEST_GRANULARITY_LEVEL=3 to desired level"
+    echo "  3. Save and run any language test: $script_name"
+    echo ""
+    echo "Current granularity level: $TEST_GRANULARITY_LEVEL ($(get_granularity_name))"
 }

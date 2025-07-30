@@ -10,12 +10,13 @@
  * Configuration for AST testing
  */
 typedef struct {
-  const char *source_file;   // Path to source file
-  const char *json_file;     // Path to expected JSON file
-  const char *category;      // Test category (subdirectory)
-  const char *base_filename; // Base filename without extension
-  Language language;         // Language enum from parser.h
-  bool debug_mode;           // Enable debug output
+  const char *source_file;                // Path to source file
+  const char *json_file;                  // Path to expected JSON file
+  const char *category;                   // Test category (subdirectory)
+  const char *base_filename;              // Base filename without extension
+  Language language;                      // Language enum from parser.h
+  bool debug_mode;                        // Enable debug output
+  TestGranularityLevel granularity_level; // Validation granularity level
 } ASTTestConfig;
 
 /**
@@ -26,6 +27,13 @@ typedef struct {
   char json_path[1024];   // Full path to expected JSON file
   char *base_filename;    // Base filename without extension (caller must free)
 } TestPaths;
+
+/**
+ * Get test granularity level from environment variable TEST_GRANULARITY_LEVEL
+ * (This is set by the hardcoded value in run_c_tests.sh)
+ * Returns GRANULARITY_SEMANTIC (3) as default if not set or invalid
+ */
+TestGranularityLevel get_test_granularity_level(void);
 
 /**
  * Initialize test configuration with default values

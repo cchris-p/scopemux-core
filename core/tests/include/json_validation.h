@@ -6,6 +6,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Forward declaration to avoid circular dependency
+typedef enum {
+  GRANULARITY_SMOKE = 1,
+  GRANULARITY_STRUCTURAL = 2,
+  GRANULARITY_SEMANTIC = 3,
+  GRANULARITY_DETAILED = 4,
+  GRANULARITY_EXACT = 5
+} TestGranularityLevel;
+
 /**
  * Simple JSON structure to hold parsed values
  */
@@ -64,6 +73,16 @@ JsonValue *parse_json_string(const char *json_str);
  * @return true if validation passes, false otherwise
  */
 bool validate_ast_against_json(const ASTNode *node, JsonValue *expected);
+
+/**
+ * Validate AST against expected JSON with granularity control
+ *
+ * @param node AST node to validate
+ * @param expected Expected JSON definition
+ * @param granularity_level Level of validation granularity
+ * @return true if validation passes, false otherwise
+ */
+bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, TestGranularityLevel granularity_level);
 
 /**
  * Find a field in a JSON object

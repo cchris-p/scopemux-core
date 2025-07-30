@@ -63,10 +63,7 @@ for arg in "$@"; do
         echo "[run_c_tests.sh] Skipping clean build"
         ;;
     --help)
-        echo "Usage: ./run_c_tests.sh [options]"
-        echo "Options:"
-        echo "  --no-clean      : Skip cleaning build directory"
-        echo "  --help          : Show this help message"
+        show_test_granularity_help "./run_c_tests.sh"
         exit 0
         ;;
     esac
