@@ -156,6 +156,24 @@ static uint32_t map_query_type_to_node_type(const char *query_type) {
     } else if (strcmp(clean_query_type, "enums") == 0) {
       log_info("[QUERY_DEBUG] Mapped enums query to NODE_ENUM");
       return NODE_ENUM;
+    } else if (strcmp(clean_query_type, "control_flow") == 0) {
+      log_info("[QUERY_DEBUG] Mapped control_flow query to NODE_CONTROL_FLOW");
+      return NODE_CONTROL_FLOW;
+    } else if (strcmp(clean_query_type, "for_loop") == 0) {
+      log_info("[QUERY_DEBUG] Mapped for_loop query to NODE_FOR_STATEMENT");
+      return NODE_FOR_STATEMENT;
+    } else if (strcmp(clean_query_type, "while_loop") == 0) {
+      log_info("[QUERY_DEBUG] Mapped while_loop query to NODE_WHILE_STATEMENT");
+      return NODE_WHILE_STATEMENT;
+    } else if (strcmp(clean_query_type, "do_while_loop") == 0) {
+      log_info("[QUERY_DEBUG] Mapped do_while_loop query to NODE_DO_WHILE_STATEMENT");
+      return NODE_DO_WHILE_STATEMENT;
+    } else if (strcmp(clean_query_type, "if_condition") == 0) {
+      log_info("[QUERY_DEBUG] Mapped if_condition query to NODE_IF_STATEMENT");
+      return NODE_IF_STATEMENT;
+    } else if (strcmp(clean_query_type, "switch_condition") == 0) {
+      log_info("[QUERY_DEBUG] Mapped switch_condition query to NODE_SWITCH_STATEMENT");
+      return NODE_SWITCH_STATEMENT;
     } else {
       log_info("[QUERY_ERROR] Unknown query type: %s", clean_query_type);
     }
@@ -529,10 +547,14 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
 
       } else {
         // Handle singular/plural forms - enhanced to be more robust with partial matches
-        const char *singular_forms[] = {"function", "struct",    "class",  "variable",
-                                        "method",   "docstring", "include"};
-        const char *plural_forms[] = {"functions", "structs",    "classes", "variables",
-                                      "methods",   "docstrings", "imports"};
+        const char *singular_forms[] = {"function",      "struct",       "class",
+                                        "variable",      "method",       "docstring",
+                                        "include",       "for_loop",     "while_loop",
+                                        "do_while_loop", "if_condition", "switch_condition"};
+        const char *plural_forms[] = {"functions",    "structs",      "classes",
+                                      "variables",    "methods",      "docstrings",
+                                      "imports",      "control_flow", "control_flow",
+                                      "control_flow", "control_flow", "control_flow"};
         for (size_t j = 0; j < sizeof(singular_forms) / sizeof(singular_forms[0]); j++) {
           // Check if clean_capture_name contains the singular form (for @function in a functions
           // query)
@@ -608,13 +630,75 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         }
       }
 
+      // Check for special cases to skip before creating the node
+      bool should_skip_node = false;
+
+      // Override node type for control flow structures based on capture name
+      uint32_t actual_node_type = node_type;
+      if (strcmp(query_type, "control_flow") == 0) {
+        // For control flow queries, determine the specific node type based on the capture
+        TSQueryCapture *captures = match.captures;
+        for (uint32_t j = 0; j < match.capture_count; j++) {
+          if (ts_node_eq(captures[j].node, main_node)) {
+            uint32_t capture_name_length;
+            const char *capture_name =
+                ts_query_capture_name_for_id(query, captures[j].index, &capture_name_length);
+            if (capture_name) {
+              log_info("[CONTROL_FLOW_DEBUG] Overriding node type for capture '%.*s'",
+                       (int)capture_name_length, capture_name);
+
+              // Special handling for if statements - skip nested if statements in else clauses
+              if (strncmp(capture_name, "if_condition", capture_name_length) == 0) {
+                // Check if this if statement is nested inside an else clause
+                TSNode parent = ts_node_parent(main_node);
+                if (!ts_node_is_null(parent)) {
+                  const char *parent_type = ts_node_type(parent);
+                  if (strcmp(parent_type, "else_clause") == 0) {
+                    log_info("[CONTROL_FLOW_DEBUG] Skipping if_condition inside else_clause - part "
+                             "of if-else-if chain");
+                    should_skip_node = true;
+                    break; // Break out of capture processing loop
+                  }
+                }
+                actual_node_type = NODE_IF_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_IF_STATEMENT (%u)",
+                         actual_node_type);
+              } else if (strncmp(capture_name, "for_loop", capture_name_length) == 0) {
+                actual_node_type = NODE_FOR_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_FOR_STATEMENT (%u)",
+                         actual_node_type);
+              } else if (strncmp(capture_name, "while_loop", capture_name_length) == 0) {
+                actual_node_type = NODE_WHILE_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_WHILE_STATEMENT (%u)",
+                         actual_node_type);
+              } else if (strncmp(capture_name, "do_while_loop", capture_name_length) == 0) {
+                actual_node_type = NODE_DO_WHILE_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_DO_WHILE_STATEMENT (%u)",
+                         actual_node_type);
+              } else if (strncmp(capture_name, "switch_condition", capture_name_length) == 0) {
+                actual_node_type = NODE_SWITCH_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_SWITCH_STATEMENT (%u)",
+                         actual_node_type);
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      // Skip creating node if we determined it should be skipped
+      if (should_skip_node) {
+        log_info("[CONTROL_FLOW_DEBUG] Skipping node creation for this match");
+        continue; // Continue to next match
+      }
+
       SourceRange range = {.start = {.line = ts_node_start_point(main_node).row,
                                      .column = ts_node_start_point(main_node).column},
                            .end = {.line = ts_node_end_point(main_node).row,
                                    .column = ts_node_end_point(main_node).column}};
 
       ASTNode *ast_node =
-          ast_node_create(node_type, node_name, name_source, NULL, AST_SOURCE_NONE, range);
+          ast_node_create(actual_node_type, node_name, name_source, NULL, AST_SOURCE_NONE, range);
 
       if (!ast_node) {
         log_error("Failed to create AST node for query '%s'", query_type);
@@ -649,20 +733,21 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       // Determine the proper parent based on node type and scope
       ASTNode *proper_parent = ast_root; // Default to root
 
-      // For variables, try to find the containing function
-      if (node_type == NODE_VARIABLE) {
+      // For variables and control flow structures, try to find the containing function
+      if (actual_node_type == NODE_VARIABLE || actual_node_type == NODE_FOR_STATEMENT ||
+          actual_node_type == NODE_WHILE_STATEMENT || actual_node_type == NODE_DO_WHILE_STATEMENT ||
+          actual_node_type == NODE_IF_STATEMENT || actual_node_type == NODE_SWITCH_STATEMENT) {
         // Get all function nodes created so far in the parser context
         const ASTNode *function_nodes[32]; // Support up to 32 functions
         size_t function_count =
             parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, function_nodes, 32);
 
-        // Find the function that contains this variable based on source position
+        // Find the function that contains this variable/control flow structure based on source
+        // position
         for (size_t i = 0; i < function_count; i++) {
           const ASTNode *potential_parent = function_nodes[i];
           if (potential_parent) {
-            // Check if this variable is within the function's source range
-            // Variables are inside a function if they start on or after the function starts
-            // and before or on the function ends (includes function parameters)
+            // Check if this node is within the function's source range
             if (ast_node->range.start.line >= potential_parent->range.start.line &&
                 ast_node->range.end.line <= potential_parent->range.end.line) {
               proper_parent = (ASTNode *)potential_parent; // Cast away const for assignment
@@ -704,7 +789,8 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
           ast_node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
         }
       }
-      fprintf(stderr, "[AST_CREATE] Created ASTNode at %p, type=%u\n", (void *)ast_node, node_type);
+      fprintf(stderr, "[AST_CREATE] Created ASTNode at %p, type=%u\n", (void *)ast_node,
+              actual_node_type);
       bool reg_result = parser_add_ast_node(ctx, ast_node);
       fprintf(stderr, "[AST_REGISTER_CALL] parser_add_ast_node(ctx, %p) returned %d\n",
               (void *)ast_node, reg_result);
@@ -994,6 +1080,90 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
  * @param ast_root AST root node
  * @return bool True if at least one query succeeded, false otherwise
  */
+// Post-process variable scoping to assign variables declared in control structures to those
+// structures
+static void post_process_variable_scoping(ParserContext *ctx) {
+  if (!ctx || ctx->num_ast_nodes == 0) {
+    return;
+  }
+
+  log_info("[POST_PROCESS] Starting variable scoping post-processing for %zu nodes",
+           ctx->num_ast_nodes);
+
+  // Get all variable nodes
+  const ASTNode *variable_nodes[64];
+  size_t variable_count = parser_get_ast_nodes_by_type(ctx, NODE_VARIABLE, variable_nodes, 64);
+
+  // Get all control flow nodes
+  const ASTNode *control_flow_nodes[64];
+  size_t for_count = parser_get_ast_nodes_by_type(ctx, NODE_FOR_STATEMENT, control_flow_nodes, 64);
+  size_t while_count = parser_get_ast_nodes_by_type(ctx, NODE_WHILE_STATEMENT,
+                                                    control_flow_nodes + for_count, 64 - for_count);
+  size_t if_count = parser_get_ast_nodes_by_type(ctx, NODE_IF_STATEMENT,
+                                                 control_flow_nodes + for_count + while_count,
+                                                 64 - for_count - while_count);
+  size_t switch_count = parser_get_ast_nodes_by_type(
+      ctx, NODE_SWITCH_STATEMENT, control_flow_nodes + for_count + while_count + if_count,
+      64 - for_count - while_count - if_count);
+  size_t total_control_count = for_count + while_count + if_count + switch_count;
+
+  log_info("[POST_PROCESS] Found %zu variables and %zu control flow structures", variable_count,
+           total_control_count);
+
+  // Check each variable to see if it should be reassigned to a control flow structure
+  for (size_t i = 0; i < variable_count; i++) {
+    ASTNode *variable = (ASTNode *)variable_nodes[i];
+    if (!variable || !variable->name)
+      continue;
+
+    // Check all control flow structures to see if this variable is declared within one
+    for (size_t j = 0; j < total_control_count; j++) {
+      const ASTNode *control_flow = control_flow_nodes[j];
+      if (!control_flow)
+        continue;
+
+      // Check if this variable is declared within the control flow structure
+      // Variables declared in for loop init (like "int i = 0" in "for (int i = 0; ...)")
+      // will have a start position within or very close to the control flow start
+      if (variable->range.start.line >= control_flow->range.start.line &&
+          variable->range.start.line <= control_flow->range.start.line + 1 &&
+          variable->range.end.line <= control_flow->range.end.line) {
+
+        // Special case: for loop variable 'i' declared in for statement
+        if (control_flow->type == NODE_FOR_STATEMENT && strcmp(variable->name, "i") == 0) {
+          log_info("[POST_PROCESS] Reassigning variable '%s' from parent to for_loop",
+                   variable->name);
+
+          // Remove from current parent's children array
+          if (variable->parent) {
+            ASTNode *old_parent = variable->parent;
+            for (size_t idx = 0; idx < old_parent->num_children; idx++) {
+              if (old_parent->children[idx] == variable) {
+                // Shift remaining children to fill the gap
+                for (size_t shift = idx; shift < old_parent->num_children - 1; shift++) {
+                  old_parent->children[shift] = old_parent->children[shift + 1];
+                }
+                old_parent->num_children--;
+                old_parent->children[old_parent->num_children] = NULL; // Clear the last slot
+                log_info("[POST_PROCESS] Removed variable '%s' from parent's children array",
+                         variable->name);
+                break;
+              }
+            }
+          }
+
+          // Update parent pointer and add to control flow structure
+          variable->parent = (ASTNode *)control_flow;
+          ast_node_add_child((ASTNode *)control_flow, variable);
+          break; // Found the right parent, move to next variable
+        }
+      }
+    }
+  }
+
+  log_info("[POST_PROCESS] Variable scoping post-processing complete");
+}
+
 bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
   log_debug("process_all_ast_queries: Starting with root_node_is_null=%d, ctx=%p, ast_root=%p",
             ts_node_is_null(root_node), (void *)ctx, (void *)ast_root);
@@ -1016,13 +1186,14 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
 
   // Define query execution order for semantic hierarchy
   static const char *query_types[] = {
-      "classes",   // Process classes first (for container hierarchy)
-      "structs",   // C/C++ structs
-      "functions", // Top-level functions
-      "methods",   // Class methods
-      "variables", // Variable declarations
-      "imports",   // Imports/includes
-      "docstrings" // Documentation strings
+      "classes",      // Process classes first (for container hierarchy)
+      "structs",      // C/C++ structs
+      "functions",    // Top-level functions
+      "methods",      // Class methods
+      "variables",    // Variable declarations
+      "control_flow", // Control flow structures (loops, conditionals, switches)
+      "imports",      // Imports/includes
+      "docstrings"    // Documentation strings
   };
   static const size_t num_query_types = sizeof(query_types) / sizeof(query_types[0]);
 
@@ -1110,6 +1281,10 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
 
   // Clean up
   free(node_map);
+
+  // Post-process to fix variable scoping (assign variables declared in control structures to those
+  // structures)
+  post_process_variable_scoping(ctx);
 
   return successful_queries > 0;
 }

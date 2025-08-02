@@ -160,17 +160,17 @@ static const char *ast_type_to_string(ASTNodeType type) {
   case NODE_VARIABLE_DECLARATION:
     return "VARIABLE_DECLARATION";
   case NODE_FOR_STATEMENT:
-    return "FOR_STATEMENT";
+    return "LOOP_FOR";
   case NODE_WHILE_STATEMENT:
-    return "WHILE_STATEMENT";
+    return "LOOP_WHILE";
   case NODE_DO_WHILE_STATEMENT:
-    return "DO_WHILE_STATEMENT";
+    return "LOOP_DO_WHILE";
   case NODE_IF_STATEMENT:
-    return "IF_STATEMENT";
+    return "CONDITION_IF";
   case NODE_IF_ELSE_IF_STATEMENT:
-    return "IF_STATEMENT";
+    return "CONDITION_IF";
   case NODE_SWITCH_STATEMENT:
-    return "SWITCH_STATEMENT";
+    return "CONDITION_SWITCH";
   default:
     log_warning("Unknown AST node type: %d", (int)type);
     return "UNKNOWN"; // Changed to uppercase for consistency
@@ -566,7 +566,8 @@ bool validate_ast_against_json(const ASTNode *node, JsonValue *expected) {
   return valid;
 }
 
-bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, TestGranularityLevel granularity_level) {
+bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected,
+                                   TestGranularityLevel granularity_level) {
   // Ensure we have a valid path string to use in error messages
   const char *node_path = node ? node->file_path : NULL;
   const char *safe_path = node_path ? node_path : "<unknown>";
@@ -592,9 +593,9 @@ bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, Tes
   bool valid = true;
 
   // Log debugging information
-  cr_log_info("%s: Validating node (granularity level %d) of type '%s' with name '%s'", 
-              SAFE_STR(safe_path), granularity_level,
-              SAFE_STR(ast_type_to_string(node->type)), node->name ? node->name : "<unnamed>");
+  cr_log_info("%s: Validating node (granularity level %d) of type '%s' with name '%s'",
+              SAFE_STR(safe_path), granularity_level, SAFE_STR(ast_type_to_string(node->type)),
+              node->name ? node->name : "<unnamed>");
 
   // Level 1 (SMOKE): Just verify we can parse without crashing
   if (granularity_level == GRANULARITY_SMOKE) {
@@ -609,18 +610,19 @@ bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, Tes
       const char *expected_type = type_field->value.string;
       const char *node_type = ast_type_to_string(node->type);
       if (strcmp(expected_type, node_type) != 0) {
-        cr_log_error("%s: Type mismatch - expected '%s', got '%s'", safe_path, expected_type, node_type);
+        cr_log_error("%s: Type mismatch - expected '%s', got '%s'", safe_path, expected_type,
+                     node_type);
         valid = false;
       }
     }
-    
+
     // For structural level, also check if we have children when expected
     JsonValue *children_field = find_json_field(expected, "children");
     if (children_field && children_field->type == JSON_ARRAY) {
       size_t expected_children = children_field->value.array.size;
       if (node->num_children != expected_children) {
-        cr_log_error("%s: Child count mismatch - expected %zu, got %zu", 
-                     safe_path, expected_children, node->num_children);
+        cr_log_error("%s: Child count mismatch - expected %zu, got %zu", safe_path,
+                     expected_children, node->num_children);
         valid = false;
       }
     }
@@ -636,17 +638,18 @@ bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, Tes
         cr_log_error("%s: Expected name '%s', but node name is NULL", safe_path, expected_name);
         valid = false;
       } else if (strcmp(expected_name, node->name) != 0) {
-        cr_log_error("%s: Name mismatch - expected '%s', got '%s'", 
-                     safe_path, expected_name, node->name);
+        cr_log_error("%s: Name mismatch - expected '%s', got '%s'", safe_path, expected_name,
+                     node->name);
         valid = false;
       }
     }
-    
+
     // Recursively validate children
     JsonValue *children_field = find_json_field(expected, "children");
     if (children_field && children_field->type == JSON_ARRAY) {
       for (size_t i = 0; i < children_field->value.array.size && i < node->num_children; i++) {
-        if (!validate_ast_with_granularity(node->children[i], children_field->value.array.items[i], granularity_level)) {
+        if (!validate_ast_with_granularity(node->children[i], children_field->value.array.items[i],
+                                           granularity_level)) {
           valid = false;
         }
       }
@@ -660,12 +663,12 @@ bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, Tes
     if (qualified_name_field && qualified_name_field->type == JSON_STRING) {
       const char *expected_qname = qualified_name_field->value.string;
       if (!node->qualified_name) {
-        cr_log_error("%s: Expected qualified_name '%s', but node qualified_name is NULL", 
-                     safe_path, expected_qname);
+        cr_log_error("%s: Expected qualified_name '%s', but node qualified_name is NULL", safe_path,
+                     expected_qname);
         valid = false;
       } else if (strcmp(expected_qname, node->qualified_name) != 0) {
-        cr_log_error("%s: Qualified name mismatch - expected '%s', got '%s'", 
-                     safe_path, expected_qname, node->qualified_name);
+        cr_log_error("%s: Qualified name mismatch - expected '%s', got '%s'", safe_path,
+                     expected_qname, node->qualified_name);
         valid = false;
       }
     }
@@ -676,8 +679,8 @@ bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, Tes
       const char *expected_signature = signature_field->value.string;
       const char *node_signature = node->signature ? node->signature : "";
       if (strcmp(expected_signature, node_signature) != 0) {
-        cr_log_error("%s: Signature mismatch - expected '%s', got '%s'", 
-                     safe_path, expected_signature, node_signature);
+        cr_log_error("%s: Signature mismatch - expected '%s', got '%s'", safe_path,
+                     expected_signature, node_signature);
         valid = false;
       }
     }
@@ -688,8 +691,8 @@ bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected, Tes
       const char *expected_docstring = docstring_field->value.string;
       const char *node_docstring = node->docstring ? node->docstring : "";
       if (strcmp(expected_docstring, node_docstring) != 0) {
-        cr_log_error("%s: Docstring mismatch - expected '%s', got '%s'", 
-                     safe_path, expected_docstring, node_docstring);
+        cr_log_error("%s: Docstring mismatch - expected '%s', got '%s'", safe_path,
+                     expected_docstring, node_docstring);
         valid = false;
       }
     }
