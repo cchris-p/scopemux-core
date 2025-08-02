@@ -618,6 +618,58 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
   // 4. Process docstrings
   process_docstrings(ast_root, ctx);
 
+  // 4.1. Manual docstring processing (temporary fix)
+
+  // Find and process docstring nodes
+  ASTNode **docstrings_to_remove =
+      MALLOC(sizeof(ASTNode *) * ast_root->num_children, "docstrings_to_remove");
+  size_t remove_count = 0;
+
+  if (docstrings_to_remove) {
+    for (size_t i = 0; i < ast_root->num_children; i++) {
+      ASTNode *child = ast_root->children[i];
+      if (child && child->type == NODE_DOCSTRING) {
+        // Check if it's a file-level docstring (contains @file)
+        if (child->raw_content && strstr(child->raw_content, "@file")) {
+          // Attach to root node
+          if (!ast_root->docstring) {
+            ast_root->docstring = STRDUP(child->raw_content, "root_docstring");
+          }
+        } else {
+          // Try to find the next function node and attach the docstring to it
+          for (size_t j = i + 1; j < ast_root->num_children; j++) {
+            ASTNode *next_child = ast_root->children[j];
+            if (next_child && next_child->type == NODE_FUNCTION) {
+              if (!next_child->docstring && child->raw_content) {
+                next_child->docstring = STRDUP(child->raw_content, "function_docstring");
+              }
+              break;
+            }
+          }
+        }
+        // Mark for removal
+        docstrings_to_remove[remove_count++] = child;
+      }
+    }
+
+    // Remove docstring nodes from children array
+    for (size_t i = 0; i < remove_count; i++) {
+      ASTNode *to_remove = docstrings_to_remove[i];
+      for (size_t j = 0; j < ast_root->num_children; j++) {
+        if (ast_root->children[j] == to_remove) {
+          // Shift remaining children down
+          for (size_t k = j; k < ast_root->num_children - 1; k++) {
+            ast_root->children[k] = ast_root->children[k + 1];
+          }
+          ast_root->num_children--;
+          break;
+        }
+      }
+    }
+
+    FREE(docstrings_to_remove);
+  }
+
   if (ctx->log_level <= LOG_DEBUG) {
     log_debug("Applying post-processing");
   }

@@ -410,7 +410,7 @@ bool run_ast_test(const ASTTestConfig *config) {
     } else {
       // Compare AST with expected AST section using granularity-aware validation
       test_passed = validate_ast_with_granularity(ast_root, ast_section, config->granularity_level);
-      if (!test_passed && config->debug_mode) {
+      if (!test_passed) {
         fprintf(stderr, "\n========== AST/JSON MISMATCH =========="
                         "\n");
         fprintf(stderr, "ACTUAL AST (as JSON):\n");

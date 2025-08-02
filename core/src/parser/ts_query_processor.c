@@ -586,6 +586,14 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
                clean_capture_name, clean_query_type, is_main_node);
       if (is_main_node) {
         main_node = node;
+        // For control flow structures, use the capture name as the node name
+        if (strcmp(query_type, "control_flow") == 0 && !node_name) {
+          node_name = memory_debug_strndup(clean_capture_name, clean_length, __FILE__, __LINE__,
+                                           "main_capture_name");
+          name_source = AST_SOURCE_DEBUG_ALLOC;
+          log_info("[CONTROL_FLOW_DEBUG] Set node name from capture: '%.*s'", (int)clean_length,
+                   clean_capture_name);
+        }
       }
       // Name capture
       if (strncmp(clean_capture_name, "name", clean_length) == 0) {
@@ -742,18 +750,33 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         size_t function_count =
             parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, function_nodes, 32);
 
+        log_info("[HIERARCHY_DEBUG] Searching for parent function for %s '%s' at line %u, found "
+                 "%zu functions",
+                 ast_node_type_to_string(actual_node_type), ast_node->name,
+                 ast_node->range.start.line, function_count);
+
         // Find the function that contains this variable/control flow structure based on source
         // position
         for (size_t i = 0; i < function_count; i++) {
           const ASTNode *potential_parent = function_nodes[i];
           if (potential_parent) {
+            log_info("[HIERARCHY_DEBUG] Checking function '%s' range [%u-%u] vs node range [%u-%u]",
+                     potential_parent->name, potential_parent->range.start.line,
+                     potential_parent->range.end.line, ast_node->range.start.line,
+                     ast_node->range.end.line);
             // Check if this node is within the function's source range
             if (ast_node->range.start.line >= potential_parent->range.start.line &&
                 ast_node->range.end.line <= potential_parent->range.end.line) {
               proper_parent = (ASTNode *)potential_parent; // Cast away const for assignment
+              log_info("[HIERARCHY_DEBUG] Found containing function '%s' for %s '%s'",
+                       potential_parent->name, ast_node_type_to_string(actual_node_type),
+                       ast_node->name);
               break; // Use the first matching function (should be the most specific one)
             }
           }
+        }
+        if (proper_parent == ast_root) {
+          log_info("[HIERARCHY_DEBUG] No containing function found, using root as parent");
         }
       }
 
@@ -858,7 +881,8 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
                 ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
                 log_info("[SIGNATURE_DEBUG] Function '%s' signature set to: '%s'", ast_node->name,
                          clean_sig);
-                memory_debug_free(clean_sig, __FILE__, __LINE__);
+                // Don't free clean_sig here since ast_node_set_signature takes ownership when using
+                // AST_SOURCE_DEBUG_ALLOC
               }
               memory_debug_free(sig_copy, __FILE__, __LINE__);
             }
@@ -922,7 +946,8 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
                 *dst = '\0';
 
                 ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
-                memory_debug_free(clean_sig, __FILE__, __LINE__);
+                // Don't free clean_sig here since ast_node_set_signature takes ownership when using
+                // AST_SOURCE_DEBUG_ALLOC
               }
               memory_debug_free(sig_copy, __FILE__, __LINE__);
             }
@@ -967,7 +992,8 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
                 *dst = '\0';
 
                 ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
-                memory_debug_free(clean_sig, __FILE__, __LINE__);
+                // Don't free clean_sig here since ast_node_set_signature takes ownership when using
+                // AST_SOURCE_DEBUG_ALLOC
               }
               memory_debug_free(sig_copy, __FILE__, __LINE__);
             }
