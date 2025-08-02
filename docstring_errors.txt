@@ -1,0 +1,1188 @@
+[test_runner_lib] Testing: core/tests/examples/c/basic_syntax/docstring_test.c
+[c Example Test: docstring_test.c] DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/docstring_test.c
+[c Example Test: docstring_test.c] DEBUG: Current working directory: /home/matrillo/apps/scopemux-core/build-c/core/tests
+[c Example Test: docstring_test.c] DEBUG: Directory listing for core/tests/examples/c/basic_syntax:
+[c Example Test: docstring_test.c]   docstring_test.c
+[c Example Test: docstring_test.c]   hello_world.c
+[c Example Test: docstring_test.c]   .
+[c Example Test: docstring_test.c]   hello_world.c.expected.json
+[c Example Test: docstring_test.c]   variables_loops_conditions.c
+[c Example Test: docstring_test.c]   variables_loops_conditions.c.expected.json
+[c Example Test: docstring_test.c]   docstring_test.c.expected.json
+[c Example Test: docstring_test.c]   ..
+[c Example Test: docstring_test.c] DEBUG: file size for core/tests/examples/c/basic_syntax/docstring_test.c is 523 bytes
+[c Example Test: docstring_test.c] DEBUG: About to allocate ParserContext of size 136
+[c Example Test: docstring_test.c] DEBUG: safe_malloc returned raw_ptr=0x60d0000001e0
+[c Example Test: docstring_test.c] DEBUG: after cast ctx=0x60d0000001e0
+[c Example Test: docstring_test.c] DEBUG: About to memset ctx=0x60d0000001e0 with size 136
+[c Example Test: docstring_test.c] DEBUG: memset completed successfully
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Registered C language compliance callbacks
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Registered language-specific compliance callbacks
+[c Example Test: docstring_test.c] [scopemux] INFO: Loading hardcoded node type mappings
+[c Example Test: docstring_test.c] [scopemux] Loaded 14 hardcoded node type mappings
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Initialized node type mappings
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Successfully initialized parser context at 0x60d0000001e0
+[c Example Test: docstring_test.c] [DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=0x60d0000001e0, content=0x616000031b80, content_length=523, filename=docstring_test.c, language=1
+[c Example Test: docstring_test.c] [DEBUG] parser_clear starting for ctx=0x60d0000001e0
+[c Example Test: docstring_test.c] [DEBUG] ctx->num_ast_nodes=0
+[c Example Test: docstring_test.c] [scopemux] Loading hardcoded node type mappings:
+[c Example Test: docstring_test.c]   functions -> NODE_FUNCTION
+[c Example Test: docstring_test.c]   classes -> NODE_CLASS
+[c Example Test: docstring_test.c]   methods -> NODE_METHOD
+[c Example Test: docstring_test.c]   variables -> NODE_VARIABLE
+[c Example Test: docstring_test.c]   modules -> NODE_MODULE
+[c Example Test: docstring_test.c]   structs -> NODE_STRUCT
+[c Example Test: docstring_test.c]   unions -> NODE_UNION
+[c Example Test: docstring_test.c]   enums -> NODE_ENUM
+[c Example Test: docstring_test.c]   typedefs -> NODE_TYPEDEF
+[c Example Test: docstring_test.c]   includes -> NODE_INCLUDE
+[c Example Test: docstring_test.c]   macros -> NODE_MACRO
+[c Example Test: docstring_test.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: docstring_test.c]   interfaces -> NODE_INTERFACE
+[c Example Test: docstring_test.c]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] ENTER: manager=0x606000013a60
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x6020000013d0
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x604000001f10 (language_count=6)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x611000000680 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000680
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x6110000007c0 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000007c0
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x611000000900 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000900
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x611000000a40 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000a40
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x611000000b80 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000b80
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x611000000cc0 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000000cc0
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x604000001f10
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x604000001ed0
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x603000012220
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x604000001f50
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x606000013a60
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [LIFECYCLE] Exiting parser_clear for ctx=0x60d0000001e0
+[c Example Test: docstring_test.c] [DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=0x60d0000001e0, language=1
+[c Example Test: docstring_test.c] [DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=0x60d0000001e0, language=1
+[c Example Test: docstring_test.c] 
+[c Example Test: docstring_test.c] ***** PARSER INITIALIZATION DIAGNOSTIC *****
+[c Example Test: docstring_test.c] Test executable pid: 2537829
+[c Example Test: docstring_test.c] Using statically linked Tree-sitter libraries
+[c Example Test: docstring_test.c] SYMBOL RESOLUTION CHECK:
+[c Example Test: docstring_test.c]   dlsym(tree_sitter_c): 0x55aba9124cee
+[c Example Test: docstring_test.c]   dlsym(tree_sitter_cpp): 0x55aba913afdb
+[c Example Test: docstring_test.c]   dlsym(tree_sitter_python): 0x55aba9140d9b
+[c Example Test: docstring_test.c]   dlsym(tree_sitter_javascript): 0x55aba9148abe
+[c Example Test: docstring_test.c]   dlsym(tree_sitter_typescript): 0x55aba914fe83
+[c Example Test: docstring_test.c] [DIAGNOSTIC] ts_init_parser_impl: language enum: 1
+[c Example Test: docstring_test.c] [DIAGNOSTIC] Language name: C
+[c Example Test: docstring_test.c] [DIAGNOSTIC] Adapter lookup result: 0x55aba980c060
+[c Example Test: docstring_test.c] [DIAGNOSTIC] Adapter language_name: C
+[c Example Test: docstring_test.c] [DIAGNOSTIC] Adapter get_ts_language pointer: 0x55aba9124cee
+[c Example Test: docstring_test.c] [DIAGNOSTIC] Result of get_ts_language(): 0x55aba97680c0
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Successfully retrieved language object for language type 1, address: 0x55aba97680c0
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Calling ts_parser_set_language with parser=0x61b00001d580, language=0x55aba97680c0
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] ts_parser_set_language succeeded
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Verification: ts_parser_language() returned: 0x55aba97680c0
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Language verification successful - pointer match confirmed
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] TS_INIT_PARSER_IMPL: PARSER INITIALIZATION COMPLETE
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] ===================================================================
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Successfully set language for Tree-sitter parser
+[c Example Test: docstring_test.c] DEBUG: Tried queries directory: queries/c (not found)
+[c Example Test: docstring_test.c] DEBUG: Tried queries directory: ../queries/c (not found)
+[c Example Test: docstring_test.c] DEBUG: Tried queries directory: ../../queries/c (not found)
+[c Example Test: docstring_test.c] DEBUG: Using queries directory: ../../../queries/c
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Loading hardcoded node type mappings (source of truth)...
+[c Example Test: docstring_test.c] [scopemux] INFO: Loading hardcoded node type mappings
+[c Example Test: docstring_test.c] [scopemux] Loaded 14 hardcoded node type mappings
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] Initialized query manager with queries directory: ../../../queries/c
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] ts_init_parser returned: TRUE
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] After initialization: Tree-sitter parser=0x61b00001d580, language=0x55aba97680c0
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] ===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [create_ast_root_node] ctx->filename: 'docstring_test.c' (basename: 'docstring_test.c')
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [create_ast_root_node] Created root node with name: 'docstring_test.c'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [create_ast_root_node] Set qualified_name: 'docstring_test.c'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Source code preview (first 100 bytes): '// Regular comment at the top (should NOT be file-level docstring)
+[c Example Test: docstring_test.c] // This is just a normal comment
+[c Example Test: docstring_test.c] ...'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=9
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Child 0: type='comment', named=1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Child 1: type='comment', named=1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Child 2: type='comment', named=1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Child 3: type='comment', named=1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Child 4: type='comment', named=1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: classes (1 of 7)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: classes
+[c Example Test: docstring_test.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: classes
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/classes.scm
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/classes.scm
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'classes' has 0 patterns and 0 possible captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Mapped 'classes' query to AST node type 3
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'classes' finished processing: 0 matches, 0 nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: structs (2 of 7)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: structs
+[c Example Test: docstring_test.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: structs
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/structs.scm
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/structs.scm
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'structs' has 2 patterns and 2 possible captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Mapped structs query to NODE_STRUCT
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Mapped 'structs' query to AST node type 21
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'structs' finished processing: 0 matches, 0 nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: docstring_test.c] [FUNCTIONS_DEBUG] About to process FUNCTIONS query at index 2
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: functions (3 of 7)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: functions
+[c Example Test: docstring_test.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: functions
+[c Example Test: docstring_test.c] [FUNCTIONS_DEBUG] *** DETECTED functions query request ***
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/functions.scm
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/functions.scm
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'functions' has 2 patterns and 2 possible captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Mapped functions query to NODE_FUNCTION
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Mapped 'functions' query to AST node type 2
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int foo(void) {
+[c Example Test: docstring_test.c]     return 42;
+[c Example Test: docstring_test.c] }'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='foo'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x611000016d40, type=2
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000016d40) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Set content for function node 'foo'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Added FUNCTION node 'foo' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Found match 2 with 2 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Capture 0: name='function', node_type='function_definition', text='int bar(int x) {
+[c Example Test: docstring_test.c]     return x * 2;
+[c Example Test: docstring_test.c] }'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='function', clean_capture_name='function', clean_query_type='functions', is_main_node=1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='bar'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Main node detection: query_type='functions', capture_name='name', clean_capture_name='name', clean_query_type='functions', is_main_node=0
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x611000016e80, type=2
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000016e80) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Set content for function node 'bar'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Added FUNCTION node 'bar' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'functions' finished processing: 2 matches, 2 nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'functions' SUCCEEDED: Added 2 node(s)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: methods (4 of 7)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: methods
+[c Example Test: docstring_test.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: methods
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/methods.scm
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/methods.scm
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'methods' has 0 patterns and 0 possible captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Mapped 'methods' query to AST node type 4
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'methods' finished processing: 0 matches, 0 nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: variables (5 of 7)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:35] [INFO] [QUERY_DEBUG] Processing query type: variables
+[c Example Test: docstring_test.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: variables
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/variables.scm
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/variables.scm
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'variables' has 11 patterns and 2 possible captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Mapped 'variables' query to AST node type 5
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 1 with 2 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='variable', node_type='parameter_declaration', text='int x'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='variable', clean_capture_name='variable', clean_query_type='variables', is_main_node=1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 1: name='name', node_type='identifier', text='x'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='variables', capture_name='name', clean_capture_name='name', clean_query_type='variables', is_main_node=0
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x61100001ef40, type=5
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100001ef40) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added VARIABLE node 'x' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'variables' finished processing: 1 matches, 1 nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'variables' SUCCEEDED: Added 1 node(s)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Processing query type: imports (6 of 7)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Processing query type: imports
+[c Example Test: docstring_test.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: imports
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/imports.scm
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/imports.scm
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'imports' has 0 patterns and 0 possible captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Mapped 'imports' query to AST node type 9
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'imports' finished processing: 0 matches, 0 nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Processing query type: docstrings
+[c Example Test: docstring_test.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/docstrings.scm
+[c Example Test: docstring_test.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/docstrings.scm
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 1 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='// Regular comment at the top (should NO'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x61100001ff80, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x61100001ff80) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '// Regular comment at the top (should NOT be file-level docstring)'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '// Regular comment at the top (should NOT be file-level docstring)' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 2 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='// This is just a normal comment'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x6110000200c0, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x6110000200c0) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '// This is just a normal comment'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '// This is just a normal comment' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 3 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: docstring_test.c]  * @file docstring_test.c
+[c Example Test: docstring_test.c]  * @brief '
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x611000020200, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000020200) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: docstring_test.c]  * @file docstring_test.c
+[c Example Test: docstring_test.c]  * @brief This is the file-level docstring and should be assigned to the root node.
+[c Example Test: docstring_test.c]  *
+[c Example Test: docstring_test.c]  * This file is for testing docstring extraction logic.
+[c Example Test: docstring_test.c]  */'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: docstring_test.c]  * @file docstring_test.c
+[c Example Test: docstring_test.c]  * @brief This is the file-level docstring and should be assigned to the root node.
+[c Example Test: docstring_test.c]  *
+[c Example Test: docstring_test.c]  * This file is for testing docstring extraction logic.
+[c Example Test: docstring_test.c]  */' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 4 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='// Another regular comment'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x611000020340, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000020340) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '// Another regular comment'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '// Another regular comment' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 5 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level d'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x611000020480, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000020480) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for foo
+[c Example Test: docstring_test.c]  */'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for foo
+[c Example Test: docstring_test.c]  */' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 6 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level d'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x6110000205c0, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x6110000205c0) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for foo
+[c Example Test: docstring_test.c]  */'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for foo
+[c Example Test: docstring_test.c]  */' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 7 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='// Yet another comment'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x611000020700, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000020700) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '// Yet another comment'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '// Yet another comment' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 8 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level d'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x611000020840, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000020840) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for bar
+[c Example Test: docstring_test.c]  */'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for bar
+[c Example Test: docstring_test.c]  */' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Found match 9 with 1 captures
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level d'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: docstring_test.c] [AST_CREATE] Created ASTNode at 0x611000020980, type=19
+[c Example Test: docstring_test.c] [AST_REGISTER_CALL] parser_add_ast_node(ctx, 0x611000020980) returned 1
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for bar
+[c Example Test: docstring_test.c]  */'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Added DOCSTRING node '/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for bar
+[c Example Test: docstring_test.c]  */' to AST (and registered in context)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'docstrings' finished processing: 9 matches, 9 nodes added
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 9 node(s)
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] AST query processing complete: 3 successful, 4 failed, total AST nodes: 12
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [INFO] [QUERY_DEBUG] AST query processing summary: 3 successful, 4 failed, total AST nodes: 12
+[c Example Test: docstring_test.c] DEBUG: read_file_contents called with path: core/tests/examples/c/basic_syntax/docstring_test.c.expected.json
+[c Example Test: docstring_test.c] DEBUG: Current working directory: /home/matrillo/apps/scopemux-core/build-c/core/tests
+[c Example Test: docstring_test.c] DEBUG: Directory listing for core/tests/examples/c/basic_syntax:
+[c Example Test: docstring_test.c]   docstring_test.c
+[c Example Test: docstring_test.c]   hello_world.c
+[c Example Test: docstring_test.c]   .
+[c Example Test: docstring_test.c]   hello_world.c.expected.json
+[c Example Test: docstring_test.c]   variables_loops_conditions.c
+[c Example Test: docstring_test.c]   variables_loops_conditions.c.expected.json
+[c Example Test: docstring_test.c]   docstring_test.c.expected.json
+[c Example Test: docstring_test.c]   ..
+[c Example Test: docstring_test.c] DEBUG: file size for core/tests/examples/c/basic_syntax/docstring_test.c.expected.json is 1127 bytes
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Child count mismatch - expected 2, got 3
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Qualified name mismatch - expected 'docstring_test.c.foo', got 'foo'
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Signature mismatch - expected 'int foo(void)', got ''
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Docstring mismatch - expected '/**\n * @brief This is a function-level docstring for foo\n */', got '/**
+[c Example Test: docstring_test.c] [ERR ]  * @brief This is a function-level docstring for foo
+[c Example Test: docstring_test.c] [ERR ]  */'
+[c Example Test: docstring_test.c] [ERR ] (null): Qualified name mismatch - expected 'docstring_test.c.foo', got 'foo'
+[c Example Test: docstring_test.c] [ERR ] (null): Signature mismatch - expected 'int foo(void)', got ''
+[c Example Test: docstring_test.c] [ERR ] (null): Docstring mismatch
+[c Example Test: docstring_test.c] [ERR ] Expected docstring length: 62
+[c Example Test: docstring_test.c] [ERR ] Actual docstring length: 60
+[c Example Test: docstring_test.c] [ERR ] Expected docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 92 (0x5c) '\'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 97 (0x61) 'a'
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 117 (0x75) 'u'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 45 (0x2d) '-'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 118 (0x76) 'v'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Actual docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 10 (0x0a) '?'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 97 (0x61) 'a'
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 117 (0x75) 'u'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 45 (0x2d) '-'
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 118 (0x76) 'v'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Child count mismatch - expected 1, got 0
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Qualified name mismatch - expected 'docstring_test.c.bar', got 'bar'
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Signature mismatch - expected 'int bar(int x)', got ''
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Docstring mismatch - expected '/**\n * @brief This is a function-level docstring for bar\n */', got '/**
+[c Example Test: docstring_test.c] [ERR ]  * @brief This is a function-level docstring for bar
+[c Example Test: docstring_test.c] [ERR ]  */'
+[c Example Test: docstring_test.c] [ERR ] (null): Qualified name mismatch - expected 'docstring_test.c.bar', got 'bar'
+[c Example Test: docstring_test.c] [ERR ] (null): Signature mismatch - expected 'int bar(int x)', got ''
+[c Example Test: docstring_test.c] [ERR ] (null): Docstring mismatch
+[c Example Test: docstring_test.c] [ERR ] Expected docstring length: 62
+[c Example Test: docstring_test.c] [ERR ] Actual docstring length: 60
+[c Example Test: docstring_test.c] [ERR ] Expected docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 92 (0x5c) '\'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 97 (0x61) 'a'
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 117 (0x75) 'u'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 45 (0x2d) '-'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 118 (0x76) 'v'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Actual docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 10 (0x0a) '?'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 97 (0x61) 'a'
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 117 (0x75) 'u'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 45 (0x2d) '-'
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 118 (0x76) 'v'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] (null): Expected 1 children, but node has no children array
+[c Example Test: docstring_test.c] [ERR ] <unknown>: Docstring mismatch - expected '/**\n * @file docstring_test.c\n * @brief This is the file-level docstring and should be assigned to the root node.\n *\n * This file is for testing docstring extraction logic.\n */', got '/**
+[c Example Test: docstring_test.c] [ERR ]  * @file docstring_test.c
+[c Example Test: docstring_test.c] [ERR ]  * @brief This is the file-level docstring and should be assigned to the root node.
+[c Example Test: docstring_test.c] [ERR ]  *
+[c Example Test: docstring_test.c] [ERR ]  * This file is for testing docstring extraction logic.
+[c Example Test: docstring_test.c] [ERR ]  */'
+[c Example Test: docstring_test.c] [ERR ] (null): Docstring mismatch
+[c Example Test: docstring_test.c] [ERR ] Expected docstring length: 181
+[c Example Test: docstring_test.c] [ERR ] Actual docstring length: 176
+[c Example Test: docstring_test.c] [ERR ] Expected docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 92 (0x5c) '\'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 95 (0x5f) '_'
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 46 (0x2e) '.'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 92 (0x5c) '\'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Actual docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 10 (0x0a) '?'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 95 (0x5f) '_'
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 46 (0x2e) '.'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 10 (0x0a) '?'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [2025-08-02 15:37:36] [WARNING] (null): Children count mismatch - expected 2, got 3
+[c Example Test: docstring_test.c] [ERR ] (null): Qualified name mismatch - expected 'docstring_test.c.foo', got 'foo'
+[c Example Test: docstring_test.c] [ERR ] (null): Signature mismatch - expected 'int foo(void)', got ''
+[c Example Test: docstring_test.c] [ERR ] (null): Docstring mismatch
+[c Example Test: docstring_test.c] [ERR ] Expected docstring length: 62
+[c Example Test: docstring_test.c] [ERR ] Actual docstring length: 60
+[c Example Test: docstring_test.c] [ERR ] Expected docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 92 (0x5c) '\'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 97 (0x61) 'a'
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 117 (0x75) 'u'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 45 (0x2d) '-'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 118 (0x76) 'v'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Actual docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 10 (0x0a) '?'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 97 (0x61) 'a'
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 117 (0x75) 'u'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 45 (0x2d) '-'
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 118 (0x76) 'v'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] (null): Qualified name mismatch - expected 'docstring_test.c.bar', got 'bar'
+[c Example Test: docstring_test.c] [ERR ] (null): Signature mismatch - expected 'int bar(int x)', got ''
+[c Example Test: docstring_test.c] [ERR ] (null): Docstring mismatch
+[c Example Test: docstring_test.c] [ERR ] Expected docstring length: 62
+[c Example Test: docstring_test.c] [ERR ] Actual docstring length: 60
+[c Example Test: docstring_test.c] [ERR ] Expected docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 92 (0x5c) '\'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 97 (0x61) 'a'
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 117 (0x75) 'u'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 45 (0x2d) '-'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 118 (0x76) 'v'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Actual docstring bytes:
+[c Example Test: docstring_test.c] [ERR ] Byte 0: 47 (0x2f) '/'
+[c Example Test: docstring_test.c] [ERR ] Byte 1: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 2: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 3: 10 (0x0a) '?'
+[c Example Test: docstring_test.c] [ERR ] Byte 4: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 5: 42 (0x2a) '*'
+[c Example Test: docstring_test.c] [ERR ] Byte 6: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 7: 64 (0x40) '@'
+[c Example Test: docstring_test.c] [ERR ] Byte 8: 98 (0x62) 'b'
+[c Example Test: docstring_test.c] [ERR ] Byte 9: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 10: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 11: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 12: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 13: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 14: 84 (0x54) 'T'
+[c Example Test: docstring_test.c] [ERR ] Byte 15: 104 (0x68) 'h'
+[c Example Test: docstring_test.c] [ERR ] Byte 16: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 17: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 18: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 19: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 20: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 21: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 22: 97 (0x61) 'a'
+[c Example Test: docstring_test.c] [ERR ] Byte 23: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 24: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] Byte 25: 117 (0x75) 'u'
+[c Example Test: docstring_test.c] [ERR ] Byte 26: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 27: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 28: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 29: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 30: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 31: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 32: 45 (0x2d) '-'
+[c Example Test: docstring_test.c] [ERR ] Byte 33: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 34: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 35: 118 (0x76) 'v'
+[c Example Test: docstring_test.c] [ERR ] Byte 36: 101 (0x65) 'e'
+[c Example Test: docstring_test.c] [ERR ] Byte 37: 108 (0x6c) 'l'
+[c Example Test: docstring_test.c] [ERR ] Byte 38: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 39: 100 (0x64) 'd'
+[c Example Test: docstring_test.c] [ERR ] Byte 40: 111 (0x6f) 'o'
+[c Example Test: docstring_test.c] [ERR ] Byte 41: 99 (0x63) 'c'
+[c Example Test: docstring_test.c] [ERR ] Byte 42: 115 (0x73) 's'
+[c Example Test: docstring_test.c] [ERR ] Byte 43: 116 (0x74) 't'
+[c Example Test: docstring_test.c] [ERR ] Byte 44: 114 (0x72) 'r'
+[c Example Test: docstring_test.c] [ERR ] Byte 45: 105 (0x69) 'i'
+[c Example Test: docstring_test.c] [ERR ] Byte 46: 110 (0x6e) 'n'
+[c Example Test: docstring_test.c] [ERR ] Byte 47: 103 (0x67) 'g'
+[c Example Test: docstring_test.c] [ERR ] Byte 48: 32 (0x20) ' '
+[c Example Test: docstring_test.c] [ERR ] Byte 49: 102 (0x66) 'f'
+[c Example Test: docstring_test.c] [ERR ] (null): Expected 1 children, but node has no children array
+[c Example Test: docstring_test.c] 
+[c Example Test: docstring_test.c] ========== AST/JSON MISMATCH ==========
+[c Example Test: docstring_test.c] ACTUAL AST (as JSON):
+[c Example Test: docstring_test.c] {
+[c Example Test: docstring_test.c]   "type": "ROOT",
+[c Example Test: docstring_test.c]   "name": "docstring_test.c",
+[c Example Test: docstring_test.c]   "qualified_name": "docstring_test.c",
+[c Example Test: docstring_test.c]   "signature": "",
+[c Example Test: docstring_test.c]   "docstring": "/**
+[c Example Test: docstring_test.c]  * @file docstring_test.c
+[c Example Test: docstring_test.c]  * @brief This is the file-level docstring and should be assigned to the root node.
+[c Example Test: docstring_test.c]  *
+[c Example Test: docstring_test.c]  * This file is for testing docstring extraction logic.
+[c Example Test: docstring_test.c]  */",
+[c Example Test: docstring_test.c]   "children": [
+[c Example Test: docstring_test.c]     {
+[c Example Test: docstring_test.c]       "type": "FUNCTION",
+[c Example Test: docstring_test.c]       "name": "foo",
+[c Example Test: docstring_test.c]       "qualified_name": "foo",
+[c Example Test: docstring_test.c]       "signature": "",
+[c Example Test: docstring_test.c]       "docstring": "/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for foo
+[c Example Test: docstring_test.c]  */",
+[c Example Test: docstring_test.c]       "children": [      ]
+[c Example Test: docstring_test.c]     },
+[c Example Test: docstring_test.c]     {
+[c Example Test: docstring_test.c]       "type": "FUNCTION",
+[c Example Test: docstring_test.c]       "name": "bar",
+[c Example Test: docstring_test.c]       "qualified_name": "bar",
+[c Example Test: docstring_test.c]       "signature": "",
+[c Example Test: docstring_test.c]       "docstring": "/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for bar
+[c Example Test: docstring_test.c]  */",
+[c Example Test: docstring_test.c]       "children": [      ]
+[c Example Test: docstring_test.c]     },
+[c Example Test: docstring_test.c]     {
+[c Example Test: docstring_test.c]       "type": "VARIABLE",
+[c Example Test: docstring_test.c]       "name": "x",
+[c Example Test: docstring_test.c]       "qualified_name": "x",
+[c Example Test: docstring_test.c]       "signature": "",
+[c Example Test: docstring_test.c]       "docstring": "/**
+[c Example Test: docstring_test.c]  * @brief This is a function-level docstring for bar
+[c Example Test: docstring_test.c]  */",
+[c Example Test: docstring_test.c]       "children": [      ]
+[c Example Test: docstring_test.c]     }
+[c Example Test: docstring_test.c]   ]
+[c Example Test: docstring_test.c] }
+[c Example Test: docstring_test.c] EXPECTED AST SECTION:
+[c Example Test: docstring_test.c] 
+[c Example Test: docstring_test.c] =======================================
+[c Example Test: docstring_test.c] [DEBUG] parser_clear starting for ctx=0x60d0000001e0
+[c Example Test: docstring_test.c] [DEBUG] ctx->num_ast_nodes=14
+[c Example Test: docstring_test.c] [WARNING] Attempting to clear the same context twice: 0x60d0000001e0
+[c Example Test: docstring_test.c] [scopemux] Loading hardcoded node type mappings:
+[c Example Test: docstring_test.c]   functions -> NODE_FUNCTION
+[c Example Test: docstring_test.c]   classes -> NODE_CLASS
+[c Example Test: docstring_test.c]   methods -> NODE_METHOD
+[c Example Test: docstring_test.c]   variables -> NODE_VARIABLE
+[c Example Test: docstring_test.c]   modules -> NODE_MODULE
+[c Example Test: docstring_test.c]   structs -> NODE_STRUCT
+[c Example Test: docstring_test.c]   unions -> NODE_UNION
+[c Example Test: docstring_test.c]   enums -> NODE_ENUM
+[c Example Test: docstring_test.c]   typedefs -> NODE_TYPEDEF
+[c Example Test: docstring_test.c]   includes -> NODE_INCLUDE
+[c Example Test: docstring_test.c]   macros -> NODE_MACRO
+[c Example Test: docstring_test.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: docstring_test.c]   interfaces -> NODE_INTERFACE
+[c Example Test: docstring_test.c]   template_specializations -> NODE_TEMPLATE_SPECIALIZATION
+[c Example Test: docstring_test.c] {
+[c Example Test: docstring_test.c]   "type":   "ROOT",
+[c Example Test: docstring_test.c]   "name":   "docstring_test.c",
+[c Example Test: docstring_test.c]   "qualified_name":   "docstring_test.c",
+[c Example Test: docstring_test.c]   "signature":   "",
+[c Example Test: docstring_test.c]   "docstring":   "/**\n * @file docstring_test.c\n * @brief This is the file-level docstring and should be assigned to the root node.\n *\n * This file is for testing docstring extraction logic.\n */",
+[c Example Test: docstring_test.c]   "children":   [
+[c Example Test: docstring_test.c]     {
+[c Example Test: docstring_test.c]       "type":       "FUNCTION",
+[c Example Test: docstring_test.c]       "name":       "foo",
+[c Example Test: docstring_test.c]       "qualified_name":       "docstring_test.c.foo",
+[c Example Test: docstring_test.c]       "signature":       "int foo(void)",
+[c Example Test: docstring_test.c]       "docstring":       "/**\n * @brief This is a function-level docstring for foo\n */",
+[c Example Test: docstring_test.c]       "children":       [
+[c Example Test: docstring_test.c]       ]
+[c Example Test: docstring_test.c]     },
+[c Example Test: docstring_test.c]     {
+[c Example Test: docstring_test.c]       "type":       "FUNCTION",
+[c Example Test: docstring_test.c]       "name":       "bar",
+[c Example Test: docstring_test.c]       "qualified_name":       "docstring_test.c.bar",
+[c Example Test: docstring_test.c]       "signature":       "int bar(int x)",
+[c Example Test: docstring_test.c]       "docstring":       "/**\n * @brief This is a function-level docstring for bar\n */",
+[c Example Test: docstring_test.c]       "children":       [
+[c Example Test: docstring_test.c]         {
+[c Example Test: docstring_test.c]           "type":           "VARIABLE",
+[c Example Test: docstring_test.c]           "name":           "x",
+[c Example Test: docstring_test.c]           "qualified_name":           "docstring_test.c.bar.x",
+[c Example Test: docstring_test.c]           "signature":           "int x",
+[c Example Test: docstring_test.c]           "docstring":           "",
+[c Example Test: docstring_test.c]           "children":           [
+[c Example Test: docstring_test.c]           ]
+[c Example Test: docstring_test.c]         }
+[c Example Test: docstring_test.c]       ]
+[c Example Test: docstring_test.c]     }
+[c Example Test: docstring_test.c]   ]
+[c Example Test: docstring_test.c] }[QUERY_MANAGER_FREE] ENTER: manager=0x606000013b80
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing queries_dir at 0x603000012580
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries array at 0x604000002110 (language_count=6)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 0 at 0x611000001080 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001080
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 1 at 0x6110000011c0 (query_count=7)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000011c0
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 2 at 0x611000001300 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001300
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 3 at 0x611000001440 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001440
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 4 at 0x611000001580 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x611000001580
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached queries for language 5 at 0x6110000016c0 (query_count=0)
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at 0x6110000016c0
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing cached_queries array at 0x604000002110
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing languages array at 0x6040000020d0
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing language_types array at 0x6030000125b0
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing query_counts array at 0x604000002150
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] Freeing manager struct at 0x606000013b80
+[c Example Test: docstring_test.c] [QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete
+[c Example Test: docstring_test.c] [----] ../../../core/tests/src/c/c_example_ast_tests.c:45: Assertion Failed
+[c Example Test: docstring_test.c] [----]   
+[c Example Test: docstring_test.c] [----]   AST test failed for basic_syntax/docstring_test.c
+[c Example Test: docstring_test.c] [----]   
+[c Example Test: docstring_test.c] [FAIL] c_examples::all_examples: (0.58s)
+ FAIL: c Example Test: docstring_test.c (3/)
+[c Example Test: hello_world.c]   docstring_test.c
+[c Example Test: hello_world.c]   docstring_test.c.expected.json
+[c Example Test: hello_world.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [create_ast_root_node] Created root node with name: 'hello_world.c'
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Query 'variables' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Processing query type: docstrings
+[c Example Test: hello_world.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/docstrings.scm
+[c Example Test: hello_world.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/docstrings.scm
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Query 'docstrings' finished processing: 3 matches, 3 nodes added
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [INFO] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 3 node(s)
+[c Example Test: hello_world.c]   docstring_test.c
+[c Example Test: hello_world.c]   docstring_test.c.expected.json
+[c Example Test: hello_world.c] [ERR ] <unknown>: Child count mismatch - expected 2, got 1
+[c Example Test: hello_world.c] [ERR ] <unknown>: Type mismatch - expected 'INCLUDE', got 'FUNCTION'
+[c Example Test: hello_world.c] [ERR ] <unknown>: Name mismatch - expected '<stdio.h>', got 'main'
+[c Example Test: hello_world.c] [ERR ] <unknown>: Qualified name mismatch - expected 'hello_world.c.<stdio.h>', got 'main'
+[c Example Test: hello_world.c] [ERR ] <unknown>: Docstring mismatch - expected '', got '/**
+[c Example Test: hello_world.c] [ERR ] <unknown>: Type mismatch - expected 'INCLUDE', got 'FUNCTION'
+[c Example Test: hello_world.c] [ERR ] (null): Name mismatch - expected '<stdio.h>', got 'main'
+[c Example Test: hello_world.c] [ERR ] (null): Qualified name mismatch - expected 'hello_world.c.<stdio.h>', got 'main'
+[c Example Test: hello_world.c] [ERR ] (null): Docstring mismatch
+[c Example Test: hello_world.c] [ERR ] Expected docstring length: 0
+[c Example Test: hello_world.c] [ERR ] Actual docstring length: 46
+[c Example Test: hello_world.c] [ERR ] Expected docstring bytes:
+[c Example Test: hello_world.c] [ERR ] Actual docstring bytes:
+[c Example Test: hello_world.c] [ERR ] <unknown>: Docstring mismatch - expected '/**\n * @file hello_world.c\n * @brief A simple \"Hello, World!\" program in C\n *\n * This example demonstrates basic C syntax including:\n * - Comments\n * - Include directives\n * - Function declarations\n * - Function definitions\n * - Print statements\n */', got '/**
+[c Example Test: hello_world.c] [ERR ] (null): Docstring mismatch
+[c Example Test: hello_world.c] [ERR ] Expected docstring length: 261
+[c Example Test: hello_world.c] [ERR ] Actual docstring length: 249
+[c Example Test: hello_world.c] [ERR ] Expected docstring bytes:
+[c Example Test: hello_world.c] [ERR ] Actual docstring bytes:
+[c Example Test: hello_world.c] [2025-08-02 15:37:37] [WARNING] (null): Children count mismatch - expected 2, got 1
+[c Example Test: hello_world.c] [ERR ] <unknown>: Type mismatch - expected 'INCLUDE', got 'FUNCTION'
+[c Example Test: hello_world.c] [ERR ] (null): Name mismatch - expected '<stdio.h>', got 'main'
+[c Example Test: hello_world.c] [ERR ] (null): Qualified name mismatch - expected 'hello_world.c.<stdio.h>', got 'main'
+[c Example Test: hello_world.c] [ERR ] (null): Docstring mismatch
+[c Example Test: hello_world.c] [ERR ] Expected docstring length: 0
+[c Example Test: hello_world.c] [ERR ] Actual docstring length: 46
+[c Example Test: hello_world.c] [ERR ] Expected docstring bytes:
+[c Example Test: hello_world.c] [ERR ] Actual docstring bytes:
+[c Example Test: hello_world.c]   "docstring": "/**
+[c Example Test: hello_world.c]       "docstring": "/**
+[c Example Test: hello_world.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: hello_world.c]   "docstring":   "/**\n * @file hello_world.c\n * @brief A simple \"Hello, World!\" program in C\n *\n * This example demonstrates basic C syntax including:\n * - Comments\n * - Include directives\n * - Function declarations\n * - Function definitions\n * - Print statements\n */",
+[c Example Test: hello_world.c]       "docstring":       "",
+[c Example Test: hello_world.c]       "docstring":       "/**\n * @brief A simple hello world program\n */",
+[c Example Test: hello_world.c] [FAIL] c_examples::all_examples: (0.52s)
+ FAIL: c Example Test: hello_world.c (3/)
+[c Example Test: variables_loops_conditions.c]   docstring_test.c
+[c Example Test: variables_loops_conditions.c]   docstring_test.c.expected.json
+[c Example Test: variables_loops_conditions.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] AST node cleanup summary: freed 0 root nodes, skipped 0 child nodes (freed recursively), total tracked: 0
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] Found docstrings.scm at: ../../../queries/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [create_ast_root_node] Created root node with name: 'variables_loops_conditions.c'
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Tree-sitter root node: type='translation_unit', named=1, child_count=4
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Query 'classes' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Query 'structs' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Query 'methods' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Query 'imports' FAILED: No nodes added
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Processing query type: docstrings (7 of 7)
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Processing query type: docstrings
+[c Example Test: variables_loops_conditions.c] DIRECT DEBUG: Entered query_manager_get_query for language 1, query_name: docstrings
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] Trying primary path: ../../../queries/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [QUERY_PATH_DEBUG] SUCCESS: Found query at primary path: ../../../queries/c/docstrings.scm
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Query 'docstrings' has 4 patterns and 1 possible captures
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Mapped 'docstrings' query to AST node type 19
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Capture 0: name='docstring', node_type='comment', text='/**
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Main node detection: query_type='docstrings', capture_name='docstring', clean_capture_name='docstring', clean_query_type='docstrings', is_main_node=1
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Set content for docstring node '/**
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Query 'docstrings' finished processing: 3 matches, 3 nodes added
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [INFO] [QUERY_DEBUG] Query 'docstrings' SUCCEEDED: Added 3 node(s)
+[c Example Test: variables_loops_conditions.c]   docstring_test.c
+[c Example Test: variables_loops_conditions.c]   docstring_test.c.expected.json
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Child count mismatch - expected 2, got 10
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Type mismatch - expected 'INCLUDE', got 'FUNCTION'
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Name mismatch - expected '<stdio.h>', got 'main'
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Qualified name mismatch - expected 'variables_loops_conditions.c.<stdio.h>', got 'main'
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Docstring mismatch - expected '', got '/**
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Type mismatch - expected 'INCLUDE', got 'FUNCTION'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Name mismatch - expected '<stdio.h>', got 'main'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Qualified name mismatch - expected 'variables_loops_conditions.c.<stdio.h>', got 'main'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Docstring mismatch
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring length: 0
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring length: 61
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring bytes:
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring bytes:
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Type mismatch - expected 'FUNCTION', got 'VARIABLE'
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Child count mismatch - expected 8, got 0
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Name mismatch - expected 'main', got 'count'
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Qualified name mismatch - expected 'variables_loops_conditions.c.main', got 'count'
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Signature mismatch - expected 'int main(void)', got ''
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Docstring mismatch - expected '/**\n * @brief Example of variables, loops, and conditions\n */', got '/**
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Type mismatch - expected 'FUNCTION', got 'VARIABLE'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Name mismatch - expected 'main', got 'count'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Qualified name mismatch - expected 'variables_loops_conditions.c.main', got 'count'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Signature mismatch - expected 'int main(void)', got ''
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Docstring mismatch
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring length: 63
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring length: 61
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring bytes:
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring bytes:
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Docstring mismatch - expected '/**\n * @file variables_loops_conditions.c\n * @brief Demonstration of variables, loops, and conditional statements in C\n */', got '/**
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Docstring mismatch
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring length: 125
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring length: 286
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring bytes:
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring bytes:
+[c Example Test: variables_loops_conditions.c] [2025-08-02 15:37:38] [WARNING] (null): Children count mismatch - expected 2, got 10
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Type mismatch - expected 'INCLUDE', got 'FUNCTION'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Name mismatch - expected '<stdio.h>', got 'main'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Qualified name mismatch - expected 'variables_loops_conditions.c.<stdio.h>', got 'main'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Docstring mismatch
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring length: 0
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring length: 61
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring bytes:
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring bytes:
+[c Example Test: variables_loops_conditions.c] [ERR ] <unknown>: Type mismatch - expected 'FUNCTION', got 'VARIABLE'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Name mismatch - expected 'main', got 'count'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Qualified name mismatch - expected 'variables_loops_conditions.c.main', got 'count'
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Signature mismatch - expected 'int main(void)', got ''
+[c Example Test: variables_loops_conditions.c] [ERR ] (null): Docstring mismatch
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring length: 63
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring length: 61
+[c Example Test: variables_loops_conditions.c] [ERR ] Expected docstring bytes:
+[c Example Test: variables_loops_conditions.c] [ERR ] Actual docstring bytes:
+[c Example Test: variables_loops_conditions.c]   "docstring": "/**
+[c Example Test: variables_loops_conditions.c]       "docstring": "/**
+[c Example Test: variables_loops_conditions.c]       "docstring": "/**
+[c Example Test: variables_loops_conditions.c]       "docstring": "",
+[c Example Test: variables_loops_conditions.c]       "docstring": "",
+[c Example Test: variables_loops_conditions.c]       "docstring": "",
+[c Example Test: variables_loops_conditions.c]       "docstring": "",
+[c Example Test: variables_loops_conditions.c]       "docstring": "",
+[c Example Test: variables_loops_conditions.c]       "docstring": "",
+[c Example Test: variables_loops_conditions.c]       "docstring": "",
+[c Example Test: variables_loops_conditions.c]       "docstring": "",
+[c Example Test: variables_loops_conditions.c]   docstrings -> NODE_DOCSTRING
+[c Example Test: variables_loops_conditions.c]   "docstring":   "/**\n * @file variables_loops_conditions.c\n * @brief Demonstration of variables, loops, and conditional statements in C\n */",
+[c Example Test: variables_loops_conditions.c]       "docstring":       "",
+[c Example Test: variables_loops_conditions.c]       "docstring":       "/**\n * @brief Example of variables, loops, and conditions\n */",
+[c Example Test: variables_loops_conditions.c]           "docstring":           "",
+[c Example Test: variables_loops_conditions.c]           "docstring":           "",
+[c Example Test: variables_loops_conditions.c]           "docstring":           "",
+[c Example Test: variables_loops_conditions.c]           "docstring":           "",
+[c Example Test: variables_loops_conditions.c]               "docstring":               "",
+[c Example Test: variables_loops_conditions.c]           "docstring":           "",
+[c Example Test: variables_loops_conditions.c]           "docstring":           "",
+[c Example Test: variables_loops_conditions.c]           "docstring":           "",
+[c Example Test: variables_loops_conditions.c]           "docstring":           "",
+[c Example Test: variables_loops_conditions.c] [FAIL] c_examples::all_examples: (0.60s)
+ FAIL: c Example Test: variables_loops_conditions.c (3/)
+[1;31m FAIL: c/basic_syntax (0/3 tests passed, 3 problems in directory)[0m
+[1;31mc/basic_syntax                           |  FAIL   [0m
+ TESTS FAILED: 1

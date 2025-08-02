@@ -10,6 +10,57 @@
 #include <string.h>
 #include <unistd.h>
 
+/**
+ * Escape a string for JSON output by replacing newlines with \n
+ * and other special characters as needed
+ * Caller is responsible for freeing the returned string
+ */
+static char *escape_json_string(const char *str) {
+  if (!str)
+    return NULL;
+
+  size_t len = strlen(str);
+  // Allocate extra space for escaped characters (worst case: every char becomes 2)
+  char *escaped = malloc(len * 2 + 1);
+  if (!escaped)
+    return NULL;
+
+  const char *src = str;
+  char *dst = escaped;
+
+  while (*src) {
+    switch (*src) {
+    case '\n':
+      *dst++ = '\\';
+      *dst++ = 'n';
+      break;
+    case '\r':
+      *dst++ = '\\';
+      *dst++ = 'r';
+      break;
+    case '\t':
+      *dst++ = '\\';
+      *dst++ = 't';
+      break;
+    case '"':
+      *dst++ = '\\';
+      *dst++ = '"';
+      break;
+    case '\\':
+      *dst++ = '\\';
+      *dst++ = '\\';
+      break;
+    default:
+      *dst++ = *src;
+      break;
+    }
+    src++;
+  }
+  *dst = '\0';
+
+  return escaped;
+}
+
 // Get test granularity level from environment variable (set by run_c_tests.sh)
 TestGranularityLevel get_test_granularity_level(void) {
   const char *env_level = getenv("TEST_GRANULARITY_LEVEL");
@@ -17,17 +68,22 @@ TestGranularityLevel get_test_granularity_level(void) {
     // Default level when not set by script (should not happen in normal usage)
     return GRANULARITY_SEMANTIC;
   }
-  
+
   int level = atoi(env_level);
   switch (level) {
-    case 1: return GRANULARITY_SMOKE;
-    case 2: return GRANULARITY_STRUCTURAL;
-    case 3: return GRANULARITY_SEMANTIC;
-    case 4: return GRANULARITY_DETAILED;
-    case 5: return GRANULARITY_EXACT;
-    default:
-      fprintf(stderr, "Warning: Invalid TEST_GRANULARITY_LEVEL '%s', using default (3)\n", env_level);
-      return GRANULARITY_SEMANTIC;
+  case 1:
+    return GRANULARITY_SMOKE;
+  case 2:
+    return GRANULARITY_STRUCTURAL;
+  case 3:
+    return GRANULARITY_SEMANTIC;
+  case 4:
+    return GRANULARITY_DETAILED;
+  case 5:
+    return GRANULARITY_EXACT;
+  default:
+    fprintf(stderr, "Warning: Invalid TEST_GRANULARITY_LEVEL '%s', using default (3)\n", env_level);
+    return GRANULARITY_SEMANTIC;
   }
 }
 
@@ -63,7 +119,10 @@ static void print_ast_node_json(const ASTNode *node, int level) {
   if (node->docstring) {
     for (int i = 0; i < level + 1; ++i)
       fprintf(stderr, "  ");
-    fprintf(stderr, "\"docstring\": \"%s\",\n", node->docstring);
+    char *escaped_docstring = escape_json_string(node->docstring);
+    fprintf(stderr, "\"docstring\": \"%s\",\n", escaped_docstring ? escaped_docstring : "");
+    if (escaped_docstring)
+      free(escaped_docstring);
   }
   if (node->file_path) {
     for (int i = 0; i < level + 1; ++i)

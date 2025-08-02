@@ -1,5 +1,11 @@
 ;; C docstrings - Tree-sitter patterns for C documentation comments
 
+;; Capture file-level docstring (first docstring-style comment in translation_unit)
+(translation_unit
+  (comment) @docstring
+  (#match? @docstring "^/\*\*")
+)
+
 ;; Capture function docstrings (preceding function definitions)
 (translation_unit
   (comment) @docstring

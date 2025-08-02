@@ -62,6 +62,7 @@ extern ASTNodeType get_node_type_for_query(const char *query_type);
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <assert.h>
+#include <ctype.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
@@ -469,6 +470,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
     char *signature = NULL;
     char *docstring = NULL;
     bool docstring_is_name = false;
+    bool is_main_node = false;
 
     ASTStringSource name_source = AST_SOURCE_NONE;
     ASTStringSource signature_source = AST_SOURCE_NONE;
@@ -481,6 +483,9 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
           ts_query_capture_name_for_id(query, capture.index, &capture_name_length);
       if (!capture_name)
         continue;
+
+      // Reset is_main_node for each capture
+      is_main_node = false;
 
       TSNode node = capture.node;
       if (ts_node_is_null(node))
@@ -504,7 +509,6 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
 
       // Robust main node and capture logic
       // Identify main node (robust plural/singular and @ handling)
-      bool is_main_node = false;
       // Strip @ prefix if present
       const char *clean_capture_name = capture_name;
       size_t clean_length = capture_name_length;
@@ -518,15 +522,17 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         clean_query_type++;
         clean_query_length--;
       }
-      // Direct match (with or without @)
-      if (strncmp(clean_capture_name, clean_query_type, clean_length) == 0) {
+      // Direct match (with or without @) - must be exact length match
+      if (clean_length == strlen(clean_query_type) &&
+          strncmp(clean_capture_name, clean_query_type, clean_length) == 0) {
         is_main_node = true;
+
       } else {
         // Handle singular/plural forms - enhanced to be more robust with partial matches
-        const char *singular_forms[] = {"function", "struct", "class",
-                                        "variable", "method", "docstring"};
-        const char *plural_forms[] = {"functions", "structs", "classes",
-                                      "variables", "methods", "docstrings"};
+        const char *singular_forms[] = {"function", "struct",    "class",  "variable",
+                                        "method",   "docstring", "include"};
+        const char *plural_forms[] = {"functions", "structs",    "classes", "variables",
+                                      "methods",   "docstrings", "imports"};
         for (size_t j = 0; j < sizeof(singular_forms) / sizeof(singular_forms[0]); j++) {
           // Check if clean_capture_name contains the singular form (for @function in a functions
           // query)
@@ -535,6 +541,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
             if (clean_length >= sing_len &&
                 strncmp(clean_capture_name, singular_forms[j], sing_len) == 0) {
               is_main_node = true;
+
               fprintf(stderr, "[SINGPLUR_DEBUG] Found singular form '%s' in query type '%s'\n",
                       singular_forms[j], clean_query_type);
               break;
@@ -639,20 +646,306 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         }
       }
 
-      ast_node_add_child(ast_root, ast_node);
+      // Determine the proper parent based on node type and scope
+      ASTNode *proper_parent = ast_root; // Default to root
+
+      // For variables, try to find the containing function
+      if (node_type == NODE_VARIABLE) {
+        // Get all function nodes created so far in the parser context
+        const ASTNode *function_nodes[32]; // Support up to 32 functions
+        size_t function_count =
+            parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, function_nodes, 32);
+
+        // Find the function that contains this variable based on source position
+        for (size_t i = 0; i < function_count; i++) {
+          const ASTNode *potential_parent = function_nodes[i];
+          if (potential_parent) {
+            // Check if this variable is within the function's source range
+            // Variables are inside a function if they start on or after the function starts
+            // and before or on the function ends (includes function parameters)
+            if (ast_node->range.start.line >= potential_parent->range.start.line &&
+                ast_node->range.end.line <= potential_parent->range.end.line) {
+              proper_parent = (ASTNode *)potential_parent; // Cast away const for assignment
+              break; // Use the first matching function (should be the most specific one)
+            }
+          }
+        }
+      }
+
+      ast_node_add_child(proper_parent, ast_node);
+
+      // If we found a non-root parent, update the qualified name to reflect hierarchy
+      if (proper_parent != ast_root && proper_parent->name) {
+        char *new_qualified_name = memory_debug_malloc(
+            strlen(ast_root->name) + strlen(proper_parent->name) + strlen(ast_node->name) + 3,
+            __FILE__, __LINE__, "hierarchical_qualified_name");
+        if (new_qualified_name) {
+          sprintf(new_qualified_name, "%s.%s.%s", ast_root->name, proper_parent->name,
+                  ast_node->name);
+          if (ast_node->qualified_name &&
+              ast_node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
+            memory_debug_free(ast_node->qualified_name, __FILE__, __LINE__);
+          }
+          ast_node->qualified_name = new_qualified_name;
+          ast_node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
+        }
+      } else {
+        // For root-level nodes, use simple qualified name
+        char *simple_qualified_name =
+            memory_debug_malloc(strlen(ast_root->name) + strlen(ast_node->name) + 2, __FILE__,
+                                __LINE__, "simple_qualified_name");
+        if (simple_qualified_name) {
+          sprintf(simple_qualified_name, "%s.%s", ast_root->name, ast_node->name);
+          if (ast_node->qualified_name &&
+              ast_node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
+            memory_debug_free(ast_node->qualified_name, __FILE__, __LINE__);
+          }
+          ast_node->qualified_name = simple_qualified_name;
+          ast_node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
+        }
+      }
       fprintf(stderr, "[AST_CREATE] Created ASTNode at %p, type=%u\n", (void *)ast_node, node_type);
       bool reg_result = parser_add_ast_node(ctx, ast_node);
       fprintf(stderr, "[AST_REGISTER_CALL] parser_add_ast_node(ctx, %p) returned %d\n",
               (void *)ast_node, reg_result);
-      // If this is a function node, extract and assign raw content
+      // If this is a function node, extract signature and raw content
       if (node_type == NODE_FUNCTION) {
+        // Extract function signature
         char *raw_content = extract_raw_content(main_node, ctx->source_code);
         if (raw_content) {
           ast_node->raw_content = raw_content;
           ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
           log_info("[QUERY_DEBUG] Set content for function node '%s'", ast_node->name);
+
+          // Extract signature from raw content
+          char *signature = raw_content;
+          char *body_start = strchr(raw_content, '{');
+
+          if (body_start) {
+            size_t sig_len = body_start - raw_content;
+            // Trim trailing whitespace
+            while (sig_len > 0 && isspace(signature[sig_len - 1])) {
+              sig_len--;
+            }
+            char *sig_copy =
+                memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "function_signature");
+            if (sig_copy) {
+              strncpy(sig_copy, signature, sig_len);
+              sig_copy[sig_len] = '\0';
+
+              // Clean up the signature - remove extra whitespace and normalize
+              char *clean_sig =
+                  memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "clean_signature");
+              if (clean_sig) {
+                const char *src = sig_copy;
+                char *dst = clean_sig;
+                bool last_was_space = true; // Start true to skip leading spaces
+                bool in_parens = false;
+
+                while (*src) {
+                  if (*src == '(') {
+                    in_parens = true;
+                    *dst++ = *src;
+                    last_was_space = false;
+                  } else if (*src == ')') {
+                    in_parens = false;
+                    *dst++ = *src;
+                    last_was_space = false;
+                  } else if (isspace(*src)) {
+                    if (!last_was_space && (!in_parens || *(src + 1) != ')')) {
+                      *dst++ = ' ';
+                      last_was_space = true;
+                    }
+                  } else {
+                    *dst++ = *src;
+                    last_was_space = false;
+                  }
+                  src++;
+                }
+
+                // Remove trailing space if any
+                if (dst > clean_sig && dst[-1] == ' ') {
+                  dst--;
+                }
+                *dst = '\0';
+
+                ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+                log_info("[SIGNATURE_DEBUG] Function '%s' signature set to: '%s'", ast_node->name,
+                         clean_sig);
+                memory_debug_free(clean_sig, __FILE__, __LINE__);
+              }
+              memory_debug_free(sig_copy, __FILE__, __LINE__);
+            }
+          } else {
+            log_info("[SIGNATURE_DEBUG] Function '%s' no opening brace found in raw content",
+                     ast_node->name);
+          }
         } else {
           log_info("[QUERY_DEBUG] Failed to extract content for function node '%s'",
+                   ast_node->name);
+        }
+      }
+      // If this is a variable node, extract signature
+      else if (node_type == NODE_VARIABLE) {
+        char *raw_content = extract_raw_content(main_node, ctx->source_code);
+        if (raw_content) {
+          ast_node->raw_content = raw_content;
+          ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
+          log_info("[QUERY_DEBUG] Set content for variable node '%s'", ast_node->name);
+
+          // Extract variable signature (declaration up to semicolon)
+          char *signature = raw_content;
+          char *semicolon_pos = strchr(raw_content, ';');
+          if (semicolon_pos) {
+            size_t sig_len = semicolon_pos - raw_content;
+            // Trim trailing whitespace
+            while (sig_len > 0 && isspace(signature[sig_len - 1])) {
+              sig_len--;
+            }
+            char *sig_copy =
+                memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "variable_signature");
+            if (sig_copy) {
+              strncpy(sig_copy, signature, sig_len);
+              sig_copy[sig_len] = '\0';
+
+              // Clean up the signature - remove extra whitespace and normalize
+              char *clean_sig =
+                  memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "clean_variable_signature");
+              if (clean_sig) {
+                const char *src = sig_copy;
+                char *dst = clean_sig;
+                bool last_was_space = true; // Start true to skip leading spaces
+
+                while (*src) {
+                  if (isspace(*src)) {
+                    if (!last_was_space) {
+                      *dst++ = ' ';
+                      last_was_space = true;
+                    }
+                  } else {
+                    *dst++ = *src;
+                    last_was_space = false;
+                  }
+                  src++;
+                }
+
+                // Remove trailing space if any
+                if (dst > clean_sig && dst[-1] == ' ') {
+                  dst--;
+                }
+                *dst = '\0';
+
+                ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+                memory_debug_free(clean_sig, __FILE__, __LINE__);
+              }
+              memory_debug_free(sig_copy, __FILE__, __LINE__);
+            }
+          } else {
+            // For function parameters, there's no semicolon, so use the whole content
+            size_t sig_len = strlen(raw_content);
+            // Trim trailing whitespace
+            while (sig_len > 0 && isspace(raw_content[sig_len - 1])) {
+              sig_len--;
+            }
+            char *sig_copy =
+                memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "param_signature");
+            if (sig_copy) {
+              strncpy(sig_copy, raw_content, sig_len);
+              sig_copy[sig_len] = '\0';
+
+              // Clean up the signature - remove extra whitespace and normalize
+              char *clean_sig =
+                  memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "clean_param_signature");
+              if (clean_sig) {
+                const char *src = sig_copy;
+                char *dst = clean_sig;
+                bool last_was_space = true; // Start true to skip leading spaces
+
+                while (*src) {
+                  if (isspace(*src)) {
+                    if (!last_was_space) {
+                      *dst++ = ' ';
+                      last_was_space = true;
+                    }
+                  } else {
+                    *dst++ = *src;
+                    last_was_space = false;
+                  }
+                  src++;
+                }
+
+                // Remove trailing space if any
+                if (dst > clean_sig && dst[-1] == ' ') {
+                  dst--;
+                }
+                *dst = '\0';
+
+                ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+                memory_debug_free(clean_sig, __FILE__, __LINE__);
+              }
+              memory_debug_free(sig_copy, __FILE__, __LINE__);
+            }
+          }
+        } else {
+          log_info("[QUERY_DEBUG] Failed to extract content for variable node '%s'",
+                   ast_node->name);
+        }
+      }
+      // If this is an include node, extract the header name
+      else if (node_type == NODE_INCLUDE) {
+        // Extract include path from system_lib_string or string_literal
+        for (uint32_t i = 0; i < match.capture_count; i++) {
+          TSQueryCapture capture = match.captures[i];
+          uint32_t capture_name_length;
+          const char *capture_name =
+              ts_query_capture_name_for_id(query, capture.index, &capture_name_length);
+          if (!capture_name)
+            continue;
+
+          // If this is the include capture, mark it as the main node
+          if (strncmp(capture_name, "include", capture_name_length) == 0) {
+            is_main_node = true;
+            main_node = capture.node;
+          }
+          // If this is the name capture, extract the header name
+          else if (strncmp(capture_name, "name", capture_name_length) == 0) {
+            TSNode name_node = capture.node;
+            if (ts_node_is_null(name_node))
+              continue;
+
+            uint32_t text_len = 0;
+            const char *text =
+                ts_node_text(name_node, ctx->source_code, ctx->source_code_length, &text_len);
+            if (text && text_len > 0) {
+              char *name = memory_debug_strndup(text, text_len, __FILE__, __LINE__, "include_name");
+              ast_node_set_name(ast_node, name, AST_SOURCE_DEBUG_ALLOC);
+
+              // Set the qualified name
+              char *qualified_name =
+                  memory_debug_malloc(strlen(ctx->filename) + strlen(name) + 2, __FILE__, __LINE__,
+                                      "include_qualified_name");
+              if (qualified_name) {
+                sprintf(qualified_name, "%s.%s", ctx->filename, name);
+                ast_node_set_qualified_name(ast_node, qualified_name, AST_SOURCE_DEBUG_ALLOC);
+              }
+
+              // Also set it as the raw content
+              ast_node->raw_content =
+                  memory_debug_strndup(text, text_len, __FILE__, __LINE__, "include_content");
+              ast_node->owned_fields |= FIELD_RAW_CONTENT;
+            }
+          }
+        }
+      }
+      // If this is a docstring node, extract and assign raw content
+      if (node_type == NODE_DOCSTRING) {
+        char *raw_content = extract_raw_content(main_node, ctx->source_code);
+        if (raw_content) {
+          ast_node->raw_content = raw_content;
+          ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
+          log_info("[QUERY_DEBUG] Set content for docstring node '%s'", ast_node->name);
+        } else {
+          log_info("[QUERY_DEBUG] Failed to extract content for docstring node '%s'",
                    ast_node->name);
         }
       }

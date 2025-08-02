@@ -124,4 +124,6 @@ Test(cpp_ast, templates, .description = "Test AST extraction of C++ templates") 
   free(source_code);
 }
 
+#endif // ENABLE_STRUCT_UNION_ENUM_TESTS
+
 // Add more C++-specific tests as needed

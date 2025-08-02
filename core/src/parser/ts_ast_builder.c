@@ -18,6 +18,7 @@
 #include "../../core/include/scopemux/ast_compliance.h"
 #include "../../core/include/scopemux/lang_compliance.h"
 #include "../../core/include/scopemux/logging.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include "../../core/include/scopemux/parser.h"
 #include "../../core/include/scopemux/processors/ast_post_processor.h"
 #include "../../core/include/scopemux/processors/docstring_processor.h"
@@ -27,6 +28,7 @@
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include "scopemux/common.h"
+#include <ctype.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -149,16 +151,36 @@ static void apply_qualified_naming_to_children(ASTNode *ast_root, ParserContext 
       continue;
     }
 
-    // Generate qualified name based on parent
+    // Generate qualified name based on parent, but preserve hierarchical qualified names
     if (child->name) {
-      char *qualified_name = generate_qualified_name(child->name, ast_root);
-      if (qualified_name) {
-        // Store original name as an attribute
-        ast_node_set_property(child, "original_name", child->name);
+      // Store original name as an attribute
+      ast_node_set_property(child, "original_name", child->name);
 
-        // Replace name with qualified name
-        safe_free(child->name);
-        child->name = qualified_name;
+      // Only set simple qualified names if the node doesn't already have a hierarchical one
+      // Hierarchical qualified names contain multiple dots (e.g., "file.function.variable")
+      bool has_hierarchical_qname = false;
+      if (child->qualified_name) {
+        // Count dots in the qualified name - hierarchical names have >= 2 dots
+        int dot_count = 0;
+        for (const char *p = child->qualified_name; *p; p++) {
+          if (*p == '.')
+            dot_count++;
+        }
+        has_hierarchical_qname = (dot_count >= 2);
+      }
+
+      if (!has_hierarchical_qname) {
+        // Set qualified name to include parent's name
+        char *qualified_name = memory_debug_malloc(strlen(ast_root->name) + strlen(child->name) + 2,
+                                                   __FILE__, __LINE__, "qualified_name");
+        if (qualified_name) {
+          sprintf(qualified_name, "%s.%s", ast_root->name, child->name);
+          if (child->qualified_name && child->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
+            memory_debug_free(child->qualified_name, __FILE__, __LINE__);
+          }
+          child->qualified_name = qualified_name;
+          child->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
+        }
       }
     }
 
@@ -241,14 +263,8 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
     }
   }
 
-  // Ensure signature and docstring are always set as empty strings
-  ast_node_set_property(node, "signature", "");
-  ast_node_set_property(node, "docstring", "");
-
-  // Map NODE_INCLUDE to NODE_COMMENT for schema compliance
-  if (node->type == NODE_INCLUDE) {
-    node->type = NODE_COMMENT;
-  }
+  // Do NOT set signature and docstring to empty strings if they already have values
+  // This preserves the extracted signatures and docstrings from the query processor
 
   // Apply language-specific schema compliance if available
   if (ctx) {
@@ -504,6 +520,96 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
 
   // 3. Apply qualified naming to children
   apply_qualified_naming_to_children(ast_root, ctx);
+
+  // Organize node hierarchy - move variables under their parent functions
+  size_t i = 0;
+  while (i < ast_root->num_children) {
+    ASTNode *node = ast_root->children[i];
+    if (!node || node->type != NODE_VARIABLE) {
+      i++;
+      continue;
+    }
+
+    bool moved = false;
+    // Find the function that contains this variable
+    for (size_t j = 0; j < ast_root->num_children; j++) {
+      ASTNode *potential_parent = ast_root->children[j];
+      if (!potential_parent || potential_parent->type != NODE_FUNCTION)
+        continue;
+
+      // Check if variable is within function's range
+      if (node->range.start.line >= potential_parent->range.start.line &&
+          node->range.end.line <= potential_parent->range.end.line) {
+        // Move variable under function
+        ast_node_add_child(potential_parent, node);
+
+        // Update variable's qualified name to include function's name
+        char *new_qualified_name = memory_debug_malloc(
+            strlen(ast_root->name) + strlen(potential_parent->name) + strlen(node->name) + 3,
+            __FILE__, __LINE__, "variable_qualified_name");
+        if (new_qualified_name) {
+          sprintf(new_qualified_name, "%s.%s.%s", ast_root->name, potential_parent->name,
+                  node->name);
+          if (node->qualified_name && node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
+            memory_debug_free(node->qualified_name, __FILE__, __LINE__);
+          }
+          node->qualified_name = new_qualified_name;
+          node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
+        }
+
+        // Also update variable's signature if it's in the raw content
+        if (node->raw_content) {
+          char *sig_copy = memory_debug_strndup(node->raw_content, strlen(node->raw_content),
+                                                __FILE__, __LINE__, "variable_signature");
+          if (sig_copy) {
+            // Clean up the signature - remove extra whitespace
+            char *clean_sig =
+                memory_debug_malloc(strlen(sig_copy) + 1, __FILE__, __LINE__, "clean_signature");
+            if (clean_sig) {
+              const char *src = sig_copy;
+              char *dst = clean_sig;
+              bool last_was_space = true; // Start true to skip leading spaces
+
+              while (*src) {
+                if (isspace(*src)) {
+                  if (!last_was_space) {
+                    *dst++ = ' ';
+                    last_was_space = true;
+                  }
+                } else {
+                  *dst++ = *src;
+                  last_was_space = false;
+                }
+                src++;
+              }
+
+              // Remove trailing space if any
+              if (dst > clean_sig && dst[-1] == ' ') {
+                dst--;
+              }
+              *dst = '\0';
+
+              ast_node_set_signature(node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+              memory_debug_free(clean_sig, __FILE__, __LINE__);
+            }
+            memory_debug_free(sig_copy, __FILE__, __LINE__);
+          }
+        }
+
+        // Remove from root's children
+        for (size_t k = i; k < ast_root->num_children - 1; k++) {
+          ast_root->children[k] = ast_root->children[k + 1];
+        }
+        ast_root->num_children--;
+        moved = true;
+        break;
+      }
+    }
+
+    if (!moved) {
+      i++; // Only increment if we didn't move the node
+    }
+  }
 
   if (ctx->log_level <= LOG_DEBUG) {
     log_debug("Processing docstrings");

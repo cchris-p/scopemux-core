@@ -531,3 +531,49 @@ static bool ast_node_init_additional_data(ASTNode *node) {
 
   return true;
 }
+
+/**
+ * Set the name of an AST node
+ * @param node The node to modify
+ * @param name The name to set (will be copied)
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_set_name(ASTNode *node, char *name, ASTStringSource source) {
+  if (!node) {
+    log_error("Cannot set name: null node");
+    return false;
+  }
+
+  // Free existing name if it's owned
+  if (node->name && node->name_source == AST_SOURCE_DEBUG_ALLOC) {
+    safe_free(node->name);
+    node->name = NULL;
+  }
+
+  node->name = name;
+  node->name_source = source;
+  return true;
+}
+
+/**
+ * Set the qualified name of an AST node
+ * @param node The node to modify
+ * @param qualified_name The qualified name to set (will be copied)
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_set_qualified_name(ASTNode *node, char *qualified_name, ASTStringSource source) {
+  if (!node) {
+    log_error("Cannot set qualified name: null node");
+    return false;
+  }
+
+  // Free existing qualified name if it's owned
+  if (node->qualified_name && node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
+    safe_free(node->qualified_name);
+    node->qualified_name = NULL;
+  }
+
+  node->qualified_name = qualified_name;
+  node->qualified_name_source = source;
+  return true;
+}
