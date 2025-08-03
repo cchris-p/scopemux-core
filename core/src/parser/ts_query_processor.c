@@ -895,6 +895,67 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
                    ast_node->name);
         }
       }
+      // If this is a control flow node, extract signature
+      else if (node_type == NODE_FOR_STATEMENT || node_type == NODE_WHILE_STATEMENT || 
+               node_type == NODE_IF_STATEMENT || node_type == NODE_SWITCH_STATEMENT) {
+        char *raw_content = extract_raw_content(main_node, ctx->source_code);
+        if (raw_content) {
+          ast_node->raw_content = raw_content;
+          ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
+          log_info("[QUERY_DEBUG] Set content for control flow node '%s'", ast_node->name);
+
+          // Extract control flow signature (up to opening brace)
+          char *brace_pos = strchr(raw_content, '{');
+          if (brace_pos) {
+            size_t sig_len = brace_pos - raw_content;
+            // Trim trailing whitespace
+            while (sig_len > 0 && isspace(raw_content[sig_len - 1])) {
+              sig_len--;
+            }
+            char *sig_copy = memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "control_flow_signature");
+            if (sig_copy) {
+              strncpy(sig_copy, raw_content, sig_len);
+              sig_copy[sig_len] = '\0';
+
+              // Clean up extra whitespace
+              char *clean_sig = memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "clean_control_flow_sig");
+              if (clean_sig) {
+                char *src = sig_copy;
+                char *dst = clean_sig;
+                bool last_was_space = true; // Start true to skip leading spaces
+
+                while (*src) {
+                  if (isspace(*src)) {
+                    if (!last_was_space) {
+                      *dst++ = ' ';
+                      last_was_space = true;
+                    }
+                  } else {
+                    *dst++ = *src;
+                    last_was_space = false;
+                  }
+                  src++;
+                }
+
+                // Remove trailing space if any
+                if (dst > clean_sig && dst[-1] == ' ') {
+                  dst--;
+                }
+                *dst = '\0';
+
+                ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+                log_info("[SIGNATURE_DEBUG] Control flow '%s' signature set to: '%s'", ast_node->name, clean_sig);
+                // Don't free clean_sig here since ast_node_set_signature takes ownership when using AST_SOURCE_DEBUG_ALLOC
+              }
+              memory_debug_free(sig_copy, __FILE__, __LINE__);
+            }
+          } else {
+            log_info("[SIGNATURE_DEBUG] Control flow '%s' no opening brace found in raw content", ast_node->name);
+          }
+        } else {
+          log_info("[QUERY_DEBUG] Failed to extract content for control flow node '%s'", ast_node->name);
+        }
+      }
       // If this is a variable node, extract signature
       else if (node_type == NODE_VARIABLE) {
         char *raw_content = extract_raw_content(main_node, ctx->source_code);
