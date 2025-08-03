@@ -31,14 +31,38 @@ char *extract_doc_comment(const char *comment) {
   if (!comment)
     return NULL;
 
-  // For now, return the raw comment content as-is to match expected format
-  // The test expects the full /** ... */ format
+  // Convert real newlines to literal \n for JSON compatibility
   size_t len = strlen(comment);
-  char *result = MALLOC(len + 1, "doc_comment_result");
+  char *result = MALLOC(len * 2 + 1, "doc_comment_result"); // Extra space for escaping
   if (!result)
     return NULL;
 
-  strcpy(result, comment);
+  const char *src = comment;
+  char *dst = result;
+
+  while (*src) {
+    if (*src == '\n') {
+      *dst++ = '\\';
+      *dst++ = 'n';
+    } else if (*src == '\r') {
+      *dst++ = '\\';
+      *dst++ = 'r';
+    } else if (*src == '\t') {
+      *dst++ = '\\';
+      *dst++ = 't';
+    } else if (*src == '"') {
+      *dst++ = '\\';
+      *dst++ = '"';
+    } else if (*src == '\\') {
+      *dst++ = '\\';
+      *dst++ = '\\';
+    } else {
+      *dst++ = *src;
+    }
+    src++;
+  }
+  *dst = '\0';
+
   return result;
 }
 
