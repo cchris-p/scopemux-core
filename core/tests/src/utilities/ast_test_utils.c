@@ -114,7 +114,10 @@ static void print_ast_node_json(const ASTNode *node, int level) {
   if (node->signature) {
     for (int i = 0; i < level + 1; ++i)
       fprintf(stderr, "  ");
-    fprintf(stderr, "\"signature\": \"%s\",\n", node->signature);
+    char *escaped_signature = escape_json_string(node->signature);
+    fprintf(stderr, "\"signature\": \"%s\",\n", escaped_signature ? escaped_signature : "");
+    if (escaped_signature)
+      free(escaped_signature);
   }
   if (node->docstring) {
     for (int i = 0; i < level + 1; ++i)

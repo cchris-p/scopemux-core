@@ -53,8 +53,10 @@ static void associate_docstrings_recursive(ASTNode *node, DocstringInfo *docstri
   if (!node)
     return;
 
-  // Only associate with code nodes (not comments, docstrings, or unknown)
-  if (node->type != NODE_COMMENT && node->type != NODE_DOCSTRING && node->type != NODE_UNKNOWN) {
+  // Only associate with specific node types that should have docstrings (functions, classes,
+  // methods) Variables, control flow, and other nodes should not get automatic docstring assignment
+  if (node->type == NODE_FUNCTION || node->type == NODE_CLASS || node->type == NODE_METHOD ||
+      node->type == NODE_STRUCT || node->type == NODE_ENUM || node->type == NODE_INTERFACE) {
     // Find closest docstring before this node
     DocstringInfo *best_match = NULL;
     uint32_t best_distance = UINT32_MAX;
@@ -209,32 +211,24 @@ void process_docstrings(ASTNode *ast_root, ParserContext *ctx) {
     associate_docstrings_with_nodes(ast_root, docstring_nodes, doc_count);
 
     // Remove docstring nodes from AST children array after processing
-    log_info("*** DOCSTRING_REMOVAL: Starting removal of %zu docstring nodes from %zu children ***", doc_count, ast_root->num_children);
     for (size_t i = 0; i < doc_count; i++) {
       ASTNode *doc_node = docstring_nodes[i];
       if (doc_node) {
-        log_info("*** DOCSTRING_REMOVAL: Looking for docstring node '%s' to remove ***", doc_node->name ? doc_node->name : "(null)");
         // Find and remove this node from ast_root->children
-        bool found = false;
         for (size_t j = 0; j < ast_root->num_children; j++) {
           if (ast_root->children[j] == doc_node) {
-            log_info("*** DOCSTRING_REMOVAL: Found docstring node at index %zu, removing ***", j);
             // Shift remaining children down
             for (size_t k = j; k < ast_root->num_children - 1; k++) {
               ast_root->children[k] = ast_root->children[k + 1];
             }
             ast_root->num_children--;
-            found = true;
-            log_info("*** DOCSTRING_REMOVAL: Removed docstring node, new child count: %zu ***", ast_root->num_children);
+            if (enable_logging)
+              log_debug("Removed docstring node '%s' from AST children", doc_node->name);
             break;
           }
         }
-        if (!found) {
-          log_info("*** DOCSTRING_REMOVAL: WARNING - docstring node '%s' not found in children ***", doc_node->name ? doc_node->name : "(null)");
-        }
       }
     }
-    log_info("*** DOCSTRING_REMOVAL: Finished removal, final child count: %zu ***", ast_root->num_children);
   } else {
     if (enable_logging)
       log_debug("No docstrings found to process");

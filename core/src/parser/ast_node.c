@@ -50,17 +50,17 @@ const char *ast_node_type_to_string(ASTNodeType type) {
   case NODE_VARIABLE_DECLARATION:
     return "VARIABLE_DECLARATION";
   case NODE_FOR_STATEMENT:
-    return "FOR_STATEMENT";
+    return "LOOP_FOR";
   case NODE_WHILE_STATEMENT:
-    return "WHILE_STATEMENT";
+    return "LOOP_WHILE";
   case NODE_DO_WHILE_STATEMENT:
-    return "DO_WHILE_STATEMENT";
+    return "LOOP_DO_WHILE";
   case NODE_IF_STATEMENT:
-    return "IF_STATEMENT";
+    return "CONDITION_IF";
   case NODE_IF_ELSE_IF_STATEMENT:
-    return "IF_ELSE_IF_STATEMENT";
+    return "CONDITION_IF_ELSE_IF";
   case NODE_SWITCH_STATEMENT:
-    return "SWITCH_STATEMENT";
+    return "CONDITION_SWITCH";
   case NODE_COMMENT:
     return "COMMENT";
   case NODE_DOCSTRING:
