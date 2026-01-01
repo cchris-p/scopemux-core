@@ -1,0 +1,175 @@
+diff --git a/scripts/test_runner_lib.sh b/scripts/test_runner_lib.sh
+index b97c33b..cc910a6 100644
+--- a/scripts/test_runner_lib.sh
++++ b/scripts/test_runner_lib.sh
+@@ -188,27 +188,10 @@ process_language_tests() {
+ 
+         echo "[test_runner_lib] Processing $lang/$category tests..."
+ 
+-        # Local counters for this directory
++        # Initialize counters for sequential execution
+         local failed_tests=0
+         local missing_json=0
+ 
+-        # Create temporary files to track failures across parallel jobs
+-        local fail_counter="$TMP_DIR/${lang}_${category}_failures"
+-        local missing_counter="$TMP_DIR/${lang}_${category}_missing"
+-        echo 0 >"$fail_counter"
+-        echo 0 >"$missing_counter"
+-
+-        # Create a semaphore with $PARALLEL_JOBS slots
+-        local sem="$TMP_DIR/semaphore_$$"
+-        mkfifo "$sem"
+-        exec 3<>"$sem"
+-        rm -f "$sem"
+-
+-        # Initialize semaphore with $PARALLEL_JOBS tokens
+-        for ((i = 1; i <= parallel_jobs; i++)); do
+-            echo >&3
+-        done
+-
+         # Process all test files in directory (sorted alphabetically)
+         # Use find to recursively locate all test files and sort them alphabetically
+         local OLD_IFS="$IFS"
+@@ -223,87 +206,67 @@ process_language_tests() {
+ 
+         echo "[test_runner_lib] Found ${#test_files[@]} test files"
+ 
+-        # Process each test file in parallel (limited by semaphore)
++        # CRITICAL FIX: Process tests sequentially to prevent interference
++        # Changed from parallel to sequential execution to eliminate race conditions
++        local test_counter=0
+         for test_file in "${test_files[@]}"; do
+-            # Wait for a semaphore slot
+-            read -u 3
+-
+-            # Run in background
+-            {
+-                # Generate expected JSON filename
+-                expected_json_file="${test_file}.expected.json"
+-
+-                # Check if expected JSON exists
+-                if [ -f "$expected_json_file" ]; then
+-                    # Set environment for tests
+-                    export SCOPEMUX_TEST_FILE="$test_file"
+-                    export SCOPEMUX_EXPECTED_JSON="$expected_json_file"
+-
+-                    local test_name="$lang Example Test: $(basename "$test_file")"
+-                    echo "[test_runner_lib] Testing: $test_file"
+-
+-                    local test_log="$TMP_DIR/$(basename "${test_file}").log"
+-                    pushd "$(dirname "${example_executable_path}")" >/dev/null
+-                    echo "[DEBUG] Directory listing before test execution:"
+-                    ls -l
+-                    local executable="./$(basename "${example_executable_path}")"
+-                    local test_result=1
+-                    local raw_log="${test_log}.raw"
+-
+-                    if [ -x "$executable" ]; then
+-                        "$executable" >"$raw_log" 2>&1
+-                        test_result=$?
+-                        # Filter out misleading Synthesis message before adding prefix
+-                        grep -v '\[====\] Synthesis:' "$raw_log" | awk -v prefix="[$test_name] " '{print prefix $0}' >"$test_log"
+-                        grep -v "FAIL: .* (One or more tests failed)" "$test_log" || true
+-                    else
+-                        echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
+-                        echo "[$test_name] This is likely due to a build failure. Check the build logs for errors." >>"$test_log"
+-                        cat "$test_log"
+-                    fi
+-
+-                    rm -f "$raw_log"
+-                    popd >/dev/null
+-
+-                    # Don't need additional filtering as it's already done above
+-
+-                    if [ $test_result -ne 0 ]; then
+-                        # Update the failure counter in the temp file atomically
+-                        local current_fails=$(cat "$fail_counter")
+-                        echo $((current_fails + 1)) >"$fail_counter"
+-                        echo " FAIL: $test_name ($((i + 1))/$total_tests)"
+-                    else
+-                        echo " PASS: $test_name ($((i + 1))/$total_tests)"
+-                    fi
+-
+-                    unset SCOPEMUX_TEST_FILE
+-                    unset SCOPEMUX_EXPECTED_JSON
++            test_counter=$((test_counter + 1))
++            
++            # Generate expected JSON filename
++            expected_json_file="${test_file}.expected.json"
++
++            # Check if expected JSON exists
++            if [ -f "$expected_json_file" ]; then
++                # Set environment for tests
++                export SCOPEMUX_TEST_FILE="$test_file"
++                export SCOPEMUX_EXPECTED_JSON="$expected_json_file"
++
++                local test_name="$lang Example Test: $(basename "$test_file")"
++                echo "[test_runner_lib] Testing: $test_file"
++
++                local test_log="$TMP_DIR/$(basename "${test_file}").log"
++                pushd "$(dirname "${example_executable_path}")" >/dev/null
++                
++                local executable="./$(basename "${example_executable_path}")"
++                local test_result=1
++                local raw_log="${test_log}.raw"
++
++                if [ -x "$executable" ]; then
++                    # Debug: Add comprehensive environment logging
++                    echo "[test_runner_lib] DEBUG: Environment variables:" >>"$raw_log"
++                    env | grep -E "(SCOPEMUX|PATH|PWD)" >>"$raw_log" 2>&1
++                    echo "[test_runner_lib] DEBUG: Working directory: $(pwd)" >>"$raw_log"
++                    echo "[test_runner_lib] DEBUG: Executable: $executable" >>"$raw_log"
++                    echo "[test_runner_lib] DEBUG: Starting test execution..." >>"$raw_log"
++                    "$executable" >>"$raw_log" 2>&1
++                    test_result=$?
++                    # Filter out misleading Synthesis message before adding prefix
++                    grep -v '\[====\] Synthesis:' "$raw_log" | awk -v prefix="[$test_name] " '{print prefix $0}' >"$test_log"
+                 else
+-                    echo " ERROR: Missing expected JSON for test: $test_file"
+-                    # Update the missing counter in the temp file atomically
+-                    local current_missing=$(cat "$missing_counter")
+-                    echo $((current_missing + 1)) >"$missing_counter"
++                    echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
++                    echo "[$test_name] This is likely due to a build failure. Check the build logs for errors." >>"$test_log"
++                    cat "$test_log"
+                 fi
+ 
+-                # Return the token
+-                echo >&3
+-            } &
+-        done
+-
+-        # Wait for all background jobs to finish
+-        for job in $(jobs -p); do
+-            wait $job
+-        done
++                rm -f "$raw_log"
++                popd >/dev/null
+ 
+-        # Collect failure counts from temporary files
+-        failed_tests=$(cat "$fail_counter")
+-        missing_json=$(cat "$missing_counter")
++                if [ $test_result -ne 0 ]; then
++                    failed_tests=$((failed_tests + 1))
++                    echo " FAIL: $test_name ($test_counter/${#test_files[@]})"
++                else
++                    echo " PASS: $test_name ($test_counter/${#test_files[@]})"
++                fi
+ 
+-        # Clean up temporary counter files
+-        rm -f "$fail_counter" "$missing_counter"
++                unset SCOPEMUX_TEST_FILE
++                unset SCOPEMUX_EXPECTED_JSON
++            else
++                echo " ERROR: Missing expected JSON for test: $test_file"
++                missing_json=$((missing_json + 1))
++            fi
++        done
+ 
+-        # Close the semaphore
+-        exec 3>&-
++        # Sequential execution complete - no background jobs to wait for
+ 
+         # Return cumulative error status (don't return immediately on first error)
+         local dir_errors=0
