@@ -13,7 +13,16 @@ core/src/info_block/*
 core/include/scopemux/info_block.h
 core/tests/tools/cst_dump_tool
 diff-output.txt
+scopemux-core.code-workspace
 #asan.log.*
+
+# Test output
+run_c_tests.txt
+run_cpp_tests.txt
+run_interfile_tests.txt
+run_misc_tests.txt
+run_python_tests.txt
+run_ts_tests.txt
 
 # These directories may interfere with coding agents
 core/tests/build*
