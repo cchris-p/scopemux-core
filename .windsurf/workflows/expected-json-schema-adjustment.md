@@ -54,7 +54,7 @@ GOAL: Apply a fix to the parser generation script that will output the correct s
 - **core/tests/tools/generate_expected_json.py**: Python script to generate [.expected.json](cci:7://file:///home/matrillo/apps/scopemux/core/tests/examples/c/basic_syntax/hello_world.c.expected.json:0:0-0:0) goldens.
 - **core/tests/examples/[language]/**: Directory containing test source files and their goldens.
 - **parser.c**: C implementation of parsing logic and AST/CST IR generation.
-- **build_all_and_pybind.sh**: Script to build and update Python bindings if changes are made to the C parser.
+- **scripts/build_all_and_pybind.sh**: Script to build and update Python bindings if changes are made to the C parser.
 
 ---
 
@@ -62,7 +62,7 @@ GOAL: Apply a fix to the parser generation script that will output the correct s
 
 - Never forward-declare a typedef for an enum in a header unless the full definition is present.
 - Always include the header that defines the typedef if using it in function signatures or structs.
-- All test runner scripts (e.g., `run_c_tests.sh`) perform a clean build automatically.
+- All test runner scripts (e.g., `scripts/run_c_tests.sh`) perform a clean build automatically.
 - Use the `grep` tool for searching code/text patterns in this project.
 
 ---
