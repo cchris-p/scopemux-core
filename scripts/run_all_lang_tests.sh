@@ -22,7 +22,7 @@ set -euo pipefail
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT_DIR="$SCRIPT_DIR"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PARALLEL_JOBS=${PARALLEL_JOBS:-4} # Default to 4 parallel jobs
 CLEAN_BUILD=${CLEAN_BUILD:-true}  # Default to clean builds
 
@@ -128,7 +128,7 @@ print_progress() {
 run_test_suite() {
     local lang="$1"
     local script_name="${TEST_SCRIPTS[$lang]}"
-    local script_path="${PROJECT_ROOT_DIR}/${script_name}"
+    local script_path="${SCRIPT_DIR}/${script_name}"
     local log_file="${PROJECT_ROOT_DIR}/run_${lang}_tests_parallel.log"
 
     # Wait for semaphore slot
@@ -228,7 +228,7 @@ check_test_scripts() {
 
     local missing_scripts=()
     for lang in "${!TEST_SCRIPTS[@]}"; do
-        local script_path="${PROJECT_ROOT_DIR}/${TEST_SCRIPTS[$lang]}"
+        local script_path="${SCRIPT_DIR}/${TEST_SCRIPTS[$lang]}"
         if [ ! -f "$script_path" ]; then
             missing_scripts+=("$script_path")
         fi

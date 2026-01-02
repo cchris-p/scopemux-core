@@ -3,11 +3,14 @@
 # Enable AddressSanitizer logging to a file for all test runs
 export ASAN_OPTIONS=log_path=asan.log:verbosity=1
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
 # All output from this script (stdout and stderr) is written to a file named after the script.
 # Filename format: run_c_tests.txt
 # This is useful for preserving logs for each test run.
 SCRIPT_BASENAME="$(basename "$0" .sh)"
-OUTPUT_FILE="run_c_tests.txt"
+OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_c_tests.txt"
 # Redirect all output to the log file (both stdout and stderr)
 exec > >(tee "$OUTPUT_FILE") 2>&1
 
@@ -18,7 +21,7 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 # This prevents race conditions and build directory conflicts with other test runners.
 
 # Source the shared test runner library
-source scripts/test_runner_lib.sh
+source "${SCRIPT_DIR}/test_runner_lib.sh"
 
 # Exit on any error (disabled during test loop to allow all tests to run)
 # set -e
@@ -39,8 +42,6 @@ RUN_C_FILE_IO_TESTS=false
 RUN_C_MEMORY_MANAGEMENT_TESTS=false
 RUN_C_STRUCT_UNION_ENUM_TESTS=false
 
-# Project root directory (assuming this script is in the root)
-PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CMAKE_BUILD_DIR="${PROJECT_ROOT_DIR}/build-c"
 
 # Set parallel jobs for test execution
@@ -63,7 +64,7 @@ for arg in "$@"; do
         echo "[run_c_tests.sh] Skipping clean build"
         ;;
     --help)
-        show_test_granularity_help "./run_c_tests.sh"
+        show_test_granularity_help "$0"
         exit 0
         ;;
     esac

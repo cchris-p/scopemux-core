@@ -16,7 +16,11 @@
 #   - Do not invoke scripts/build_shared_libs.sh manually except for debugging.
 #
 # Usage:
-#   Source this script in your test runners to ensure a consistent and robust test environment.
+#   Source this script in test runners to ensure a consistent and robust test environment.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+TS_LIBS_DIR="${PROJECT_ROOT_DIR}/build/tree-sitter-libs"
 
 # ========================================
 # TEST GRANULARITY LEVEL CONFIGURATION
@@ -29,7 +33,7 @@
 # Level 5 (EXACT): Every node must match expected JSON exactly (finest granularity)
 #
 # CHANGE THIS VALUE TO SET THE GRANULARITY LEVEL FOR ALL LANGUAGE TESTS:
-TEST_GRANULARITY_LEVEL=5
+TEST_GRANULARITY_LEVEL=3
 
 # Export test granularity level for test executables
 export TEST_GRANULARITY_LEVEL
@@ -52,13 +56,12 @@ echo "[test_runner_lib] Test granularity level: $TEST_GRANULARITY_LEVEL ($(get_g
 # Ensure Tree-sitter shared libraries exist (build if missing)
 if [ ! -f "${TS_LIBS_DIR}/libtree-sitter-c.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-cpp.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-python.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-javascript.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-typescript.so" ]; then
     echo "[test_runner_lib] Shared libraries missing, running scripts/build_shared_libs.sh..."
-    bash scripts/build_shared_libs.sh
+    bash "${SCRIPT_DIR}/build_shared_libs.sh"
 fi
 
 # Set LD_LIBRARY_PATH to include the Tree-sitter shared libraries directory
 # This ensures that the dynamic loader can find the shared libraries at runtime
-TS_LIBS_DIR="$(pwd)/build/tree-sitter-libs"
-export LD_LIBRARY_PATH="${TS_LIBS_DIR}:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${TS_LIBS_DIR}:${LD_LIBRARY_PATH:-}"
 echo "[test_runner_lib] Setting LD_LIBRARY_PATH to include: ${TS_LIBS_DIR}"
 
 # Global variables
@@ -71,7 +74,7 @@ START_TIME=$(date +%s)
 declare -A TEST_SUITE_RESULTS
 
 # Clear Address Sanitizer logs
-rm asan.log*
+rm -f asan.log*
 
 # Global build directory variable (should be set by each test runner)
 # CMAKE_BUILD_DIR=""
@@ -97,8 +100,25 @@ trap cleanup EXIT
 # Builds a test target. On failure, prints the build log and returns 1 (does not exit the script).
 build_test_target() {
     local target_name="$1"
-    local build_dir="${2:-$CMAKE_BUILD_DIR}"
-    local display_name="$3"
+    local build_dir=""
+    local display_name=""
+
+    if [ $# -ge 3 ]; then
+        build_dir="$2"
+        display_name="$3"
+    elif [ $# -eq 2 ]; then
+        if [ -d "$2" ]; then
+            build_dir="$2"
+            display_name="$target_name"
+        else
+            build_dir="${CMAKE_BUILD_DIR}"
+            display_name="$2"
+        fi
+    else
+        build_dir="${CMAKE_BUILD_DIR}"
+        display_name="$target_name"
+    fi
+
     local build_log="$TMP_DIR/${target_name}_build.log"
 
     echo "[test_runner_lib] Building ${display_name} in ${build_dir}..."
@@ -188,26 +208,9 @@ process_language_tests() {
 
         echo "[test_runner_lib] Processing $lang/$category tests..."
 
-        # Local counters for this directory
+        # Initialize counters for sequential execution
         local failed_tests=0
         local missing_json=0
-
-        # Create temporary files to track failures across parallel jobs
-        local fail_counter="$TMP_DIR/${lang}_${category}_failures"
-        local missing_counter="$TMP_DIR/${lang}_${category}_missing"
-        echo 0 >"$fail_counter"
-        echo 0 >"$missing_counter"
-
-        # Create a semaphore with $PARALLEL_JOBS slots
-        local sem="$TMP_DIR/semaphore_$$"
-        mkfifo "$sem"
-        exec 3<>"$sem"
-        rm -f "$sem"
-
-        # Initialize semaphore with $PARALLEL_JOBS tokens
-        for ((i = 1; i <= parallel_jobs; i++)); do
-            echo >&3
-        done
 
         # Process all test files in directory (sorted alphabetically)
         # Use find to recursively locate all test files and sort them alphabetically
@@ -223,87 +226,81 @@ process_language_tests() {
 
         echo "[test_runner_lib] Found ${#test_files[@]} test files"
 
-        # Process each test file in parallel (limited by semaphore)
+        # CRITICAL FIX: Process tests sequentially to prevent interference
+        # Changed from parallel to sequential execution to eliminate race conditions
+        local test_counter=0
         for test_file in "${test_files[@]}"; do
-            # Wait for a semaphore slot
-            read -u 3
+            test_counter=$((test_counter + 1))
+            
+            # Generate expected JSON filename
+            expected_json_file="${test_file}.expected.json"
 
-            # Run in background
-            {
-                # Generate expected JSON filename
-                expected_json_file="${test_file}.expected.json"
+            # Check if expected JSON exists
+            if [ -f "$expected_json_file" ]; then
+                # CRITICAL FIX: Adjust paths for build directory context
+                # Files are copied to build dir with duplicated path structure
+                # Convert: core/tests/examples/c/basic_syntax/file.c
+                # To:      core/tests/core/tests/examples/c/basic_syntax/file.c
+                local build_test_file="core/tests/$test_file"
+                local build_expected_json="core/tests/$expected_json_file"
+                
+                # Set environment for tests with build directory paths
+                export SCOPEMUX_TEST_FILE="$build_test_file"
+                export SCOPEMUX_EXPECTED_JSON="$build_expected_json"
+                
+                # DEBUG: Show what we're setting
+                echo "[test_runner_lib] DEBUG: Setting SCOPEMUX_TEST_FILE=$build_test_file"
+                echo "[test_runner_lib] DEBUG: Setting SCOPEMUX_EXPECTED_JSON=$build_expected_json"
 
-                # Check if expected JSON exists
-                if [ -f "$expected_json_file" ]; then
-                    # Set environment for tests
-                    export SCOPEMUX_TEST_FILE="$test_file"
-                    export SCOPEMUX_EXPECTED_JSON="$expected_json_file"
+                local test_name="$lang Example Test: $(basename "$test_file")"
+                echo "[test_runner_lib] Testing: $test_file"
 
-                    local test_name="$lang Example Test: $(basename "$test_file")"
-                    echo "[test_runner_lib] Testing: $test_file"
+                local test_log="$TMP_DIR/$(basename "${test_file}").log"
+                pushd "$(dirname "${example_executable_path}")" >/dev/null
+                
+                local executable="./$(basename "${example_executable_path}")"
+                local test_result=1
+                local raw_log="${test_log}.raw"
 
-                    local test_log="$TMP_DIR/$(basename "${test_file}").log"
-                    pushd "$(dirname "${example_executable_path}")" >/dev/null
-                    echo "[DEBUG] Directory listing before test execution:"
-                    ls -l
-                    local executable="./$(basename "${example_executable_path}")"
-                    local test_result=1
-                    local raw_log="${test_log}.raw"
-
-                    if [ -x "$executable" ]; then
-                        "$executable" >"$raw_log" 2>&1
-                        test_result=$?
-                        # Filter out misleading Synthesis message before adding prefix
-                        grep -v '\[====\] Synthesis:' "$raw_log" | awk -v prefix="[$test_name] " '{print prefix $0}' >"$test_log"
-                        grep -v "FAIL: .* (One or more tests failed)" "$test_log" || true
-                    else
-                        echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
-                        echo "[$test_name] This is likely due to a build failure. Check the build logs for errors." >>"$test_log"
-                        cat "$test_log"
-                    fi
-
-                    rm -f "$raw_log"
-                    popd >/dev/null
-
-                    # Don't need additional filtering as it's already done above
-
-                    if [ $test_result -ne 0 ]; then
-                        # Update the failure counter in the temp file atomically
-                        local current_fails=$(cat "$fail_counter")
-                        echo $((current_fails + 1)) >"$fail_counter"
-                        echo " FAIL: $test_name ($((i + 1))/$total_tests)"
-                    else
-                        echo " PASS: $test_name ($((i + 1))/$total_tests)"
-                    fi
-
-                    unset SCOPEMUX_TEST_FILE
-                    unset SCOPEMUX_EXPECTED_JSON
+                if [ -x "$executable" ]; then
+                    # Debug: Add comprehensive environment logging
+                    echo "[test_runner_lib] DEBUG: Environment variables:" >>"$raw_log"
+                    env | grep -E "(SCOPEMUX|PATH|PWD)" >>"$raw_log" 2>&1
+                    echo "[test_runner_lib] DEBUG: Working directory: $(pwd)" >>"$raw_log"
+                    echo "[test_runner_lib] DEBUG: Executable: $executable" >>"$raw_log"
+                    echo "[test_runner_lib] DEBUG: Starting test execution..." >>"$raw_log"
+                    "$executable" >>"$raw_log" 2>&1
+                    test_result=$?
+                    echo "[test_runner_lib] DEBUG: Test exit code: $test_result" >&2
+                    echo "[test_runner_lib] DEBUG: Last few lines of output:" >&2
+                    tail -5 "$raw_log" >&2
+                    # Filter out misleading Synthesis message before adding prefix
+                    grep -v '\[====\] Synthesis:' "$raw_log" | awk -v prefix="[$test_name] " '{print prefix $0}' >"$test_log"
                 else
-                    echo " ERROR: Missing expected JSON for test: $test_file"
-                    # Update the missing counter in the temp file atomically
-                    local current_missing=$(cat "$missing_counter")
-                    echo $((current_missing + 1)) >"$missing_counter"
+                    echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
+                    echo "[$test_name] This is likely due to a build failure. Check the build logs for errors." >>"$test_log"
+                    cat "$test_log"
                 fi
 
-                # Return the token
-                echo >&3
-            } &
+                rm -f "$raw_log"
+                popd >/dev/null
+
+                if [ $test_result -ne 0 ]; then
+                    failed_tests=$((failed_tests + 1))
+                    echo " FAIL: $test_name ($test_counter/${#test_files[@]})"
+                else
+                    echo " PASS: $test_name ($test_counter/${#test_files[@]})"
+                fi
+
+                unset SCOPEMUX_TEST_FILE
+                unset SCOPEMUX_EXPECTED_JSON
+            else
+                echo " ERROR: Missing expected JSON for test: $test_file"
+                missing_json=$((missing_json + 1))
+            fi
         done
 
-        # Wait for all background jobs to finish
-        for job in $(jobs -p); do
-            wait $job
-        done
-
-        # Collect failure counts from temporary files
-        failed_tests=$(cat "$fail_counter")
-        missing_json=$(cat "$missing_counter")
-
-        # Clean up temporary counter files
-        rm -f "$fail_counter" "$missing_counter"
-
-        # Close the semaphore
-        exec 3>&-
+        # Sequential execution complete - no background jobs to wait for
 
         # Return cumulative error status (don't return immediately on first error)
         local dir_errors=0

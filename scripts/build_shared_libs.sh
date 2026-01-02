@@ -2,10 +2,12 @@
 # build_shared_libs.sh
 # Build shared libraries from static libraries for Tree-sitter languages
 
-BUILD_DIR="$PWD/build/tree-sitter-libs"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+BUILD_DIR="${PROJECT_ROOT_DIR}/build/tree-sitter-libs"
 echo "Building shared libraries in $BUILD_DIR"
 
-cd $BUILD_DIR || {
+cd "$BUILD_DIR" || {
     echo "Error: Cannot change to directory $BUILD_DIR"
     exit 1
 }

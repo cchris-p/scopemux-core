@@ -5,8 +5,12 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+cd "${PROJECT_ROOT_DIR}"
+
 echo "[build_all_and_pybind.sh] Cleaning build directory to avoid stale CMake cache..."
-rm -rf build
+rm -rf "${PROJECT_ROOT_DIR}/build"
 
 echo "[build_all_and_pybind.sh] Ensuring build directory and CMake configuration..."
 
@@ -31,10 +35,10 @@ cmake --build . --target tree_sitter_javascript
 cmake --build . --target tree_sitter_typescript
 cmake --build . --target scopemux_core
 
-cd ..
+cd "${PROJECT_ROOT_DIR}"
 
 echo "[build_all_and_pybind.sh] Running pybind in core/ directory..."
-cd core
+cd "${PROJECT_ROOT_DIR}/core"
 # Clean any previous build artifacts
 rm -rf build
 # Run setup.py to build directly to ../build/core/
@@ -65,7 +69,7 @@ rm -rf $SITE_PACKAGES/scopemux_core*
 rm -rf $SITE_PACKAGES/scopemux_core-*.egg
 
 # (Optional) Uninstall via pip as well, if installed as a package
-echo "[build_all_and_pybind.sh] Attempting to uninstall scopemux_core via pip (if it was ever installed as a package). If you see a 'Skipping scopemux_core as it is not installed.' warning, this is normal and just means there was nothing to remove."
+echo "[build_all_and_pybind.sh] Attempting to uninstall scopemux_core via pip (if it was ever installed as a package). A 'Skipping scopemux_core as it is not installed.' warning indicates no installed package was found."
 pip uninstall -y scopemux_core || true
 
 # Copy the .so file to scopemux_core.so for import compatibility

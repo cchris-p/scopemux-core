@@ -3,8 +3,10 @@
 # All output from this script (stdout and stderr) is written to a file named after the script.
 # Filename format: run_interfile_tests.txt
 # This is useful for preserving logs for each test run.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SCRIPT_BASENAME="$(basename "$0" .sh)"
-OUTPUT_FILE="run_interfile_tests.txt"
+OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_interfile_tests.txt"
 # Redirect all output to the log file (both stdout and stderr)
 exec > >(tee "$OUTPUT_FILE") 2>&1
 
@@ -19,7 +21,7 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 # project-wide parsing capabilities.
 
 # Source the shared test runner library
-source scripts/test_runner_lib.sh
+source "${SCRIPT_DIR}/test_runner_lib.sh"
 
 # Don't exit immediately on errors since we want to run all enabled tests
 # and report comprehensive results at the end
@@ -41,8 +43,6 @@ RUN_RESOLVER_REGISTRATION_TESTS=false
 RUN_RESOLVER_RESOLUTION_TESTS=false
 RUN_LANGUAGE_RESOLVER_TESTS=false
 
-# Project root directory (assuming this script is in the root)
-PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CORE_DIR="${PROJECT_ROOT_DIR}/core"
 TESTS_DIR="${CORE_DIR}/tests"
 

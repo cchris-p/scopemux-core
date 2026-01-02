@@ -36,7 +36,9 @@
 # All output from this script (stdout and stderr) is written to a file named after the script and the current datetime.
 # Filename format: run_misc_tests-YYYYMMDD-HHMMSS.txt (UTC)
 # This is useful for preserving logs for each test run.
-OUTPUT_FILE="run_misc_tests.txt"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_misc_tests.txt"
 # Redirect all output to the log file (both stdout and stderr)
 exec > >(tee "$OUTPUT_FILE") 2>&1
 
@@ -47,7 +49,7 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 # This prevents race conditions and build directory conflicts with other test runners.
 
 # Source the shared test runner library
-source scripts/test_runner_lib.sh
+source "${SCRIPT_DIR}/test_runner_lib.sh"
 
 # Exit on any error
 set -e
@@ -61,8 +63,6 @@ RUN_INIT_PARSER_TESTS=true
 RUN_EDGE_CASE_TESTS=true
 # Add additional misc test toggles here as needed
 
-# Project root directory (assuming this script is in the root)
-PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 CORE_DIR="${PROJECT_ROOT_DIR}/core"
 TESTS_DIR="${CORE_DIR}/tests"
 

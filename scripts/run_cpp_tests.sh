@@ -3,8 +3,10 @@
 # All output from this script (stdout and stderr) is written to a file named after the script.
 # Filename format: run_cpp_tests.txt
 # This is useful for preserving logs for each test run.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SCRIPT_BASENAME="$(basename "$0" .sh)"
-OUTPUT_FILE="run_cpp_tests.txt"
+OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_cpp_tests.txt"
 # Redirect all output to the log file (both stdout and stderr)
 exec > >(tee "$OUTPUT_FILE") 2>&1
 
@@ -14,9 +16,6 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 # NOTE: This script uses a unique build directory (build-cpp) to allow parallel test execution across languages.
 # This prevents race conditions and build directory conflicts with other test runners.
 
-# Project root directory (assuming this script is in the root)
-PROJECT_ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-echo "DEBUG: PROJECT_ROOT_DIR is '$PROJECT_ROOT_DIR'"
 CMAKE_BUILD_DIR="${PROJECT_ROOT_DIR}/build-cpp"
 echo "DEBUG: CMAKE_BUILD_DIR is '$CMAKE_BUILD_DIR'"
 export CMAKE_BUILD_DIR
@@ -26,7 +25,7 @@ if [ -z "$CMAKE_BUILD_DIR" ]; then
 fi
 
 # Source the shared test runner library
-source scripts/test_runner_lib.sh
+source "${SCRIPT_DIR}/test_runner_lib.sh"
 
 echo "DEBUG: After sourcing test_runner_lib.sh, CMAKE_BUILD_DIR is '$CMAKE_BUILD_DIR'"
 
@@ -65,7 +64,7 @@ for arg in "$@"; do
         echo "[run_cpp_tests.sh] Skipping clean build"
         ;;
     --help)
-        echo "Usage: ./run_cpp_tests.sh [options]"
+        echo "Usage: $0 [options]"
         echo "Options:"
         echo "  --no-clean      : Skip cleaning build directory"
         echo "  --help          : Show this help message"
