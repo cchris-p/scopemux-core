@@ -4,100 +4,47 @@ project(scopemux_core)
 # Set compiler flags for this directory
 # Note: C/C++ standards are already set in the root CMakeLists.txt
 
-# Enhanced compiler flags for memory safety and early error detection
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Wmissing-prototypes")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit-function-declaration -Wformat-security")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpointer-arith -Wunused-variable")
-
-    # Memory safety flags (enable in debug builds)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=undefined")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -g")
-        message(STATUS "Memory sanitizers enabled for debug build")
-    endif()
-endif()
-
-# Option to enable memory debugging features
-option(SCOPEMUX_DEBUG_MEMORY "Enable memory debugging and tracking" OFF)
-if(SCOPEMUX_DEBUG_MEMORY)
-    add_definitions(-DSCOPEMUX_DEBUG_MEMORY)
-    message(STATUS "Memory debugging enabled: detailed tracking and validation will be active")
-endif()
-
-# Find Python packages needed for the project
-find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
-
-# Fetch pybind11 first, before we use any of its variables
-include(FetchContent)
-FetchContent_Declare(
-    pybind11
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/pybind11
+add_library(scopemux_core_build_options INTERFACE)
+target_compile_options(scopemux_core_build_options INTERFACE
+    $<$<COMPILE_LANG_AND_ID:C,GNU,Clang>:-Wall;-Wextra;-pedantic;-Wstrict-prototypes;-Wmissing-prototypes;-Wimplicit-function-declaration;-Wformat-security;-Wpointer-arith;-Wunused-variable>
+    $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang>:-Wall;-Wextra;-pedantic>
+    $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANG_AND_ID:C,GNU,Clang>>:-fsanitize=address;-fsanitize=undefined;-fno-omit-frame-pointer;-g>
 )
-FetchContent_MakeAvailable(pybind11)
+target_link_options(scopemux_core_build_options INTERFACE
+    $<$<CONFIG:Debug>:-fsanitize=address;-fsanitize=undefined>
+)
+target_compile_definitions(scopemux_core_build_options INTERFACE
+    SCOPEMUX_BUILDING=1
+    PY_SSIZE_T_CLEAN
+)
 
-# Include directories - make sure all targets can find the headers
-include_directories(
-    # Tree-sitter headers (defined in the root CMakeLists.txt)
+add_library(scopemux_core_includes INTERFACE)
+target_include_directories(scopemux_core_includes INTERFACE
     ${TS_CORE_INCLUDE_DIR}
     ${TS_C_INCLUDE_DIR}
     ${TS_CPP_INCLUDE_DIR}
     ${TS_PYTHON_INCLUDE_DIR}
     ${TS_JS_INCLUDE_DIR}
     ${TS_TS_INCLUDE_DIR}
-    # Project headers
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    # Add source directory to include path
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    # Python headers
-    ${Python_INCLUDE_DIRS}
-    ${pybind11_INCLUDE_DIRS}
 )
 
-# Add preprocessor defines for proper compilation
-add_compile_definitions(
-    SCOPEMUX_BUILDING=1
-    PY_SSIZE_T_CLEAN
-)
+# Option to enable memory debugging features
+option(SCOPEMUX_DEBUG_MEMORY "Enable memory debugging and tracking" OFF)
+if(SCOPEMUX_DEBUG_MEMORY)
+    target_compile_definitions(scopemux_core_build_options INTERFACE SCOPEMUX_DEBUG_MEMORY)
+    message(STATUS "Memory debugging enabled: detailed tracking and validation will be active")
+endif()
 
 # Configure Valgrind support when requested
 option(SCOPEMUX_VALGRIND_COMPATIBLE "Build with Valgrind compatibility" OFF)
 if(SCOPEMUX_VALGRIND_COMPATIBLE)
-    add_definitions(-DSCOPEMUX_VALGRIND_COMPATIBLE)
+    target_compile_definitions(scopemux_core_build_options INTERFACE SCOPEMUX_VALGRIND_COMPATIBLE)
     message(STATUS "Building with Valgrind compatibility")
 endif()
 
-# Add compiler flags for Python C API
-add_compile_options($<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>)
-
-# Get the Python include directories explicitly
-execute_process(
-    COMMAND ${Python_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_path('include'))"
-    OUTPUT_VARIABLE PYTHON_INCLUDE_PATH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-message(STATUS "Python include path from sysconfig: ${PYTHON_INCLUDE_PATH}")
-
-# Configure Python includes directly
-# First use sysconfig path, fallback to CMake's Python_INCLUDE_DIRS if that fails
-if(NOT PYTHON_INCLUDE_PATH)
-    set(PYTHON_INCLUDE_PATH "${Python_INCLUDE_DIRS}")
-    message(STATUS "Using CMake's Python_INCLUDE_DIRS as fallback")
-endif()
-
-# Add custom compiler options to enforce include path and Python macro definitions
-add_compile_options(
-    $<$<COMPILE_LANGUAGE:C>:-I${PYTHON_INCLUDE_PATH}>
-    $<$<COMPILE_LANGUAGE:C>:-DPY_SSIZE_T_CLEAN>
-    $<$<COMPILE_LANGUAGE:C>:-DPy_BUILD_CORE_MODULE>
-)
-
-# Output Python information for debugging
 message(STATUS "Python include dirs: ${Python_INCLUDE_DIRS}")
 message(STATUS "Python libraries: ${Python_LIBRARIES}")
-
-# pybind11 is already loaded above
 
 # Build parser core static library
 add_library(parser_core_obj OBJECT
@@ -112,6 +59,7 @@ add_library(parser_core_obj OBJECT
     src/parser/project_context/project_utils.c
     src/parser/project_context/project_symbol_extraction.c
     # Reference resolver components
+    src/parser/reference_resolvers/language_resolvers.c
     src/parser/reference_resolvers/reference_resolver_core.c
     src/parser/reference_resolvers/resolver_core.c
     src/parser/reference_resolvers/resolver_implementation.c
@@ -130,11 +78,6 @@ add_library(parser_core_obj OBJECT
     src/parser/tree_sitter_integration.c
     src/parser/query_manager.c
     # Reference resolver system (add all .c files)
-    src/parser/reference_resolvers/language_resolvers.c
-    src/parser/reference_resolvers/resolver_registration.c
-    src/parser/reference_resolvers/resolver_core.c
-
-    src/parser/reference_resolvers/reference_resolver_core.c
     src/parser/reference_resolvers/c_resolver.c
     src/parser/reference_resolvers/cpp_resolver.c
     src/parser/reference_resolvers/c_cpp_resolver_shared_utils.c
@@ -142,11 +85,6 @@ add_library(parser_core_obj OBJECT
     src/parser/reference_resolvers/python_resolver.c
     src/parser/reference_resolvers/javascript_resolver.c
     src/parser/reference_resolvers/js_ts_resolver_shared_utils.c
-    # Reference resolver components
-    src/parser/reference_resolvers/reference_resolver_core.c
-    src/parser/reference_resolvers/resolver_core.c
-    src/parser/reference_resolvers/resolver_registration.c
-    src/parser/reference_resolvers/resolver_resolution.c
     src/parser/reference_resolver.c
     # Language compliance system (add all .c files)
     src/ast_compliance.c
@@ -178,22 +116,18 @@ add_library(parser_core_obj OBJECT
     src/parser/symbol_table/symbol_table_registration.c
 )
 set_target_properties(parser_core_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(parser_core_obj PRIVATE scopemux_core_build_options scopemux_core_includes)
+target_include_directories(parser_core_obj PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(parser_core STATIC $<TARGET_OBJECTS:parser_core_obj>)
+target_link_libraries(parser_core PUBLIC scopemux_core_includes)
+target_link_libraries(parser_core PRIVATE scopemux_core_build_options)
 
 set_target_properties(parser_core PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     # Disable dependency file generation to avoid directory-related errors
     SKIP_DEPENDENCY_GENERATION TRUE
 )
-
-# Create a separate object library for test_processor.c to ensure it gets linked properly
-add_library(test_processor_lib OBJECT
-    src/processors/test_processor.c
-)
-
-# Disable dependency file generation to avoid directory-related errors
-set_target_properties(test_processor_lib PROPERTIES SKIP_DEPENDENCY_GENERATION TRUE)
 
 set(CONTEXT_ENGINE_SOURCES
     src/context_engine/compressor.c
@@ -215,6 +149,7 @@ set(UTILS_SOURCES
 
 # Add library targets
 add_library(context_engine STATIC ${CONTEXT_ENGINE_SOURCES} ${COMMON_SOURCES})
+target_link_libraries(context_engine PRIVATE scopemux_core_build_options scopemux_core_includes)
 
 # Set properties for context_engine
 set_target_properties(context_engine PROPERTIES
@@ -253,7 +188,11 @@ target_include_directories(scopemux_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/bindings
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
+    ${Python_INCLUDE_DIRS}
 )
+
+target_link_libraries(scopemux_core PRIVATE scopemux_core_build_options scopemux_core_includes)
+target_compile_definitions(scopemux_core PRIVATE Py_BUILD_CORE_MODULE)
 
 # Link the module with necessary libraries
 target_link_libraries(scopemux_core PRIVATE
@@ -283,18 +222,9 @@ target_link_libraries(scopemux_core PRIVATE
 )
 
 # Set compiler flags to export all symbols
-target_compile_options(scopemux_core PRIVATE "-rdynamic")
+target_link_options(scopemux_core PRIVATE "-rdynamic")
 set_target_properties(scopemux_core PROPERTIES ENABLE_EXPORTS ON)
 set_target_properties(scopemux_core PROPERTIES LINK_FLAGS "-Wl,--export-dynamic")
-
-# Set include directories for the Python module
-target_include_directories(scopemux_core PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/scopemux
-    ${PYTHON_INCLUDE_PATH}
-    ${Python_INCLUDE_DIRS}
-    ${pybind11_INCLUDE_DIRS}
-)
 
 # Add target_link_options block for scopemux_core to force --whole-archive inclusion of all Tree-sitter static libraries (ts_c, ts_cpp, ts_python, ts_javascript, ts_typescript)
 if(TARGET ts_c AND TARGET ts_cpp AND TARGET ts_python AND TARGET ts_javascript AND TARGET ts_typescript)
@@ -327,10 +257,10 @@ endif()
 # Print configuration summary
 # Add standalone parser utilities
 add_executable(parse_ast src/parser/parse_ast.c)
-target_link_libraries(parse_ast parser_core)
+target_link_libraries(parse_ast parser_core scopemux_core_build_options)
 
 add_executable(parse_cst src/parser/parse_cst.c)
-target_link_libraries(parse_cst parser_core)
+target_link_libraries(parse_cst parser_core scopemux_core_build_options)
 
 # Copy executables to scripts directory after build
 add_custom_command(TARGET parse_ast POST_BUILD
