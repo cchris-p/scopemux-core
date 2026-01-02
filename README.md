@@ -100,7 +100,7 @@ cd scopemux-core
 
 2. Set up vendor dependencies (tree-sitter and pybind11):
 ```bash
-./setup_vendor_deps.sh
+./scripts/setup_vendor_deps.sh
 ```
 
 This script will:
@@ -119,13 +119,18 @@ ln -sf ../../../vendor/tree-sitter/lib/include/tree_sitter/api.h core/include/tr
 
 1. Run C tests:
 ```bash
-./run_c_tests.sh
+./scripts/run_c_tests.sh
 ```
 
 2. Build Python bindings:
 ```bash
-./build_all_and_pybind.sh
+./scripts/build_all_and_pybind.sh
 ```
+
+### Scripts: Which Are Needed vs Optional
+
+- **`scripts/build_shared_libs.sh`** – **Needed in practice**. Test runners auto-call this if Tree-sitter shared libs (`build/tree-sitter-libs/*.so`) are missing.
+- **`scripts/setup_vendor_deps.sh`** – **Optional (bootstrap only)**. Use only on a fresh clone without `vendor/` populated; it clones and builds Tree-sitter + pybind11.
 
 ### Manual Build
 
@@ -246,7 +251,7 @@ If you encounter undefined symbol errors when building or importing the Python b
 
 5. After making changes, rebuild using:
    ```bash
-   ./build_all_and_pybind.sh
+   ./scripts/build_all_and_pybind.sh
    ```
 
 6. If you see a warning about ASan runtime:
