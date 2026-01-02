@@ -188,10 +188,10 @@ print_results() {
 
         case "$result" in
         "PASS")
-            echo -e "  ${GREEN}✓${NC} $lang: ${TEST_SUITES[$lang]}"
+            echo -e "  ${GREEN}PASS${NC} $lang: ${TEST_SUITES[$lang]}"
             ;;
         "FAIL")
-            echo -e "  ${RED}✗${NC} $lang: ${TEST_SUITES[$lang]}"
+            echo -e "  ${RED}FAIL${NC} $lang: ${TEST_SUITES[$lang]}"
             echo -e "    Log: $log_file"
             ;;
         *)
@@ -211,12 +211,12 @@ print_results() {
     # Overall result
     if [ $FAILED_TESTS -eq 0 ]; then
         echo -e "\n${GREEN}========================================${NC}"
-        echo -e "${GREEN}  All tests passed! 🎉${NC}"
+        echo -e "${GREEN}  All tests passed${NC}"
         echo -e "${GREEN}========================================${NC}"
         exit 0
     else
         echo -e "\n${RED}========================================${NC}"
-        echo -e "${RED}  Some tests failed! ❌${NC}"
+        echo -e "${RED}  Some tests failed${NC}"
         echo -e "${RED}========================================${NC}"
         exit 1
     fi
@@ -242,7 +242,7 @@ check_test_scripts() {
         exit 1
     fi
 
-    echo -e "${GREEN}✓${NC} All test scripts found"
+    echo -e "${GREEN}PASS${NC} All test scripts found"
 }
 
 # Main execution

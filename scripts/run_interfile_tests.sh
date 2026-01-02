@@ -98,14 +98,14 @@ echo "[run_interfile_tests.sh] Configuring CMake in build directory: ${CMAKE_PRO
 cmake -S "${PROJECT_ROOT_DIR}" -B "${CMAKE_PROJECT_BUILD_DIR}" -G "Unix Makefiles" >"${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log" 2>&1
 
 if [ $? -ne 0 ]; then
-    echo "❌ ERROR: CMake configuration failed. See log for details:"
+    echo "ERROR: CMake configuration failed. See log for details:"
     cat "${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log"
     exit 1
 fi
 
 # Verify that Makefiles were created
 if [ ! -f "${CMAKE_PROJECT_BUILD_DIR}/Makefile" ]; then
-    echo "❌ ERROR: CMake did not generate Makefiles in the build directory."
+    echo "ERROR: CMake did not generate Makefiles in the build directory."
     echo "Contents of build directory:"
     ls -la "${CMAKE_PROJECT_BUILD_DIR}"
     exit 1
@@ -157,16 +157,16 @@ if [ "${RUN_RESOLVER_REGISTRATION_TESTS}" = true ]; then
     build_status=$?
 
     if [ $build_status -ne 0 ]; then
-        echo "[run_interfile_tests.sh] ❌ Failed to build resolver_registration_tests"
+        echo "[run_interfile_tests.sh] ERROR: Failed to build resolver_registration_tests"
         TEST_FAILURES=$((TEST_FAILURES + 1))
     else
-        echo "[run_interfile_tests.sh] ✅ Successfully built resolver_registration_tests"
+        echo "[run_interfile_tests.sh] OK: Successfully built resolver_registration_tests"
 
         # Find the built executable
         TEST_EXECUTABLE=$(find "${CMAKE_PROJECT_BUILD_DIR}/core/tests" -name "resolver_registration_tests" -type f -executable)
 
         if [ -z "$TEST_EXECUTABLE" ]; then
-            echo "[run_interfile_tests.sh] ❌ Could not find resolver_registration_tests executable"
+            echo "[run_interfile_tests.sh] ERROR: Could not find resolver_registration_tests executable"
             TEST_FAILURES=$((TEST_FAILURES + 1))
         else
             echo "[run_interfile_tests.sh] Found test executable: $TEST_EXECUTABLE"
@@ -178,10 +178,10 @@ if [ "${RUN_RESOLVER_REGISTRATION_TESTS}" = true ]; then
 
             TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
             if [ $test_status -ne 0 ]; then
-                echo "[run_interfile_tests.sh] ❌ Resolver registration tests failed with exit code: $test_status"
+                echo "[run_interfile_tests.sh] ERROR: Resolver registration tests failed with exit code: $test_status"
                 TEST_FAILURES=$((TEST_FAILURES + 1))
             else
-                echo "[run_interfile_tests.sh] ✅ Resolver registration tests passed"
+                echo "[run_interfile_tests.sh] OK: Resolver registration tests passed"
             fi
         fi
     fi
@@ -205,16 +205,16 @@ if [ "${RUN_RESOLVER_RESOLUTION_TESTS}" = true ]; then
     build_status=$?
 
     if [ $build_status -ne 0 ]; then
-        echo "[run_interfile_tests.sh] ❌ Failed to build resolver_resolution_tests"
+        echo "[run_interfile_tests.sh] ERROR: Failed to build resolver_resolution_tests"
         TEST_FAILURES=$((TEST_FAILURES + 1))
     else
-        echo "[run_interfile_tests.sh] ✅ Successfully built resolver_resolution_tests"
+        echo "[run_interfile_tests.sh] OK: Successfully built resolver_resolution_tests"
 
         # Find the built executable
         TEST_EXECUTABLE=$(find "${CMAKE_PROJECT_BUILD_DIR}/core/tests" -name "resolver_resolution_tests" -type f -executable)
 
         if [ -z "$TEST_EXECUTABLE" ]; then
-            echo "[run_interfile_tests.sh] ❌ Could not find resolver_resolution_tests executable"
+            echo "[run_interfile_tests.sh] ERROR: Could not find resolver_resolution_tests executable"
             TEST_FAILURES=$((TEST_FAILURES + 1))
         else
             echo "[run_interfile_tests.sh] Found test executable: $TEST_EXECUTABLE"
@@ -226,10 +226,10 @@ if [ "${RUN_RESOLVER_RESOLUTION_TESTS}" = true ]; then
 
             TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
             if [ $test_status -ne 0 ]; then
-                echo "[run_interfile_tests.sh] ❌ Resolver resolution tests failed with exit code: $test_status"
+                echo "[run_interfile_tests.sh] ERROR: Resolver resolution tests failed with exit code: $test_status"
                 TEST_FAILURES=$((TEST_FAILURES + 1))
             else
-                echo "[run_interfile_tests.sh] ✅ Resolver resolution tests passed"
+                echo "[run_interfile_tests.sh] OK: Resolver resolution tests passed"
             fi
         fi
     fi
@@ -275,10 +275,10 @@ echo "===== INTERFILE TEST SUMMARY ====="
 echo "Total test suites run: ${TOTAL_TESTS_RUN}"
 
 if [ ${TEST_FAILURES} -eq 0 ]; then
-    echo "✅✅ ALL TESTS PASSED ✅✅"
+    echo "ALL TESTS PASSED"
     exit 0
 else
-    echo "❌❌ ${TEST_FAILURES} TEST SUITES FAILED ❌❌"
+    echo "${TEST_FAILURES} TEST SUITES FAILED"
     echo "Please check the output above for detailed error messages"
     exit 1
 fi

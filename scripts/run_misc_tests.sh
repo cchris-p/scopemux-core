@@ -113,14 +113,14 @@ echo "[run_misc_tests.sh] Configuring CMake in build directory: ${CMAKE_PROJECT_
 cmake -S "${PROJECT_ROOT_DIR}" -B "${CMAKE_PROJECT_BUILD_DIR}" -G "Unix Makefiles" >"${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log" 2>&1
 
 if [ $? -ne 0 ]; then
-    echo "❌ ERROR: CMake configuration failed. See log for details:"
+    echo "ERROR: CMake configuration failed. See log for details:"
     cat "${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log"
     exit 1
 fi
 
 # Verify that Makefiles were created
 if [ ! -f "${CMAKE_PROJECT_BUILD_DIR}/Makefile" ]; then
-    echo "❌ ERROR: CMake did not generate Makefiles in the build directory."
+    echo "ERROR: CMake did not generate Makefiles in the build directory."
     echo "Contents of build directory:"
     ls -la "${CMAKE_PROJECT_BUILD_DIR}"
     exit 1
@@ -144,7 +144,7 @@ if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
         run_test_suite "Init Parser Tests" "${CMAKE_PROJECT_BUILD_DIR}/${INIT_PARSER_EXECUTABLE_RELPATH}"
         if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
     else
-        echo "❌ ERROR: Failed to build init_parser_tests"
+        echo "ERROR: Failed to build init_parser_tests"
         TEST_FAILURES=$((TEST_FAILURES + 1))
     fi
 fi
