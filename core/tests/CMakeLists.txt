@@ -12,6 +12,10 @@ endif()
 # Include test utilities
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/TestUtils.cmake)
 
+# Add Criterion for unit testing (via pkg-config workaround)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(CRITERION REQUIRED criterion)
+
 # Add compiler flags to suppress warnings in test code
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
@@ -88,7 +92,6 @@ target_link_libraries(test_parser INTERFACE parser_core)
 # Link test libraries with core libraries
 # For the interface library, link parser_core transitively for consumers
 # (This line is safe even if the previous INTERFACE linkage already exists.)
-target_link_libraries(test_parser INTERFACE parser_core)
 target_link_libraries(test_utilities PRIVATE
     parser_core
     ${CRITERION_LIBRARIES}
@@ -127,10 +130,6 @@ target_link_libraries(run_tests PRIVATE
 
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(run_tests)
-
-# Add Criterion for unit testing (via pkg-config workaround)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(CRITERION REQUIRED criterion)
 
 # Add init_parser_tests target
 add_executable(init_parser_tests

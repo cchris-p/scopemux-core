@@ -323,9 +323,6 @@ install(TARGETS scopemux_core DESTINATION ${CMAKE_INSTALL_PREFIX})
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/adapters)
     add_subdirectory(src/adapters)
 endif()
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/config)
-    add_subdirectory(src/config)
-endif()
 
 # Print configuration summary
 # Add standalone parser utilities
