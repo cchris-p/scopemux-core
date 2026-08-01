@@ -36,6 +36,10 @@ bool project_parse_all_files_impl(ProjectContext *project);
 void extract_and_process_includes(ProjectContext *project, ParserContext *ctx,
                                   const char *filepath);
 
+// Project-level IR lifecycle helpers
+void project_context_clear_ir(ProjectContext *project);
+bool project_context_rebuild_ir(ProjectContext *project);
+
 // Implementation functions for parser context
 void parser_context_free(ParserContext *ctx);
 bool parser_context_add_ast(ParserContext *ctx, ASTNode *node);

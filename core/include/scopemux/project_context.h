@@ -52,6 +52,101 @@ typedef struct {
 } ProjectConfig;
 
 /**
+ * @brief Normalized visibility values for project-level Symbol IR.
+ */
+typedef enum {
+  PROJECT_IR_VISIBILITY_UNKNOWN = 0,
+  PROJECT_IR_VISIBILITY_PUBLIC,
+  PROJECT_IR_VISIBILITY_PRIVATE,
+  PROJECT_IR_VISIBILITY_PROTECTED,
+  PROJECT_IR_VISIBILITY_INTERNAL,
+} ProjectIRVisibility;
+
+/**
+ * @brief Relationship kinds for project-level dependency edges.
+ */
+typedef enum {
+  PROJECT_DEPENDENCY_UNKNOWN = 0,
+  PROJECT_DEPENDENCY_INCLUDE,
+  PROJECT_DEPENDENCY_IMPORT,
+  PROJECT_DEPENDENCY_REQUIRE,
+  PROJECT_DEPENDENCY_FILE_RELATION,
+} ProjectDependencyKind;
+
+/**
+ * @brief A resolved reference owned by a project symbol.
+ *
+ * String pointers and AST node pointers are borrowed from the owning project.
+ * They remain valid until the next IR rebuild or project destruction.
+ */
+typedef struct {
+  const ASTNode *owner_symbol_node;
+  const ASTNode *reference_node;
+  const ASTNode *target_node;
+  const char *owner_symbol;
+  const char *target_symbol;
+  const char *target_file_path;
+} ProjectResolvedReferenceIR;
+
+/**
+ * @brief Stable Symbol IR entry for a declaration in the project.
+ */
+typedef struct {
+  const ASTNode *node;
+  const char *name;
+  const char *qualified_name;
+  const char *signature;
+  const char *docstring;
+  const char *scope_qualified_name;
+  const char *file_path;
+  ASTNodeType type;
+  ProjectIRVisibility visibility;
+  size_t resolved_reference_start;
+  size_t resolved_reference_count;
+} ProjectSymbolIR;
+
+/**
+ * @brief Project-wide call graph edge.
+ */
+typedef struct {
+  const ASTNode *caller_node;
+  const ASTNode *callee_node;
+  const ASTNode *callsite_node;
+  const char *caller_symbol;
+  const char *callee_symbol;
+  const char *caller_file_path;
+  const char *callee_file_path;
+} ProjectCallGraphEdgeIR;
+
+/**
+ * @brief Project-wide import/include/dependency edge.
+ */
+typedef struct {
+  const ASTNode *node;
+  const char *source_file_path;
+  const char *target_file_path;
+  const char *specifier;
+  ProjectDependencyKind kind;
+} ProjectDependencyIR;
+
+/**
+ * @brief In-memory snapshot of project-level IR.
+ *
+ * Array storage is owned by the ProjectContext. Entry fields borrow strings and
+ * AST node pointers from parser contexts already stored in the project.
+ */
+typedef struct {
+  ProjectSymbolIR *symbols;
+  size_t symbol_count;
+  ProjectResolvedReferenceIR *resolved_references;
+  size_t resolved_reference_count;
+  ProjectCallGraphEdgeIR *call_graph_edges;
+  size_t call_graph_edge_count;
+  ProjectDependencyIR *dependencies;
+  size_t dependency_count;
+} ProjectIRSnapshot;
+
+/**
  * @brief A collection of related source files forming a project
  *
  * The ProjectContext manages multiple ParserContext instances, enabling
@@ -79,6 +174,10 @@ typedef struct ProjectContext {
   size_t num_discovered;        ///< Number of discovered files
   size_t discovered_capacity;   ///< Capacity of discovered_files array
   size_t current_include_depth; ///< Current include depth during dependency resolution
+
+  // Project-level IR snapshot
+  ProjectIRSnapshot ir_snapshot; ///< Durable project-level IR derived from ASTs and references
+  bool ir_ready;                 ///< True when ir_snapshot reflects current project state
 } ProjectContext;
 
 /**
@@ -276,4 +375,36 @@ bool project_context_extract_symbols(ProjectContext *project, ParserContext *par
 
 bool extract_symbols_from_parser_context(ProjectContext *project, ParserContext *ctx,
                                          void *symbols);
+
+/**
+ * @brief Clear the current project IR snapshot.
+ *
+ * This releases snapshot storage but does not modify AST nodes or parser state.
+ * Borrowed pointers obtained from previous snapshots become invalid.
+ *
+ * @param project Project context
+ */
+void project_context_clear_ir(ProjectContext *project);
+
+/**
+ * @brief Rebuild the project-level IR snapshot from current parser state.
+ *
+ * This emits Symbol IR, resolved-reference IR, Call Graph IR, and
+ * Import/Dependency IR from the current project contents.
+ *
+ * @param project Project context
+ * @return bool True on success, false on allocation or state failure
+ */
+bool project_context_rebuild_ir(ProjectContext *project);
+
+/**
+ * @brief Get the current project-level IR snapshot.
+ *
+ * The returned pointer is owned by the project context and is invalidated by
+ * the next rebuild, clear, or project destruction.
+ *
+ * @param project Project context
+ * @return const ProjectIRSnapshot* Snapshot or NULL when unavailable
+ */
+const ProjectIRSnapshot *project_context_get_ir(const ProjectContext *project);
 #endif /* SCOPEMUX_PROJECT_CONTEXT_H */

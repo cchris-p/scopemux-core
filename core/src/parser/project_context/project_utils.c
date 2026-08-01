@@ -122,6 +122,8 @@ void project_context_free_impl(ProjectContext *project) {
     return;
   }
 
+  project_context_clear_ir(project);
+
   // Free each parser context
   for (size_t i = 0; i < project->num_files; i++) {
     if (project->file_contexts[i]) {

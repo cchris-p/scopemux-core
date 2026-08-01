@@ -157,6 +157,14 @@ void ast_node_free(ASTNode *node);
 bool ast_node_add_child(ASTNode *parent, ASTNode *child);
 
 /**
+ * @brief Add a resolved reference edge from one AST node to another.
+ * @param from Node containing the reference
+ * @param to Resolved target node
+ * @return true on success, false on allocation failure
+ */
+bool ast_node_add_reference(ASTNode *from, ASTNode *to);
+
+/**
  * Set the name of an AST node
  * @param node The node to modify
  * @param name The name to set (will be copied)

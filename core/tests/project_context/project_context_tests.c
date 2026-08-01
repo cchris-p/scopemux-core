@@ -62,6 +62,18 @@ static void remove_dummy_file(const char *filename) {
   remove(path);
 }
 
+static ASTNode *make_named_node(ASTNodeType type, const char *name, const char *qualified_name,
+                                const char *file_path) {
+  SourceRange range = {0};
+  ASTNode *node = ast_node_create(type, strdup(name), AST_SOURCE_DEBUG_ALLOC,
+                                  strdup(qualified_name), AST_SOURCE_DEBUG_ALLOC, range);
+
+  cr_assert(node != NULL, "Failed to create AST node");
+  cr_assert(ast_node_set_file_path(node, strdup(file_path), AST_SOURCE_DEBUG_ALLOC),
+            "Failed to set AST node file path");
+  return node;
+}
+
 void setup_project(void) {
   // Use an isolated temp directory so Criterion workers do not race on the same files.
   char template[] = "/tmp/scopemux-project-context-XXXXXX";
@@ -239,4 +251,112 @@ Test(project_context_delegation, interfile_symbols, .init = setup_project,
 
   cr_assert_str_eq(sym1->file_path, file1_path, "Symbol 1 should retain file1 path");
   cr_assert_str_eq(sym2->file_path, file2_path, "Symbol 2 should retain file2 path");
+}
+
+Test(project_context_delegation, project_ir_snapshot, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *caller_ctx = parser_init();
+  ParserContext *callee_ctx = parser_init();
+  ASTNode *caller_fn;
+  ASTNode *callee_fn;
+  ASTNode *call_ref;
+  ASTNode *include_node;
+  char caller_path[512], callee_path[512];
+  const ProjectIRSnapshot *snapshot;
+  bool found_call_edge = false;
+  bool found_dependency_edge = false;
+  bool found_caller_symbol = false;
+
+  cr_assert(caller_ctx != NULL && callee_ctx != NULL, "Parser contexts should be created");
+
+  join_test_project_path("main.c", caller_path, sizeof(caller_path));
+  join_test_project_path("helper.c", callee_path, sizeof(callee_path));
+
+  caller_ctx->filename = strdup(caller_path);
+  caller_ctx->language = LANG_C;
+  callee_ctx->filename = strdup(callee_path);
+  callee_ctx->language = LANG_C;
+
+  caller_fn = make_named_node(NODE_FUNCTION, "caller", "caller", caller_path);
+  callee_fn = make_named_node(NODE_FUNCTION, "helper", "helper", callee_path);
+  cr_assert(ast_node_set_signature(caller_fn, strdup("int caller()"), AST_SOURCE_DEBUG_ALLOC),
+            "Failed to set caller signature");
+  cr_assert(ast_node_set_signature(callee_fn, strdup("int helper()"), AST_SOURCE_DEBUG_ALLOC),
+            "Failed to set callee signature");
+  cr_assert(ast_node_set_docstring(caller_fn, strdup("Calls helper"), AST_SOURCE_DEBUG_ALLOC),
+            "Failed to set caller docstring");
+
+  call_ref = make_named_node(NODE_IDENTIFIER, "helper", "helper", caller_path);
+  cr_assert(ast_node_add_child(caller_fn, call_ref), "Call reference should be attached");
+  cr_assert(ast_node_add_reference(call_ref, callee_fn), "Call reference should resolve to helper");
+
+  include_node = make_named_node(NODE_INCLUDE, "helper.c", "helper.c", caller_path);
+  include_node->raw_content = strdup("#include \"helper.c\"");
+  include_node->owned_fields |= FIELD_RAW_CONTENT;
+  cr_assert(include_node->raw_content != NULL, "Include node raw content should be set");
+
+  cr_assert(parser_add_ast_node(caller_ctx, caller_fn), "Caller function should be tracked");
+  cr_assert(parser_add_ast_node(caller_ctx, include_node), "Include node should be tracked");
+  cr_assert(parser_add_ast_node(callee_ctx, callee_fn), "Callee function should be tracked");
+  cr_assert(parser_context_add_dependency(caller_ctx, callee_ctx),
+            "Dependency should be created between parser contexts");
+
+  project->file_contexts[0] = caller_ctx;
+  project->file_contexts[1] = callee_ctx;
+  project->num_files = 2;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "caller", caller_fn, caller_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Caller symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "helper", callee_fn, callee_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Helper symbol should be registered");
+
+  cr_assert(project_context_rebuild_ir(project), "Project IR snapshot should rebuild");
+  snapshot = project_context_get_ir(project);
+  cr_assert(snapshot != NULL, "Project IR snapshot should be available");
+  cr_assert_eq(snapshot->symbol_count, 2, "Expected two symbol IR entries");
+  cr_assert_eq(snapshot->resolved_reference_count, 1,
+               "Expected one resolved reference in symbol IR");
+  cr_assert_eq(snapshot->call_graph_edge_count, 1, "Expected one call graph edge");
+  cr_assert(snapshot->dependency_count >= 2,
+            "Expected include and file relationship dependency edges");
+
+  for (size_t i = 0; i < snapshot->symbol_count; i++) {
+    const ProjectSymbolIR *symbol = &snapshot->symbols[i];
+    if (symbol->qualified_name && strcmp(symbol->qualified_name, "caller") == 0) {
+      found_caller_symbol = true;
+      cr_assert_str_eq(symbol->signature, "int caller()", "Caller signature should be preserved");
+      cr_assert_eq(symbol->resolved_reference_count, 1,
+                   "Caller should own one resolved reference");
+      cr_assert_eq(symbol->visibility, PROJECT_IR_VISIBILITY_PUBLIC,
+                   "Caller should default to public visibility");
+    }
+  }
+
+  for (size_t i = 0; i < snapshot->call_graph_edge_count; i++) {
+    const ProjectCallGraphEdgeIR *edge = &snapshot->call_graph_edges[i];
+    if (edge->caller_symbol && edge->callee_symbol && strcmp(edge->caller_symbol, "caller") == 0 &&
+        strcmp(edge->callee_symbol, "helper") == 0) {
+      found_call_edge = true;
+      cr_assert_str_eq(edge->caller_file_path, caller_path,
+                       "Call graph edge should retain caller file path");
+      cr_assert_str_eq(edge->callee_file_path, callee_path,
+                       "Call graph edge should retain callee file path");
+    }
+  }
+
+  for (size_t i = 0; i < snapshot->dependency_count; i++) {
+    const ProjectDependencyIR *edge = &snapshot->dependencies[i];
+    if (edge->source_file_path && edge->target_file_path &&
+        strcmp(edge->source_file_path, caller_path) == 0 && strcmp(edge->target_file_path, callee_path) == 0 &&
+        edge->kind == PROJECT_DEPENDENCY_INCLUDE) {
+      found_dependency_edge = true;
+    }
+  }
+
+  cr_assert(found_caller_symbol, "Caller symbol IR entry should be present");
+  cr_assert(found_call_edge, "Cross-file call graph edge should be present");
+  cr_assert(found_dependency_edge, "Resolved include dependency edge should be present");
 }
