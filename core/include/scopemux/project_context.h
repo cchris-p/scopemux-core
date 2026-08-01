@@ -147,6 +147,106 @@ typedef struct {
 } ProjectIRSnapshot;
 
 /**
+ * @brief Canonical InfoBlock kinds derived from project IR.
+ */
+typedef enum {
+  PROJECT_INFO_BLOCK_SYMBOL = 0,
+  PROJECT_INFO_BLOCK_REFERENCE,
+  PROJECT_INFO_BLOCK_FILE,
+  PROJECT_INFO_BLOCK_DIRECTORY,
+  PROJECT_INFO_BLOCK_PROJECT,
+} ProjectInfoBlockKind;
+
+/**
+ * @brief Standardized tier scale for machine-readable context selection.
+ */
+typedef enum {
+  PROJECT_CONTEXT_TIER_0 = 0,
+  PROJECT_CONTEXT_TIER_1 = 1,
+  PROJECT_CONTEXT_TIER_2 = 2,
+  PROJECT_CONTEXT_TIER_3 = 3,
+  PROJECT_CONTEXT_TIER_4 = 4,
+} ProjectContextTier;
+
+/**
+ * @brief Stable registry entry for a semantic unit or synthetic aggregate block.
+ *
+ * String pointers and AST node pointers are owned by the ProjectContext and stay
+ * valid until the next IR or InfoBlock rebuild, or project destruction.
+ */
+typedef struct {
+  char *id;
+  char *name;
+  char *qualified_name;
+  char *file_path;
+  const ASTNode *node;
+  ASTNodeType node_type;
+  Language language;
+  ProjectInfoBlockKind kind;
+  ProjectContextTier tier;
+  size_t estimated_tokens;
+  size_t related_symbol_count;
+} ProjectInfoBlock;
+
+/**
+ * @brief Dense registry of canonical InfoBlocks derived from project IR.
+ */
+typedef struct {
+  ProjectInfoBlock *blocks;
+  size_t block_count;
+  size_t tier_counts[5];
+} ProjectInfoBlockRegistry;
+
+/**
+ * @brief Rendering disposition for a selected InfoBlock in a tiered context.
+ */
+typedef enum {
+  PROJECT_CONTEXT_BLOCK_EXPANDED = 0,
+  PROJECT_CONTEXT_BLOCK_SUMMARIZED,
+  PROJECT_CONTEXT_BLOCK_PINNED,
+} ProjectTieredContextDisposition;
+
+/**
+ * @brief Machine-readable tiered context request.
+ */
+typedef struct {
+  const char **focus_block_ids;
+  size_t focus_block_count;
+  const char **exclude_block_ids;
+  size_t exclude_block_count;
+  const char **summary_only_block_ids;
+  size_t summary_only_block_count;
+  const char *anchor_symbol;
+  const char *anchor_file_path;
+  ProjectContextTier min_tier;
+  ProjectContextTier max_tier;
+  bool include_related;
+  bool include_dependencies;
+  size_t max_blocks;
+  size_t max_tokens;
+} ProjectTieredContextRequest;
+
+/**
+ * @brief A selected InfoBlock inside a tiered context result.
+ */
+typedef struct {
+  const ProjectInfoBlock *block;
+  ProjectTieredContextDisposition disposition;
+  bool from_focus;
+} ProjectTieredContextSelection;
+
+/**
+ * @brief Machine-readable tiered context response.
+ */
+typedef struct {
+  ProjectTieredContextSelection *selections;
+  size_t selection_count;
+  size_t estimated_tokens;
+  ProjectContextTier effective_min_tier;
+  ProjectContextTier effective_max_tier;
+} ProjectTieredContextResult;
+
+/**
  * @brief A collection of related source files forming a project
  *
  * The ProjectContext manages multiple ParserContext instances, enabling
@@ -178,6 +278,10 @@ typedef struct ProjectContext {
   // Project-level IR snapshot
   ProjectIRSnapshot ir_snapshot; ///< Durable project-level IR derived from ASTs and references
   bool ir_ready;                 ///< True when ir_snapshot reflects current project state
+
+  // Canonical InfoBlock registry derived from project IR
+  ProjectInfoBlockRegistry info_block_registry;
+  bool info_block_registry_ready;
 } ProjectContext;
 
 /**
@@ -407,4 +511,52 @@ bool project_context_rebuild_ir(ProjectContext *project);
  * @return const ProjectIRSnapshot* Snapshot or NULL when unavailable
  */
 const ProjectIRSnapshot *project_context_get_ir(const ProjectContext *project);
+
+/**
+ * @brief Rebuild the canonical InfoBlock registry from current project IR.
+ *
+ * This emits Tier 0-4 blocks covering symbol, reference, file, directory, and
+ * project-level semantic units.
+ *
+ * @param project Project context
+ * @return bool True on success, false on allocation or state failure
+ */
+bool project_context_rebuild_info_blocks(ProjectContext *project);
+
+/**
+ * @brief Get the current InfoBlock registry, rebuilding it on demand.
+ *
+ * @param project Project context
+ * @return const ProjectInfoBlockRegistry* Registry or NULL on failure
+ */
+const ProjectInfoBlockRegistry *project_context_get_info_block_registry(ProjectContext *project);
+
+/**
+ * @brief Find a canonical InfoBlock by its stable ID.
+ *
+ * @param project Project context
+ * @param block_id Stable block identifier such as `sym:name` or `file:path`
+ * @return const ProjectInfoBlock* Matching block or NULL if not found
+ */
+const ProjectInfoBlock *project_context_find_info_block(const ProjectContext *project,
+                                                        const char *block_id);
+
+/**
+ * @brief Build a tiered context selection from the canonical InfoBlock registry.
+ *
+ * @param project Project context
+ * @param request Machine-readable tiered context request
+ * @param out_result Output result; caller must free with project_tiered_context_result_free()
+ * @return bool True on success, false on allocation or state failure
+ */
+bool project_context_build_tiered_context(ProjectContext *project,
+                                          const ProjectTieredContextRequest *request,
+                                          ProjectTieredContextResult *out_result);
+
+/**
+ * @brief Free heap storage owned by a tiered context result.
+ *
+ * @param result Result to clear
+ */
+void project_tiered_context_result_free(ProjectTieredContextResult *result);
 #endif /* SCOPEMUX_PROJECT_CONTEXT_H */

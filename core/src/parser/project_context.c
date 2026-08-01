@@ -362,6 +362,8 @@ void project_context_clear_ir(ProjectContext *project) {
     return;
   }
 
+  project_context_clear_info_blocks(project);
+
   free(project->ir_snapshot.symbols);
   free(project->ir_snapshot.resolved_references);
   free(project->ir_snapshot.call_graph_edges);

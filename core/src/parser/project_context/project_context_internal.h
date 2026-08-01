@@ -39,6 +39,7 @@ void extract_and_process_includes(ProjectContext *project, ParserContext *ctx,
 // Project-level IR lifecycle helpers
 void project_context_clear_ir(ProjectContext *project);
 bool project_context_rebuild_ir(ProjectContext *project);
+void project_context_clear_info_blocks(ProjectContext *project);
 
 // Implementation functions for parser context
 void parser_context_free(ParserContext *ctx);

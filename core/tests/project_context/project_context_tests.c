@@ -360,3 +360,157 @@ Test(project_context_delegation, project_ir_snapshot, .init = setup_project,
   cr_assert(found_call_edge, "Cross-file call graph edge should be present");
   cr_assert(found_dependency_edge, "Resolved include dependency edge should be present");
 }
+
+Test(project_context_delegation, info_block_registry_and_tiered_context, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *caller_ctx = parser_init();
+  ParserContext *callee_ctx = parser_init();
+  ParserContext *python_ctx = parser_init();
+  ASTNode *caller_fn;
+  ASTNode *callee_fn;
+  ASTNode *call_ref;
+  ASTNode *include_node;
+  ASTNode *python_class;
+  char caller_path[512], callee_path[512], python_path[512];
+  const ProjectInfoBlockRegistry *registry;
+  ProjectTieredContextRequest request = {0};
+  ProjectTieredContextResult result = {0};
+  const char *focus_ids[2];
+  const char *summary_ids[1];
+  bool saw_tier0 = false;
+  bool saw_tier1 = false;
+  bool saw_tier2 = false;
+  bool saw_tier3 = false;
+  bool saw_tier4 = false;
+  bool saw_helper = false;
+  bool saw_python_file_summary = false;
+
+  cr_assert(caller_ctx != NULL && callee_ctx != NULL && python_ctx != NULL,
+            "Parser contexts should be created");
+
+  join_test_project_path("main.c", caller_path, sizeof(caller_path));
+  join_test_project_path("helper.c", callee_path, sizeof(callee_path));
+  join_test_project_path("file2.py", python_path, sizeof(python_path));
+
+  caller_ctx->filename = strdup(caller_path);
+  caller_ctx->language = LANG_C;
+  callee_ctx->filename = strdup(callee_path);
+  callee_ctx->language = LANG_C;
+  python_ctx->filename = strdup(python_path);
+  python_ctx->language = LANG_PYTHON;
+
+  caller_fn = make_named_node(NODE_FUNCTION, "caller", "caller", caller_path);
+  callee_fn = make_named_node(NODE_FUNCTION, "helper", "helper", callee_path);
+  python_class = make_named_node(NODE_CLASS, "Worker", "Worker", python_path);
+  call_ref = make_named_node(NODE_IDENTIFIER, "helper", "helper", caller_path);
+  include_node = make_named_node(NODE_INCLUDE, "helper.c", "helper.c", caller_path);
+  include_node->raw_content = strdup("#include \"helper.c\"");
+  include_node->owned_fields |= FIELD_RAW_CONTENT;
+
+  cr_assert(ast_node_add_child(caller_fn, call_ref), "Call reference should be attached");
+  cr_assert(ast_node_add_reference(call_ref, callee_fn), "Call reference should resolve to helper");
+  cr_assert(parser_add_ast_node(caller_ctx, caller_fn), "Caller function should be tracked");
+  cr_assert(parser_add_ast_node(caller_ctx, include_node), "Include node should be tracked");
+  cr_assert(parser_add_ast_node(callee_ctx, callee_fn), "Callee function should be tracked");
+  cr_assert(parser_add_ast_node(python_ctx, python_class), "Python class should be tracked");
+  cr_assert(parser_context_add_dependency(caller_ctx, callee_ctx),
+            "Dependency should be created between parser contexts");
+
+  project->file_contexts[0] = caller_ctx;
+  project->file_contexts[1] = callee_ctx;
+  project->file_contexts[2] = python_ctx;
+  project->num_files = 3;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "caller", caller_fn, caller_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Caller symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "helper", callee_fn, callee_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Helper symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "Worker", python_class, python_path,
+                                  SCOPE_GLOBAL, LANG_PYTHON) != NULL,
+            "Worker symbol should be registered");
+
+  cr_assert(project_context_rebuild_ir(project), "Project IR snapshot should rebuild");
+  registry = project_context_get_info_block_registry(project);
+  cr_assert_not_null(registry, "InfoBlock registry should rebuild");
+  cr_assert(project_context_find_info_block(project, "sym:caller") != NULL,
+            "Caller symbol block should be addressable by ID");
+  cr_assert(project_context_find_info_block(project, "file:") == NULL,
+            "Partial IDs should not match registry entries");
+
+  for (size_t i = 0; i < registry->block_count; i++) {
+    switch (registry->blocks[i].tier) {
+    case PROJECT_CONTEXT_TIER_0:
+      saw_tier0 = true;
+      break;
+    case PROJECT_CONTEXT_TIER_1:
+      saw_tier1 = true;
+      break;
+    case PROJECT_CONTEXT_TIER_2:
+      saw_tier2 = true;
+      break;
+    case PROJECT_CONTEXT_TIER_3:
+      saw_tier3 = true;
+      break;
+    case PROJECT_CONTEXT_TIER_4:
+      saw_tier4 = true;
+      break;
+    }
+  }
+
+  cr_assert(saw_tier0 && saw_tier1 && saw_tier2 && saw_tier3 && saw_tier4,
+            "Registry should emit canonical Tier 0-4 blocks");
+
+  focus_ids[0] = "sym:caller";
+  focus_ids[1] = "sym:Worker";
+  summary_ids[0] = python_path;
+  request.focus_block_ids = focus_ids;
+  request.focus_block_count = 2;
+  request.summary_only_block_ids = (const char **)(const void *)summary_ids;
+  request.summary_only_block_count = 0;
+  request.anchor_symbol = NULL;
+  request.anchor_file_path = NULL;
+  request.min_tier = PROJECT_CONTEXT_TIER_1;
+  request.max_tier = PROJECT_CONTEXT_TIER_3;
+  request.include_related = true;
+  request.include_dependencies = true;
+  request.max_blocks = 12;
+  request.max_tokens = 0;
+
+  summary_ids[0] = "file:";
+  {
+    char *python_file_id = malloc(strlen("file:") + strlen(python_path) + 1);
+    cr_assert_not_null(python_file_id, "Python file summary ID should allocate");
+    sprintf(python_file_id, "file:%s", python_path);
+    request.summary_only_block_ids = (const char **)&summary_ids[0];
+    request.summary_only_block_count = 1;
+    summary_ids[0] = python_file_id;
+
+    cr_assert(project_context_build_tiered_context(project, &request, &result),
+              "Tiered context request should succeed");
+
+    for (size_t i = 0; i < result.selection_count; i++) {
+      const ProjectTieredContextSelection *selection = &result.selections[i];
+      if (selection->block->qualified_name && strcmp(selection->block->qualified_name, "helper") == 0) {
+        saw_helper = true;
+      }
+      if (selection->block->kind == PROJECT_INFO_BLOCK_FILE && selection->block->file_path &&
+          strcmp(selection->block->file_path, python_path) == 0 &&
+          selection->disposition == PROJECT_CONTEXT_BLOCK_SUMMARIZED) {
+        saw_python_file_summary = true;
+      }
+    }
+
+    free(python_file_id);
+  }
+
+  cr_assert(result.selection_count >= 4,
+            "Tiered context should include focused and related blocks across files/languages");
+  cr_assert(saw_helper, "Related helper symbol should be pulled into tiered context");
+  cr_assert(saw_python_file_summary,
+            "Summary-only file blocks should be marked summarized in results");
+
+  project_tiered_context_result_free(&result);
+}
