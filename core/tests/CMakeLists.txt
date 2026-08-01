@@ -79,28 +79,31 @@ target_link_libraries(test_utilities PRIVATE
     ts_typescript
 )
 
+function(add_scopemux_test target)
+    add_executable(${target} ${ARGN})
+    target_link_libraries(${target} PRIVATE
+        test_parser
+        test_utilities
+        parser_core
+        context_engine
+        ${CRITERION_LIBRARIES}
+        ts_core
+        ts_c
+        ts_cpp
+        ts_python
+        ts_javascript
+        ts_typescript
+    )
+endfunction()
+
 # Set include directories for test targets
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(test_utilities)
 
 # Create test executable
-add_executable(run_tests
+add_scopemux_test(run_tests
     src/init_parser_tests.c
     src/edge_case_tests.c
-)
-
-target_link_libraries(run_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 
 
@@ -108,304 +111,111 @@ target_link_libraries(run_tests PRIVATE
 # set_common_test_includes(run_tests)
 
 # Add init_parser_tests target
-add_executable(init_parser_tests
+add_scopemux_test(init_parser_tests
     src/init_parser_tests.c
-)
-# Link against utilities, core libraries, and Criterion.
-target_link_libraries(init_parser_tests PRIVATE
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(init_parser_tests)
 
 # Add edge_case_tests target
-add_executable(edge_case_tests
+add_scopemux_test(edge_case_tests
     src/edge_case_tests.c
-)
-target_link_libraries(edge_case_tests PRIVATE
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(edge_case_tests)
 
 # Add c_example_ast_tests target
-add_executable(c_example_ast_tests
+add_scopemux_test(c_example_ast_tests
     src/c/c_example_ast_tests.c
-)
-target_link_libraries(c_example_ast_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(c_example_ast_tests)
 
 # Add cpp_example_ast_tests target
-add_executable(cpp_example_ast_tests
+add_scopemux_test(cpp_example_ast_tests
     src/cpp/cpp_example_ast_tests.c
-)
-target_link_libraries(cpp_example_ast_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(cpp_example_ast_tests)
 
 # Add cpp_basic_ast_tests target
-add_executable(cpp_basic_ast_tests
+add_scopemux_test(cpp_basic_ast_tests
     src/cpp/cpp_basic_ast_tests.c
-)
-target_link_libraries(cpp_basic_ast_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(cpp_basic_ast_tests)
 
 # Add js_basic_ast_tests target
-add_executable(js_basic_ast_tests
+add_scopemux_test(js_basic_ast_tests
     src/js/js_basic_ast_tests.c
-)
-target_link_libraries(js_basic_ast_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(js_basic_ast_tests)
 
-# Add c_basic_ast_tests target
-add_executable(c_basic_ast_tests
-    src/c/c_basic_ast_tests.c
+# Add js_example_ast_tests target
+add_scopemux_test(js_example_ast_tests
+    src/js/js_example_ast_tests.c
 )
-target_link_libraries(c_basic_ast_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(js_example_ast_tests)
+
+# Add c_basic_ast_tests target
+add_scopemux_test(c_basic_ast_tests
+    src/c/c_basic_ast_tests.c
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(c_basic_ast_tests)
 
 # Add ts_basic_ast_tests target
-add_executable(ts_basic_ast_tests
+add_scopemux_test(ts_basic_ast_tests
     src/ts/ts_basic_ast_tests.c
-)
-target_link_libraries(ts_basic_ast_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(ts_basic_ast_tests)
 
-# Add python_basic_ast_tests target
-add_executable(python_basic_ast_tests
-    src/python/python_basic_ast_tests.c
+# Add ts_example_ast_tests target
+add_scopemux_test(ts_example_ast_tests
+    src/ts/ts_example_ast_tests.c
 )
-target_link_libraries(python_basic_ast_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
+# include directories already set above; removed problematic macro call
+# set_common_test_includes(ts_example_ast_tests)
+
+# Add python_basic_ast_tests target
+add_scopemux_test(python_basic_ast_tests
+    src/python/python_basic_ast_tests.c
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(python_basic_ast_tests)
 
 # Add python_example_ast_tests target
-add_executable(python_example_ast_tests
+add_scopemux_test(python_example_ast_tests
     src/python/python_example_ast_tests.c
-)
-target_link_libraries(python_example_ast_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(python_example_ast_tests)
 
 # Add interfile test targets
 # Project Context Tests
-add_executable(project_context_tests
+add_scopemux_test(project_context_tests
     project_context/project_context_tests.c
-)
-target_link_libraries(project_context_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 
 # Resolver Registration Tests
-add_executable(resolver_registration_tests reference_resolvers/resolver_registration_tests.c)
-target_link_libraries(resolver_registration_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
-)
+add_scopemux_test(resolver_registration_tests reference_resolvers/resolver_registration_tests.c)
 
 # Resolver Resolution Tests
-add_executable(resolver_resolution_tests reference_resolvers/resolver_resolution_tests.c)
-target_link_libraries(resolver_resolution_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
-)
+add_scopemux_test(resolver_resolution_tests reference_resolvers/resolver_resolution_tests.c)
 
 # Language Resolver Tests
-add_executable(language_resolver_tests
+add_scopemux_test(language_resolver_tests
     language_resolver/language_resolver_tests.c
-)
-target_link_libraries(language_resolver_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
 )
 
 # Resolver Core Tests
-add_executable(resolver_core_tests reference_resolvers/resolver_core_tests.c)
-target_link_libraries(resolver_core_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
-)
+add_scopemux_test(resolver_core_tests reference_resolvers/resolver_core_tests.c)
 
 # Symbol Table Tests
-add_executable(symbol_table_tests symbol_table/symbol_table_tests.c)
-target_link_libraries(symbol_table_tests PRIVATE
-    test_parser
-    test_utilities
-    parser_core
-    context_engine
-    ${CRITERION_LIBRARIES}
-    ts_core
-    ts_c
-    ts_cpp
-    ts_python
-    ts_javascript
-    ts_typescript
-)
+add_scopemux_test(symbol_table_tests symbol_table/symbol_table_tests.c)
 
 # Installation rules
 install(TARGETS run_tests DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

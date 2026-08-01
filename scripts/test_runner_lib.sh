@@ -72,6 +72,7 @@ TOTAL_MISSING_JSON=0
 START_TIME=$(date +%s)
 # Associative array for per-suite results (Bash 4+)
 declare -A TEST_SUITE_RESULTS
+EXAMPLE_CATEGORY_MANIFEST="${PROJECT_ROOT_DIR}/core/tests/example_category_manifest.txt"
 
 # Clear Address Sanitizer logs
 rm -f asan.log*
@@ -273,6 +274,32 @@ run_test_suite() {
 
 # Standardized directory processing (recursive, parallel, sorted)
 # Handles testing source files with expected JSON output
+load_example_categories() {
+    local lang="$1"
+    local -n categories_ref=$2
+    categories_ref=()
+
+    if [ ! -f "$EXAMPLE_CATEGORY_MANIFEST" ]; then
+        echo "[test_runner_lib] ERROR: Missing example category manifest: $EXAMPLE_CATEGORY_MANIFEST"
+        return 1
+    fi
+
+    local line
+    line=$(rg --max-count 1 "^${lang}:" "$EXAMPLE_CATEGORY_MANIFEST")
+    if [ -z "$line" ]; then
+        echo "[test_runner_lib] ERROR: No manifest entry found for language: $lang"
+        return 1
+    fi
+
+    line=${line#*:}
+    read -r -a categories_ref <<<"$line"
+
+    if [ ${#categories_ref[@]} -eq 0 ]; then
+        echo "[test_runner_lib] ERROR: Manifest entry for $lang had no categories"
+        return 1
+    fi
+}
+
 process_language_tests() {
     local lang=$1
     local -n categories=$2

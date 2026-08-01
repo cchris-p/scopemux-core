@@ -1,0 +1,5 @@
+c: basic_syntax complex_structures file_io memory_management struct_union_enum
+cpp: basic_syntax complex_structures modern_cpp templates
+js: basic_syntax es6_features functions_and_objects
+python: basic_syntax complex_structures comprehensions_generators decorators metaprogramming
+ts: advanced basic_syntax classes_inheritance decorators generics modules_namespaces react_components types_interfaces

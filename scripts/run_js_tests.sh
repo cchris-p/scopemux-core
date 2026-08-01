@@ -26,12 +26,6 @@ RUN_JS_BASIC_AST_TESTS=true
 RUN_JS_EXAMPLE_AST_TESTS=true
 RUN_JS_CST_TESTS=false # Disabled - source files don't exist yet
 
-# JavaScript example test directory toggles
-RUN_JS_BASIC_SYNTAX_TESTS=true
-RUN_JS_MODERN_JS_TESTS=false
-RUN_JS_ASYNC_TESTS=false
-RUN_JS_FUNCTION_TESTS=false
-
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
 
@@ -71,24 +65,18 @@ if [ "${RUN_JS_BASIC_AST_TESTS}" = true ]; then
     build_and_run_test_target "run_js_tests.sh" "$CMAKE_BUILD_DIR" "js_basic_ast_tests" "JavaScript Basic AST Tests" "$JS_BASIC_AST_EXECUTABLE_RELPATH"
 fi
 
-# Gather enabled JavaScript example test categories
-JS_TEST_CATEGORIES=()
-if [ "$RUN_JS_BASIC_SYNTAX_TESTS" = true ]; then
-    JS_TEST_CATEGORIES+=("basic_syntax")
-fi
-if [ "$RUN_JS_MODERN_JS_TESTS" = true ]; then
-    JS_TEST_CATEGORIES+=("modern_js")
-fi
-if [ "$RUN_JS_ASYNC_TESTS" = true ]; then
-    JS_TEST_CATEGORIES+=("async")
-fi
-if [ "$RUN_JS_FUNCTION_TESTS" = true ]; then
-    JS_TEST_CATEGORIES+=("functions")
-fi
-
-# Run per-directory JavaScript example tests if any are enabled
-if [ "${#JS_TEST_CATEGORIES[@]}" -gt 0 ]; then
-    process_language_tests js JS_TEST_CATEGORIES "$CMAKE_BUILD_DIR/core/tests/js_example_ast_tests" "$PARALLEL_JOBS" ".js"
+# Run manifest-defined JavaScript example tests if enabled
+if [ "${RUN_JS_EXAMPLE_AST_TESTS}" = true ]; then
+    load_example_categories js JS_TEST_CATEGORIES || exit 1
+    echo "[run_js_tests.sh] Building JavaScript example AST tests executable..."
+    build_test_target "js_example_ast_tests" "$CMAKE_BUILD_DIR" "JavaScript Example AST Tests"
+    build_result=$?
+    if [ $build_result -ne 0 ]; then
+        echo "[run_js_tests.sh] ERROR: Failed to build js_example_ast_tests, skipping example tests."
+        ((TEST_FAILURES++))
+    else
+        process_language_tests js JS_TEST_CATEGORIES "$CMAKE_BUILD_DIR/core/tests/js_example_ast_tests" "$PARALLEL_JOBS" ".js"
+    fi
 fi
 
 # Run CST tests if enabled

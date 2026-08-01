@@ -10,6 +10,112 @@
 #include <string.h>
 #include <unistd.h>
 
+#define CATEGORY_MANIFEST_PATH "core/tests/example_category_manifest.txt"
+
+static const char *get_language_extension_for_id(const char *lang) {
+  if (strcmp(lang, "c") == 0) {
+    return ".c";
+  }
+  if (strcmp(lang, "cpp") == 0) {
+    return ".cpp";
+  }
+  if (strcmp(lang, "js") == 0) {
+    return ".js";
+  }
+  if (strcmp(lang, "ts") == 0) {
+    return ".ts";
+  }
+  if (strcmp(lang, "python") == 0) {
+    return ".py";
+  }
+
+  return NULL;
+}
+
+static void free_category_list(char **categories, size_t count) {
+  if (!categories) {
+    return;
+  }
+
+  for (size_t i = 0; i < count; i++) {
+    free(categories[i]);
+  }
+  free(categories);
+}
+
+static char **load_example_categories(const char *lang, size_t *count) {
+  FILE *manifest = fopen(CATEGORY_MANIFEST_PATH, "r");
+  if (!manifest) {
+    cr_log_error("Failed to open category manifest: %s", CATEGORY_MANIFEST_PATH);
+    return NULL;
+  }
+
+  char line[2048];
+  size_t lang_len = strlen(lang);
+  char **categories = NULL;
+
+  while (fgets(line, sizeof(line), manifest)) {
+    if (strncmp(line, lang, lang_len) != 0 || line[lang_len] != ':') {
+      continue;
+    }
+
+    char *cursor = line + lang_len + 1;
+    size_t capacity = 8;
+    size_t loaded = 0;
+    categories = calloc(capacity, sizeof(char *));
+    if (!categories) {
+      fclose(manifest);
+      return NULL;
+    }
+
+    while (*cursor != '\0') {
+      while (*cursor == ' ' || *cursor == '\t') {
+        cursor++;
+      }
+      if (*cursor == '\0' || *cursor == '\n') {
+        break;
+      }
+
+      char *start = cursor;
+      while (*cursor != '\0' && *cursor != '\n' && *cursor != ' ' && *cursor != '\t') {
+        cursor++;
+      }
+
+      size_t token_len = (size_t)(cursor - start);
+      if (token_len == 0) {
+        continue;
+      }
+
+      if (loaded == capacity) {
+        capacity *= 2;
+        char **expanded = realloc(categories, capacity * sizeof(char *));
+        if (!expanded) {
+          free_category_list(categories, loaded);
+          fclose(manifest);
+          return NULL;
+        }
+        categories = expanded;
+      }
+
+      categories[loaded] = strndup(start, token_len);
+      if (!categories[loaded]) {
+        free_category_list(categories, loaded);
+        fclose(manifest);
+        return NULL;
+      }
+      loaded++;
+    }
+
+    fclose(manifest);
+    *count = loaded;
+    return categories;
+  }
+
+  fclose(manifest);
+  cr_log_error("No categories found in manifest for language: %s", lang);
+  return NULL;
+}
+
 /**
  * Escape a string for JSON output by replacing newlines with \n
  * and other special characters as needed
@@ -171,6 +277,27 @@ bool has_extension(const char *filename, const char *ext) {
   }
 
   return strcmp(filename + filename_len - ext_len, ext) == 0;
+}
+
+bool run_language_example_test(const char *lang, Language language, const char *category,
+                               const char *filename) {
+  TestPaths paths = construct_test_paths(lang, category, filename);
+  if (!paths.base_filename) {
+    cr_log_error("Failed to construct test paths");
+    cr_assert_fail("Memory allocation failed");
+  }
+
+  ASTTestConfig config = ast_test_config_init();
+  config.source_file = paths.source_path;
+  config.json_file = paths.json_path;
+  config.category = category;
+  config.base_filename = paths.base_filename;
+  config.language = language;
+  config.debug_mode = true;
+
+  bool test_passed = run_ast_test(&config);
+  free(paths.base_filename);
+  return test_passed;
 }
 
 char *read_file_contents(const char *path) {
@@ -460,9 +587,15 @@ TestPaths construct_test_paths(const char *lang, const char *category, const cha
 }
 
 void process_category_files(const char *lang, const char *category,
-                            bool (*is_test_file)(const char *filename),
                             void (*test_file)(const char *category, const char *filename)) {
   char dir_path[1024];
+  const char *extension = get_language_extension_for_id(lang);
+
+  if (!extension) {
+    cr_log_error("No known file extension for language: %s", lang);
+    return;
+  }
+
   snprintf(dir_path, sizeof(dir_path), "core/tests/examples/%s/%s", lang, category);
 
   DIR *dir = opendir(dir_path);
@@ -485,7 +618,7 @@ void process_category_files(const char *lang, const char *category,
 
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
-    if (entry->d_type == DT_REG && is_test_file(entry->d_name)) {
+    if (entry->d_type == DT_REG && has_extension(entry->d_name, extension)) {
       // Expand array if needed
       if (file_count >= file_capacity) {
         file_capacity *= 2;
@@ -521,12 +654,14 @@ void process_category_files(const char *lang, const char *category,
   closedir(dir);
 
   // Sort the filenames to ensure consistent order
-  for (size_t i = 0; i < file_count - 1; i++) {
-    for (size_t j = i + 1; j < file_count; j++) {
-      if (strcmp(test_files[i], test_files[j]) > 0) {
-        char *temp = test_files[i];
-        test_files[i] = test_files[j];
-        test_files[j] = temp;
+  if (file_count > 1) {
+    for (size_t i = 0; i + 1 < file_count; i++) {
+      for (size_t j = i + 1; j < file_count; j++) {
+        if (strcmp(test_files[i], test_files[j]) > 0) {
+          char *temp = test_files[i];
+          test_files[i] = test_files[j];
+          test_files[j] = temp;
+        }
       }
     }
   }
@@ -538,6 +673,22 @@ void process_category_files(const char *lang, const char *category,
   }
 
   free(test_files);
+}
+
+void process_language_example_categories(const char *lang,
+                                         void (*test_file)(const char *category,
+                                                           const char *filename)) {
+  size_t category_count = 0;
+  char **categories = load_example_categories(lang, &category_count);
+  if (!categories) {
+    cr_assert_fail("Failed to load example categories for %s", lang);
+  }
+
+  for (size_t i = 0; i < category_count; i++) {
+    process_category_files(lang, categories[i], test_file);
+  }
+
+  free_category_list(categories, category_count);
 }
 
 const char *get_language_name(Language lang) {

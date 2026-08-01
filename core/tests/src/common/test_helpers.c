@@ -27,52 +27,43 @@ int count_nodes_by_type(ASTNode *root, ASTNodeType type);
 void dump_ast_structure(ASTNode *node, int level);
 ASTNode *parse_cpp_ast(ParserContext *ctx, const char *source);
 
+static FILE *open_test_file(const char *language, const char *category, const char *file_name) {
+  const char *formats[] = {
+      "build/core/tests/examples/%s/%s/%s",
+      "core/tests/examples/%s/%s/%s",
+      "../core/tests/examples/%s/%s/%s",
+  };
+
+  for (size_t i = 0; i < sizeof(formats) / sizeof(formats[0]); i++) {
+    char path[1024];
+    snprintf(path, sizeof(path), formats[i], language, category, file_name);
+    fprintf(stderr, "DEBUG: Trying test file path: %s\n", path);
+
+    FILE *file = fopen(path, "rb");
+    if (file) {
+      return file;
+    }
+  }
+
+  return NULL;
+}
+
 /* Helper function to read test files with robust error handling */
 char *read_test_file(const char *language, const char *category, const char *file_name) {
-  if (!category || !file_name) {
+  if (!language || !category || !file_name) {
     fprintf(stderr, "ERROR: read_test_file called with NULL parameter(s)\n");
     cr_log_error("read_test_file called with NULL parameter(s)");
     return NULL;
   }
 
-  fprintf(stderr, "DEBUG: read_test_file called for category=%s file_name=%s\n", category,
-          file_name);
+  fprintf(stderr, "DEBUG: read_test_file called for language=%s category=%s file_name=%s\n",
+          language, category, file_name);
 
-  // Try build directory first
-  char build_path[1024];
-  snprintf(build_path, sizeof(build_path), "build/core/tests/examples/%s/%s", category, file_name);
-  fprintf(stderr, "DEBUG: Trying build directory path: %s\n", build_path);
-
-  FILE *f = fopen(build_path, "rb");
+  FILE *f = open_test_file(language, category, file_name);
   if (!f) {
-    // Try submodule path
-    char submodule_path[1024];
-    snprintf(submodule_path, sizeof(submodule_path), "core/tests/examples/c/%s/%s", category,
-             file_name);
-    fprintf(stderr, "DEBUG: Trying submodule path: %s\n", submodule_path);
-
-    f = fopen(submodule_path, "rb");
-    if (!f) {
-      // Try submodule path with ../ prefix (for build directory)
-      char parent_submodule_path[1024];
-      snprintf(parent_submodule_path, sizeof(parent_submodule_path), "../core/tests/examples/c/%s/%s", category, file_name);
-      fprintf(stderr, "DEBUG: Trying parent submodule path: %s\n", parent_submodule_path);
-
-      f = fopen(parent_submodule_path, "rb");
-      if (!f) {
-        // Try legacy canonical path
-        char legacy_path[1024];
-        snprintf(legacy_path, sizeof(legacy_path), "core/examples/%s/%s", category, file_name);
-        fprintf(stderr, "DEBUG: Trying legacy canonical path: %s\n", legacy_path);
-
-        f = fopen(legacy_path, "rb");
-        if (!f) {
-          fprintf(stderr, "ERROR: Failed to open test file: %s\n", strerror(errno));
-          cr_log_error("Failed to open test file: %s", strerror(errno));
-          return NULL;
-        }
-      }
-    }
+    fprintf(stderr, "ERROR: Failed to open test file: %s\n", strerror(errno));
+    cr_log_error("Failed to open test file: %s", strerror(errno));
+    return NULL;
   }
 
   // Get file size
@@ -118,7 +109,7 @@ char *read_test_file(const char *language, const char *category, const char *fil
     fprintf(stderr, "ERROR: Failed to read entire file (read %zu of %ld bytes): %s\n", bytes_read,
             length, ferror(f) ? strerror(errno) : "Unknown error");
     cr_log_error("Failed to read entire file (read %zu of %ld bytes)", bytes_read, length);
-    safe_free(buffer);
+    free(buffer);
     fclose(f);
     return NULL;
   }

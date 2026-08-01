@@ -26,12 +26,6 @@ RUN_PYTHON_BASIC_AST_TESTS=true
 RUN_PYTHON_EXAMPLE_AST_TESTS=true
 RUN_PYTHON_CST_TESTS=false
 
-# Python example test directory toggles
-RUN_PYTHON_BASIC_SYNTAX_TESTS=true
-RUN_PYTHON_COMPLEX_STRUCTURES_TESTS=true
-RUN_PYTHON_CLASS_TESTS=true
-RUN_PYTHON_FUNCTION_TESTS=true
-
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
 
@@ -71,24 +65,18 @@ if [ "${RUN_PYTHON_BASIC_AST_TESTS}" = true ]; then
     build_and_run_test_target "run_python_tests.sh" "$CMAKE_BUILD_DIR" "python_basic_ast_tests" "Python Basic AST Tests" "$PYTHON_BASIC_AST_EXECUTABLE_RELPATH"
 fi
 
-# Gather enabled Python example test categories
-PYTHON_TEST_CATEGORIES=()
-if [ "$RUN_PYTHON_BASIC_SYNTAX_TESTS" = true ]; then
-    PYTHON_TEST_CATEGORIES+=("basic_syntax")
-fi
-if [ "$RUN_PYTHON_COMPLEX_STRUCTURES_TESTS" = true ]; then
-    PYTHON_TEST_CATEGORIES+=("complex_structures")
-fi
-if [ "$RUN_PYTHON_CLASS_TESTS" = true ]; then
-    PYTHON_TEST_CATEGORIES+=("classes")
-fi
-if [ "$RUN_PYTHON_FUNCTION_TESTS" = true ]; then
-    PYTHON_TEST_CATEGORIES+=("functions")
-fi
-
-# Run per-directory Python example tests if any are enabled
-if [ "${#PYTHON_TEST_CATEGORIES[@]}" -gt 0 ]; then
-    process_language_tests python PYTHON_TEST_CATEGORIES "$CMAKE_BUILD_DIR/core/tests/python_example_ast_tests" "$PARALLEL_JOBS" ".py"
+# Run manifest-defined Python example tests if enabled
+if [ "${RUN_PYTHON_EXAMPLE_AST_TESTS}" = true ]; then
+    load_example_categories python PYTHON_TEST_CATEGORIES || exit 1
+    echo "[run_python_tests.sh] Building Python example AST tests executable..."
+    build_test_target "python_example_ast_tests" "$CMAKE_BUILD_DIR" "Python Example AST Tests"
+    build_result=$?
+    if [ $build_result -ne 0 ]; then
+        echo "[run_python_tests.sh] ERROR: Failed to build python_example_ast_tests, skipping example tests."
+        ((TEST_FAILURES++))
+    else
+        process_language_tests python PYTHON_TEST_CATEGORIES "$CMAKE_BUILD_DIR/core/tests/python_example_ast_tests" "$PARALLEL_JOBS" ".py"
+    fi
 fi
 
 # Run CST tests if enabled

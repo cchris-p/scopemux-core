@@ -25,16 +25,10 @@ TEST_FAILURES=0
 
 # C Language Test Toggles
 RUN_C_BASIC_AST_TESTS=false
+RUN_C_EXAMPLE_AST_TESTS=true
 # Note: The following tests are disabled because their source files don't exist yet
 RUN_C_CST_TESTS=false
 RUN_C_PREPROCESSOR_TESTS=false
-
-# C example test directory toggles
-RUN_C_BASIC_SYNTAX_TESTS=true
-RUN_C_COMPLEX_STRUCTURES_TESTS=false
-RUN_C_FILE_IO_TESTS=false
-RUN_C_MEMORY_MANAGEMENT_TESTS=false
-RUN_C_STRUCT_UNION_ENUM_TESTS=false
 
 initialize_runner_build_dir "$PROJECT_ROOT_DIR" "build-c"
 
@@ -114,26 +108,9 @@ for target in "${C_TEST_TARGETS[@]}"; do
 
     build_and_run_test_target "run_c_tests.sh" "$CMAKE_BUILD_DIR" "$test_name" "$test_description" "${C_TEST_EXECUTABLES[$test_name]}" "exit" "exit"
 done
-# Gather enabled C example test categories
-C_CATEGORIES=()
-if [ "$RUN_C_BASIC_SYNTAX_TESTS" = true ]; then
-    C_CATEGORIES+=("basic_syntax")
-fi
-if [ "$RUN_C_COMPLEX_STRUCTURES_TESTS" = true ]; then
-    C_CATEGORIES+=("complex_structures")
-fi
-if [ "$RUN_C_FILE_IO_TESTS" = true ]; then
-    C_CATEGORIES+=("file_io")
-fi
-if [ "$RUN_C_MEMORY_MANAGEMENT_TESTS" = true ]; then
-    C_CATEGORIES+=("memory_management")
-fi
-if [ "$RUN_C_STRUCT_UNION_ENUM_TESTS" = true ]; then
-    C_CATEGORIES+=("struct_union_enum")
-fi
-
-# Run per-directory C example tests if any are enabled
-if [ "${#C_CATEGORIES[@]}" -gt 0 ]; then
+# Run manifest-defined C example tests if enabled
+if [ "${RUN_C_EXAMPLE_AST_TESTS}" = true ]; then
+    load_example_categories c C_CATEGORIES || exit 1
     echo "[run_c_tests.sh] Building C example AST tests executable..."
     build_test_target "c_example_ast_tests" "$CMAKE_BUILD_DIR" "C Example AST Tests"
     build_result=$?

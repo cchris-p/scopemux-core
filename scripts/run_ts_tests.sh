@@ -26,12 +26,6 @@ RUN_TS_BASIC_AST_TESTS=true
 RUN_TS_EXAMPLE_AST_TESTS=true
 RUN_TS_CST_TESTS=false # Disabled - source files don't exist yet
 
-# TypeScript example test directory toggles
-RUN_TS_BASIC_SYNTAX_TESTS=true
-RUN_TS_INTERFACES_TESTS=false
-RUN_TS_GENERICS_TESTS=false
-RUN_TS_CLASSES_TESTS=false
-
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
 
@@ -71,24 +65,18 @@ if [ "${RUN_TS_BASIC_AST_TESTS}" = true ]; then
     build_and_run_test_target "run_ts_tests.sh" "$CMAKE_BUILD_DIR" "ts_basic_ast_tests" "TypeScript Basic AST Tests" "$TS_BASIC_AST_EXECUTABLE_RELPATH"
 fi
 
-# Gather enabled TypeScript example test categories
-TS_TEST_CATEGORIES=()
-if [ "$RUN_TS_BASIC_SYNTAX_TESTS" = true ]; then
-    TS_TEST_CATEGORIES+=("basic_syntax")
-fi
-if [ "$RUN_TS_INTERFACES_TESTS" = true ]; then
-    TS_TEST_CATEGORIES+=("interfaces")
-fi
-if [ "$RUN_TS_GENERICS_TESTS" = true ]; then
-    TS_TEST_CATEGORIES+=("generics")
-fi
-if [ "$RUN_TS_CLASSES_TESTS" = true ]; then
-    TS_TEST_CATEGORIES+=("classes")
-fi
-
-# Run per-directory TypeScript example tests if any are enabled
-if [ "${#TS_TEST_CATEGORIES[@]}" -gt 0 ]; then
-    process_language_tests ts TS_TEST_CATEGORIES "$CMAKE_BUILD_DIR/core/tests/ts_example_ast_tests" "$PARALLEL_JOBS" ".ts"
+# Run manifest-defined TypeScript example tests if enabled
+if [ "${RUN_TS_EXAMPLE_AST_TESTS}" = true ]; then
+    load_example_categories ts TS_TEST_CATEGORIES || exit 1
+    echo "[run_ts_tests.sh] Building TypeScript example AST tests executable..."
+    build_test_target "ts_example_ast_tests" "$CMAKE_BUILD_DIR" "TypeScript Example AST Tests"
+    build_result=$?
+    if [ $build_result -ne 0 ]; then
+        echo "[run_ts_tests.sh] ERROR: Failed to build ts_example_ast_tests, skipping example tests."
+        ((TEST_FAILURES++))
+    else
+        process_language_tests ts TS_TEST_CATEGORIES "$CMAKE_BUILD_DIR/core/tests/ts_example_ast_tests" "$PARALLEL_JOBS" ".ts"
+    fi
 fi
 
 # Run CST tests if enabled

@@ -78,8 +78,20 @@ TestPaths construct_test_paths(const char *lang, const char *category, const cha
  * @param test_file Function pointer to run the test on a file
  */
 void process_category_files(const char *lang, const char *category,
-                            bool (*is_test_file)(const char *filename),
                             void (*test_file)(const char *category, const char *filename));
+
+/**
+ * Process all manifest-defined example categories for a language.
+ */
+void process_language_example_categories(const char *lang,
+                                         void (*test_file)(const char *category,
+                                                           const char *filename));
+
+/**
+ * Shared implementation for language example AST tests.
+ */
+bool run_language_example_test(const char *lang, Language language, const char *category,
+                               const char *filename);
 
 /**
  * Get the name of a language

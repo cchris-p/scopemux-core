@@ -82,25 +82,6 @@ static void test_c_example(const char *category, const char *filename) {
 }
 
 /**
- * Check if a file is a C source file
- *
- * @param filename The filename to check if the file is a C source file. This should be a more
- * robust check.
- *
- * TODO: Consider orientating this function to check if the file is a test file for a given
- * language.
- */
-static bool is_c_file(const char *filename) {
-  // Check if file ends with .c exactly (not .c.something)
-  size_t len = strlen(filename);
-  if (len < 3)
-    return false; // Must be at least "x.c"
-
-  // Check if it ends with ".c" and that's the end of the filename
-  return strcmp(filename + len - 2, ".c") == 0;
-}
-
-/**
  * Extract category and filename from a full test file path
  * Example: "core/tests/examples/c/basic_syntax/hello_world.c" -> category="basic_syntax",
  * filename="hello_world.c"
@@ -112,7 +93,6 @@ static bool extract_test_info(const char *test_file_path, char **category, char 
   // Look for the pattern: core/tests/examples/c/{category}/{filename}
   // Also handle build directory pattern: core/tests/core/tests/examples/c/{category}/{filename}
   const char *pattern = "core/tests/examples/c/";
-  const char *build_pattern = "core/tests/core/tests/examples/c/";
   const char *start = strstr(test_file_path, pattern);
   if (!start)
     return false;
@@ -167,11 +147,6 @@ Test(c_examples, all_examples) {
   } else {
     // Run all tests (original behavior)
     cr_log_info("Running all C example tests (no SCOPEMUX_TEST_FILE set)");
-    const char *categories[] = {"basic_syntax",      "complex_structures", "file_io",
-                                "memory_management", "struct_union_enum",  NULL};
-
-    for (int i = 0; categories[i] != NULL; i++) {
-      process_category_files("c", categories[i], is_c_file, test_c_example);
-    }
+    process_language_example_categories("c", test_c_example);
   }
 }

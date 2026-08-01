@@ -23,13 +23,8 @@ TEST_FAILURES=0
 
 # C++ Language Test Toggles
 RUN_CPP_BASIC_AST_TESTS=true
+RUN_CPP_EXAMPLE_AST_TESTS=true
 RUN_CPP_CST_TESTS=false # Disabled - source files don't exist yet
-
-# C++ example test directory toggles
-RUN_CPP_BASIC_SYNTAX_TESTS=true
-RUN_CPP_COMPLEX_STRUCTURES_TESTS=true
-RUN_CPP_MODERN_CPP_TESTS=true
-RUN_CPP_TEMPLATES_TESTS=true
 
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
@@ -97,15 +92,9 @@ for target in "${CPP_TEST_TARGETS[@]}"; do
     build_and_run_test_target "run_cpp_tests.sh" "$CMAKE_BUILD_DIR" "$test_name" "$test_description" "${CPP_TEST_EXECUTABLES[$test_name]}"
 done
 
-# Gather enabled C++ example test categories
-CPP_TEST_CATEGORIES=()
-if [ "$RUN_CPP_BASIC_SYNTAX_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("basic_syntax"); fi
-if [ "$RUN_CPP_COMPLEX_STRUCTURES_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("complex_structures"); fi
-if [ "$RUN_CPP_MODERN_CPP_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("modern_cpp"); fi
-if [ "$RUN_CPP_TEMPLATES_TESTS" = true ]; then CPP_TEST_CATEGORIES+=("templates"); fi
-
-# Run per-directory C++ example tests if any are enabled
-if [ "${#CPP_TEST_CATEGORIES[@]}" -gt 0 ]; then
+# Run manifest-defined C++ example tests if enabled
+if [ "${RUN_CPP_EXAMPLE_AST_TESTS}" = true ]; then
+    load_example_categories cpp CPP_TEST_CATEGORIES || exit 1
     echo "[run_cpp_tests.sh] Building C++ example AST tests executable..."
     build_test_target "cpp_example_ast_tests" "$CMAKE_BUILD_DIR"
     build_result=$?
@@ -113,7 +102,7 @@ if [ "${#CPP_TEST_CATEGORIES[@]}" -gt 0 ]; then
         echo "[run_cpp_tests.sh] ERROR: Failed to build cpp_example_ast_tests, skipping example tests."
         ((TEST_FAILURES++))
     else
-        process_language_tests cpp CPP_TEST_CATEGORIES "$CPP_EXAMPLE_AST_EXECUTABLE_RELPATH"
+        process_language_tests cpp CPP_TEST_CATEGORIES "$CMAKE_BUILD_DIR/$CPP_EXAMPLE_AST_EXECUTABLE_RELPATH"
     fi
 fi
 
