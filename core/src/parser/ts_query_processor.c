@@ -24,7 +24,6 @@
 #include "scopemux/parser.h"
 
 // Forward declarations and externs
-extern ASTNodeType get_node_type_for_query(const char *query_type);
 extern void segfault_handler(int sig);
 
 // Ensure strdup is properly declared to avoid implicit declaration warnings
@@ -56,9 +55,6 @@ static const char *ts_node_text(TSNode node, const char *source_code, size_t sou
     *out_len = end - start;
   return source_code + start;
 }
-
-// Forward declaration of functions from node_type_mapping_loader.h
-extern ASTNodeType get_node_type_for_query(const char *query_type);
 
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 #include <assert.h>
@@ -103,79 +99,26 @@ static uint32_t map_query_type_to_node_type(const char *query_type) {
     return NODE_UNKNOWN;
   }
 
-  // Use the node type mapping system with error handling
-  uint32_t node_type = NODE_UNKNOWN; // Initialize to avoid undefined behavior
-
   // Strip @ prefix if present for mapping lookup
   const char *clean_query_type = query_type;
   if (query_type[0] == '@') {
     clean_query_type++;
   }
 
-  // Map query types to node types
-  if (clean_query_type) {
-    if (strcmp(clean_query_type, "function") == 0) {
-      log_info("[QUERY_DEBUG] Mapped function query to NODE_FUNCTION");
-      return NODE_FUNCTION;
-    } else if (strcmp(clean_query_type, "functions") == 0) {
-      log_info("[QUERY_DEBUG] Mapped functions query to NODE_FUNCTION");
-      return NODE_FUNCTION;
-    } else if (strcmp(clean_query_type, "class") == 0) {
-      return NODE_CLASS;
-    } else if (strcmp(clean_query_type, "classes") == 0) {
-      return NODE_CLASS;
-    } else if (strcmp(clean_query_type, "method") == 0) {
-      return NODE_METHOD;
-    } else if (strcmp(clean_query_type, "methods") == 0) {
-      return NODE_METHOD;
-    } else if (strcmp(clean_query_type, "variable") == 0) {
-      return NODE_VARIABLE;
-    } else if (strcmp(clean_query_type, "variables") == 0) {
-      return NODE_VARIABLE;
-    } else if (strcmp(clean_query_type, "import") == 0 ||
-               strcmp(clean_query_type, "include") == 0) {
-      return NODE_INCLUDE;
-    } else if (strcmp(clean_query_type, "imports") == 0 ||
-               strcmp(clean_query_type, "includes") == 0) {
-      return NODE_INCLUDE;
-    } else if (strcmp(clean_query_type, "docstring") == 0) {
-      log_info("[QUERY_DEBUG] Mapped docstring query to NODE_DOCSTRING");
-      return NODE_DOCSTRING;
-    } else if (strcmp(clean_query_type, "docstrings") == 0) {
-      log_info("[QUERY_DEBUG] Mapped docstrings query to NODE_DOCSTRING");
-      return NODE_DOCSTRING;
-    } else if (strcmp(clean_query_type, "struct") == 0) {
-      log_info("[QUERY_DEBUG] Mapped struct query to NODE_STRUCT");
-      return NODE_STRUCT;
-    } else if (strcmp(clean_query_type, "structs") == 0) {
-      log_info("[QUERY_DEBUG] Mapped structs query to NODE_STRUCT");
-      return NODE_STRUCT;
-    } else if (strcmp(clean_query_type, "enum") == 0) {
-      log_info("[QUERY_DEBUG] Mapped enum query to NODE_ENUM");
-      return NODE_ENUM;
-    } else if (strcmp(clean_query_type, "enums") == 0) {
-      log_info("[QUERY_DEBUG] Mapped enums query to NODE_ENUM");
-      return NODE_ENUM;
-    } else if (strcmp(clean_query_type, "control_flow") == 0) {
-      log_info("[QUERY_DEBUG] Mapped control_flow query to NODE_CONTROL_FLOW");
-      return NODE_CONTROL_FLOW;
-    } else if (strcmp(clean_query_type, "for_loop") == 0) {
-      log_info("[QUERY_DEBUG] Mapped for_loop query to NODE_FOR_STATEMENT");
-      return NODE_FOR_STATEMENT;
-    } else if (strcmp(clean_query_type, "while_loop") == 0) {
-      log_info("[QUERY_DEBUG] Mapped while_loop query to NODE_WHILE_STATEMENT");
-      return NODE_WHILE_STATEMENT;
-    } else if (strcmp(clean_query_type, "do_while_loop") == 0) {
-      log_info("[QUERY_DEBUG] Mapped do_while_loop query to NODE_DO_WHILE_STATEMENT");
-      return NODE_DO_WHILE_STATEMENT;
-    } else if (strcmp(clean_query_type, "if_condition") == 0) {
-      log_info("[QUERY_DEBUG] Mapped if_condition query to NODE_IF_STATEMENT");
-      return NODE_IF_STATEMENT;
-    } else if (strcmp(clean_query_type, "switch_condition") == 0) {
-      log_info("[QUERY_DEBUG] Mapped switch_condition query to NODE_SWITCH_STATEMENT");
-      return NODE_SWITCH_STATEMENT;
-    } else {
-      log_info("[QUERY_ERROR] Unknown query type: %s", clean_query_type);
+  // Single source of truth lookup (see node_type_mapping_loader.c)
+  uint32_t node_type = get_node_type_for_query(clean_query_type);
+
+  // Fallback: try the singular form when the plural lookup misses
+  if (node_type == NODE_UNKNOWN) {
+    size_t len = strlen(clean_query_type);
+    if (len > 1 && clean_query_type[len - 1] == 's') {
+      char *singular = (char *)memory_debug_malloc(len, __FILE__, __LINE__, "singular_query_type");
+      if (singular) {
+        strncpy(singular, clean_query_type, len - 1);
+        singular[len - 1] = '\0';
+        node_type = get_node_type_for_query(singular);
+        memory_debug_free(singular, __FILE__, __LINE__);
+      }
     }
   }
 

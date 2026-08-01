@@ -29,7 +29,7 @@
 #include "scopemux/memory_debug.h"
 
 // Simple hash table for mapping query_type -> ASTNodeType
-#define MAX_MAPPINGS 32
+#define MAX_MAPPINGS 64
 
 typedef struct {
   char *query_type;
@@ -70,6 +70,18 @@ static ASTNodeType parse_node_type(const char *enum_str) {
     return NODE_INTERFACE;
   if (strcmp(enum_str, "NODE_TEMPLATE_SPECIALIZATION") == 0)
     return NODE_TEMPLATE_SPECIALIZATION;
+  if (strcmp(enum_str, "NODE_CONTROL_FLOW") == 0)
+    return NODE_CONTROL_FLOW;
+  if (strcmp(enum_str, "NODE_FOR_STATEMENT") == 0)
+    return NODE_FOR_STATEMENT;
+  if (strcmp(enum_str, "NODE_WHILE_STATEMENT") == 0)
+    return NODE_WHILE_STATEMENT;
+  if (strcmp(enum_str, "NODE_DO_WHILE_STATEMENT") == 0)
+    return NODE_DO_WHILE_STATEMENT;
+  if (strcmp(enum_str, "NODE_IF_STATEMENT") == 0)
+    return NODE_IF_STATEMENT;
+  if (strcmp(enum_str, "NODE_SWITCH_STATEMENT") == 0)
+    return NODE_SWITCH_STATEMENT;
   return NODE_UNKNOWN;
 }
 
@@ -80,31 +92,47 @@ static ASTNodeType parse_node_type(const char *enum_str) {
  * This is the source of truth for node type mappings in ScopeMux.
  */
 void load_node_type_mapping(void) {
-  fprintf(stderr, "[scopemux] INFO: Loading hardcoded node type mappings\n");
-
-  printf("[scopemux] Loading hardcoded node type mappings:\n");
-
-  // Define hardcoded mappings
-  // These are the core mappings needed for the parser to work correctly
+  // Define hardcoded mappings (single source of truth for query_type -> ASTNodeType)
+  // Both singular and plural query types are mapped directly.
   struct {
     const char *query_type;
     const char *node_type_str;
   } default_mappings[] = {
       {"functions", "NODE_FUNCTION"},
+      {"function", "NODE_FUNCTION"},
       {"classes", "NODE_CLASS"},
+      {"class", "NODE_CLASS"},
       {"methods", "NODE_METHOD"},
+      {"method", "NODE_METHOD"},
       {"variables", "NODE_VARIABLE"},
+      {"variable", "NODE_VARIABLE"},
       {"modules", "NODE_MODULE"},
+      {"module", "NODE_MODULE"},
       {"structs", "NODE_STRUCT"},
+      {"struct", "NODE_STRUCT"},
       {"unions", "NODE_UNION"},
+      {"union", "NODE_UNION"},
       {"enums", "NODE_ENUM"},
+      {"enum", "NODE_ENUM"},
       {"typedefs", "NODE_TYPEDEF"},
+      {"typedef", "NODE_TYPEDEF"},
       {"includes", "NODE_INCLUDE"},
+      {"include", "NODE_INCLUDE"},
+      {"imports", "NODE_INCLUDE"},
+      {"import", "NODE_INCLUDE"},
       {"macros", "NODE_MACRO"},
+      {"macro", "NODE_MACRO"},
       {"docstrings", "NODE_DOCSTRING"},
+      {"docstring", "NODE_DOCSTRING"},
       {"interfaces", "NODE_INTERFACE"},
+      {"interface", "NODE_INTERFACE"},
       {"template_specializations", "NODE_TEMPLATE_SPECIALIZATION"},
-      // Add any additional mappings here
+      {"control_flow", "NODE_CONTROL_FLOW"},
+      {"for_loop", "NODE_FOR_STATEMENT"},
+      {"while_loop", "NODE_WHILE_STATEMENT"},
+      {"do_while_loop", "NODE_DO_WHILE_STATEMENT"},
+      {"if_condition", "NODE_IF_STATEMENT"},
+      {"switch_condition", "NODE_SWITCH_STATEMENT"},
   };
 
   // Clear existing mappings
@@ -151,12 +179,11 @@ void load_node_type_mapping(void) {
     // Store the mapping
     mappings[mapping_count].query_type = query_type_copy;
     mappings[mapping_count].node_type = node_type;
-    printf("  %s -> %s\n", query_type, node_type_str);
     mapping_count++;
   }
 
   // Log summary
-  fprintf(stderr, "[scopemux] Loaded %d hardcoded node type mappings\n", mapping_count);
+  log_info("Loaded %d hardcoded node type mappings", mapping_count);
 }
 
 /**
