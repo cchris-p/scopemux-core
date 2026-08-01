@@ -305,7 +305,6 @@ process_language_tests() {
     local -n categories=$2
     local example_executable_path=$3
     local parallel_jobs=${4:-$PARALLEL_JOBS}
-    # Default extension is '.c', but can be overridden for other languages
     local file_extension=${5:-.c}
 
     for category in "${categories[@]}"; do
@@ -317,12 +316,9 @@ process_language_tests() {
 
         echo "[test_runner_lib] Processing $lang/$category tests..."
 
-        # Initialize counters for sequential execution
         local failed_tests=0
         local missing_json=0
 
-        # Process all test files in directory (sorted alphabetically)
-        # Use find to recursively locate all test files and sort them alphabetically
         local OLD_IFS="$IFS"
         IFS=$'\n'
         test_files=($(find "$dir" -type f -name "*.${file_extension#.}" | sort))
@@ -335,31 +331,18 @@ process_language_tests() {
 
         echo "[test_runner_lib] Found ${#test_files[@]} test files"
 
-        # CRITICAL FIX: Process tests sequentially to prevent interference
-        # Changed from parallel to sequential execution to eliminate race conditions
         local test_counter=0
         for test_file in "${test_files[@]}"; do
             test_counter=$((test_counter + 1))
-            
-            # Generate expected JSON filename
+
             expected_json_file="${test_file}.expected.json"
 
-            # Check if expected JSON exists
             if [ -f "$expected_json_file" ]; then
-                # CRITICAL FIX: Adjust paths for build directory context
-                # Files are copied to build dir with duplicated path structure
-                # Convert: core/tests/examples/c/basic_syntax/file.c
-                # To:      core/tests/core/tests/examples/c/basic_syntax/file.c
                 local build_test_file="core/tests/$test_file"
                 local build_expected_json="core/tests/$expected_json_file"
-                
-                # Set environment for tests with build directory paths
+
                 export SCOPEMUX_TEST_FILE="$build_test_file"
                 export SCOPEMUX_EXPECTED_JSON="$build_expected_json"
-                
-                # DEBUG: Show what we're setting
-                echo "[test_runner_lib] DEBUG: Setting SCOPEMUX_TEST_FILE=$build_test_file"
-                echo "[test_runner_lib] DEBUG: Setting SCOPEMUX_EXPECTED_JSON=$build_expected_json"
 
                 local test_name="$lang Example Test: $(basename "$test_file")"
                 echo "[test_runner_lib] Testing: $test_file"
@@ -372,18 +355,9 @@ process_language_tests() {
                 local raw_log="${test_log}.raw"
 
                 if [ -x "$executable" ]; then
-                    # Debug: Add comprehensive environment logging
-                    echo "[test_runner_lib] DEBUG: Environment variables:" >>"$raw_log"
-                    env | grep -E "(SCOPEMUX|PATH|PWD)" >>"$raw_log" 2>&1
-                    echo "[test_runner_lib] DEBUG: Working directory: $(pwd)" >>"$raw_log"
-                    echo "[test_runner_lib] DEBUG: Executable: $executable" >>"$raw_log"
-                    echo "[test_runner_lib] DEBUG: Starting test execution..." >>"$raw_log"
                     "$executable" >>"$raw_log" 2>&1
                     test_result=$?
-                    echo "[test_runner_lib] DEBUG: Test exit code: $test_result" >&2
-                    echo "[test_runner_lib] DEBUG: Last few lines of output:" >&2
-                    tail -5 "$raw_log" >&2
-                    # Filter out misleading Synthesis message before adding prefix
+
                     grep -v '\[====\] Synthesis:' "$raw_log" | awk -v prefix="[$test_name] " '{print prefix $0}' >"$test_log"
                 else
                     echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
@@ -409,9 +383,6 @@ process_language_tests() {
             fi
         done
 
-        # Sequential execution complete - no background jobs to wait for
-
-        # Return cumulative error status (don't return immediately on first error)
         local dir_errors=0
 
         if [ $failed_tests -gt 0 ]; then
@@ -422,18 +393,15 @@ process_language_tests() {
         if [ $missing_json -gt 0 ]; then
             echo "[test_runner_lib] $missing_json JSON files missing in directory: $dir"
             dir_errors=$((dir_errors + missing_json))
-            # Track missing JSON files globally
             TOTAL_MISSING_JSON=$((TOTAL_MISSING_JSON + missing_json))
         fi
 
         local total_tests=${#test_files[@]}
         local passed_tests=$((total_tests - failed_tests - missing_json))
         if [ $dir_errors -eq 0 ]; then
-            # All tests passed in directory
             echo -e "\033[1;32m PASS: $lang/$category ($passed_tests/$total_tests tests passed)\033[0m"
             TEST_SUITE_RESULTS["$lang/$category"]="PASS"
         else
-            # Some tests failed or missing JSON
             echo -e "\033[1;31m FAIL: $lang/$category ($passed_tests/$total_tests tests passed, $dir_errors problems in directory)\033[0m"
             TEST_SUITE_RESULTS["$lang/$category"]="FAIL"
             TEST_FAILURES=$((TEST_FAILURES + 1))
