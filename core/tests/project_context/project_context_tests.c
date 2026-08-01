@@ -86,7 +86,7 @@ void setup_project(void) {
   mkdir(test_project_abspath, 0777);
 
   // Create dummy files for all test cases using absolute path
-  create_dummy_file("file1.c", "int main() { return 0; }\n");
+  create_dummy_file("file1.c", "int func1() { return 0; }\n");
   create_dummy_file("file2.py", "print('hello')\n");
   create_dummy_file("main.c", "int main() { return 0; }\n");
   create_dummy_file("helper.c", "int helper() { return 1; }\n");
@@ -239,42 +239,18 @@ Test(project_context_delegation, interfile_symbols, .init = setup_project,
   project_context_add_file(project, file1_path, LANG_C);
   project_context_add_file(project, file2_path, LANG_C);
 
-  // Parse all files after adding
+  // Parse all files after adding. This path also registers symbols into the
+  // project's global symbol table via register_file_symbols().
   project_parse_all_files(project);
 
-  // Create AST nodes for each file
-  ASTNode *ast1 = ast_node_new(NODE_ROOT, NULL, AST_SOURCE_NONE);
-  ast1->lang = LANG_C;
-  ASTNode *func1 = ast_node_new(NODE_FUNCTION, "func1", AST_SOURCE_DEBUG_ALLOC);
-  func1->lang = LANG_C;
-  ast_node_add_child(ast1, func1);
-
-  ASTNode *ast2 = ast_node_new(NODE_ROOT, NULL, AST_SOURCE_NONE);
-  ast2->lang = LANG_C;
-  ASTNode *func2 = ast_node_new(NODE_FUNCTION, "func2", AST_SOURCE_DEBUG_ALLOC);
-  func2->lang = LANG_C;
-  ast_node_add_child(ast2, func2);
-
-  // Add ASTs to parser context with filenames
-  parser_context_add_ast_with_filename(parser, ast1, file1_path);
-  parser_context_add_ast_with_filename(parser, ast2, file2_path);
-
-  // Extract symbols from both files into the symbol table
-  project_context_extract_symbols(project, parser, symbols);
-
-  // Verify that symbols from both files are available in the symbol table
-  Symbol *sym1 = symbol_table_lookup(symbols, "func1");
-  Symbol *sym2 = symbol_table_lookup(symbols, "func2");
+  // Verify that symbols from both files are available in the project-level
+  // symbol table used by inter-file resolution.
+  SymbolEntry *sym1 = symbol_table_lookup(project->symbol_table, "func1");
+  SymbolEntry *sym2 = symbol_table_lookup(project->symbol_table, "func2");
 
   cr_assert(sym1 != NULL, "Symbol from file1 should be found");
   cr_assert(sym2 != NULL, "Symbol from file2 should be found");
 
-  cr_assert(strcmp(ast_node_get_file_path(sym1->node), file1_path) == 0,
-            "Symbol 1 file_path: expected '%s', got '%s'.", file1_path,
-            ast_node_get_file_path(sym1->node));
-  cr_assert(strcmp(ast_node_get_file_path(sym2->node), file2_path) == 0,
-            "Symbol 2 file_path: expected '%s', got '%s'.", file2_path,
-            ast_node_get_file_path(sym2->node));
-
-  // No need to free ast1/ast2; parser context takes ownership
+  cr_assert_str_eq(sym1->file_path, file1_path, "Symbol 1 should retain file1 path");
+  cr_assert_str_eq(sym2->file_path, file2_path, "Symbol 2 should retain file2 path");
 }

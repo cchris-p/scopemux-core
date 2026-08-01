@@ -22,7 +22,9 @@
 // TODO: Move these to appropriate headers when available.
 static void extract_symbols_from_ast(ASTNode *node, void *symbols);
 // symbol_collection_add is now implemented in symbol_collection.c
-void symbol_table_register_from_ast(GlobalSymbolTable *table, ASTNode *root, const char *filepath);
+size_t symbol_table_register_from_ast(GlobalSymbolTable *table, ASTNode *node,
+                                      const char *current_scope, const char *file_path,
+                                      Language language);
 
 /**
  * Register symbols from a parsed file into the global symbol table
@@ -50,7 +52,7 @@ void register_file_symbols(ProjectContext *project, ParserContext *ctx, const ch
     }
 
     // Register symbols from this AST
-    symbol_table_register_from_ast(project->symbol_table, root, filepath);
+    symbol_table_register_from_ast(project->symbol_table, root, NULL, filepath, ctx->language);
   }
 
   log_debug("Completed symbol registration for file: %s", SAFE_STR(filepath));
