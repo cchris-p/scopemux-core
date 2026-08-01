@@ -20,17 +20,53 @@
  * Run a test for a specific C example file
  */
 static void test_c_example(const char *category, const char *filename) {
-  // Get test paths
-  TestPaths paths = construct_test_paths("c", category, filename);
-  if (!paths.base_filename) {
-    cr_log_error("Failed to construct test paths");
-    cr_assert_fail("Memory allocation failed");
+  // CRITICAL FIX: Use environment variables when available (for test runner)
+  // Otherwise fall back to constructed paths (for manual testing)
+  const char *env_source_file = getenv("SCOPEMUX_TEST_FILE");
+  const char *env_json_file = getenv("SCOPEMUX_EXPECTED_JSON");
+  
+  TestPaths paths = {0};
+  const char *source_file_path;
+  const char *json_file_path;
+  
+  if (env_source_file && env_json_file) {
+    // Use environment variables (test runner mode)
+    cr_log_info("DETECTED ENVIRONMENT VARIABLES!");
+    cr_log_info("Using environment paths: source=%s, json=%s", env_source_file, env_json_file);
+    source_file_path = env_source_file;
+    json_file_path = env_json_file;
+    
+    // Extract base filename for config
+    const char *base_start = strrchr(filename, '/');
+    if (base_start) {
+      base_start++; // Skip the '/'
+    } else {
+      base_start = filename;
+    }
+    
+    paths.base_filename = strdup(base_start);
+    if (paths.base_filename) {
+      char *dot = strrchr(paths.base_filename, '.');
+      if (dot) {
+        *dot = '\0'; // Remove extension
+      }
+    }
+  } else {
+    // Use constructed paths (manual testing mode)
+    cr_log_info("Using constructed paths for manual testing");
+    paths = construct_test_paths("c", category, filename);
+    if (!paths.base_filename) {
+      cr_log_error("Failed to construct test paths");
+      cr_assert_fail("Memory allocation failed");
+    }
+    source_file_path = paths.source_path;
+    json_file_path = paths.json_path;
   }
 
   // Initialize test configuration
   ASTTestConfig config = ast_test_config_init();
-  config.source_file = paths.source_path;
-  config.json_file = paths.json_path;
+  config.source_file = source_file_path;
+  config.json_file = json_file_path;
   config.category = category;
   config.base_filename = paths.base_filename;
   config.language = LANG_C;
@@ -74,7 +110,9 @@ static bool extract_test_info(const char *test_file_path, char **category, char 
     return false;
 
   // Look for the pattern: core/tests/examples/c/{category}/{filename}
+  // Also handle build directory pattern: core/tests/core/tests/examples/c/{category}/{filename}
   const char *pattern = "core/tests/examples/c/";
+  const char *build_pattern = "core/tests/core/tests/examples/c/";
   const char *start = strstr(test_file_path, pattern);
   if (!start)
     return false;
