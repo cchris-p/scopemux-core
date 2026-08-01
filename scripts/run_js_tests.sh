@@ -1,14 +1,7 @@
 #!/bin/bash
 
-# All output from this script (stdout and stderr) is written to a file named after the script.
-# Filename format: run_js_tests.txt
-# This is useful for preserving logs for each test run.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SCRIPT_BASENAME="$(basename "$0" .sh)"
-OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_js_tests.txt"
-# Redirect all output to the log file (both stdout and stderr)
-exec > >(tee "$OUTPUT_FILE") 2>&1
 
 # ScopeMux JS Tests Runner Script
 # Uses the shared test runner library for standardized test execution
@@ -16,15 +9,11 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 # NOTE: This script uses a unique build directory (build-js) to allow parallel test execution across languages.
 # This prevents race conditions and build directory conflicts with other test runners.
 
-CMAKE_BUILD_DIR="${PROJECT_ROOT_DIR}/build-js"
-export CMAKE_BUILD_DIR
-if [ -z "$CMAKE_BUILD_DIR" ]; then
-    echo "ERROR: CMAKE_BUILD_DIR is not set"
-    exit 1
-fi
-
 # Source the shared test runner library
 source "${SCRIPT_DIR}/test_runner_lib.sh"
+
+setup_runner_logging "$0" "$PROJECT_ROOT_DIR"
+initialize_runner_build_dir "$PROJECT_ROOT_DIR" "build-js"
 
 # Exit on any error (disabled during test loop to allow all tests to run)
 # set -e
@@ -72,40 +61,14 @@ for arg in "$@"; do
 done
 
 # Prepare build directory (clean or not, depending on flag)
-prepare_clean_build_dir "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
-
-# Setup CMake configuration using the shared library
-setup_cmake_config "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR"
+prepare_and_configure_build "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
 
 # Run standard JavaScript language tests
 echo "[run_js_tests.sh] Running JavaScript language test suite"
 
 # Run basic JavaScript tests if enabled
 if [ "${RUN_JS_BASIC_AST_TESTS}" = true ]; then
-    build_test_target "js_basic_ast_tests" "JavaScript Basic AST Tests"
-    build_result=$?
-
-    if [ $build_result -ne 0 ]; then
-        echo "[run_js_tests.sh] ERROR: Failed to build js_basic_ast_tests"
-        ((TEST_FAILURES++))
-    else
-        # Change to build directory and get absolute path to executable
-        cd "$CMAKE_BUILD_DIR"
-        make "js_basic_ast_tests"
-
-        # Verify that the executable was built
-        if [ ! -f "core/tests/js_basic_ast_tests" ]; then
-            echo "[run_js_tests.sh] ERROR: Executable not found at core/tests/js_basic_ast_tests"
-            ((TEST_FAILURES++))
-        else
-            # Get the absolute path to the executable
-            executable_path="$(pwd)/core/tests/js_basic_ast_tests"
-
-            # Run the test
-            run_test_suite "JavaScript Basic AST Tests" "$executable_path"
-            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
-        fi
-    fi
+    build_and_run_test_target "run_js_tests.sh" "$CMAKE_BUILD_DIR" "js_basic_ast_tests" "JavaScript Basic AST Tests" "$JS_BASIC_AST_EXECUTABLE_RELPATH"
 fi
 
 # Gather enabled JavaScript example test categories
@@ -130,30 +93,7 @@ fi
 
 # Run CST tests if enabled
 if [ "${RUN_JS_CST_TESTS}" = true ]; then
-    build_test_target "js_cst_tests" "JavaScript CST Tests"
-    build_result=$?
-
-    if [ $build_result -ne 0 ]; then
-        echo "[run_js_tests.sh] ERROR: Failed to build js_cst_tests"
-        ((TEST_FAILURES++))
-    else
-        # Change to build directory and get absolute path to executable
-        cd "$CMAKE_BUILD_DIR"
-        make "js_cst_tests"
-
-        # Verify that the executable was built
-        if [ ! -f "core/tests/js_cst_tests" ]; then
-            echo "[run_js_tests.sh] ERROR: Executable not found at core/tests/js_cst_tests"
-            ((TEST_FAILURES++))
-        else
-            # Get the absolute path to the executable
-            executable_path="$(pwd)/core/tests/js_cst_tests"
-
-            # Run the test
-            run_test_suite "JavaScript CST Tests" "$executable_path"
-            if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
-        fi
-    fi
+    build_and_run_test_target "run_js_tests.sh" "$CMAKE_BUILD_DIR" "js_cst_tests" "JavaScript CST Tests" "$JS_CST_EXECUTABLE_RELPATH"
 fi
 
 # Let the shared library handle the final test summary and exit code

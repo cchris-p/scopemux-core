@@ -1,18 +1,7 @@
 #!/bin/bash
 
-# Enable AddressSanitizer logging to a file for all test runs
-export ASAN_OPTIONS=log_path=asan.log:verbosity=1
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-
-# All output from this script (stdout and stderr) is written to a file named after the script.
-# Filename format: run_c_tests.txt
-# This is useful for preserving logs for each test run.
-SCRIPT_BASENAME="$(basename "$0" .sh)"
-OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_c_tests.txt"
-# Redirect all output to the log file (both stdout and stderr)
-exec > >(tee "$OUTPUT_FILE") 2>&1
 
 # ScopeMux C Tests Runner Script
 # Uses the shared test runner library for standardized test execution
@@ -22,6 +11,11 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 
 # Source the shared test runner library
 source "${SCRIPT_DIR}/test_runner_lib.sh"
+
+setup_runner_logging "$0" "$PROJECT_ROOT_DIR"
+
+# Enable AddressSanitizer logging to a file for all test runs
+export ASAN_OPTIONS=log_path=asan.log:verbosity=1
 
 # Exit on any error (disabled during test loop to allow all tests to run)
 # set -e
@@ -42,7 +36,7 @@ RUN_C_FILE_IO_TESTS=false
 RUN_C_MEMORY_MANAGEMENT_TESTS=false
 RUN_C_STRUCT_UNION_ENUM_TESTS=false
 
-CMAKE_BUILD_DIR="${PROJECT_ROOT_DIR}/build-c"
+initialize_runner_build_dir "$PROJECT_ROOT_DIR" "build-c"
 
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
@@ -71,10 +65,7 @@ for arg in "$@"; do
 done
 
 # Prepare build directory (clean or not, depending on flag)
-prepare_clean_build_dir "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
-
-# Setup CMake configuration using the shared library
-setup_cmake_config "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR"
+prepare_and_configure_build "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
 
 # Run all C test executables in a robust, standardized way
 # Define all C test targets and their display names
@@ -121,36 +112,7 @@ for target in "${C_TEST_TARGETS[@]}"; do
         continue
     fi
 
-    # Build the test target
-    echo "[run_c_tests.sh] Building $test_description ($test_name)..."
-    build_test_target "$test_name" "$CMAKE_BUILD_DIR" "$test_description"
-    build_result=$?
-
-    if [ $build_result -ne 0 ]; then
-        echo "[run_c_tests.sh] ERROR: Failed to build $test_name. Exiting."
-        exit 1
-    fi
-
-    # Get the absolute path to the executable
-    executable_path="${CMAKE_BUILD_DIR}/${C_TEST_EXECUTABLES[$test_name]}"
-
-    # Verify that the executable was built
-    if [ ! -f "$executable_path" ]; then
-        echo "[run_c_tests.sh] ERROR: Executable not found at $executable_path. Exiting."
-        exit 1
-    fi
-
-    # Run the test
-    echo "[run_c_tests.sh] Running $test_description..."
-    run_test_suite "$test_description" "$executable_path"
-    test_result=$?
-
-    if [ $test_result -ne 0 ]; then
-        echo "[run_c_tests.sh] ERROR: Test $test_name failed with exit code $test_result"
-        ((TEST_FAILURES++))
-    else
-        echo "[run_c_tests.sh] Test $test_name passed"
-    fi
+    build_and_run_test_target "run_c_tests.sh" "$CMAKE_BUILD_DIR" "$test_name" "$test_description" "${C_TEST_EXECUTABLES[$test_name]}" "exit" "exit"
 done
 # Gather enabled C example test categories
 C_CATEGORIES=()

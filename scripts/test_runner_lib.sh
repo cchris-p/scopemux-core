@@ -96,6 +96,41 @@ cleanup() {
 # Register cleanup function to run on script exit
 trap cleanup EXIT
 
+# Standardized runner script logging
+setup_runner_logging() {
+    local script_path="$1"
+    local project_root_dir="${2:-$PROJECT_ROOT_DIR}"
+    local script_basename
+    script_basename="$(basename "$script_path" .sh)"
+    local output_file="${project_root_dir}/${script_basename}.txt"
+
+    exec > >(tee "$output_file") 2>&1
+}
+
+# Standardized runner build directory initialization
+initialize_runner_build_dir() {
+    local project_root_dir="$1"
+    local build_dir_name="$2"
+
+    CMAKE_BUILD_DIR="${project_root_dir}/${build_dir_name}"
+    export CMAKE_BUILD_DIR
+
+    if [ -z "$CMAKE_BUILD_DIR" ]; then
+        echo "ERROR: CMAKE_BUILD_DIR is not set"
+        exit 1
+    fi
+}
+
+# Standardized build directory preparation and CMake configuration
+prepare_and_configure_build() {
+    local project_root_dir="$1"
+    local build_dir="$2"
+    local clean_build="$3"
+
+    prepare_clean_build_dir "$build_dir" "$clean_build"
+    setup_cmake_config "$project_root_dir" "$build_dir"
+}
+
 # Standardized build function with improved logging
 # Builds a test target. On failure, prints the build log and returns 1 (does not exit the script).
 build_test_target() {
@@ -133,6 +168,53 @@ build_test_target() {
     else
         echo "[test_runner_lib] Successfully built ${display_name}"
     fi
+}
+
+# Standardized build-and-run flow for test targets with shared error handling.
+build_and_run_test_target() {
+    local script_name="$1"
+    local build_dir="$2"
+    local target_name="$3"
+    local display_name="$4"
+    local executable_relpath="$5"
+    local build_failure_mode="${6:-count}"
+    local missing_executable_mode="${7:-$build_failure_mode}"
+
+    echo "[$script_name] Building $display_name ($target_name)..."
+    build_test_target "$target_name" "$build_dir" "$display_name"
+    local build_result=$?
+
+    if [ $build_result -ne 0 ]; then
+        echo "[$script_name] ERROR: Failed to build $target_name"
+        if [ "$build_failure_mode" = "exit" ]; then
+            exit 1
+        fi
+        ((TEST_FAILURES++))
+        return 1
+    fi
+
+    local executable_path="${build_dir}/${executable_relpath}"
+    if [ ! -f "$executable_path" ]; then
+        echo "[$script_name] ERROR: Executable not found at $executable_path"
+        if [ "$missing_executable_mode" = "exit" ]; then
+            exit 1
+        fi
+        ((TEST_FAILURES++))
+        return 1
+    fi
+
+    echo "[$script_name] Running $display_name..."
+    run_test_suite "$display_name" "$executable_path"
+    local test_result=$?
+
+    if [ $test_result -ne 0 ]; then
+        echo "[$script_name] ERROR: Test $target_name failed with exit code $test_result"
+        ((TEST_FAILURES++))
+        return "$test_result"
+    fi
+
+    echo "[$script_name] Test $target_name passed"
+    return 0
 }
 
 # Standardized test execution with improved logging

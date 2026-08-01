@@ -1,14 +1,7 @@
 #!/bin/bash
 
-# All output from this script (stdout and stderr) is written to a file named after the script and the current datetime.
-# Filename format: OUTPUT_FILE="run_python_tests.txt" (UTC)
-# This is useful for preserving logs for each test run.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SCRIPT_BASENAME="$(basename "$0" .sh)"
-OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_python_tests.txt"
-# Redirect all output to the log file (both stdout and stderr)
-exec > >(tee "$OUTPUT_FILE") 2>&1
 
 # ScopeMux Python Tests Runner Script
 # Uses the shared test runner library for standardized test execution
@@ -16,16 +9,11 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 # NOTE: This script uses a unique build directory (build-python) to allow parallel test execution across languages.
 # This prevents race conditions and build directory conflicts with other test runners.
 
-# Project root directory
-CMAKE_BUILD_DIR="${PROJECT_ROOT_DIR}/build-python"
-export CMAKE_BUILD_DIR
-if [ -z "$CMAKE_BUILD_DIR" ]; then
-    echo "ERROR: CMAKE_BUILD_DIR is not set"
-    exit 1
-fi
-
 # Source the shared test runner library
 source "${SCRIPT_DIR}/test_runner_lib.sh"
+
+setup_runner_logging "$0" "$PROJECT_ROOT_DIR"
+initialize_runner_build_dir "$PROJECT_ROOT_DIR" "build-python"
 
 # Exit on any error (disabled during test loop to allow all tests to run)
 # set -e
@@ -73,19 +61,14 @@ for arg in "$@"; do
 done
 
 # Prepare build directory (clean or not, depending on flag)
-prepare_clean_build_dir "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
-
-# Setup CMake configuration using the shared library
-setup_cmake_config "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR"
+prepare_and_configure_build "$PROJECT_ROOT_DIR" "$CMAKE_BUILD_DIR" "$CLEAN_BUILD"
 
 # Run standard Python language tests
 echo "[run_python_tests.sh] Running Python language test suite"
 
 # Run basic Python tests if enabled
 if [ "${RUN_PYTHON_BASIC_AST_TESTS}" = true ]; then
-    build_test_target "python_basic_ast_tests" "Python Basic AST Tests"
-    run_test_suite "Python Basic AST Tests" "${CMAKE_BUILD_DIR}/${PYTHON_BASIC_AST_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_and_run_test_target "run_python_tests.sh" "$CMAKE_BUILD_DIR" "python_basic_ast_tests" "Python Basic AST Tests" "$PYTHON_BASIC_AST_EXECUTABLE_RELPATH"
 fi
 
 # Gather enabled Python example test categories
@@ -110,9 +93,7 @@ fi
 
 # Run CST tests if enabled
 if [ "${RUN_PYTHON_CST_TESTS}" = true ]; then
-    build_test_target "python_cst_tests" "Python CST Tests"
-    run_test_suite "Python CST Tests" "${CMAKE_BUILD_DIR}/${PYTHON_CST_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_and_run_test_target "run_python_tests.sh" "$CMAKE_BUILD_DIR" "python_cst_tests" "Python CST Tests" "$PYTHON_CST_EXECUTABLE_RELPATH"
 fi
 
 # Let the shared library handle the final test summary and exit code

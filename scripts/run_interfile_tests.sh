@@ -1,14 +1,7 @@
 #!/bin/bash
 
-# All output from this script (stdout and stderr) is written to a file named after the script.
-# Filename format: run_interfile_tests.txt
-# This is useful for preserving logs for each test run.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SCRIPT_BASENAME="$(basename "$0" .sh)"
-OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_interfile_tests.txt"
-# Redirect all output to the log file (both stdout and stderr)
-exec > >(tee "$OUTPUT_FILE") 2>&1
 
 # ScopeMux Interfile Relationship Tests Runner Script
 # Uses the shared test runner library for standardized test execution
@@ -22,6 +15,8 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 
 # Source the shared test runner library
 source "${SCRIPT_DIR}/test_runner_lib.sh"
+
+setup_runner_logging "$0" "$PROJECT_ROOT_DIR"
 
 # Don't exit immediately on errors since we want to run all enabled tests
 # and report comprehensive results at the end
@@ -46,8 +41,8 @@ RUN_LANGUAGE_RESOLVER_TESTS=false
 CORE_DIR="${PROJECT_ROOT_DIR}/core"
 TESTS_DIR="${CORE_DIR}/tests"
 
-# Main CMake build directory for the entire project
-CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build-interfile"
+initialize_runner_build_dir "$PROJECT_ROOT_DIR" "build-interfile"
+CMAKE_PROJECT_BUILD_DIR="$CMAKE_BUILD_DIR"
 
 # Relative paths from the CMAKE_PROJECT_BUILD_DIR to test executables
 REFERENCE_RESOLVER_EXECUTABLE_RELPATH="core/tests/reference_resolver_tests"
@@ -88,62 +83,33 @@ for arg in "$@"; do
 done
 
 # Prepare build directory (clean or not, depending on flag)
-prepare_clean_build_dir "${CMAKE_PROJECT_BUILD_DIR}" "${CLEAN_BUILD}"
-
-# Setup CMake configuration properly
-cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-
-# Execute CMake with explicit source and build directory specification
-echo "[run_interfile_tests.sh] Configuring CMake in build directory: ${CMAKE_PROJECT_BUILD_DIR}"
-cmake -S "${PROJECT_ROOT_DIR}" -B "${CMAKE_PROJECT_BUILD_DIR}" -G "Unix Makefiles" >"${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log" 2>&1
-
-if [ $? -ne 0 ]; then
-    echo "ERROR: CMake configuration failed. See log for details:"
-    cat "${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log"
-    exit 1
-fi
-
-# Verify that Makefiles were created
-if [ ! -f "${CMAKE_PROJECT_BUILD_DIR}/Makefile" ]; then
-    echo "ERROR: CMake did not generate Makefiles in the build directory."
-    echo "Contents of build directory:"
-    ls -la "${CMAKE_PROJECT_BUILD_DIR}"
-    exit 1
-fi
+prepare_and_configure_build "$PROJECT_ROOT_DIR" "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
 
 # Run interfile resolution tests
 echo "[run_interfile_tests.sh] Running interfile resolution test suite"
 
 # Build and run Reference Resolver Tests (main module)
 if [ "${RUN_REFERENCE_RESOLVER_TESTS}" = true ]; then
-    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "reference_resolver_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Reference Resolver Tests"
-    run_test_suite "Reference Resolver Tests" "${CMAKE_PROJECT_BUILD_DIR}/${REFERENCE_RESOLVER_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_and_run_test_target "run_interfile_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "reference_resolver_tests" "Reference Resolver Tests" "$REFERENCE_RESOLVER_EXECUTABLE_RELPATH"
+    TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
 fi
 
 # Build and run Symbol Table Tests
 if [ "${RUN_SYMBOL_TABLE_TESTS}" = true ]; then
-    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "symbol_table_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Symbol Table Tests"
-    run_test_suite "Symbol Table Tests" "${CMAKE_PROJECT_BUILD_DIR}/${SYMBOL_TABLE_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_and_run_test_target "run_interfile_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "symbol_table_tests" "Symbol Table Tests" "$SYMBOL_TABLE_EXECUTABLE_RELPATH"
+    TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
 fi
 
 # Build and run Project Context Tests
 if [ "${RUN_PROJECT_CONTEXT_TESTS}" = true ]; then
-    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "project_context_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Project Context Tests"
-    run_test_suite "Project Context Tests" "${CMAKE_PROJECT_BUILD_DIR}/${PROJECT_CONTEXT_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_and_run_test_target "run_interfile_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "project_context_tests" "Project Context Tests" "$PROJECT_CONTEXT_EXECUTABLE_RELPATH"
+    TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
 fi
 
 # Build and run Resolver Core Tests (modular component)
 if [ "${RUN_RESOLVER_CORE_TESTS}" = true ]; then
-    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "resolver_core_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Resolver Core Tests"
-    run_test_suite "Resolver Core Tests" "${CMAKE_PROJECT_BUILD_DIR}/${RESOLVER_CORE_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_and_run_test_target "run_interfile_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "resolver_core_tests" "Resolver Core Tests" "$RESOLVER_CORE_EXECUTABLE_RELPATH"
+    TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
 fi
 
 # Build and run Resolver Registration Tests
@@ -237,10 +203,8 @@ fi
 
 # Build and run Language Resolver Tests
 if [ "${RUN_LANGUAGE_RESOLVER_TESTS}" = true ]; then
-    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "language_resolver_tests" "${CMAKE_PROJECT_BUILD_DIR}" "Language Resolver Tests"
-    run_test_suite "Language Resolver Tests" "${CMAKE_PROJECT_BUILD_DIR}/${LANGUAGE_RESOLVER_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_and_run_test_target "run_interfile_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "language_resolver_tests" "Language Resolver Tests" "$LANGUAGE_RESOLVER_EXECUTABLE_RELPATH"
+    TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
 fi
 
 # Group test suites by category for easier management

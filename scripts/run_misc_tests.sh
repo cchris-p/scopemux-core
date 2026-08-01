@@ -33,14 +33,8 @@
 #     scripts.
 # -----------------------------------------------------------------------------
 
-# All output from this script (stdout and stderr) is written to a file named after the script and the current datetime.
-# Filename format: run_misc_tests-YYYYMMDD-HHMMSS.txt (UTC)
-# This is useful for preserving logs for each test run.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-OUTPUT_FILE="${PROJECT_ROOT_DIR}/run_misc_tests.txt"
-# Redirect all output to the log file (both stdout and stderr)
-exec > >(tee "$OUTPUT_FILE") 2>&1
 
 # ScopeMux Miscellaneous Tests Runner Script
 # Uses the shared test runner library for standardized test execution
@@ -50,6 +44,8 @@ exec > >(tee "$OUTPUT_FILE") 2>&1
 
 # Source the shared test runner library
 source "${SCRIPT_DIR}/test_runner_lib.sh"
+
+setup_runner_logging "$0" "$PROJECT_ROOT_DIR"
 
 # Exit on any error
 set -e
@@ -66,8 +62,8 @@ RUN_EDGE_CASE_TESTS=true
 CORE_DIR="${PROJECT_ROOT_DIR}/core"
 TESTS_DIR="${CORE_DIR}/tests"
 
-# Main CMake build directory for the entire project
-CMAKE_PROJECT_BUILD_DIR="${PROJECT_ROOT_DIR}/build-misc"
+initialize_runner_build_dir "$PROJECT_ROOT_DIR" "build-misc"
+CMAKE_PROJECT_BUILD_DIR="$CMAKE_BUILD_DIR"
 
 # Relative paths from the CMAKE_PROJECT_BUILD_DIR to where the misc test executables are located
 INIT_PARSER_EXECUTABLE_RELPATH="core/tests/init_parser_tests"
@@ -103,59 +99,19 @@ for arg in "$@"; do
 done
 
 # Prepare build directory (clean or not, depending on flag)
-prepare_clean_build_dir "${CMAKE_PROJECT_BUILD_DIR}" "${CLEAN_BUILD}"
-
-# Setup CMake configuration properly
-cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-
-# Execute CMake with explicit source and build directory specification
-echo "[run_misc_tests.sh] Configuring CMake in build directory: ${CMAKE_PROJECT_BUILD_DIR}"
-cmake -S "${PROJECT_ROOT_DIR}" -B "${CMAKE_PROJECT_BUILD_DIR}" -G "Unix Makefiles" >"${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log" 2>&1
-
-if [ $? -ne 0 ]; then
-    echo "ERROR: CMake configuration failed. See log for details:"
-    cat "${CMAKE_PROJECT_BUILD_DIR}/cmake_config.log"
-    exit 1
-fi
-
-# Verify that Makefiles were created
-if [ ! -f "${CMAKE_PROJECT_BUILD_DIR}/Makefile" ]; then
-    echo "ERROR: CMake did not generate Makefiles in the build directory."
-    echo "Contents of build directory:"
-    ls -la "${CMAKE_PROJECT_BUILD_DIR}"
-    exit 1
-fi
+prepare_and_configure_build "$PROJECT_ROOT_DIR" "$CMAKE_PROJECT_BUILD_DIR" "$CLEAN_BUILD"
 
 # Run miscellaneous tests
 echo "[run_misc_tests.sh] Running miscellaneous test suite"
 
 # Build and run Init Parser Tests
 if [ "${RUN_INIT_PARSER_TESTS}" = true ]; then
-    # Make sure we're in the build directory before running make
-    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-
-    # Try to build directly for better error visibility
-    echo "[run_misc_tests.sh] Building init_parser_tests directly (for debugging)..."
-    make "init_parser_tests" VERBOSE=1
-    build_result=$?
-
-    if [ $build_result -eq 0 ]; then
-        echo "[run_misc_tests.sh] Successfully built init_parser_tests, running tests..."
-        run_test_suite "Init Parser Tests" "${CMAKE_PROJECT_BUILD_DIR}/${INIT_PARSER_EXECUTABLE_RELPATH}"
-        if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
-    else
-        echo "ERROR: Failed to build init_parser_tests"
-        TEST_FAILURES=$((TEST_FAILURES + 1))
-    fi
+    build_and_run_test_target "run_misc_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "init_parser_tests" "Init Parser Tests" "$INIT_PARSER_EXECUTABLE_RELPATH" || true
 fi
 
 # Build and run Edge Case Tests
 if [ "${RUN_EDGE_CASE_TESTS}" = true ]; then
-    # Make sure we're in the build directory before running make
-    cd "${CMAKE_PROJECT_BUILD_DIR}" || exit 1
-    build_test_target "edge_case_tests" "Edge Case Tests"
-    run_test_suite "Edge Case Tests" "${CMAKE_PROJECT_BUILD_DIR}/${EDGE_CASE_EXECUTABLE_RELPATH}"
-    if [ $? -ne 0 ]; then TEST_FAILURES=$((TEST_FAILURES + 1)); fi
+    build_and_run_test_target "run_misc_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "edge_case_tests" "Edge Case Tests" "$EDGE_CASE_EXECUTABLE_RELPATH" || true
 fi
 
 # Example for future: gather enabled misc categories and call process_language_tests here
