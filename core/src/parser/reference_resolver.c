@@ -95,11 +95,7 @@ bool reference_resolver_register(Language language, ResolverFunction resolver_fu
  * @see resolver_core.c for implementation
  */
 bool reference_resolver_unregister(ReferenceResolver *resolver, Language language) {
-  // This function is no longer directly exposed in the public API,
-  // as unregistration is now handled by LanguageResolver::unregister_resolver.
-  // The implementation is in resolver_registration.c.
-  // For now, we'll return false as a placeholder.
-  return false;
+  return reference_resolver_unregister_impl(resolver, language);
 }
 
 /**
@@ -128,10 +124,9 @@ LanguageResolver *find_language_resolver(ReferenceResolver *resolver, Language l
  * @see resolver_implementation.c for implementation
  */
 ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, ASTNode *node,
-                                                 ReferenceType ref_type, const char *qualified_name,
-                                                 Language language) {
-  return reference_resolver_generic_resolve_impl(node, ref_type, qualified_name,
-                                                 resolver->symbol_table);
+                                                  ReferenceType ref_type, const char *qualified_name,
+                                                  Language language) {
+  return reference_resolver_resolve_node_impl(resolver, node, ref_type, qualified_name, language);
 }
 
 /**
@@ -144,11 +139,23 @@ ResolutionStatus reference_resolver_resolve_node(ReferenceResolver *resolver, AS
  * @see resolver_implementation.c for implementation
  */
 size_t reference_resolver_resolve_file(ReferenceResolver *resolver, ParserContext *file_context) {
-  // This function is no longer directly exposed in the public API,
-  // as resolution is now handled by LanguageResolver::resolve_node.
-  // The implementation is in resolver_resolution.c.
-  // For now, we'll return 0 as a placeholder.
-  return 0;
+  if (!resolver) {
+    return 0;
+  }
+
+  size_t before = resolver->resolved_references;
+  reference_resolver_resolve_file_impl(resolver, file_context);
+  return resolver->resolved_references - before;
+}
+
+size_t reference_resolver_resolve_all(ReferenceResolver *resolver, ProjectContext *project_context) {
+  if (!resolver) {
+    return 0;
+  }
+
+  size_t before = resolver->resolved_references;
+  reference_resolver_resolve_all_impl(resolver, project_context);
+  return resolver->resolved_references - before;
 }
 
 /**

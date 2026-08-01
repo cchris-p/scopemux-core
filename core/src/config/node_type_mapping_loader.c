@@ -32,7 +32,7 @@
 #define MAX_MAPPINGS 64
 
 typedef struct {
-  char *query_type;
+  const char *query_type;
   ASTNodeType node_type;
 } NodeTypeMapping;
 
@@ -137,12 +137,7 @@ void load_node_type_mapping(void) {
 
   // Clear existing mappings
   for (int i = 0; i < mapping_count; ++i) {
-    if (mappings[i].query_type) {
-      // Do NOT free mappings[i].query_type here unless it is known to be dynamically allocated.
-      // Most entries are static string literals from default_mappings and must not be freed.
-      // TODO: Track allocation source if dynamic assignment is ever used.
-      mappings[i].query_type = NULL;
-    }
+    mappings[i].query_type = NULL;
   }
   mapping_count = 0;
 
@@ -158,17 +153,6 @@ void load_node_type_mapping(void) {
       continue;
     }
 
-    // Safe string duplication with error checking
-    size_t query_type_len = strlen(query_type);
-    char *query_type_copy = (char *)memory_debug_malloc(query_type_len + 1, __FILE__, __LINE__, "query_type_mapping");
-    if (!query_type_copy) {
-      fprintf(stderr, "[scopemux] ERROR: Failed to allocate memory for query type: %s\n",
-              query_type);
-      continue;
-    }
-    strncpy(query_type_copy, query_type, query_type_len);
-    query_type_copy[query_type_len] = '\0';
-
     // Validate the mapping before storing
     ASTNodeType node_type = parse_node_type(node_type_str);
     if (node_type == NODE_UNKNOWN && strcmp(node_type_str, "NODE_UNKNOWN") != 0) {
@@ -177,7 +161,7 @@ void load_node_type_mapping(void) {
     }
 
     // Store the mapping
-    mappings[mapping_count].query_type = query_type_copy;
+    mappings[mapping_count].query_type = query_type;
     mappings[mapping_count].node_type = node_type;
     mapping_count++;
   }
@@ -239,7 +223,7 @@ ASTNodeType get_node_type_for_query(const char *query_type) {
  */
 void free_node_type_mapping(void) {
   for (int i = 0; i < mapping_count; ++i) {
-    free(mappings[i].query_type);
+    mappings[i].query_type = NULL;
   }
   mapping_count = 0;
 }

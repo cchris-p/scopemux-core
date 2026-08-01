@@ -3,6 +3,176 @@
 
 static ReferenceResolverCCppStats c_cpp_stats = {0};
 
+static const ASTNode *find_ast_root(const ASTNode *node) {
+  const ASTNode *current = node;
+  while (current && current->parent) {
+    current = current->parent;
+  }
+  return current;
+}
+
+static const char *path_basename_ptr(const char *path) {
+  const char *last_slash;
+
+  if (!path) {
+    return NULL;
+  }
+
+  last_slash = strrchr(path, '/');
+  return last_slash ? last_slash + 1 : path;
+}
+
+static bool file_path_matches_include(const char *file_path, const char *include_name) {
+  size_t file_len;
+  size_t include_len;
+  const char *file_base;
+  const char *include_base;
+
+  if (!file_path || !include_name) {
+    return false;
+  }
+
+  if (strcmp(file_path, include_name) == 0) {
+    return true;
+  }
+
+  file_len = strlen(file_path);
+  include_len = strlen(include_name);
+  if (file_len >= include_len && strcmp(file_path + file_len - include_len, include_name) == 0 &&
+      (file_len == include_len || file_path[file_len - include_len - 1] == '/')) {
+    return true;
+  }
+
+  file_base = path_basename_ptr(file_path);
+  include_base = path_basename_ptr(include_name);
+  return file_base && include_base && strcmp(file_base, include_base) == 0;
+}
+
+static const char *include_name_from_node(const ASTNode *node) {
+  const char *start;
+  const char *end;
+  static char include_name[256];
+  size_t len;
+
+  if (!node) {
+    return NULL;
+  }
+
+  if (node->name && node->name[0] != '\0') {
+    return node->name;
+  }
+
+  if (!node->raw_content) {
+    return NULL;
+  }
+
+  start = strchr(node->raw_content, '"');
+  if (!start) {
+    start = strchr(node->raw_content, '<');
+  }
+  if (!start) {
+    return NULL;
+  }
+
+  end = strchr(start + 1, start[0] == '"' ? '"' : '>');
+  if (!end || end <= start + 1) {
+    return NULL;
+  }
+
+  len = (size_t)(end - start - 1);
+  if (len >= sizeof(include_name)) {
+    len = sizeof(include_name) - 1;
+  }
+
+  memcpy(include_name, start + 1, len);
+  include_name[len] = '\0';
+  return include_name;
+}
+
+static bool root_has_matching_include(const ASTNode *node, const char *candidate_path) {
+  const char *include_name;
+  size_t i;
+
+  if (!node || !candidate_path) {
+    return false;
+  }
+
+  if (node->type == NODE_INCLUDE) {
+    include_name = include_name_from_node(node);
+    if (include_name && file_path_matches_include(candidate_path, include_name)) {
+      return true;
+    }
+  }
+
+  for (i = 0; i < node->num_children; i++) {
+    if (root_has_matching_include(node->children[i], candidate_path)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+static bool entry_matches_reference_type(const SymbolEntry *entry, ReferenceType ref_type) {
+  ASTNodeType type;
+
+  if (!entry || !entry->node) {
+    return false;
+  }
+
+  type = entry->node->type;
+  switch (ref_type) {
+  case REF_CALL:
+    return type == NODE_FUNCTION || type == NODE_METHOD;
+  case REF_TYPE:
+  case REF_NODE_TYPE:
+    return type == NODE_STRUCT || type == NODE_UNION || type == NODE_TYPEDEF || type == NODE_ENUM ||
+           type == NODE_CLASS || type == NODE_INTERFACE;
+  case REF_INCLUDE:
+    return true;
+  default:
+    return true;
+  }
+}
+
+SymbolEntry *reference_resolver_c_cpp_find_in_included_files(ASTNode *node, const char *name,
+                                                             GlobalSymbolTable *symbol_table,
+                                                             ReferenceType ref_type) {
+  const ASTNode *root;
+  size_t i;
+
+  if (!node || !symbol_table) {
+    return NULL;
+  }
+
+  root = find_ast_root(node);
+  if (!root) {
+    return NULL;
+  }
+
+  for (i = 0; i < symbol_table->num_buckets; i++) {
+    SymbolEntry *entry = symbol_table->buckets[i];
+    while (entry) {
+      bool name_matches = (ref_type == REF_INCLUDE);
+
+      if (!name_matches && name) {
+        name_matches =
+            (entry->simple_name && strcmp(entry->simple_name, name) == 0) ||
+            (entry->qualified_name && strcmp(entry->qualified_name, name) == 0);
+      }
+
+      if (name_matches && entry_matches_reference_type(entry, ref_type) &&
+          root_has_matching_include(root, entry->file_path)) {
+        return entry;
+      }
+
+      entry = entry->next;
+    }
+  }
+
+  return NULL;
+}
+
 ResolutionStatus reference_resolver_c_cpp_resolve(ASTNode *node, ReferenceType ref_type,
                                                   const char *name, GlobalSymbolTable *symbol_table,
                                                   void *resolver_data, bool cpp_mode) {
@@ -15,7 +185,11 @@ ResolutionStatus reference_resolver_c_cpp_resolve(ASTNode *node, ReferenceType r
   // Handle header includes first
   if (ref_type == REF_INCLUDE) {
     SymbolEntry *header = symbol_table_lookup(symbol_table, name);
+    if (!header) {
+      header = reference_resolver_c_cpp_find_in_included_files(node, name, symbol_table, ref_type);
+    }
     if (header && header->node) {
+      ast_node_add_reference(node, header->node);
       c_cpp_stats.num_header_resolved++;
       c_cpp_stats.num_resolved++;
       return RESOLUTION_SUCCESS;
@@ -98,6 +272,16 @@ ResolutionStatus reference_resolver_c_cpp_resolve(ASTNode *node, ReferenceType r
     SymbolEntry *class_entry = symbol_table_lookup(symbol_table, name);
     if (class_entry && class_entry->node) {
       c_cpp_stats.num_class_resolved++;
+      c_cpp_stats.num_resolved++;
+      return RESOLUTION_SUCCESS;
+    }
+  }
+
+  if (ref_type == REF_CALL || ref_type == REF_TYPE || ref_type == REF_NODE_TYPE) {
+    SymbolEntry *included_symbol =
+        reference_resolver_c_cpp_find_in_included_files(node, name, symbol_table, ref_type);
+    if (included_symbol && included_symbol->node) {
+      ast_node_add_reference(node, included_symbol->node);
       c_cpp_stats.num_resolved++;
       return RESOLUTION_SUCCESS;
     }

@@ -1,261 +1,105 @@
-/**
- * @file language_resolver_tests.c
- * @brief Main test runner for language-specific resolver tests
- */
-
 #include <criterion/criterion.h>
-#include <criterion/logging.h>
-#include <criterion/new/assert.h>
-#include <criterion/options.h>
 
-#include "reference_resolvers/reference_resolver_private.h"
-#include "scopemux/ast.h"
-#include "scopemux/memory_debug.h"
+#include "../reference_resolvers/reference_resolver_private.h"
 #include "scopemux/reference_resolver.h"
 #include "scopemux/symbol_table.h"
 
-// Forward declarations for language resolver functions
-ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, const char *name,
-                                      GlobalSymbolTable *symbol_table, void *resolver_data);
-ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type, const char *name,
-                                           GlobalSymbolTable *symbol_table, void *resolver_data);
-ResolutionStatus reference_resolver_javascript(ASTNode *node, ReferenceType ref_type,
-                                               const char *name, GlobalSymbolTable *symbol_table,
-                                               void *resolver_data);
-ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_type,
-                                               const char *name, GlobalSymbolTable *symbol_table,
-                                               void *resolver_data);
+static GlobalSymbolTable *symbol_table;
+static ASTNode *c_symbol_node;
+static ASTNode *python_symbol_node;
+static ASTNode *js_symbol_node;
+static ASTNode *ts_symbol_node;
+static ASTNode *c_node;
+static ASTNode *python_node;
+static ASTNode *js_node;
+static ASTNode *ts_node;
 
-// Test fixtures
-static GlobalSymbolTable *symbol_table = NULL;
-static ASTNode *c_node = NULL;
-static ASTNode *python_node = NULL;
-static ASTNode *js_node = NULL;
-static ASTNode *ts_node = NULL;
-
-// Helper for creating test AST nodes with language-specific attributes
-static ASTNode *create_test_node(Language lang, const char *name) {
-  if (!name) {
-    return NULL;
-  }
-
-  ASTNode *node = ast_node_new(NODE_FUNCTION, name);
-  if (!node) {
-    return NULL;
-  }
-
-  // Add language-specific attributes where needed
-  switch (lang) {
-  case LANG_C:
-    // Simulate scoping via parent relationship for C
-    ASTNode *parent = ast_node_new(NODE_FUNCTION, "parent_function");
-    if (!parent) {
-      ast_node_free(node);
-      return NULL;
-    }
-    if (!ast_node_add_child(parent, node)) {
-      ast_node_free(parent); // This will also free the child node
-      return NULL;
-    }
-    return parent;
-
-  case LANG_PYTHON:
-  case LANG_JAVASCRIPT:
-  case LANG_TYPESCRIPT:
-  default:
-    return node;
-  }
-}
-
-void setup_language_resolvers() {
-  printf("[DEBUG] Entering setup_language_resolvers\n");
-  // Create a symbol table and populate it with test symbols for each language
+static void setup_language_resolvers(void) {
   symbol_table = symbol_table_create(32);
-  cr_assert(symbol_table != NULL, "Failed to create symbol table");
+  cr_assert_not_null(symbol_table);
 
-  // Add C symbol
-  printf("[DEBUG] Allocating C symbol\n");
-  printf("[DEBUG] About to call symbol_new for C symbol\n");
-  Symbol *c_sym = symbol_new("c_function", SYMBOL_FUNCTION);
-  printf("[DEBUG] Returned from symbol_new for C symbol\n");
-  printf("[DEBUG] c_sym pointer: %p\n", (void *)c_sym);
-  cr_assert(c_sym != NULL, "Failed to create C symbol");
-  c_sym->language = LANG_C;
-  printf("[DEBUG] Set language for C symbol\n");
-  // Create a node for the symbol
-  ASTNode *c_node = ast_node_new(NODE_FUNCTION, "c_function");
-  c_node->file_path = STRDUP("test.c", "test_c_file_path");
-  SourceRange range = {.start = {.line = 10, .column = 0, .offset = 0},
-                       .end = {.line = 15, .column = 0, .offset = 0}};
-  c_node->range = range;
-  c_sym->node = c_node;
-  c_sym->is_definition = true;
-  printf("[DEBUG] Set node for C symbol\n");
-  printf("[DEBUG] Set line for C symbol\n");
-  int add_result = symbol_table_add(symbol_table, c_sym);
-  printf("[DEBUG] symbol_table_add result for C symbol: %d\n", add_result);
-  cr_assert(add_result, "Failed to add C symbol to table");
+  c_symbol_node = make_test_node(NODE_FUNCTION, "c_function", LANG_C);
+  python_symbol_node = make_test_node(NODE_FUNCTION, "python_function", LANG_PYTHON);
+  js_symbol_node = make_test_node(NODE_FUNCTION, "js_function", LANG_JAVASCRIPT);
+  ts_symbol_node = make_test_node(NODE_FUNCTION, "ts_function", LANG_TYPESCRIPT);
 
-  // Add Python symbol
-  printf("[DEBUG] Allocating Python symbol\n");
-  Symbol *py_sym = symbol_new("python_function", SYMBOL_FUNCTION);
-  cr_assert(py_sym != NULL, "Failed to create Python symbol");
-  py_sym->language = LANG_PYTHON;
-  // Create a node for the symbol
-  ASTNode *py_node = ast_node_new(NODE_FUNCTION, "python_function");
-  py_node->file_path = STRDUP("test.py", "test_py_file_path");
-  SourceRange py_range = {.start = {.line = 20, .column = 0, .offset = 0},
-                          .end = {.line = 25, .column = 0, .offset = 0}};
-  py_node->range = py_range;
-  py_sym->node = py_node;
-  py_sym->is_definition = true;
-  cr_assert(symbol_table_add(symbol_table, py_sym), "Failed to add Python symbol to table");
+  cr_assert(ast_node_set_file_path(c_symbol_node, "test.c", AST_SOURCE_STATIC));
+  cr_assert(ast_node_set_file_path(python_symbol_node, "test.py", AST_SOURCE_STATIC));
+  cr_assert(ast_node_set_file_path(js_symbol_node, "test.js", AST_SOURCE_STATIC));
+  cr_assert(ast_node_set_file_path(ts_symbol_node, "test.ts", AST_SOURCE_STATIC));
 
-  // Add JavaScript symbol
-  printf("[DEBUG] Allocating JavaScript symbol\n");
-  Symbol *js_sym = symbol_new("js_function", SYMBOL_FUNCTION);
-  cr_assert(js_sym != NULL, "Failed to create JavaScript symbol");
-  js_sym->language = LANG_JAVASCRIPT;
-  // Create a node for the symbol
-  ASTNode *js_node = ast_node_new(NODE_FUNCTION, "js_function");
-  js_node->file_path = STRDUP("test.js", "test_js_file_path");
-  SourceRange js_range = {.start = {.line = 30, .column = 0, .offset = 0},
-                          .end = {.line = 35, .column = 0, .offset = 0}};
-  js_node->range = js_range;
-  js_sym->node = js_node;
-  js_sym->is_definition = true;
-  cr_assert(symbol_table_add(symbol_table, js_sym), "Failed to add JavaScript symbol to table");
+  c_symbol_node->range.start.line = 10;
+  python_symbol_node->range.start.line = 20;
+  js_symbol_node->range.start.line = 30;
+  ts_symbol_node->range.start.line = 40;
 
-  // Add TypeScript symbol
-  printf("[DEBUG] Allocating TypeScript symbol\n");
-  Symbol *ts_sym = symbol_new("ts_function", SYMBOL_FUNCTION);
-  cr_assert(ts_sym != NULL, "Failed to create TypeScript symbol");
-  ts_sym->language = LANG_TYPESCRIPT;
-  // Create a node for the symbol
-  ASTNode *ts_node = ast_node_new(NODE_FUNCTION, "ts_function");
-  ts_node->file_path = STRDUP("test.ts", "test_ts_file_path");
-  SourceRange ts_range = {.start = {.line = 40, .column = 0, .offset = 0},
-                          .end = {.line = 45, .column = 0, .offset = 0}};
-  ts_node->range = ts_range;
-  ts_sym->node = ts_node;
-  ts_sym->is_definition = true;
-  cr_assert(symbol_table_add(symbol_table, ts_sym), "Failed to add TypeScript symbol to table");
+  cr_assert_not_null(symbol_table_register(symbol_table, "c_function", c_symbol_node, "test.c",
+                                           SCOPE_GLOBAL, LANG_C));
+  cr_assert_not_null(symbol_table_register(symbol_table, "python_function", python_symbol_node,
+                                           "test.py", SCOPE_GLOBAL, LANG_PYTHON));
+  cr_assert_not_null(symbol_table_register(symbol_table, "js_function", js_symbol_node,
+                                           "test.js", SCOPE_GLOBAL, LANG_JAVASCRIPT));
+  cr_assert_not_null(symbol_table_register(symbol_table, "ts_function", ts_symbol_node,
+                                           "test.ts", SCOPE_GLOBAL, LANG_TYPESCRIPT));
 
-  // Create test nodes for each language
-  printf("[DEBUG] Creating test AST nodes\n");
-  c_node = create_test_node(LANG_C, "c_function");
-  cr_assert(c_node != NULL, "Failed to create C test node");
-
-  python_node = create_test_node(LANG_PYTHON, "python_function");
-  cr_assert(python_node != NULL, "Failed to create Python test node");
-
-  js_node = create_test_node(LANG_JAVASCRIPT, "js_function");
-  cr_assert(js_node != NULL, "Failed to create JavaScript test node");
-
-  ts_node = create_test_node(LANG_TYPESCRIPT, "ts_function");
-  cr_assert(ts_node != NULL, "Failed to create TypeScript test node");
-  printf("[DEBUG] Exiting setup_language_resolvers\n");
+  c_node = make_test_node(NODE_FUNCTION, "c_function", LANG_C);
+  python_node = make_test_node(NODE_FUNCTION, "python_function", LANG_PYTHON);
+  js_node = make_test_node(NODE_FUNCTION, "js_function", LANG_JAVASCRIPT);
+  ts_node = make_test_node(NODE_FUNCTION, "ts_function", LANG_TYPESCRIPT);
 }
 
-void teardown_language_resolvers() {
-  printf("[DEBUG] Entering teardown_language_resolvers\n");
-  if (symbol_table) {
-    printf("[DEBUG] Freeing symbol_table at %p\n", (void *)symbol_table);
-    symbol_table_free(symbol_table);
-    symbol_table = NULL;
-  }
+static void teardown_language_resolvers(void) {
+  ast_node_free(c_node);
+  ast_node_free(python_node);
+  ast_node_free(js_node);
+  ast_node_free(ts_node);
+  ast_node_free(c_symbol_node);
+  ast_node_free(python_symbol_node);
+  ast_node_free(js_symbol_node);
+  ast_node_free(ts_symbol_node);
+  symbol_table_free(symbol_table);
 
-  // Clean up test nodes
-  if (c_node) {
-    printf("[DEBUG] Freeing c_node at %p\n", (void *)c_node);
-    ast_node_free(c_node); // This will also free the child node
-    c_node = NULL;
-  }
-
-  if (python_node) {
-    printf("[DEBUG] Freeing python_node at %p\n", (void *)python_node);
-    ast_node_free(python_node);
-    python_node = NULL;
-  }
-
-  if (js_node) {
-    printf("[DEBUG] Freeing js_node at %p\n", (void *)js_node);
-    ast_node_free(js_node);
-    js_node = NULL;
-  }
-
-  if (ts_node) {
-    printf("[DEBUG] Freeing ts_node at %p\n", (void *)ts_node);
-    ast_node_free(ts_node);
-    ts_node = NULL;
-  }
-  printf("[DEBUG] Exiting teardown_language_resolvers\n");
+  symbol_table = NULL;
+  c_symbol_node = NULL;
+  python_symbol_node = NULL;
+  js_symbol_node = NULL;
+  ts_symbol_node = NULL;
+  c_node = NULL;
+  python_node = NULL;
+  js_node = NULL;
+  ts_node = NULL;
 }
 
-// Test C language resolver
 Test(language_resolvers, c_resolver, .init = setup_language_resolvers,
      .fini = teardown_language_resolvers) {
-  // Get the actual function call node (child of the parent node)
-  ASTNode *call_node = c_node->children[0];
-
-  // Call the C resolver directly
-  ResolutionStatus result =
-      reference_resolver_c(call_node, REF_CALL, "c_function", symbol_table, NULL);
-
-  // Verify resolution
-  cr_assert(result == RESOLUTION_SUCCESS, "C resolver should successfully resolve the reference");
-  Symbol *ref = ast_node_get_reference(call_node);
-  cr_assert(ref != NULL, "Reference should be populated");
-  cr_assert_str_eq(ref->node->file_path, "test.c", "Reference file path should match");
-  cr_assert(ref->node->range.start.line == 10, "Reference line should match");
+  cr_assert_eq(reference_resolver_c(c_node, REF_CALL, "c_function", symbol_table, NULL),
+               RESOLUTION_SUCCESS);
+  cr_assert_eq(c_node->num_references, 1);
+  cr_assert_eq(c_node->references[0], c_symbol_node);
 }
 
-// Test Python language resolver
 Test(language_resolvers, python_resolver, .init = setup_language_resolvers,
      .fini = teardown_language_resolvers) {
-  // Call the Python resolver directly
-  ResolutionStatus result =
-      reference_resolver_python(python_node, REF_CALL, "python_function", symbol_table, NULL);
-
-  // Verify resolution
-  cr_assert(result == RESOLUTION_SUCCESS,
-            "Python resolver should successfully resolve the reference");
-  Symbol *ref = ast_node_get_reference(python_node);
-  cr_assert(ref != NULL, "Reference should be populated");
-  cr_assert_str_eq(ref->node->file_path, "test.py", "Reference file path should match");
-  cr_assert(ref->node->range.start.line == 20, "Reference line should match");
+  cr_assert_eq(reference_resolver_python(python_node, REF_CALL, "python_function", symbol_table,
+                                         NULL),
+               RESOLUTION_SUCCESS);
+  cr_assert_eq(python_node->num_references, 1);
+  cr_assert_eq(python_node->references[0], python_symbol_node);
 }
 
-// Test JavaScript language resolver
 Test(language_resolvers, javascript_resolver, .init = setup_language_resolvers,
      .fini = teardown_language_resolvers) {
-  // Call the JavaScript resolver directly
-  ResolutionStatus result =
-      reference_resolver_javascript(js_node, REF_CALL, "js_function", symbol_table, NULL);
-
-  // Verify resolution
-  cr_assert(result == RESOLUTION_SUCCESS,
-            "JavaScript resolver should successfully resolve the reference");
-  Symbol *ref = ast_node_get_reference(js_node);
-  cr_assert(ref != NULL, "Reference should be populated");
-  cr_assert_str_eq(ref->node->file_path, "test.js", "Reference file path should match");
-  cr_assert(ref->node->range.start.line == 30, "Reference line should match");
+  cr_assert_eq(reference_resolver_javascript(js_node, REF_CALL, "js_function", symbol_table, NULL),
+               RESOLUTION_SUCCESS);
+  cr_assert_eq(js_node->num_references, 1);
+  cr_assert_eq(js_node->references[0], js_symbol_node);
 }
 
-// Test TypeScript language resolver
 Test(language_resolvers, typescript_resolver, .init = setup_language_resolvers,
      .fini = teardown_language_resolvers) {
-  // Call the TypeScript resolver directly
-  ResolutionStatus result =
-      reference_resolver_typescript(ts_node, REF_CALL, "ts_function", symbol_table, NULL);
-
-  // Verify resolution
-  cr_assert(result == RESOLUTION_SUCCESS,
-            "TypeScript resolver should successfully resolve the reference");
-  Symbol *ref = ast_node_get_reference(ts_node);
-  cr_assert(ref != NULL, "Reference should be populated");
-  cr_assert_str_eq(ref->node->file_path, "test.ts", "Reference file path should match");
-  cr_assert(ref->node->range.start.line == 40, "Reference line should match");
+  cr_assert_eq(reference_resolver_typescript(ts_node, REF_CALL, "ts_function", symbol_table,
+                                             NULL),
+               RESOLUTION_SUCCESS);
+  cr_assert_eq(ts_node->num_references, 1);
+  cr_assert_eq(ts_node->references[0], ts_symbol_node);
 }
-
-// No custom main function needed - Criterion provides its own when run through the test runner

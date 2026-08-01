@@ -20,6 +20,119 @@ const ASTNode *parser_get_ast_root(const ParserContext *parser_context);
 size_t project_context_get_file_count(const ProjectContext *project_context);
 ParserContext *project_context_get_file_by_index(const ProjectContext *project_context, size_t i);
 
+static size_t min3(size_t a, size_t b, size_t c) {
+  size_t min = a < b ? a : b;
+  return min < c ? min : c;
+}
+
+static size_t bounded_edit_distance(const char *a, const char *b, size_t max_distance) {
+  size_t len_a;
+  size_t len_b;
+  size_t i;
+  size_t j;
+  size_t *prev;
+  size_t *curr;
+  size_t result;
+
+  if (!a || !b) {
+    return max_distance + 1;
+  }
+
+  len_a = strlen(a);
+  len_b = strlen(b);
+  if (len_a > len_b + max_distance || len_b > len_a + max_distance) {
+    return max_distance + 1;
+  }
+
+  prev = malloc((len_b + 1) * sizeof(size_t));
+  curr = malloc((len_b + 1) * sizeof(size_t));
+  if (!prev || !curr) {
+    free(prev);
+    free(curr);
+    return max_distance + 1;
+  }
+
+  for (j = 0; j <= len_b; j++) {
+    prev[j] = j;
+  }
+
+  for (i = 1; i <= len_a; i++) {
+    size_t row_min = i;
+    curr[0] = i;
+    for (j = 1; j <= len_b; j++) {
+      size_t cost = (a[i - 1] == b[j - 1]) ? 0 : 1;
+      curr[j] = min3(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+      if (curr[j] < row_min) {
+        row_min = curr[j];
+      }
+    }
+
+    if (row_min > max_distance) {
+      free(prev);
+      free(curr);
+      return max_distance + 1;
+    }
+
+    for (j = 0; j <= len_b; j++) {
+      prev[j] = curr[j];
+    }
+  }
+
+  result = prev[len_b];
+  free(prev);
+  free(curr);
+  return result;
+}
+
+static SymbolEntry *find_fuzzy_symbol_match(const GlobalSymbolTable *symbol_table, const char *name,
+                                            bool *is_ambiguous) {
+  SymbolEntry *best = NULL;
+  size_t best_distance = 3;
+  size_t max_distance;
+  size_t i;
+
+  if (is_ambiguous) {
+    *is_ambiguous = false;
+  }
+
+  if (!symbol_table || !name) {
+    return NULL;
+  }
+
+  max_distance = strlen(name) < 8 ? 1 : 2;
+  for (i = 0; i < symbol_table->num_buckets; i++) {
+    SymbolEntry *entry = symbol_table->buckets[i];
+    while (entry) {
+      const char *candidate = entry->simple_name ? entry->simple_name : entry->qualified_name;
+      size_t distance;
+
+      if (!candidate) {
+        entry = entry->next;
+        continue;
+      }
+
+      distance = bounded_edit_distance(name, candidate, max_distance);
+      if (distance <= max_distance) {
+        if (!best || distance < best_distance) {
+          best = entry;
+          best_distance = distance;
+          if (is_ambiguous) {
+            *is_ambiguous = false;
+          }
+        } else if (distance == best_distance && best != entry) {
+          if (is_ambiguous) {
+            *is_ambiguous = true;
+          }
+        }
+      }
+
+      entry = entry->next;
+    }
+  }
+
+  return best;
+}
+
 // Function declaration for the implementation
 
 /**
@@ -60,6 +173,11 @@ void reference_resolver_free_impl(ReferenceResolver *resolver) {
 
   // Free language resolvers
   if (resolver->language_resolvers) {
+    for (size_t i = 0; i < resolver->num_resolvers; i++) {
+      if (resolver->language_resolvers[i].cleanup_func) {
+        resolver->language_resolvers[i].cleanup_func(resolver->language_resolvers[i].resolver_data);
+      }
+    }
     free(resolver->language_resolvers);
   }
 
@@ -168,7 +286,7 @@ ResolutionStatus reference_resolver_resolve_node_impl(ReferenceResolver *resolve
   resolver->total_references++;
 
   // Try language-specific resolver first
-  LanguageResolver *lang_resolver = find_language_resolver_impl(resolver, node->lang);
+  LanguageResolver *lang_resolver = find_language_resolver_impl(resolver, language);
   if (lang_resolver && lang_resolver->resolver_func) {
     // Ensure proper type conversion for ref_type parameter
     ResolutionStatus result =
@@ -337,6 +455,33 @@ ResolutionStatus reference_resolver_generic_resolve_impl(ASTNode *node, Referenc
     }
   }
 
+  {
+    bool is_ambiguous = false;
+    entry = find_fuzzy_symbol_match(symbol_table, name, &is_ambiguous);
+    if (is_ambiguous) {
+      return RESOLUTION_AMBIGUOUS;
+    }
+
+    if (entry) {
+      if (node->num_references < node->references_capacity) {
+        node->references[node->num_references++] = entry->node;
+        return RESOLUTION_SUCCESS;
+      } else {
+        size_t new_capacity = node->references_capacity * 2;
+        if (new_capacity == 0)
+          new_capacity = 4;
+
+        ASTNode **new_refs = (ASTNode **)realloc(node->references, new_capacity * sizeof(ASTNode *));
+        if (new_refs) {
+          node->references = new_refs;
+          node->references_capacity = new_capacity;
+          node->references[node->num_references++] = entry->node;
+          return RESOLUTION_SUCCESS;
+        }
+      }
+    }
+  }
+
   return RESOLUTION_NOT_FOUND;
 }
 
@@ -352,16 +497,19 @@ bool reference_resolver_init_builtin_impl(ReferenceResolver *resolver) {
   bool success = true;
 
   // C language resolver
-  success &= reference_resolver_register_impl(resolver, LANG_C, NULL, NULL, NULL);
+  success &= reference_resolver_register_impl(resolver, LANG_C, reference_resolver_c, NULL, NULL);
 
   // Python language resolver
-  success &= reference_resolver_register_impl(resolver, LANG_PYTHON, NULL, NULL, NULL);
+  success &=
+      reference_resolver_register_impl(resolver, LANG_PYTHON, reference_resolver_python, NULL, NULL);
 
   // JavaScript language resolver
-  success &= reference_resolver_register_impl(resolver, LANG_JAVASCRIPT, NULL, NULL, NULL);
+  success &= reference_resolver_register_impl(resolver, LANG_JAVASCRIPT,
+                                              reference_resolver_javascript, NULL, NULL);
 
   // TypeScript language resolver
-  success &= reference_resolver_register_impl(resolver, LANG_TYPESCRIPT, NULL, NULL, NULL);
+  success &= reference_resolver_register_impl(resolver, LANG_TYPESCRIPT,
+                                              reference_resolver_typescript, NULL, NULL);
 
   return success;
 }

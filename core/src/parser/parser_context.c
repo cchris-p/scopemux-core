@@ -107,14 +107,6 @@ void parser_clear(ParserContext *ctx) {
   fprintf(stderr, "[DEBUG] parser_clear starting for ctx=%p\n", (void *)ctx);
   fprintf(stderr, "[DEBUG] ctx->num_ast_nodes=%zu\n", ctx->num_ast_nodes);
   
-  // Check if this context has already been cleared
-  static void *last_cleared_ctx = NULL;
-  if (ctx == last_cleared_ctx) {
-    fprintf(stderr, "[WARNING] Attempting to clear the same context twice: %p\n", (void *)ctx);
-    log_debug("[LIFECYCLE] Context %p already cleared, skipping", (void *)ctx);
-    return;
-  }
-  
   log_debug("[LIFECYCLE] Entering parser_clear for ctx=%p", (void *)ctx);
 
   // Check for static assignment (simple heuristic: check if pointer is in static range)
@@ -253,9 +245,6 @@ void parser_clear(ParserContext *ctx) {
   ctx->error_code = 0;
   // Reset error state completely
 
-  // Mark this context as cleared to prevent double-clearing
-  last_cleared_ctx = ctx;
-  
   log_info("[LIFECYCLE] Exiting parser_clear for ctx=%p", (void *)ctx);
 }
 

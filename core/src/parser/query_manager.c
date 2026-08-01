@@ -696,6 +696,7 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
   // Load the query file content
   uint32_t content_len = 0;
   char *query_content = read_query_file(query_path, &content_len);
+  safe_free(query_path);
 
   // Temporarily commenting this out:
   // if (query_content) {

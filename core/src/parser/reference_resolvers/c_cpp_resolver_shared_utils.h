@@ -25,8 +25,12 @@ typedef struct {
  * header inclusion, and namespace lookup.
  */
 ResolutionStatus reference_resolver_c_cpp_resolve(ASTNode *node, ReferenceType ref_type,
-                                                  const char *name, GlobalSymbolTable *symbol_table,
-                                                  void *resolver_data, bool cpp_mode);
+                                                   const char *name, GlobalSymbolTable *symbol_table,
+                                                   void *resolver_data, bool cpp_mode);
+
+SymbolEntry *reference_resolver_c_cpp_find_in_included_files(ASTNode *node, const char *name,
+                                                             GlobalSymbolTable *symbol_table,
+                                                             ReferenceType ref_type);
 
 /**
  * Get C/C++ resolver statistics

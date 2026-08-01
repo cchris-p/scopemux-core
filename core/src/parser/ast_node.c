@@ -283,6 +283,7 @@ void ast_node_free(ASTNode *node) {
     node->children = NULL;
   }
   if (node->references) {
+    memory_debug_free(node->references, __FILE__, __LINE__);
     node->references = NULL;
   }
   memory_debug_free(node, __FILE__, __LINE__);

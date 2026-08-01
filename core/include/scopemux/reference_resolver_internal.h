@@ -16,6 +16,9 @@ ResolutionStatus reference_resolver_generic_resolve_impl(ASTNode *node, Referenc
                                                          GlobalSymbolTable *symbol_table);
 
 ReferenceResolver *reference_resolver_create_impl(GlobalSymbolTable *symbol_table);
+bool reference_resolver_register_impl(ReferenceResolver *resolver, Language language,
+                                      ResolverFunction resolver_func, void *resolver_data,
+                                      ResolverCleanupFunction cleanup_func);
 bool reference_resolver_init_builtin_impl(ReferenceResolver *resolver);
 void reference_resolver_free_impl(ReferenceResolver *resolver);
 void reference_resolver_get_stats_impl(const ReferenceResolver *resolver,

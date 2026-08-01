@@ -36,7 +36,7 @@ static ProjectContext *project = NULL;
 static ParserContext *parser = NULL;
 static GlobalSymbolTable *symbols = NULL;
 
-// Utility: Create a file with minimal content inside test_project directory
+// Utility: Create files inside a per-test-process project directory.
 static char test_project_abspath[512];
 
 // Utility: Join test_project_abspath with filename
@@ -63,27 +63,13 @@ static void remove_dummy_file(const char *filename) {
 }
 
 void setup_project(void) {
-  // Determine the directory of the running executable robustly
-  char exe_path[PATH_MAX];
-  ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
-  if (len != -1) {
-    exe_path[len] = '\0';
-    char *exe_dir = dirname(exe_path);
-    snprintf(test_project_abspath, sizeof(test_project_abspath), "%s/test_project", exe_dir);
-  } else {
-    // Fallback: use CWD if /proc/self/exe is not available
-    if (getcwd(test_project_abspath, sizeof(test_project_abspath))) {
-      strncat(test_project_abspath, "/test_project",
-              sizeof(test_project_abspath) - strlen(test_project_abspath) - 1);
-    } else {
-      // Absolute fallback: just use "test_project" (may fail)
-      strncpy(test_project_abspath, "test_project", sizeof(test_project_abspath) - 1);
-      test_project_abspath[sizeof(test_project_abspath) - 1] = '\0';
-    }
-  }
+  // Use an isolated temp directory so Criterion workers do not race on the same files.
+  char template[] = "/tmp/scopemux-project-context-XXXXXX";
+  char *temp_dir = mkdtemp(template);
+  cr_assert(temp_dir != NULL, "Failed to create temporary test project directory");
 
-  // Ensure test_project directory exists
-  mkdir(test_project_abspath, 0777);
+  strncpy(test_project_abspath, temp_dir, sizeof(test_project_abspath) - 1);
+  test_project_abspath[sizeof(test_project_abspath) - 1] = '\0';
 
   // Create dummy files for all test cases using absolute path
   create_dummy_file("file1.c", "int func1() { return 0; }\n");
@@ -122,7 +108,7 @@ void teardown_project(void) {
   remove_dummy_file("file2.c");
 
   // Remove test_project directory (after removing files)
-  rmdir("test_project");
+  rmdir(test_project_abspath);
 
   if (symbols) {
     symbol_table_free(symbols);

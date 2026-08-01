@@ -16,6 +16,7 @@
 #include "../../../include/scopemux/logging.h"
 #include "../../../include/scopemux/reference_resolver.h"
 #include "../../../include/scopemux/symbol_table.h"
+#include "c_cpp_resolver_shared_utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,13 +87,17 @@ static ResolutionStatus resolve_c_function(ASTNode *node, const char *name,
   }
 
   entry = symbol_table_scope_lookup(symbol_table, name, current_scope, LANG_C);
-  if (entry && entry->symbol && entry->symbol->node->type == NODE_FUNCTION) {
+  if (entry && entry->node && entry->node->type == NODE_FUNCTION) {
     ast_node_add_reference(node, entry->node);
     return RESOLUTION_SUCCESS;
   }
 
   // Check for function in included files
-  // TODO: Implement include-based lookup
+  entry = reference_resolver_c_cpp_find_in_included_files(node, name, symbol_table, REF_CALL);
+  if (entry && entry->symbol && entry->symbol->node->type == NODE_FUNCTION) {
+    ast_node_add_reference(node, entry->node);
+    return RESOLUTION_SUCCESS;
+  }
 
   return RESOLUTION_NOT_FOUND;
 }
@@ -145,9 +150,9 @@ static ResolutionStatus resolve_c_type(ASTNode *node, const char *name,
                                        GlobalSymbolTable *symbol_table) {
   // Try direct lookup first
   SymbolEntry *entry = symbol_table_lookup(symbol_table, name);
-  if (entry && entry->symbol &&
-      (entry->symbol->node->type == NODE_STRUCT || entry->symbol->node->type == NODE_UNION ||
-       entry->symbol->node->type == NODE_TYPEDEF || entry->symbol->node->type == NODE_ENUM)) {
+  if (entry && entry->node &&
+      (entry->node->type == NODE_STRUCT || entry->node->type == NODE_UNION ||
+       entry->node->type == NODE_TYPEDEF || entry->node->type == NODE_ENUM)) {
     ast_node_add_reference(node, entry->node);
     return RESOLUTION_SUCCESS;
   }
@@ -167,7 +172,13 @@ static ResolutionStatus resolve_c_type(ASTNode *node, const char *name,
   }
 
   // Check for type in included files
-  // TODO: Implement include-based lookup
+  entry = reference_resolver_c_cpp_find_in_included_files(node, name, symbol_table, REF_TYPE);
+  if (entry && entry->symbol &&
+      (entry->symbol->node->type == NODE_STRUCT || entry->symbol->node->type == NODE_UNION ||
+       entry->symbol->node->type == NODE_TYPEDEF || entry->symbol->node->type == NODE_ENUM)) {
+    ast_node_add_reference(node, entry->node);
+    return RESOLUTION_SUCCESS;
+  }
 
   return RESOLUTION_NOT_FOUND;
 }
