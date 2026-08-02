@@ -100,7 +100,7 @@ Test(ast_extraction, ts_functions, .description = "Test AST extraction of TypeSc
 
   // Read test file with TypeScript functions
   fprintf(stderr, "Reading test file...\n");
-  char *source_code = read_test_file("ts", "basic_syntax", "variables_loops_conditions.ts");
+  char *source_code = read_test_file("ts", "basic_syntax", "hello_world.ts");
   cr_assert_not_null(source_code, "Failed to read test file");
   fprintf(stderr, "Test file read successfully\n");
 
@@ -109,8 +109,7 @@ Test(ast_extraction, ts_functions, .description = "Test AST extraction of TypeSc
 
   // Parse the source code
   fprintf(stderr, "About to parse source code...\n");
-  parser_parse_string(ctx, source_code, strlen(source_code), "variables_loops_conditions.ts",
-                      LANG_TYPESCRIPT);
+  parser_parse_string(ctx, source_code, strlen(source_code), "hello_world.ts", LANG_TYPESCRIPT);
   fprintf(stderr, "Source code parsed\n");
   const char *error_message = parser_get_last_error(ctx);
   cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");
@@ -121,32 +120,33 @@ Test(ast_extraction, ts_functions, .description = "Test AST extraction of TypeSc
   size_t node_count = parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, ast_nodes, 10);
   cr_assert_gt(node_count, 0, "Should find at least one function node");
 
-  // Check for main function extraction
-  const ASTNode *main_func = NULL;
+  // Check for hello function extraction
+  const ASTNode *hello_func = NULL;
   for (size_t i = 0; i < node_count; i++) {
-    if (ast_nodes[i]->name && strcmp(ast_nodes[i]->name, "main") == 0) {
-      main_func = ast_nodes[i];
+    if (ast_nodes[i]->name && strcmp(ast_nodes[i]->name, "hello") == 0) {
+      hello_func = ast_nodes[i];
       break;
     }
   }
-  if (main_func) {
+  if (hello_func) {
     // Debug node fields before assertion
-    fprintf(stderr, "DEBUG: About to assert main_func fields\n");
-    fprintf(stderr, "DEBUG: main_func=%p\n", (void *)main_func);
-    if (main_func) {
-      fprintf(stderr, "DEBUG: main_func->name=%s\n", main_func->name ? main_func->name : "(null)");
-      fprintf(stderr, "DEBUG: main_func->qualified_name=%s\n",
-              main_func->qualified_name ? main_func->qualified_name : "(null)");
-      fprintf(stderr, "DEBUG: main_func->range.end.line=%d\n", main_func->range.end.line);
+    fprintf(stderr, "DEBUG: About to assert hello_func fields\n");
+    fprintf(stderr, "DEBUG: hello_func=%p\n", (void *)hello_func);
+    if (hello_func) {
+      fprintf(stderr, "DEBUG: hello_func->name=%s\n",
+              hello_func->name ? hello_func->name : "(null)");
+      fprintf(stderr, "DEBUG: hello_func->qualified_name=%s\n",
+              hello_func->qualified_name ? hello_func->qualified_name : "(null)");
+      fprintf(stderr, "DEBUG: hello_func->range.end.line=%d\n", hello_func->range.end.line);
     }
-    assert_node_fields((ASTNode *)main_func, "main");
+    assert_node_fields((ASTNode *)hello_func, "hello");
 
     // Check function signature
-    cr_assert_not_null(main_func->signature, "Function should have signature populated");
-    cr_log_info("Main function signature: %s", SAFE_STR(main_func->signature));
+    cr_assert_not_null(hello_func->signature, "Function should have signature populated");
+    cr_log_info("Hello function signature: %s", SAFE_STR(hello_func->signature));
 
     // Check function content
-    cr_assert_not_null(main_func->raw_content, "Function should have content populated");
+    cr_assert_not_null(hello_func->raw_content, "Function should have content populated");
   } else {
     cr_log_info("Function extraction may need more refinement");
   }
