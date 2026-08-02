@@ -102,6 +102,7 @@ static void associate_docstrings_recursive(ASTNode *node, DocstringInfo *docstri
         FREE(node->docstring);
       }
       node->docstring = STRDUP(best_match->content, "node_docstring");
+      node->docstring_source = AST_SOURCE_DEBUG_ALLOC;
       FREE(best_match->content);
       best_match->content = NULL;
     }
@@ -178,6 +179,7 @@ void associate_docstrings_with_nodes(ASTNode *ast_root, ASTNode **docstring_node
       FREE(ast_root->docstring);
     }
     ast_root->docstring = STRDUP(docstrings[file_docstring_idx].content, "root_docstring");
+    ast_root->docstring_source = AST_SOURCE_DEBUG_ALLOC;
     FREE(docstrings[file_docstring_idx].content);
     docstrings[file_docstring_idx].content = NULL;
   }
@@ -235,24 +237,28 @@ void process_docstrings(ASTNode *ast_root, ParserContext *ctx) {
     associate_docstrings_with_nodes(ast_root, docstring_nodes, doc_count);
 
     // Remove docstring nodes from AST children array after processing
-    for (size_t i = 0; i < doc_count; i++) {
-      ASTNode *doc_node = docstring_nodes[i];
-      if (doc_node) {
-        // Find and remove this node from ast_root->children
-        for (size_t j = 0; j < ast_root->num_children; j++) {
+     for (size_t i = 0; i < doc_count; i++) {
+       ASTNode *doc_node = docstring_nodes[i];
+       if (doc_node) {
+         // Find and remove this node from ast_root->children
+         for (size_t j = 0; j < ast_root->num_children; j++) {
           if (ast_root->children[j] == doc_node) {
             // Shift remaining children down
             for (size_t k = j; k < ast_root->num_children - 1; k++) {
               ast_root->children[k] = ast_root->children[k + 1];
             }
             ast_root->num_children--;
-            if (enable_logging)
-              log_debug("Removed docstring node '%s' from AST children", doc_node->name);
-            break;
-          }
+             if (enable_logging)
+               log_debug("Removed docstring node '%s' from AST children", doc_node->name);
+             break;
+           }
+         }
+
+          parser_remove_ast_node(ctx, doc_node);
+          doc_node->parent = NULL;
+          ast_node_free(doc_node);
         }
       }
-    }
   } else {
     if (enable_logging)
       log_debug("No docstrings found to process");

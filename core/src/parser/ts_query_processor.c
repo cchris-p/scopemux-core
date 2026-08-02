@@ -464,9 +464,9 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       log_info("[QUERY_DEBUG] Capture %u: name='%.*s', node_type='%s', text='%.40s'", i,
                capture_name_length, capture_name, node_type_str,
                text_preview ? text_preview : "<null>");
-      // 06-15-2025 - This is a library-allocated pointer
-      // if (text_preview)
-      //   memory_debug_free(text_preview, __FILE__, __LINE__);
+      if (text_preview) {
+        memory_debug_free(text_preview, __FILE__, __LINE__);
+      }
 
       // Robust main node and capture logic
       // Identify main node (robust plural/singular and @ handling)
@@ -567,7 +567,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       if (!node_name) {
         if (strcmp(query_type, "docstrings") == 0 && docstring) {
           node_name = docstring;
-          name_source = AST_SOURCE_ALIAS; // Prevent double free: node_name is an alias of docstring
+          name_source = AST_SOURCE_DEBUG_ALLOC;
           docstring_is_name = true;
         } else {
           const char *type_str = ts_node_type(main_node);
@@ -673,7 +673,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
 
       if (docstring) {
         if (docstring_is_name) {
-          ast_node_set_docstring(ast_node, ast_node->name, ast_node->name_source);
+          ast_node_set_docstring(ast_node, ast_node->name, AST_SOURCE_ALIAS);
         } else {
           ast_node_set_docstring(ast_node, docstring, docstring_source);
           if (docstring_source == AST_SOURCE_DEBUG_ALLOC)

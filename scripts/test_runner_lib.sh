@@ -338,8 +338,8 @@ process_language_tests() {
             expected_json_file="${test_file}.expected.json"
 
             if [ -f "$expected_json_file" ]; then
-                local build_test_file="core/tests/$test_file"
-                local build_expected_json="core/tests/$expected_json_file"
+                local build_test_file="$test_file"
+                local build_expected_json="$expected_json_file"
 
                 export SCOPEMUX_TEST_FILE="$build_test_file"
                 export SCOPEMUX_EXPECTED_JSON="$build_expected_json"
