@@ -590,7 +590,7 @@ ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext *ctx) {
               *dst = '\0';
 
               ast_node_set_signature(node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
-              memory_debug_free(clean_sig, __FILE__, __LINE__);
+              clean_sig = NULL;
             }
             memory_debug_free(sig_copy, __FILE__, __LINE__);
           }

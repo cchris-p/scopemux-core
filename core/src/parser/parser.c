@@ -233,6 +233,8 @@ static bool generate_ast(ParserContext *ctx, TSTree *ts_tree, const char *filena
 
 bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
                          const char *filename, Language language) {
+  char *filename_copy = NULL;
+
   fprintf(stderr,
           "[DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=%p, content=%p, content_length=%zu, "
           "filename=%s, language=%d\n",
@@ -240,6 +242,14 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
   if (!ctx || !content) {
     log_error("Cannot parse string: %s", !ctx ? "context is NULL" : "content is NULL");
     return false;
+  }
+
+  if (filename) {
+    filename_copy = safe_strdup(filename);
+    if (!filename_copy) {
+      parser_set_error(ctx, 6, "Memory allocation failed for filename");
+      return false;
+    }
   }
 
   // Clear any existing parser state
@@ -262,21 +272,12 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
               ctx->source_code_length);
   }
 
-  if (filename) {
-    ctx->filename = safe_strdup(filename);
-    if (!ctx->filename) {
-      safe_free(ctx->source_code);
-      ctx->source_code = NULL;
-      parser_set_error(ctx, 6, "Memory allocation failed for filename");
-      return false;
-    }
-  } else {
-    ctx->filename = NULL;
-  }
+  ctx->filename = filename_copy;
+  filename_copy = NULL;
 
   // Detect language if not specified
   if (language == LANG_UNKNOWN) {
-    language = parser_detect_language(filename, content, content_length);
+    language = parser_detect_language(ctx->filename, content, content_length);
     if (language == LANG_UNKNOWN) {
       safe_free(ctx->source_code);
       ctx->source_code = NULL;
@@ -332,7 +333,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
 
   // Log debugging information
   if (ctx->log_level <= LOG_DEBUG) {
-    log_debug("Parsing %s with Tree-sitter, content length: %zu, language: %d", SAFE_STR(filename),
+    log_debug("Parsing %s with Tree-sitter, content length: %zu, language: %d", SAFE_STR(ctx->filename),
               content_length, language);
     log_debug("Tree-sitter parser at %p, language object at %p", (void *)ts_parser,
               (void *)ts_parser_language(ts_parser));
@@ -386,7 +387,7 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
     char error_msg[256];
     snprintf(error_msg, sizeof(error_msg), "Tree-sitter parsing failed for language %d", language);
     parser_set_error(ctx, 9, error_msg);
-    log_error("Tree-sitter parsing failed for %s (language %d)", SAFE_STR(filename), language);
+    log_error("Tree-sitter parsing failed for %s (language %d)", SAFE_STR(ctx->filename), language);
     return false;
   }
 
@@ -404,12 +405,12 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
   // Generate CST if requested
   bool success = true;
   if (ctx->mode == PARSE_CST || ctx->mode == PARSE_BOTH) {
-    success = generate_cst(ctx, ts_tree, filename);
+    success = generate_cst(ctx, ts_tree, ctx->filename);
   }
 
   // Generate AST if requested
   if (success && (ctx->mode == PARSE_AST || ctx->mode == PARSE_BOTH)) {
-    success = generate_ast(ctx, ts_tree, filename);
+    success = generate_ast(ctx, ts_tree, ctx->filename);
   }
 
   // Clean up Tree-sitter tree

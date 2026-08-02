@@ -483,8 +483,21 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         clean_query_type++;
         clean_query_length--;
       }
+      // Most tree-sitter queries use a generic @node capture for the primary AST entity.
+      if (clean_length == 4 && strncmp(clean_capture_name, "node", clean_length) == 0) {
+        is_main_node = true;
+
+      // Python docstring queries use descriptive capture names instead of a shared @node capture.
+      } else if (strcmp(clean_query_type, "docstrings") == 0 &&
+                 (strstr(clean_capture_name, "with_docstring") != NULL ||
+                  (clean_length == strlen("module_docstring") &&
+                   strncmp(clean_capture_name, "module_docstring", clean_length) == 0) ||
+                  (clean_length == strlen("possible_docstring") &&
+                   strncmp(clean_capture_name, "possible_docstring", clean_length) == 0))) {
+        is_main_node = true;
+
       // Direct match (with or without @) - must be exact length match
-      if (clean_length == strlen(clean_query_type) &&
+      } else if (clean_length == strlen(clean_query_type) &&
           strncmp(clean_capture_name, clean_query_type, clean_length) == 0) {
         is_main_node = true;
 
@@ -539,7 +552,9 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         }
       }
       // Name capture
-      if (strncmp(clean_capture_name, "name", clean_length) == 0) {
+      if ((clean_length == 4 && strncmp(clean_capture_name, "name", clean_length) == 0) ||
+          (clean_length > 5 &&
+           strncmp(clean_capture_name + clean_length - 5, "_name", 5) == 0)) {
         uint32_t len = 0;
         const char *text = ts_node_text(node, ctx->source_code, ctx->source_code_length, &len);
         if (text && len > 0) {
@@ -553,7 +568,9 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
           signature = memory_debug_strndup(text, len, __FILE__, __LINE__, "signature_capture");
           signature_source = AST_SOURCE_DEBUG_ALLOC;
         }
-      } else if (strncmp(clean_capture_name, "docstring", clean_length) == 0) {
+      } else if ((clean_length == 9 && strncmp(clean_capture_name, "docstring", clean_length) == 0) ||
+                 (clean_length > 10 &&
+                  strncmp(clean_capture_name + clean_length - 10, "_docstring", 10) == 0)) {
         uint32_t len = 0;
         const char *text = ts_node_text(node, ctx->source_code, ctx->source_code_length, &len);
         if (text && len > 0) {
@@ -684,7 +701,26 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
       // Determine the proper parent based on node type and scope
       ASTNode *proper_parent = ast_root; // Default to root
 
-      // For variables and control flow structures, try to find the containing function
+      // For methods, attach them to the containing class.
+      if (actual_node_type == NODE_METHOD) {
+        const ASTNode *class_nodes[32];
+        size_t class_count = parser_get_ast_nodes_by_type(ctx, NODE_CLASS, class_nodes, 32);
+
+        for (size_t i = 0; i < class_count; i++) {
+          const ASTNode *potential_parent = class_nodes[i];
+          if (!potential_parent) {
+            continue;
+          }
+
+          if (ast_node->range.start.line >= potential_parent->range.start.line &&
+              ast_node->range.end.line <= potential_parent->range.end.line) {
+            proper_parent = (ASTNode *)potential_parent;
+            break;
+          }
+        }
+      }
+
+      // For variables and control flow structures, try to find the containing function.
       if (actual_node_type == NODE_VARIABLE || actual_node_type == NODE_FOR_STATEMENT ||
           actual_node_type == NODE_WHILE_STATEMENT || actual_node_type == NODE_DO_WHILE_STATEMENT ||
           actual_node_type == NODE_IF_STATEMENT || actual_node_type == NODE_SWITCH_STATEMENT) {
