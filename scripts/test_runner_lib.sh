@@ -348,9 +348,7 @@ process_language_tests() {
                 echo "[test_runner_lib] Testing: $test_file"
 
                 local test_log="$TMP_DIR/$(basename "${test_file}").log"
-                pushd "$(dirname "${example_executable_path}")" >/dev/null
-                
-                local executable="./$(basename "${example_executable_path}")"
+                local executable="${example_executable_path}"
                 local test_result=1
                 local raw_log="${test_log}.raw"
 
@@ -366,7 +364,6 @@ process_language_tests() {
                 fi
 
                 rm -f "$raw_log"
-                popd >/dev/null
 
                 if [ $test_result -ne 0 ]; then
                     failed_tests=$((failed_tests + 1))
