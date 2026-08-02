@@ -514,3 +514,132 @@ Test(project_context_delegation, info_block_registry_and_tiered_context, .init =
 
   project_tiered_context_result_free(&result);
 }
+
+Test(project_context_delegation, searchable_index_and_prompt_assembly, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *caller_ctx = parser_init();
+  ParserContext *callee_ctx = parser_init();
+  ASTNode *caller_fn;
+  ASTNode *callee_fn;
+  ASTNode *call_ref;
+  ASTNode *include_node;
+  char caller_path[512], callee_path[512];
+  ProjectSearchRequest search_request = {0};
+  ProjectSearchResult search_result = {0};
+  ProjectPromptAssemblyRequest prompt_request = {0};
+  ProjectPromptAssemblyResult prompt_result = {0};
+  bool saw_helper_hit = false;
+  bool saw_summary = false;
+
+  cr_assert(caller_ctx != NULL && callee_ctx != NULL, "Parser contexts should be created");
+
+  join_test_project_path("main.c", caller_path, sizeof(caller_path));
+  join_test_project_path("helper.c", callee_path, sizeof(callee_path));
+
+  caller_ctx->filename = strdup(caller_path);
+  caller_ctx->language = LANG_C;
+  callee_ctx->filename = strdup(callee_path);
+  callee_ctx->language = LANG_C;
+
+  caller_fn = make_named_node(NODE_FUNCTION, "caller", "caller", caller_path);
+  callee_fn = make_named_node(NODE_FUNCTION, "helper", "helper", callee_path);
+  cr_assert(ast_node_set_signature(caller_fn, strdup("int caller(void)"), AST_SOURCE_DEBUG_ALLOC),
+            "Failed to set caller signature");
+  cr_assert(ast_node_set_signature(callee_fn, strdup("int helper(void)"), AST_SOURCE_DEBUG_ALLOC),
+            "Failed to set helper signature");
+  cr_assert(ast_node_set_docstring(caller_fn, strdup("Entry point that delegates to helper"),
+                                   AST_SOURCE_DEBUG_ALLOC),
+            "Failed to set caller docstring");
+  cr_assert(ast_node_set_docstring(callee_fn, strdup("Returns computed helper value"),
+                                   AST_SOURCE_DEBUG_ALLOC),
+            "Failed to set helper docstring");
+  caller_fn->raw_content = strdup("int caller(void) {\n    int total = helper();\n    return total;\n}");
+  caller_fn->owned_fields |= FIELD_RAW_CONTENT;
+  callee_fn->raw_content = strdup("int helper(void) {\n    return 42;\n}");
+  callee_fn->owned_fields |= FIELD_RAW_CONTENT;
+
+  call_ref = make_named_node(NODE_IDENTIFIER, "helper", "helper", caller_path);
+  include_node = make_named_node(NODE_INCLUDE, "helper.c", "helper.c", caller_path);
+  include_node->raw_content = strdup("#include \"helper.c\"");
+  include_node->owned_fields |= FIELD_RAW_CONTENT;
+
+  cr_assert(ast_node_add_child(caller_fn, call_ref), "Call reference should be attached");
+  cr_assert(ast_node_add_reference(call_ref, callee_fn), "Call reference should resolve to helper");
+  cr_assert(parser_add_ast_node(caller_ctx, caller_fn), "Caller function should be tracked");
+  cr_assert(parser_add_ast_node(caller_ctx, include_node), "Include node should be tracked");
+  cr_assert(parser_add_ast_node(callee_ctx, callee_fn), "Helper function should be tracked");
+  cr_assert(parser_context_add_dependency(caller_ctx, callee_ctx),
+            "Dependency should be created between parser contexts");
+
+  project->file_contexts[0] = caller_ctx;
+  project->file_contexts[1] = callee_ctx;
+  project->num_files = 2;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "caller", caller_fn, caller_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Caller symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "helper", callee_fn, callee_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Helper symbol should be registered");
+
+  cr_assert(project_context_rebuild_ir(project), "Project IR snapshot should rebuild");
+
+  search_request.query_text = "helper";
+  search_request.anchor_symbol = "caller";
+  search_request.min_tier = PROJECT_CONTEXT_TIER_0;
+  search_request.max_tier = PROJECT_CONTEXT_TIER_3;
+  search_request.include_related = true;
+  search_request.include_dependencies = true;
+  search_request.max_hits = 6;
+
+  cr_assert(project_context_search_info_blocks(project, &search_request, &search_result),
+            "Indexed search should succeed");
+  cr_assert(search_result.hit_count > 0, "Search should produce ranked hits");
+
+  for (size_t i = 0; i < search_result.hit_count; i++) {
+    if (search_result.hits[i].block->qualified_name &&
+        strcmp(search_result.hits[i].block->qualified_name, "helper") == 0) {
+      saw_helper_hit = true;
+      cr_assert(search_result.hits[i].name_match || search_result.hits[i].text_match,
+                "Helper hit should match the query text");
+    }
+  }
+
+  cr_assert(saw_helper_hit, "Search results should include helper symbol hit");
+
+  prompt_request.context_request.anchor_symbol = "caller";
+  prompt_request.context_request.min_tier = PROJECT_CONTEXT_TIER_1;
+  prompt_request.context_request.max_tier = PROJECT_CONTEXT_TIER_3;
+  prompt_request.context_request.include_related = true;
+  prompt_request.context_request.include_dependencies = true;
+  prompt_request.context_request.max_blocks = 8;
+  prompt_request.user_query = "What does caller depend on?";
+  prompt_request.system_preamble = "Answer using the provided context only.";
+  prompt_request.response_format = "Return a short bullet list.";
+  prompt_request.include_block_metadata = true;
+  prompt_request.max_prompt_tokens = 55;
+
+  cr_assert(project_context_assemble_prompt(project, &prompt_request, &prompt_result),
+            "Prompt assembly should succeed");
+  cr_assert_not_null(prompt_result.prompt_text, "Prompt assembly should render prompt text");
+  cr_assert(strstr(prompt_result.prompt_text, "User query: What does caller depend on?") != NULL,
+            "Prompt text should include the user query");
+  cr_assert(strstr(prompt_result.prompt_text, "sym:caller") != NULL,
+            "Prompt text should include the focused caller block");
+  cr_assert(strstr(prompt_result.prompt_text, "sym:helper") != NULL,
+            "Prompt text should include the related helper block");
+
+  for (size_t i = 0; i < prompt_result.context_result.selection_count; i++) {
+    if (prompt_result.context_result.selections[i].disposition == PROJECT_CONTEXT_BLOCK_SUMMARIZED) {
+      saw_summary = true;
+      break;
+    }
+  }
+
+  cr_assert(saw_summary || prompt_result.omitted_block_count > 0,
+            "Prompt assembly should apply token-aware compression or omission");
+
+  project_prompt_assembly_result_free(&prompt_result);
+  project_search_result_free(&search_result);
+}

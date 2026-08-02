@@ -246,6 +246,65 @@ typedef struct {
   ProjectContextTier effective_max_tier;
 } ProjectTieredContextResult;
 
+typedef struct ProjectSearchIndexEntry ProjectSearchIndexEntry;
+
+/**
+ * @brief Machine-readable indexed search request over canonical InfoBlocks.
+ */
+typedef struct {
+  const char *query_text;
+  const char *anchor_symbol;
+  const char *anchor_file_path;
+  ProjectContextTier min_tier;
+  ProjectContextTier max_tier;
+  bool include_related;
+  bool include_dependencies;
+  size_t max_hits;
+} ProjectSearchRequest;
+
+/**
+ * @brief A scored search hit from the project search index.
+ */
+typedef struct {
+  const ProjectInfoBlock *block;
+  size_t score;
+  bool name_match;
+  bool text_match;
+  bool relationship_match;
+} ProjectSearchHit;
+
+/**
+ * @brief Machine-readable result set from the project search index.
+ */
+typedef struct {
+  ProjectSearchHit *hits;
+  size_t hit_count;
+  size_t total_match_count;
+} ProjectSearchResult;
+
+/**
+ * @brief Prompt assembly request built on top of tiered context selection.
+ */
+typedef struct {
+  ProjectTieredContextRequest context_request;
+  const char *user_query;
+  const char *system_preamble;
+  const char *response_format;
+  bool include_block_metadata;
+  size_t max_prompt_tokens;
+} ProjectPromptAssemblyRequest;
+
+/**
+ * @brief Prompt assembly output for downstream LLM or tool consumers.
+ */
+typedef struct {
+  ProjectTieredContextResult context_result;
+  char *prompt_text;
+  size_t prompt_length;
+  size_t estimated_tokens;
+  size_t omitted_block_count;
+} ProjectPromptAssemblyResult;
+
 /**
  * @brief A collection of related source files forming a project
  *
@@ -282,6 +341,11 @@ typedef struct ProjectContext {
   // Canonical InfoBlock registry derived from project IR
   ProjectInfoBlockRegistry info_block_registry;
   bool info_block_registry_ready;
+
+  // Internal searchable index derived from the canonical InfoBlock registry
+  ProjectSearchIndexEntry *search_index_entries;
+  size_t search_index_entry_count;
+  bool search_index_ready;
 } ProjectContext;
 
 /**
@@ -554,9 +618,47 @@ bool project_context_build_tiered_context(ProjectContext *project,
                                           ProjectTieredContextResult *out_result);
 
 /**
+ * @brief Search the canonical InfoBlock registry using indexed text and relationships.
+ *
+ * @param project Project context
+ * @param request Machine-readable search request
+ * @param out_result Output result; caller must free with project_search_result_free()
+ * @return bool True on success, false on allocation or state failure
+ */
+bool project_context_search_info_blocks(ProjectContext *project,
+                                        const ProjectSearchRequest *request,
+                                        ProjectSearchResult *out_result);
+
+/**
+ * @brief Build a token-aware prompt package for downstream LLM or tool consumers.
+ *
+ * @param project Project context
+ * @param request Prompt assembly request
+ * @param out_result Output result; caller must free with project_prompt_assembly_result_free()
+ * @return bool True on success, false on allocation or state failure
+ */
+bool project_context_assemble_prompt(ProjectContext *project,
+                                     const ProjectPromptAssemblyRequest *request,
+                                     ProjectPromptAssemblyResult *out_result);
+
+/**
  * @brief Free heap storage owned by a tiered context result.
  *
  * @param result Result to clear
  */
 void project_tiered_context_result_free(ProjectTieredContextResult *result);
+
+/**
+ * @brief Free heap storage owned by a project search result.
+ *
+ * @param result Result to clear
+ */
+void project_search_result_free(ProjectSearchResult *result);
+
+/**
+ * @brief Free heap storage owned by a prompt assembly result.
+ *
+ * @param result Result to clear
+ */
+void project_prompt_assembly_result_free(ProjectPromptAssemblyResult *result);
 #endif /* SCOPEMUX_PROJECT_CONTEXT_H */
