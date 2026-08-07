@@ -1,4 +1,5 @@
 #include "../../include/json_validation.h"
+#include "../../../include/scopemux/ast.h" // Canonical source of ASTNodeType enum
 #include <criterion/criterion.h>
 #include <criterion/logging.h> /* For cr_log_* functions */
 #include <stdio.h>
@@ -26,12 +27,13 @@ JsonValue *load_expected_json(const char *language, const char *category, const 
   snprintf(filepath, sizeof(filepath), "../../../core/tests/examples/%s/%s/%s.expected.json",
            language, category, file_name);
 
-  cr_log_info("Looking for expected JSON file: %s", filepath);
+  cr_log_info("Looking for expected JSON file: %s", SAFE_STR(filepath));
   f = fopen(filepath, "rb");
 
   if (!f) {
     cr_log_error("Failed to open expected JSON file: %s/%s/%s.expected.json (from working dir: %s)",
-                 language, category, file_name, current_dir);
+                 SAFE_STR(language), SAFE_STR(category), SAFE_STR(file_name),
+                 SAFE_STR(current_dir));
     return NULL;
   }
 
@@ -103,10 +105,11 @@ void free_json_value(JsonValue *json) {
 // This is a hack for testing purposes only
 __thread const char *current_node_name = NULL;
 
+// NOTE: This function must always be kept in sync with ASTNodeType in ast.h.
 static const char *ast_type_to_string(ASTNodeType type) {
   // Add comprehensive logging for node type conversion
   cr_log_info("Converting AST node type (%d) to string (for node name: %s)", (int)type,
-              current_node_name ? current_node_name : "NULL");
+              SAFE_STR(current_node_name));
 
   // Handle ROOT node type
   if (type == NODE_ROOT) {
@@ -121,8 +124,9 @@ static const char *ast_type_to_string(ASTNodeType type) {
   }
 
   switch (type) {
+    // Only use enum values from ast.h. Remove any duplicates or obsolete cases.
   case NODE_UNKNOWN:
-    return "UNKNOWN"; // Changed to uppercase for consistency
+    return "UNKNOWN";
   case NODE_FUNCTION:
     return "FUNCTION";
   case NODE_METHOD:
@@ -156,19 +160,19 @@ static const char *ast_type_to_string(ASTNodeType type) {
   case NODE_VARIABLE_DECLARATION:
     return "VARIABLE_DECLARATION";
   case NODE_FOR_STATEMENT:
-    return "FOR_STATEMENT";
+    return "LOOP_FOR";
   case NODE_WHILE_STATEMENT:
-    return "WHILE_STATEMENT";
+    return "LOOP_WHILE";
   case NODE_DO_WHILE_STATEMENT:
-    return "DO_WHILE_STATEMENT";
+    return "LOOP_DO_WHILE";
   case NODE_IF_STATEMENT:
-    return "IF_STATEMENT";
+    return "CONDITION_IF";
   case NODE_IF_ELSE_IF_STATEMENT:
-    return "IF_STATEMENT";
+    return "CONDITION_IF";
   case NODE_SWITCH_STATEMENT:
-    return "SWITCH_STATEMENT";
+    return "CONDITION_SWITCH";
   default:
-    cr_log_warn("Unknown AST node type: %d", (int)type);
+    log_warning("Unknown AST node type: %d", (int)type);
     return "UNKNOWN"; // Changed to uppercase for consistency
   }
 }
@@ -176,7 +180,7 @@ static const char *ast_type_to_string(ASTNodeType type) {
 /**
  * Find an ASTNode child by name
  */
-static ASTNode *find_child_by_name(ASTNode *parent, const char *name) {
+static ASTNode *find_child_by_name(const ASTNode *parent, const char *name) {
   if (!parent || !parent->children || parent->num_children == 0 || !name) {
     return NULL;
   }
@@ -194,7 +198,7 @@ static ASTNode *find_child_by_name(ASTNode *parent, const char *name) {
 /**
  * Find a JSON object field by name
  */
-static JsonValue *find_json_field(JsonValue *obj, const char *field_name) {
+JsonValue *find_json_field(JsonValue *obj, const char *field_name) {
   if (!obj || obj->type != JSON_OBJECT || !field_name) {
     return NULL;
   }
@@ -208,8 +212,9 @@ static JsonValue *find_json_field(JsonValue *obj, const char *field_name) {
   return NULL;
 }
 
-bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *node_path) {
+bool validate_ast_against_json(const ASTNode *node, JsonValue *expected) {
   // Ensure we have a valid path string to use in error messages
+  const char *node_path = node ? node->file_path : NULL;
   const char *safe_path = node_path ? node_path : "<unknown>";
 
   // Ensure we have proper validation for all tests
@@ -237,14 +242,14 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
   char child_path[512];
 
   // Log debugging information
-  cr_log_info("%s: Validating node of type '%s' with name '%s'", safe_path,
-              ast_type_to_string(node->type), node->name ? node->name : "<unnamed>");
+  cr_log_info("%s: Validating node of type '%s' with name '%s'", SAFE_STR(safe_path),
+              SAFE_STR(ast_type_to_string(node->type)), node->name ? node->name : "<unnamed>");
 
   // Check node type
   JsonValue *type_field = find_json_field(expected, "type");
   if (type_field) {
     if (type_field->type != JSON_STRING) {
-      cr_log_error("%s: 'type' field is not a string", safe_path);
+      cr_log_error("%s: 'type' field is not a string", SAFE_STR(safe_path));
       valid = false;
     } else {
       const char *expected_type = type_field->value.string;
@@ -255,8 +260,8 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
       current_node_name = NULL; // Reset to avoid leaking into other calls
 
       if (strcmp(expected_type, node_type) != 0) {
-        cr_log_error("%s: Type mismatch - expected '%s', got '%s'", safe_path, expected_type,
-                     node_type);
+        cr_log_error("%s: Type mismatch - expected '%s', got '%s'", SAFE_STR(safe_path),
+                     SAFE_STR(expected_type), SAFE_STR(node_type));
         valid = false;
       }
     }
@@ -266,17 +271,18 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
   JsonValue *name_field = find_json_field(expected, "name");
   if (name_field) {
     if (name_field->type != JSON_STRING) {
-      cr_log_error("%s: 'name' field is not a string", node_path);
+      cr_log_error("%s: 'name' field is not a string", SAFE_STR(node_path));
       valid = false;
     } else {
       const char *expected_name = name_field->value.string;
 
       if (!node->name) {
-        cr_log_error("%s: Expected name '%s', but node name is NULL", node_path, expected_name);
+        cr_log_error("%s: Expected name '%s', but node name is NULL", SAFE_STR(node_path),
+                     SAFE_STR(expected_name));
         valid = false;
       } else if (strcmp(expected_name, node->name) != 0) {
-        cr_log_error("%s: Name mismatch - expected '%s', got '%s'", node_path, expected_name,
-                     node->name);
+        cr_log_error("%s: Name mismatch - expected '%s', got '%s'", SAFE_STR(node_path),
+                     SAFE_STR(expected_name), SAFE_STR(node->name));
         valid = false;
       }
     }
@@ -286,18 +292,18 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
   JsonValue *qualified_name_field = find_json_field(expected, "qualified_name");
   if (qualified_name_field) {
     if (qualified_name_field->type != JSON_STRING) {
-      cr_log_error("%s: 'qualified_name' field is not a string", node_path);
+      cr_log_error("%s: 'qualified_name' field is not a string", SAFE_STR(node_path));
       valid = false;
     } else {
       const char *expected_qname = qualified_name_field->value.string;
 
       if (!node->qualified_name) {
-        cr_log_error("%s: Expected qualified_name '%s', but node qualified_name is NULL", node_path,
-                     expected_qname);
+        cr_log_error("%s: Expected qualified_name '%s', but node qualified_name is NULL",
+                     SAFE_STR(node_path), SAFE_STR(expected_qname));
         valid = false;
       } else if (strcmp(expected_qname, node->qualified_name) != 0) {
-        cr_log_error("%s: Qualified name mismatch - expected '%s', got '%s'", node_path,
-                     expected_qname, node->qualified_name);
+        cr_log_error("%s: Qualified name mismatch - expected '%s', got '%s'", SAFE_STR(node_path),
+                     SAFE_STR(expected_qname), SAFE_STR(node->qualified_name));
         valid = false;
       }
     }
@@ -329,18 +335,18 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
   JsonValue *signature_field = find_json_field(expected, "signature");
   if (signature_field) {
     if (signature_field->type != JSON_STRING) {
-      cr_log_error("%s: 'signature' field is not a string", node_path);
+      cr_log_error("%s: 'signature' field is not a string", SAFE_STR(node_path));
       valid = false;
     } else {
       const char *expected_sig = signature_field->value.string;
 
       if (!node->signature) {
-        cr_log_error("%s: Expected signature '%s', but node signature is NULL", node_path,
-                     expected_sig);
+        cr_log_error("%s: Expected signature '%s', but node signature is NULL", SAFE_STR(node_path),
+                     SAFE_STR(expected_sig));
         valid = false;
       } else if (strcmp(expected_sig, node->signature) != 0) {
-        cr_log_error("%s: Signature mismatch - expected '%s', got '%s'", node_path, expected_sig,
-                     node->signature);
+        cr_log_error("%s: Signature mismatch - expected '%s', got '%s'", SAFE_STR(node_path),
+                     SAFE_STR(expected_sig), SAFE_STR(node->signature));
         valid = false;
       }
     }
@@ -350,34 +356,34 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
   JsonValue *docstring_field = find_json_field(expected, "docstring");
   if (docstring_field) {
     if (docstring_field->type != JSON_STRING) {
-      cr_log_error("%s: 'docstring' field is not a string", node_path);
+      cr_log_error("%s: 'docstring' field is not a string", SAFE_STR(node_path));
       valid = false;
     } else {
       const char *expected_doc = docstring_field->value.string;
 
       if (!node->docstring) {
-        cr_log_error("%s: Expected docstring, but node docstring is NULL", node_path);
+        cr_log_error("%s: Expected docstring, but node docstring is NULL", SAFE_STR(node_path));
         valid = false;
       } else if (strcmp(expected_doc, node->docstring) != 0) {
-        cr_log_error("%s: Docstring mismatch", node_path);
+        cr_log_error("%s: Docstring mismatch", SAFE_STR(node_path));
         // Print hexdump of both expected and actual docstrings to help debug
         cr_log_error("Expected docstring length: %zu", strlen(expected_doc));
         cr_log_error("Actual docstring length: %zu", strlen(node->docstring));
 
         // Print first 50 chars in both strings for comparison
         int max_print = 50;
-        int i;
+        size_t i;
 
         cr_log_error("Expected docstring bytes:");
-        for (i = 0; i < strlen(expected_doc) && i < max_print; i++) {
-          cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)expected_doc[i],
+        for (i = 0; i < strlen(expected_doc) && i < (size_t)max_print; i++) {
+          cr_log_error("Byte %zu: %d (0x%02x) '%c'", i, (int)expected_doc[i],
                        (unsigned char)expected_doc[i],
                        (expected_doc[i] >= 32 && expected_doc[i] <= 126) ? expected_doc[i] : '?');
         }
 
         cr_log_error("Actual docstring bytes:");
-        for (i = 0; i < strlen(node->docstring) && i < max_print; i++) {
-          cr_log_error("Byte %d: %d (0x%02x) '%c'", i, (int)node->docstring[i],
+        for (i = 0; i < strlen(node->docstring) && i < (size_t)max_print; i++) {
+          cr_log_error("Byte %zu: %d (0x%02x) '%c'", i, (int)node->docstring[i],
                        (unsigned char)node->docstring[i],
                        (node->docstring[i] >= 32 && node->docstring[i] <= 126) ? node->docstring[i]
                                                                                : '?');
@@ -392,25 +398,25 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
   if (children_field) {
     // Check that children field is an array
     if (children_field->type != JSON_ARRAY) {
-      cr_log_error("%s: 'children' field is not an array (type: %d)", node_path,
+      cr_log_error("%s: 'children' field is not an array (type: %d)", SAFE_STR(node_path),
                    children_field->type);
       valid = false;
     } else {
       // First check if we have children at all
       if (!node->children && children_field->value.array.size > 0) {
-        cr_log_error("%s: Expected %zu children, but node has no children array", node_path,
-                     children_field->value.array.size);
+        cr_log_error("%s: Expected %zu children, but node has no children array",
+                     SAFE_STR(node_path), children_field->value.array.size);
         valid = false;
       } else {
         // Check if the number of children matches
         size_t expected_children = children_field->value.array.size;
         size_t actual_children = node->num_children;
 
-        cr_log_info("%s: Comparing children counts - expected: %zu, actual: %zu", node_path,
-                    expected_children, actual_children);
+        cr_log_info("%s: Comparing children counts - expected: %zu, actual: %zu",
+                    SAFE_STR(node_path), expected_children, actual_children);
 
         if (expected_children != actual_children) {
-          cr_log_warn("%s: Children count mismatch - expected %zu, got %zu", node_path,
+          log_warning("%s: Children count mismatch - expected %zu, got %zu", SAFE_STR(node_path),
                       expected_children, actual_children);
           // Continue validation but mark as invalid
           valid = false;
@@ -426,7 +432,7 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
         bool match_by_name = match_by && match_by->type == JSON_STRING &&
                              strcmp(match_by->value.string, "name") == 0;
 
-        cr_log_info("%s: Using %s matching strategy for children", node_path,
+        cr_log_info("%s: Using %s matching strategy for children", SAFE_STR(node_path),
                     match_by_name ? "name-based" : "positional");
 
         if (match_by_name && node->children) {
@@ -434,7 +440,8 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
           for (size_t i = 0; i < expected_children; i++) {
             // Safety check for array bounds
             if (i >= children_field->value.array.size || !children_field->value.array.items) {
-              cr_log_error("%s: Invalid children array access at index %zu", node_path, i);
+              cr_log_error("%s: Invalid children array access at index %zu", SAFE_STR(node_path),
+                           i);
               valid = false;
               break;
             }
@@ -447,8 +454,8 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
             }
 
             if (expected_child->type != JSON_OBJECT) {
-              cr_log_error("%s: Expected child at index %zu is not an object (type: %d)", node_path,
-                           i, expected_child->type);
+              cr_log_error("%s: Expected child at index %zu is not an object (type: %d)",
+                           SAFE_STR(node_path), i, expected_child->type);
               valid = false;
               continue;
             }
@@ -456,17 +463,20 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
             // Get the expected child name
             JsonValue *child_name_value = find_json_field(expected_child, "name");
             if (!child_name_value || child_name_value->type != JSON_STRING) {
-              cr_log_error("%s: Expected child at index %zu has no valid name", node_path, i);
+              cr_log_error("%s: Expected child at index %zu has no valid name", SAFE_STR(node_path),
+                           i);
               valid = false;
               continue;
             }
 
             const char *child_name = child_name_value->value.string;
-            cr_log_info("%s: Looking for child with name '%s'", node_path, child_name);
+            cr_log_info("%s: Looking for child with name '%s'", SAFE_STR(node_path),
+                        SAFE_STR(child_name));
 
             ASTNode *matching_child = find_child_by_name(node, child_name);
             if (!matching_child) {
-              cr_log_error("%s: No child with name '%s' found", node_path, child_name);
+              cr_log_error("%s: No child with name '%s' found", SAFE_STR(node_path),
+                           SAFE_STR(child_name));
               valid = false;
               continue;
             }
@@ -478,7 +488,7 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
             }
 
             // Validate the child recursively
-            if (!validate_ast_against_json(matching_child, expected_child, child_path)) {
+            if (!validate_ast_against_json(matching_child, expected_child)) {
               valid = false;
             }
           }
@@ -487,19 +497,21 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
           size_t max_to_check =
               (expected_children < actual_children) ? expected_children : actual_children;
 
-          cr_log_info("%s: Validating %zu children by position", node_path, max_to_check);
+          cr_log_info("%s: Validating %zu children by position", SAFE_STR(node_path), max_to_check);
 
           for (size_t i = 0; i < max_to_check; i++) {
             // Safety check for array bounds in expected children
             if (i >= children_field->value.array.size || !children_field->value.array.items) {
-              cr_log_error("%s: Invalid expected children array access at index %zu", node_path, i);
+              cr_log_error("%s: Invalid expected children array access at index %zu",
+                           SAFE_STR(node_path), i);
               valid = false;
               break;
             }
 
             // Safety check for array bounds in actual children
             if (i >= node->num_children || !node->children) {
-              cr_log_error("%s: Invalid actual children array access at index %zu", node_path, i);
+              cr_log_error("%s: Invalid actual children array access at index %zu",
+                           SAFE_STR(node_path), i);
               valid = false;
               break;
             }
@@ -509,13 +521,13 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
 
             // Additional null checks
             if (!expected_child) {
-              cr_log_error("%s: Expected child at index %zu is NULL", node_path, i);
+              cr_log_error("%s: Expected child at index %zu is NULL", SAFE_STR(node_path), i);
               valid = false;
               continue;
             }
 
             if (!actual_child) {
-              cr_log_error("%s: Actual child at index %zu is NULL", node_path, i);
+              cr_log_error("%s: Actual child at index %zu is NULL", SAFE_STR(node_path), i);
               valid = false;
               continue;
             }
@@ -532,23 +544,163 @@ bool validate_ast_against_json(ASTNode *node, JsonValue *expected, const char *n
             // Create child path with bounds checking
             if (snprintf(child_path, sizeof(child_path), "%s.%s[%zu]", node_path, child_name, i) <
                 0) {
-              cr_log_error("%s: Failed to create child path", node_path);
+              cr_log_error("%s: Failed to create child path", SAFE_STR(node_path));
               child_path[0] = '\0'; // Ensure null termination
             }
 
             // Validate the child recursively
-            if (!validate_ast_against_json(actual_child, expected_child, child_path)) {
+            if (!validate_ast_against_json(actual_child, expected_child)) {
               valid = false;
             }
           }
         } else if (expected_children > 0) {
           // Node has no children array but expected some
-          cr_log_error("%s: Node has no children array but expected %zu children", node_path,
-                       expected_children);
+          cr_log_error("%s: Node has no children array but expected %zu children",
+                       SAFE_STR(node_path), expected_children);
           valid = false;
         }
       }
     }
+  }
+
+  return valid;
+}
+
+bool validate_ast_with_granularity(const ASTNode *node, JsonValue *expected,
+                                   TestGranularityLevel granularity_level) {
+  // Ensure we have a valid path string to use in error messages
+  const char *node_path = node ? node->file_path : NULL;
+  const char *safe_path = node_path ? node_path : "<unknown>";
+
+  // Ensure node exists
+  if (!node) {
+    cr_log_error("%s: AST node is NULL", safe_path);
+    return false;
+  }
+
+  // Ensure expected JSON exists
+  if (!expected) {
+    cr_log_error("%s: Expected JSON is NULL", safe_path);
+    return false;
+  }
+
+  // Ensure expected JSON is an object
+  if (expected->type != JSON_OBJECT) {
+    cr_log_error("%s: Expected JSON is not an object (type: %d)", safe_path, expected->type);
+    return false;
+  }
+
+  bool valid = true;
+
+  // Log debugging information
+  cr_log_info("%s: Validating node (granularity level %d) of type '%s' with name '%s'",
+              SAFE_STR(safe_path), granularity_level, SAFE_STR(ast_type_to_string(node->type)),
+              node->name ? node->name : "<unnamed>");
+
+  // Level 1 (SMOKE): Just verify we can parse without crashing
+  if (granularity_level == GRANULARITY_SMOKE) {
+    cr_log_info("%s: SMOKE test passed - parser did not crash", safe_path);
+    return true;
+  }
+
+  // Level 2 (STRUCTURAL): Validate root node type and basic structure
+  if (granularity_level >= GRANULARITY_STRUCTURAL) {
+    JsonValue *type_field = find_json_field(expected, "type");
+    if (type_field && type_field->type == JSON_STRING) {
+      const char *expected_type = type_field->value.string;
+      const char *node_type = ast_type_to_string(node->type);
+      if (strcmp(expected_type, node_type) != 0) {
+        cr_log_error("%s: Type mismatch - expected '%s', got '%s'", safe_path, expected_type,
+                     node_type);
+        valid = false;
+      }
+    }
+
+    // For structural level, also check if we have children when expected
+    JsonValue *children_field = find_json_field(expected, "children");
+    if (children_field && children_field->type == JSON_ARRAY) {
+      size_t expected_children = children_field->value.array.size;
+      if (node->num_children != expected_children) {
+        cr_log_error("%s: Child count mismatch - expected %zu, got %zu", safe_path,
+                     expected_children, node->num_children);
+        valid = false;
+      }
+    }
+  }
+
+  // Level 3 (SEMANTIC): Validate node types, names, and child counts
+  if (granularity_level >= GRANULARITY_SEMANTIC) {
+    // Check node name
+    JsonValue *name_field = find_json_field(expected, "name");
+    if (name_field && name_field->type == JSON_STRING) {
+      const char *expected_name = name_field->value.string;
+      if (!node->name) {
+        cr_log_error("%s: Expected name '%s', but node name is NULL", safe_path, expected_name);
+        valid = false;
+      } else if (strcmp(expected_name, node->name) != 0) {
+        cr_log_error("%s: Name mismatch - expected '%s', got '%s'", safe_path, expected_name,
+                     node->name);
+        valid = false;
+      }
+    }
+
+    // Recursively validate children
+    JsonValue *children_field = find_json_field(expected, "children");
+    if (children_field && children_field->type == JSON_ARRAY) {
+      for (size_t i = 0; i < children_field->value.array.size && i < node->num_children; i++) {
+        if (!validate_ast_with_granularity(node->children[i], children_field->value.array.items[i],
+                                           granularity_level)) {
+          valid = false;
+        }
+      }
+    }
+  }
+
+  // Level 4 (DETAILED): Validate all node properties
+  if (granularity_level >= GRANULARITY_DETAILED) {
+    // Check qualified name
+    JsonValue *qualified_name_field = find_json_field(expected, "qualified_name");
+    if (qualified_name_field && qualified_name_field->type == JSON_STRING) {
+      const char *expected_qname = qualified_name_field->value.string;
+      if (!node->qualified_name) {
+        cr_log_error("%s: Expected qualified_name '%s', but node qualified_name is NULL", safe_path,
+                     expected_qname);
+        valid = false;
+      } else if (strcmp(expected_qname, node->qualified_name) != 0) {
+        cr_log_error("%s: Qualified name mismatch - expected '%s', got '%s'", safe_path,
+                     expected_qname, node->qualified_name);
+        valid = false;
+      }
+    }
+
+    // Check signature
+    JsonValue *signature_field = find_json_field(expected, "signature");
+    if (signature_field && signature_field->type == JSON_STRING) {
+      const char *expected_signature = signature_field->value.string;
+      const char *node_signature = node->signature ? node->signature : "";
+      if (strcmp(expected_signature, node_signature) != 0) {
+        cr_log_error("%s: Signature mismatch - expected '%s', got '%s'", safe_path,
+                     expected_signature, node_signature);
+        valid = false;
+      }
+    }
+
+    // Check docstring
+    JsonValue *docstring_field = find_json_field(expected, "docstring");
+    if (docstring_field && docstring_field->type == JSON_STRING) {
+      const char *expected_docstring = docstring_field->value.string;
+      const char *node_docstring = node->docstring ? node->docstring : "";
+      if (strcmp(expected_docstring, node_docstring) != 0) {
+        cr_log_error("%s: Docstring mismatch - expected '%s', got '%s'", safe_path,
+                     expected_docstring, node_docstring);
+        valid = false;
+      }
+    }
+  }
+
+  // Level 5 (EXACT): Every field must match exactly (use original function)
+  if (granularity_level >= GRANULARITY_EXACT) {
+    return validate_ast_against_json(node, expected);
   }
 
   return valid;

@@ -17,6 +17,7 @@
 
 /* ScopeMux header includes */
 #include "../../core/include/scopemux/context_engine.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include "../../core/include/scopemux/python_bindings.h"
 #include "../../core/include/scopemux/python_utils.h"
 
@@ -226,7 +227,7 @@ static PyObject *ContextEngine_get_context(PyObject *self_obj, PyObject *ignored
   size_t size = context_engine_get_context(self->engine, NULL, 0);
 
   // Allocate a buffer
-  char *buffer = (char *)malloc(size + 1); // +1 for null terminator
+  char *buffer = MALLOC(size + 1, "context_buffer"); // +1 for null terminator
   if (!buffer) {
     PyErr_NoMemory();
     return NULL;
@@ -237,7 +238,7 @@ static PyObject *ContextEngine_get_context(PyObject *self_obj, PyObject *ignored
 
   // Create a Python string
   PyObject *py_str = PyUnicode_FromString(buffer);
-  free(buffer);
+  FREE(buffer);
 
   return py_str;
 }
@@ -471,4 +472,57 @@ void init_context_engine_bindings(void *m) {
   PyModule_AddIntConstant(module, "COMPRESSION_MEDIUM", COMPRESSION_MEDIUM);
   PyModule_AddIntConstant(module, "COMPRESSION_HEAVY", COMPRESSION_HEAVY);
   PyModule_AddIntConstant(module, "COMPRESSION_SIGNATURE_ONLY", COMPRESSION_SIGNATURE_ONLY);
+}
+
+static PyObject *ContextEngine_get_node_names(PyObject *self_obj, PyObject *args, PyObject *kwds) {
+  ContextEngineObject *self = (ContextEngineObject *)self_obj;
+  const char *file_path;
+  static char *kwlist[] = {"file_path", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &file_path)) {
+    return NULL;
+  }
+
+  size_t num_nodes = 0;
+  bool success = context_engine_get_node_names(self->engine, file_path, NULL, &num_nodes);
+  if (!success) {
+    PyErr_SetString(PyExc_RuntimeError, context_engine_get_last_error(self->engine));
+    return NULL;
+  }
+
+  if (num_nodes == 0) {
+    return PyList_New(0);
+  }
+
+  const char **node_names = MALLOC(num_nodes * sizeof(char *), "node_names_array");
+  if (!node_names) {
+    PyErr_NoMemory();
+    return NULL;
+  }
+
+  success = context_engine_get_node_names(self->engine, file_path, node_names, &num_nodes);
+  if (!success) {
+    FREE(node_names);
+    PyErr_SetString(PyExc_RuntimeError, context_engine_get_last_error(self->engine));
+    return NULL;
+  }
+
+  PyObject *py_list = PyList_New(num_nodes);
+  if (!py_list) {
+    FREE(node_names);
+    return NULL;
+  }
+
+  for (size_t i = 0; i < num_nodes; i++) {
+    PyObject *py_str = PyUnicode_FromString(node_names[i]);
+    if (!py_str) {
+      FREE(node_names);
+      Py_DECREF(py_list);
+      return NULL;
+    }
+    PyList_SET_ITEM(py_list, i, py_str);
+  }
+
+  FREE(node_names);
+  return py_list;
 }

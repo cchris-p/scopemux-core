@@ -6,21 +6,28 @@
  * levels (debug, info, warning, error).
  */
 
+#include "../../core/include/scopemux/logging.h"
+#include <assert.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-// Define log levels
-typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR } LogLevel;
-
 // Current log level
 static LogLevel current_log_level = LOG_INFO;
 
 // Log file
 static FILE *log_file = NULL;
+
+// Helper: safe vfprintf that replaces NULL string arguments with "(null)"
+static void safe_vfprintf(FILE *output, const char *format, va_list args) {
+  va_list args_copy;
+  va_copy(args_copy, args);
+  vfprintf(output, format, args_copy);
+  va_end(args_copy);
+}
 
 /**
  * @brief Initialize the logging system
@@ -107,7 +114,7 @@ void log_message(LogLevel level, const char *format, ...) {
   fprintf(output, "[%s] [%s] ", time_str, level_str);
 
   // Print message
-  vfprintf(output, format, args);
+  safe_vfprintf(output, format, args);
   fprintf(output, "\n");
 
   va_end(args);
@@ -144,7 +151,7 @@ void log_debug(const char *format, ...) {
   fprintf(output, "[%s] [DEBUG] ", time_str);
 
   // Print message
-  vfprintf(output, format, args);
+  safe_vfprintf(output, format, args);
   fprintf(output, "\n");
 
   va_end(args);
@@ -181,7 +188,7 @@ void log_info(const char *format, ...) {
   fprintf(output, "[%s] [INFO] ", time_str);
 
   // Print message
-  vfprintf(output, format, args);
+  safe_vfprintf(output, format, args);
   fprintf(output, "\n");
 
   va_end(args);
@@ -218,7 +225,7 @@ void log_warning(const char *format, ...) {
   fprintf(output, "[%s] [WARNING] ", time_str);
 
   // Print message
-  vfprintf(output, format, args);
+  safe_vfprintf(output, format, args);
   fprintf(output, "\n");
 
   va_end(args);
@@ -255,7 +262,7 @@ void log_error(const char *format, ...) {
   fprintf(output, "[%s] [ERROR] ", time_str);
 
   // Print message
-  vfprintf(output, format, args);
+  safe_vfprintf(output, format, args);
   fprintf(output, "\n");
 
   va_end(args);

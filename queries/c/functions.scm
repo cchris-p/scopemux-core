@@ -1,34 +1,21 @@
-;; Function definitions
+;; Function definitions (direct, pointer, parenthesized)
+;; Minimal compiling pattern for function definitions
+;; (Backed by vendor/tree-sitter-c/grammar.js and node-types.json)
+
+;; Canonical function name extraction (one layer of nesting)
+;; (function_definition declarator: (function_declarator declarator: (identifier) @name)) @function
 (function_definition
   declarator: (function_declarator
     declarator: (identifier) @name
-    parameters: (parameter_list) @params)
-  body: (compound_statement) @body) @function
+  )
+) @function
 
-;; Function declarations (prototypes)
-(declaration
-  type: (_) @return_type
-  declarator: (function_declarator
-    declarator: (identifier) @name
-    parameters: (parameter_list) @params)) @function_declaration
-
-;; Function with storage class specifier (static, extern, etc.)
-(declaration
-  (storage_class_specifier) @storage_class
-  type: (_) @return_type
-  declarator: (function_declarator
-    declarator: (identifier) @name
-    parameters: (parameter_list) @params)) @function_with_storage_class
-
-;; Function with type qualifiers (const, volatile)
+;; Pointer declarator nesting
 (function_definition
-  type: (primitive_type) @return_type
   declarator: (function_declarator
-    declarator: (identifier) @name
-    parameters: (parameter_list) @params)
-  body: (compound_statement) @body) @function_with_qualifier
+    declarator: (pointer_declarator
+      declarator: (identifier) @name
+    )
+  )
+) @function
 
-;; Function parameters
-(parameter_declaration
-  type: (_) @param_type
-  declarator: (identifier) @param_name) @parameter

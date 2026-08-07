@@ -7,6 +7,7 @@
  */
 
 #include "../../core/include/scopemux/common.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -27,7 +28,7 @@
 char *set_error(char **error_buffer, const char *format, ...) {
   // Allocate or reallocate the error buffer if needed
   if (*error_buffer == NULL) {
-    *error_buffer = (char *)malloc(MAX_ERROR_LENGTH);
+    *error_buffer = MALLOC(MAX_ERROR_LENGTH, "error_buffer");
     if (*error_buffer == NULL) {
       return NULL; // Out of memory
     }
@@ -49,7 +50,7 @@ char *set_error(char **error_buffer, const char *format, ...) {
  */
 void free_error(char **error_buffer) {
   if (*error_buffer != NULL) {
-    free(*error_buffer);
+    FREE(*error_buffer);
     *error_buffer = NULL;
   }
 }

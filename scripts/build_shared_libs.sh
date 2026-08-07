@@ -1,0 +1,32 @@
+#!/bin/bash
+# build_shared_libs.sh
+# Build shared libraries from static libraries for Tree-sitter languages
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+BUILD_DIR="${PROJECT_ROOT_DIR}/build/tree-sitter-libs"
+echo "Building shared libraries in $BUILD_DIR"
+
+mkdir -p "$BUILD_DIR"
+
+cd "$BUILD_DIR" || {
+    echo "Error: Cannot change to directory $BUILD_DIR"
+    exit 1
+}
+
+# Create shared libraries from static libraries
+echo "Converting static libraries to shared libraries..."
+gcc -shared -o libtree-sitter.so -Wl,--whole-archive libtree-sitter.a -Wl,--no-whole-archive
+gcc -shared -o libtree-sitter-c.so -Wl,--whole-archive libtree-sitter-c.a -Wl,--no-whole-archive -L "$BUILD_DIR" -ltree-sitter
+gcc -shared -o libtree-sitter-cpp.so -Wl,--whole-archive libtree-sitter-cpp.a -Wl,--no-whole-archive -L "$BUILD_DIR" -ltree-sitter
+gcc -shared -o libtree-sitter-python.so -Wl,--whole-archive libtree-sitter-python.a -Wl,--no-whole-archive -L "$BUILD_DIR" -ltree-sitter
+gcc -shared -o libtree-sitter-javascript.so -Wl,--whole-archive libtree-sitter-javascript.a -Wl,--no-whole-archive -L "$BUILD_DIR" -ltree-sitter
+gcc -shared -o libtree-sitter-typescript.so -Wl,--whole-archive libtree-sitter-typescript.a -Wl,--no-whole-archive -L "$BUILD_DIR" -ltree-sitter
+
+# Verify shared libraries were created
+echo "Created shared libraries:"
+ls -la *.so
+
+echo "Done building shared libraries."

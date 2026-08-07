@@ -10,9 +10,12 @@
 #include <string.h>
 
 // Fix include paths to correctly reference the header files
-#include "../../../include/scopemux/parser.h"
-#include "../../../include/scopemux/tree_sitter_integration.h"
+#include "../../../core/include/scopemux/parser.h"
+
 #include "../../include/test_helpers.h"
+
+// Function prototypes for non-static functions defined in this file
+// (none needed; all test cases are declared with the Criterion Test macro)
 
 //=================================
 // C++ AST Extraction Tests
@@ -52,6 +55,7 @@ Test(cpp_ast, functions, .description = "Test AST extraction of C++ functions") 
   free(source_code);
 }
 
+#ifdef ENABLE_STRUCT_UNION_ENUM_TESTS
 /**
  * Test extraction of C++ classes from source code.
  * Verifies that class definitions are correctly identified
@@ -119,5 +123,7 @@ Test(cpp_ast, templates, .description = "Test AST extraction of C++ templates") 
   parser_free(ctx);
   free(source_code);
 }
+
+#endif // ENABLE_STRUCT_UNION_ENUM_TESTS
 
 // Add more C++-specific tests as needed

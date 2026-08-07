@@ -5,16 +5,6 @@
  * This file serves as a facade for the Tree-sitter integration, delegating to
  * specialized modules while maintaining the public interface.
  *
- * The implementation follows the SOLID principles:
- * - Single Responsibility: Each module handles one aspect of parsing
- * - Open/Closed: New languages can be added without modifying existing code
- * - Liskov Substitution: Consistent interfaces across language implementations
- * - Interface Segregation: Clean separation between AST and CST generation
- * - Dependency Inversion: High-level modules depend on abstractions
- *
- * This refactored implementation removes deprecated and legacy code while
- * maintaining full compatibility with the existing public interface.
- *
  * The AST generation process follows these key steps:
  * 1. Create a root NODE_ROOT node representing the file/module
  * 2. Process Tree-sitter queries in a hierarchical order
@@ -31,10 +21,11 @@
 // Define _POSIX_C_SOURCE to make strdup available
 #define _POSIX_C_SOURCE 200809L
 
-#include "../../core/include/scopemux/tree_sitter_integration.h"
-#include "../../core/include/scopemux/logging.h"
-#include "../../core/include/scopemux/parser.h"
-#include "../../core/include/scopemux/ts_internal.h"
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
+#include "scopemux/ast.h"
+#include "scopemux/common.h"
+#include "scopemux/logging.h"
+#include "scopemux/parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,25 +40,14 @@
  * - ts_ast_builder.c: Handles AST generation from Tree-sitter trees
  * - ts_cst_builder.c: Handles CST generation from Tree-sitter trees
  * - ts_query_processor.c: Handles Tree-sitter query execution
- *
- * This architecture follows the Single Responsibility Principle by separating
- * different concerns into focused modules, while maintaining backward compatibility
- * with the existing public interface.
  */
-
-// Forward declarations for Tree-sitter language functions
-extern const TSLanguage *tree_sitter_c(void);
-extern const TSLanguage *tree_sitter_cpp(void);
-extern const TSLanguage *tree_sitter_python(void);
-extern const TSLanguage *tree_sitter_javascript(void);
-extern const TSLanguage *tree_sitter_typescript(void);
 
 /**
  * @brief Builds a queries directory path for the given language
  *
  * This function is implemented in ts_init.c
  */
-extern char *build_queries_dir_impl(LanguageType language);
+extern char *build_queries_dir_impl(Language language);
 
 /**
  * @brief Initialize the Tree-sitter parser for a specific language.
@@ -77,19 +57,7 @@ extern char *build_queries_dir_impl(LanguageType language);
  * @return true Parser initialized successfully
  * @return false Parser failed to initialize
  */
-bool ts_init_parser(ParserContext *ctx, LanguageType language) {
-  if (!ctx) {
-    log_error("NULL context passed to ts_init_parser");
-    return false;
-  }
-
-  // Implementation delegated to ts_init.c
-  // This facade maintains the public interface
-  extern bool ts_init_parser_impl(ParserContext * ctx, LanguageType language);
-  log_debug("ts_init_parser facade called, delegating to ts_init_parser_impl for language %d",
-            language);
-  return ts_init_parser_impl(ctx, language);
-}
+bool ts_init_parser(ParserContext *ctx, Language language);
 
 /**
  * @brief Converts a raw Tree-sitter tree into a ScopeMux Abstract Syntax Tree.
@@ -102,19 +70,7 @@ bool ts_init_parser(ParserContext *ctx, LanguageType language) {
  * @param ctx The parser context, which contains the source code and other info.
  * @return ASTNode* The root of the generated AST, or NULL on failure.
  */
-ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
-  if (ts_node_is_null(root_node) || !ctx) {
-    if (ctx) {
-      parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
-    }
-    return NULL;
-  }
-
-  // Implementation delegated to ts_ast_builder.c
-  // This facade maintains the public interface
-  extern ASTNode *ts_tree_to_ast_impl(TSNode root_node, ParserContext * ctx);
-  return ts_tree_to_ast_impl(root_node, ctx);
-}
+ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx);
 
 /**
  * @brief Converts a raw Tree-sitter tree into a ScopeMux Concrete Syntax Tree.
@@ -127,14 +83,22 @@ ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
  * @param ctx The parser context, which contains the source code and other info.
  * @return CSTNode* The root of the generated CST, or NULL on failure.
  */
-CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx) {
-  if (ts_node_is_null(root_node) || !ctx || !ctx->source_code) {
-    parser_set_error(ctx, -1, "Invalid context for CST generation");
-    return NULL;
-  }
+CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx);
 
-  // Implementation delegated to ts_cst_builder.c
-  // This facade maintains the public interface
-  extern CSTNode *ts_tree_to_cst_impl(TSNode root_node, ParserContext * ctx);
-  return ts_tree_to_cst_impl(root_node, ctx);
+#include "scopemux/tree_sitter_integration.h"
+#include <stdlib.h>
+#include <string.h>
+
+char *ts_node_text(TSNode node, const char *source_code) {
+  uint32_t start = ts_node_start_byte(node);
+  uint32_t end = ts_node_end_byte(node);
+  if (!source_code || end <= start)
+    return NULL;
+  size_t len = end - start;
+  char *text = (char *)safe_malloc(len + 1);
+  if (!text)
+    return NULL;
+  memcpy(text, source_code + start, len);
+  text[len] = '\0';
+  return text;
 }

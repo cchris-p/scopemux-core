@@ -8,6 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern const TSLanguage *tree_sitter_c(void);
+extern const TSLanguage *tree_sitter_cpp(void);
+extern const TSLanguage *tree_sitter_python(void);
+extern const TSLanguage *tree_sitter_javascript(void);
+extern const TSLanguage *tree_sitter_typescript(void);
+
 /**
  * Extract a full signature including return type for C functions
  * @param node The function definition node
@@ -172,8 +178,76 @@ static void c_post_process_match(ASTNode *node, TSQueryMatch *match) {
 // The C language adapter instance
 LanguageAdapter c_adapter = {.language_type = LANG_C,
                              .language_name = "C",
+                             .get_ts_language = tree_sitter_c,
                              .extract_signature = c_extract_signature,
                              .generate_qualified_name = c_generate_qualified_name,
                              .process_special_cases = c_process_special_cases,
                              .pre_process_query = c_pre_process_query,
                              .post_process_match = c_post_process_match};
+
+// Stub functions for unimplemented adapters
+static char *stub_extract_signature(TSNode node, const char *source_code) { return strdup("()"); }
+static char *stub_generate_qualified_name(const char *name, ASTNode *parent) {
+  return strdup(name ? name : "");
+}
+static void stub_process_special_cases(ASTNode *node, ParserContext *ctx) {
+  (void)node;
+  (void)ctx;
+}
+static void stub_pre_process_query(const char *query_type, TSQuery *query) {
+  (void)query_type;
+  (void)query;
+}
+static void stub_post_process_match(ASTNode *node, TSQueryMatch *match) {
+  (void)node;
+  (void)match;
+}
+
+LanguageAdapter cpp_adapter = {.language_type = LANG_CPP,
+                               .language_name = "C++",
+                               .get_ts_language = tree_sitter_cpp,
+                               .extract_signature = stub_extract_signature,
+                               .generate_qualified_name = stub_generate_qualified_name,
+                               .process_special_cases = stub_process_special_cases,
+                               .pre_process_query = stub_pre_process_query,
+                               .post_process_match = stub_post_process_match};
+
+LanguageAdapter python_adapter = {.language_type = LANG_PYTHON,
+                                  .language_name = "Python",
+                                  .get_ts_language = tree_sitter_python,
+                                  .extract_signature = stub_extract_signature,
+                                  .generate_qualified_name = stub_generate_qualified_name,
+                                  .process_special_cases = stub_process_special_cases,
+                                  .pre_process_query = stub_pre_process_query,
+                                  .post_process_match = stub_post_process_match};
+
+LanguageAdapter javascript_adapter = {.language_type = LANG_JAVASCRIPT,
+                                      .language_name = "JavaScript",
+                                      .get_ts_language = tree_sitter_javascript,
+                                      .extract_signature = stub_extract_signature,
+                                      .generate_qualified_name = stub_generate_qualified_name,
+                                      .process_special_cases = stub_process_special_cases,
+                                      .pre_process_query = stub_pre_process_query,
+                                      .post_process_match = stub_post_process_match};
+
+LanguageAdapter typescript_adapter = {.language_type = LANG_TYPESCRIPT,
+                                      .language_name = "TypeScript",
+                                      .get_ts_language = tree_sitter_typescript,
+                                      .extract_signature = stub_extract_signature,
+                                      .generate_qualified_name = stub_generate_qualified_name,
+                                      .process_special_cases = stub_process_special_cases,
+                                      .pre_process_query = stub_pre_process_query,
+                                      .post_process_match = stub_post_process_match};
+
+// NOTE: This array is the single source of truth (SSOT) for all supported languages in ScopeMux.
+// To add a new language, create a LanguageAdapter instance and add it to this array.
+LanguageAdapter *all_adapters[] = {&c_adapter,          &cpp_adapter,        &python_adapter,
+                                   &javascript_adapter, &typescript_adapter, NULL};
+
+LanguageAdapter *get_adapter_by_language(Language lang) {
+  for (int i = 0; all_adapters[i]; ++i) {
+    if (all_adapters[i]->language_type == lang)
+      return all_adapters[i];
+  }
+  return NULL;
+}

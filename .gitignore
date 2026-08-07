@@ -1,18 +1,50 @@
-tree_sitter_*/*
+**/tree_sitter_*/*
+build-interfile/*
+build-misc/*
+build-c/*
+build-cpp/*
+build-python/*
+windsurf-collector/*
+#run_*_tests.txt
+ts_diagnostic
+ts_language_test
+!core/tests/**
+core/src/info_block/*
+core/include/scopemux/info_block.h
+core/tests/tools/cst_dump_tool
+diff-output.txt
+scopemux-core.code-workspace
+#asan.log.*
+scripts/parse_ast
+scripts/parse_cst
+
+# Test output
+run_c_tests.txt
+run_cpp_tests.txt
+run_interfile_tests.txt
+run_misc_tests.txt
+run_python_tests.txt
+run_ts_tests.txt
+
+# These directories may interfere with coding agents
+core/tests/build*
+build-*
+build/*
+build/core/tests/examples/*
 
 # Python
 __pycache__/
 *.py[cod]
 *.so
 .Python
-build/
+# build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# lib/
+# lib64/
 parts/
 sdist/
 var/
@@ -31,8 +63,8 @@ htmlcov/
 *.dll
 
 # Build directories
-build/
-bindings/build/
+# build/
+# bindings/build/
 
 # Test executables and build artifacts
 core/tests/CMakeFiles/
@@ -203,3 +235,11 @@ $RECYCLE.BIN/
 scopemux_core.cpython-*.so
 test_scopemux.cpython-*.so
 hello_scopemux.so
+!core/src/**
+!core/include/**
+*.cmake
+*.ts
+*.make
+*.c.o*
+Makefile
+*.marks

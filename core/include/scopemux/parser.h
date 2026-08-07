@@ -8,120 +8,88 @@
  * ranges, control-flow primitives, docstrings, comments, and call expressions.
  */
 
+/*
+ * NOTE FOR MAINTAINERS:
+ * This is the public API header for the parser module. It must only contain declarations
+ * intended for use by external modules, tests, or users of the ScopeMux library.
+ *
+ * There is also an internal parser.h (or parser_internal.h) in src/parser/ which is for
+ * private implementation details. Only this file (in include/) should be included by code
+ * outside the parser module. Do not expose internal-only types or functions here.
+ */
 #ifndef SCOPEMUX_PARSER_H
 #define SCOPEMUX_PARSER_H
 
+#include "ast.h"
+#include "language.h"
 #include "logging.h"
+#include "source_range.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-/**
- * @brief Representation of a source location
- */
-typedef struct {
-  uint32_t line;   // 0-indexed line number
-  uint32_t column; // 0-indexed column number
-  uint32_t offset; // Byte offset from the start of the file
-} SourceLocation;
-
-/**
- * @brief Representation of a source range
- */
-typedef struct {
-  SourceLocation start;
-  SourceLocation end;
-} SourceRange;
+struct ASTNode;
+typedef struct ASTNode ASTNode;
 
 // Forward declaration of QueryManager
 typedef struct QueryManager QueryManager;
 
-/**
- * @brief Supported programming languages
- */
-typedef enum {
-  LANG_UNKNOWN = 0,
-  LANG_C,
-  LANG_CPP,
-  LANG_PYTHON,
-  LANG_JAVASCRIPT,
-  LANG_TYPESCRIPT,
-  // Add more languages as needed
-} LanguageType;
-
-/**
- * @brief Standard AST node types used across all supported languages
- *
- * These node types define the common semantic structure that ScopeMux uses
- * across all supported programming languages. Each language-specific parser
- * maps its syntax constructs to these standard types, enabling language-agnostic
- * analysis and transformation tools.
- *
- * The node types are organized in a hierarchical fashion that mirrors typical
- * code organization (files contain modules/namespaces, which contain classes,
- * which contain methods, etc.).
- */
-typedef enum {
-  NODE_UNKNOWN = 0, // Unknown or unclassified node type
-  NODE_ROOT,        // Root node for the AST (represents a file or module)
-  NODE_FUNCTION,    // Function definition (common across all languages)
-  NODE_METHOD,      // Method definition (functions within classes/objects)
-  NODE_CLASS,       // Class definition (OOP languages: C++, Python, JS, etc.)
-  NODE_STRUCT,      // Structure definition (C, C++, Go, etc.)
-  NODE_ENUM,        // Enumeration type (C, C++, TypeScript, etc.)
-  NODE_INTERFACE,   // Interface definition (TypeScript, Java, etc.)
-  NODE_NAMESPACE,   // Namespace definition (C++, C#, etc.)
-  NODE_MODULE,      // Module definition (Python, JavaScript, etc.)
-  NODE_COMMENT,     // Regular comment
-  NODE_DOCSTRING,   // Documentation comment/string
-
-  // Language-specific node types with standardized semantics
-  NODE_UNION,    // Union type (C, C++, TypeScript)
-  NODE_TYPEDEF,  // Type alias/definition (C, C++, TypeScript)
-  NODE_INCLUDE,  // Include/import statement (represented consistently across languages)
-  NODE_MACRO,    // Macro definitions (C, C++, Rust)
-  NODE_VARIABLE, // Variable declarations (common across all languages)
-  NODE_TEMPLATE, // Template definition (C++, TypeScript, etc.)
-
-  // Test-specific and extended node types for precise AST adaptation
-  NODE_VARIABLE_DECLARATION,
-  NODE_FOR_STATEMENT,
-  NODE_WHILE_STATEMENT,
-  NODE_DO_WHILE_STATEMENT,
-  NODE_IF_STATEMENT,
-  NODE_IF_ELSE_IF_STATEMENT,
-  NODE_SWITCH_STATEMENT,
-
-  // Add more node types as needed
-
-  /*
-   * Note on cross-language mapping:
-   * - C++ classes map to NODE_CLASS
-   * - Python classes map to NODE_CLASS
-   * - JavaScript/TypeScript classes map to NODE_CLASS
-   * - C structs map to NODE_STRUCT
-   * - Python imports map to NODE_INCLUDE
-   * - JavaScript imports/requires map to NODE_INCLUDE
-   */
-} ASTNodeType;
+/* Language enum is now defined in scopemux/language.h. */
 
 typedef enum { PARSE_AST, PARSE_CST, PARSE_BOTH } ParseMode;
 
-/**
- * @brief Represents a generic node in the Concrete Syntax Tree (CST).
- */
-typedef struct CSTNode {
-  const char *type; ///< The syntax type of the node (e.g., "function_definition", "identifier").
-  char *content;    ///< The source code content of the node.
-  SourceRange range;
-  struct CSTNode **children; ///< Array of child nodes.
-  unsigned int children_count;
-} CSTNode;
+// Forward declaration of CSTNode
+struct CSTNode;
+typedef struct CSTNode CSTNode;
 
 // CST Node lifecycle functions
 CSTNode *cst_node_new(const char *type, char *content);
 void cst_node_free(CSTNode *node);
 bool cst_node_add_child(CSTNode *parent, CSTNode *child);
+
+/**
+ * @section Public CST Parsing API
+ *
+ * These functions provide a minimal, stable interface for extracting a full Concrete Syntax Tree
+ * (CST) from a C source file or buffer. All parser context, initialization, and error handling are
+ * managed internally. The returned CSTNode tree is owned by the caller and must be freed with
+ * cst_node_free().
+ *
+ * Thread Safety: Not thread-safe. Do not call from multiple threads concurrently.
+ *
+ * On error, returns NULL and logs an error internally (see logging.h).
+ */
+
+/**
+ * @brief Parse a C source file and return the CST root node.
+ *
+ * @param filename Path to the C source file.
+ * @return CSTNode* Root CST node, or NULL on error. Caller must free with cst_node_free().
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Parse a C source file and return the CST root node.
+ *
+ * @param filename Path to the C source file.
+ * @return CSTNode* Root CST node, or NULL on error. Caller must free with cst_node_free().
+ */
+CSTNode *parse_c_file_to_cst(const char *filename);
+
+/**
+ * @brief Parse a C source buffer and return the CST root node.
+ *
+ * @param buffer Pointer to C source code (UTF-8, not null-terminated).
+ * @param len Length of the buffer in bytes.
+ * @return CSTNode* Root CST node, or NULL on error. Caller must free with cst_node_free().
+ */
+CSTNode *parse_c_source_to_cst(const char *buffer, size_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * @brief Creates a deep copy of a CST node and all its children
@@ -131,59 +99,31 @@ bool cst_node_add_child(CSTNode *parent, CSTNode *child);
  */
 CSTNode *cst_node_copy_deep(const CSTNode *node);
 
+// --- CSTNode public getters ---
+/**
+ * @brief Get the node type as a string.
+ */
+const char *cst_node_get_type(const CSTNode *node);
+
+/**
+ * @brief Get the number of children of this node.
+ */
+size_t cst_node_get_child_count(const CSTNode *node);
+
+/**
+ * @brief Get the child node at the given index (NULL if out of bounds).
+ */
+const CSTNode *cst_node_get_child(const CSTNode *node, size_t index);
+
+/**
+ * @brief Get the source range for this node.
+ */
+SourceRange cst_node_get_range(const CSTNode *node);
+
 /**
  * @brief AST node representing a parsed semantic entity in a language-agnostic way.
- *
- * This is the core data structure for representing parsed code entities across
- * all supported languages. It provides a standardized representation that enables
- * consistent analysis regardless of the source language.
- *
- * Key aspects of the cross-language standardization:
- *
- * 1. Common node types (defined in ASTNodeType) represent equivalent semantic constructs
- *    across languages (e.g., NODE_FUNCTION represents functions in C, Python, JavaScript)
- *
- * 2. Hierarchical relationships are preserved consistently (classes contain methods,
- *    namespaces contain classes, etc.)
- *
- * 3. Qualified names provide a consistent way to reference entities regardless of
- *    language-specific namespacing mechanisms
- *
- * 4. Language-specific details are preserved in attributes like signature, raw_content,
- *    and additional_data while maintaining the common structure
- *
- * All string fields (name, signature, etc.) are owned by this struct
- * and will be freed when the AST is destroyed via parser_free().
+ * @see The ASTNode struct is defined in scopemux/ast.h
  */
-typedef struct ASTNode {
-  uint32_t magic;       ///< Canary for heap corruption/use-after-free detection
-  ASTNodeType type;     // Type of the node
-  char *name;           // Name of the entity
-  char *qualified_name; // Fully qualified name (e.g., namespace::class::method)
-  SourceRange range;    // Source code range
-  char *signature;      // Function/method signature if applicable
-  char *docstring;      // Associated documentation
-  char *raw_content;    // Raw source code content
-
-  // Parent-child relationships
-  struct ASTNode *parent;    // Parent node (e.g., class for a method)
-  struct ASTNode **children; // Child nodes (e.g., methods for a class)
-  size_t num_children;       // Number of children
-  size_t children_capacity;  // Capacity of children array
-
-  // References and dependencies
-  struct ASTNode **references; // Nodes referenced by this node
-  size_t num_references;       // Number of references
-  size_t references_capacity;  // Capacity of references array
-
-  // For future expansion
-  void *additional_data; // Language-specific or analysis data
-} ASTNode;
-
-// AST Node lifecycle functions
-ASTNode *ast_node_new(ASTNodeType type, const char *name);
-void ast_node_free(ASTNode *node);
-bool ast_node_add_child(ASTNode *parent, ASTNode *child);
 
 /**
  * @brief Context for the parser
@@ -198,7 +138,7 @@ typedef struct ParserContext {
   char *filename;            // Current file being parsed
   char *source_code;         // Source code content
   size_t source_code_length; // Length of source code
-  LanguageType language;     // Detected language
+  Language language;         // Detected language
 
   /**
    * @brief Root node of the Abstract Syntax Tree.
@@ -215,6 +155,14 @@ typedef struct ParserContext {
    */
   CSTNode *cst_root;
 
+  /**
+   * @brief Dependencies tracking.
+   * Array of parser contexts that this context depends on.
+   */
+  struct ParserContext **dependencies; // Array of dependencies
+  size_t num_dependencies;             // Number of dependencies
+  size_t dependencies_capacity;        // Capacity of dependencies array
+
   // Error handling
   char *last_error; // Last error message
   int error_code;   // Error code
@@ -227,7 +175,7 @@ typedef struct ParserContext {
 } ParserContext;
 
 /**
- * @brief Adds an AST node to the parser context's tracking list
+ * @brief Add an AST node to the parser context for tracking
  *
  * @param ctx Parser context
  * @param node Node to add to tracking
@@ -236,11 +184,62 @@ typedef struct ParserContext {
 bool parser_add_ast_node(ParserContext *ctx, ASTNode *node);
 
 /**
+ * @brief Remove an AST node from the parser context tracking
+ *
+ * @param ctx Parser context
+ * @param node Node to remove from tracking
+ * @return bool True if node was found and removed, false otherwise
+ */
+bool parser_remove_ast_node(ParserContext *ctx, ASTNode *node);
+
+/**
  * @brief Initialize the parser
  *
  * @return ParserContext* Initialized parser context or NULL on failure
  */
 ParserContext *parser_init(void);
+
+/**
+ * @brief Free a parser context and all associated resources
+ *
+ * @param ctx The parser context to free
+ */
+void parser_free(ParserContext *ctx);
+
+/**
+ * @brief Free a parser context and all associated resources (alias for parser_free)
+ *
+ * @param ctx The parser context to free
+ */
+void parser_context_free(ParserContext *ctx);
+
+/**
+ * @brief Add an AST node to the parser context's tracking list (alias for parser_add_ast_node)
+ *
+ * @param ctx Parser context
+ * @param node Node to add to tracking
+ * @return bool True on success, false on failure
+ */
+bool parser_context_add_ast(ParserContext *ctx, ASTNode *node);
+
+/**
+ * @brief Add an AST node to the parser context with associated filename
+ *
+ * @param ctx Parser context
+ * @param node Node to add to tracking
+ * @param filename The filename associated with the AST node
+ * @return bool True on success, false on failure
+ */
+bool parser_context_add_ast_with_filename(ParserContext *ctx, ASTNode *node, const char *filename);
+
+/**
+ * @brief Add a dependency relationship between two parser contexts
+ *
+ * @param source The source parser context that depends on the target
+ * @param target The target parser context that is depended upon
+ * @return bool True on success, false on failure
+ */
+bool parser_context_add_dependency(ParserContext *source, ParserContext *target);
 
 /**
  * @brief Sets the parsing mode for the context.
@@ -273,10 +272,9 @@ void parser_clear(ParserContext *ctx);
  * @param filename Path to the file
  * @param content File content (can be NULL, in which case the file will be read)
  * @param content_length Length of the content (ignored if content is NULL)
- * @return LanguageType Detected language
+ * @return Language Detected language
  */
-LanguageType parser_detect_language(const char *filename, const char *content,
-                                    size_t content_length);
+Language parser_detect_language(const char *filename, const char *content, size_t content_length);
 
 /**
  * @brief Parse a file and generate the IR
@@ -286,7 +284,7 @@ LanguageType parser_detect_language(const char *filename, const char *content,
  * @param language Optional language hint (LANG_UNKNOWN to auto-detect)
  * @return bool True on success, false on failure
  */
-bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType language);
+bool parser_parse_file(ParserContext *ctx, const char *filename, Language language);
 
 /**
  * @brief Parse a string and generate the IR
@@ -299,7 +297,15 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
  * @return bool True on success, false on failure
  */
 bool parser_parse_string(ParserContext *ctx, const char *const content, size_t content_length,
-                         const char *filename, LanguageType language);
+                         const char *filename, Language language);
+
+/**
+ * @brief Get the AST root node from a parser context
+ *
+ * @param ctx Parser context
+ * @return const ASTNode* Root AST node or NULL if not available
+ */
+const ASTNode *parser_context_get_ast(const ParserContext *ctx);
 
 /**
  * @brief Get the last error message
@@ -370,52 +376,7 @@ void parser_set_cst_root(ParserContext *ctx, CSTNode *root);
 size_t parser_get_ast_nodes_by_type(const ParserContext *ctx, ASTNodeType type,
                                     const ASTNode **out_nodes, size_t max_nodes);
 
-/**
- * @brief Create a new AST node
- *
- * @param type Node type
- * @param name Node name
- * @param qualified_name Fully qualified name
- * @param range Source range
- * @return ASTNode* Created node or NULL on failure
- */
-ASTNode *ast_node_create(ASTNodeType type, const char *name, const char *qualified_name,
-                         SourceRange range);
-
-/**
- * @brief Free an AST node and all its resources
- *
- * @param node Node to free
- */
-void ast_node_free(ASTNode *node);
-
-/**
- * @brief Add a child node to a parent AST node
- *
- * @param parent Parent node
- * @param child Child node
- * @return bool True on success, false on failure
- */
-bool ast_node_add_child(ASTNode *parent, ASTNode *child);
-
-/**
- * @brief Add a reference from one AST node to another
- *
- * @param from Source node
- * @param to Target node
- * @return bool True on success, false on failure
- */
-bool ast_node_add_reference(ASTNode *from, ASTNode *to);
-
-/**
- * @brief Set a property on an AST node
- *
- * @param node Node to set property on
- * @param key Property key
- * @param value Property value
- * @return bool True on success, false on failure
- */
-bool ast_node_set_property(ASTNode *node, const char *key, const char *value);
+// AST Node property functions are declared in scopemux/ast.h
 
 /**
  * @brief Create a new CST node.

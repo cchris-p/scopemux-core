@@ -13,6 +13,9 @@
 #include "parser_context.h"
 #include "parser_internal.h"
 #include "query_processing.h"
+#include "scopemux/ast.h"
+#include "scopemux/memory_management.h"
+#include "scopemux/tree_sitter_integration.h"
 
 #include <setjmp.h>
 #include <signal.h>
@@ -22,18 +25,23 @@
 #define _POSIX_C_SOURCE 200809L // For strdup on some systems
 
 // Include the proper header for Tree-sitter integration functions
-#include "../../core/include/scopemux/tree_sitter_integration.h"
+
+#include "../../core/include/scopemux/ts_resource_manager.h"
+#include "scopemux/logging.h"
+#include "scopemux/ts_internal.h"
+
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
 
 /**
  * Parse a file and generate the AST and/or CST.
  */
-bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType language) {
+bool parser_parse_file(ParserContext *ctx, const char *filename, Language language) {
   if (!ctx || !filename) {
     log_error("Cannot parse file: %s", !ctx ? "context is NULL" : "filename is NULL");
     return false;
   }
 
-  log_info("Parsing file: %s", filename);
+  log_info("Parsing file: %s", SAFE_STR(filename));
 
   // Open and read the file
   FILE *f = fopen(filename, "rb");
@@ -85,67 +93,211 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
   return result;
 }
 
-/**
- * Parse a string and generate the AST and/or CST.
- */
+static bool generate_cst(ParserContext *ctx, TSTree *ts_tree, const char *filename) {
+  if (!ctx || !ts_tree) {
+    return false;
+  }
+
+  // Use local variables to ensure NULL safety for string formatting
+  const char *cst_preview = ctx->source_code ? ctx->source_code : "(null)";
+  const char *cst_suffix = (!ctx->source_code || strlen(ctx->source_code) <= 20) ? "" : "...";
+
+  log_debug("parser_parse_string: before CST, ctx->source_code pointer=%p, preview='%.20s%s'",
+            (void *)ctx->source_code, cst_preview, cst_suffix);
+  log_debug("Generating CST from Tree-sitter tree");
+
+  // Get root node with validation
+  TSNode root_node = ts_tree_root_node(ts_tree);
+  if (ts_node_is_null(root_node)) {
+    log_error("Tree-sitter returned null root node");
+    parser_set_error(ctx, 10, "Tree-sitter returned null root node");
+    return false;
+  }
+
+  // Set up signal handling for crash recovery
+  void (*prev_handler)(int) = signal(SIGSEGV, segfault_handler);
+
+  // Use setjmp/longjmp to recover from CST generation crashes
+  if (setjmp(parse_crash_recovery) != 0) {
+    // We got here from a crash
+    signal(SIGSEGV, prev_handler);
+    parser_set_error(ctx, 8, "Parser crashed during CST generation");
+    log_error("Recovered from CST generation crash");
+    return false;
+  }
+
+  log_debug("Starting CST generation from Tree-sitter node");
+  CSTNode *cst_root = ts_tree_to_cst(root_node, ctx);
+
+  // Restore signal handler
+  signal(SIGSEGV, prev_handler);
+
+  log_debug("CST generation complete, root=%p", (void *)cst_root);
+
+  // Basic validation of CST root pointer
+  if (cst_root == NULL) {
+    log_debug("CST root is NULL after ts_tree_to_cst call");
+    parser_set_error(ctx, 10, "CST generation failed");
+    return false;
+  }
+
+  log_debug("CST root pointer from ts_tree_to_cst: %p", (void *)cst_root);
+  parser_set_cst_root(ctx, cst_root);
+  return true;
+}
+
+static bool generate_ast(ParserContext *ctx, TSTree *ts_tree, const char *filename) {
+  if (!ctx || !ts_tree) {
+    return false;
+  }
+
+  log_debug("Starting AST generation");
+
+  // Create root AST node with validation
+  log_debug("Creating AST root node");
+  // Always use the basename of the filename for the root node name for schema compliance
+  const char *basename = filename ? filename : "unknown";
+  if (filename && strlen(filename) > 0) {
+    const char *slash = strrchr(filename, '/');
+    if (slash)
+      basename = slash + 1;
+  }
+  ASTNode *root = ast_node_create(NODE_ROOT, (char *)basename, AST_SOURCE_STATIC, NULL,
+                                  AST_SOURCE_NONE, (SourceRange){{0, 0, 0}, {0, 0, 0}});
+  if (!root) {
+    parser_set_error(ctx, 11, "Failed to create AST root node");
+    return false;
+  }
+
+  // Add to tracking with validation
+  log_debug("Adding AST root to tracking");
+  if (!parser_add_ast_node(ctx, root)) {
+    log_error("Failed to add AST root to tracking");
+    ast_node_free(root); // Clean up to prevent leak
+    parser_set_error(ctx, 11, "Failed to add AST root to tracking");
+    return false;
+  }
+
+  // Get root node with validation
+  TSNode root_node = ts_tree_root_node(ts_tree);
+  if (ts_node_is_null(root_node)) {
+    log_error("Tree-sitter returned null root node for AST generation");
+    parser_set_error(ctx, 11, "Tree-sitter returned null root node for AST");
+    return false;
+  }
+
+  // Set up signal handling for crash recovery
+  void (*prev_handler)(int) = signal(SIGSEGV, segfault_handler);
+
+  // Use setjmp/longjmp to recover from AST generation crashes
+  if (setjmp(parse_crash_recovery) != 0) {
+    // We got here from a crash
+    signal(SIGSEGV, prev_handler);
+    parser_set_error(ctx, 8, "Parser crashed during AST generation");
+    log_error("Recovered from AST generation crash");
+    return false;
+  }
+
+  log_debug("Starting ts_tree_to_ast conversion");
+  ASTNode *ast_root = ts_tree_to_ast(root_node, ctx);
+
+  // Restore signal handler
+  signal(SIGSEGV, prev_handler);
+
+  log_debug("AST generation complete, ast_root=%p", (void *)ast_root);
+
+  // Add the AST root to the context if it was created successfully
+  if (ast_root) {
+    log_debug("AST root pointer from ts_tree_to_ast: %p", (void *)ast_root);
+    log_debug("Adding generated AST root to tracking");
+    parser_add_ast_node(ctx, ast_root);
+
+    // CRITICAL: Set the AST root node in the parser context
+    // This ensures the root is accessible via ctx->ast_root in tests
+    ctx->ast_root = ast_root;
+
+    if (ctx->log_level <= LOG_DEBUG) {
+      log_debug("AST root set in parser context, node count: %zu", ast_root->num_children);
+    }
+  } else {
+    log_error("AST generation failed - falling back to initial root node");
+    // Use the basic root node as fallback
+    ctx->ast_root = root;
+    if (ctx->log_level <= LOG_WARNING) {
+      log_warning("Using fallback AST root with %zu children", root->num_children);
+    }
+  }
+
+  return true;
+}
+
 bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
-                         const char *filename, LanguageType language) {
+                         const char *filename, Language language) {
+  char *filename_copy = NULL;
+
+  fprintf(stderr,
+          "[DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=%p, content=%p, content_length=%zu, "
+          "filename=%s, language=%d\n",
+          (void *)ctx, (void *)content, content_length, SAFE_STR(filename), language);
   if (!ctx || !content) {
     log_error("Cannot parse string: %s", !ctx ? "context is NULL" : "content is NULL");
     return false;
+  }
+
+  if (filename) {
+    filename_copy = safe_strdup(filename);
+    if (!filename_copy) {
+      parser_set_error(ctx, 6, "Memory allocation failed for filename");
+      return false;
+    }
   }
 
   // Clear any existing parser state
   parser_clear(ctx);
 
   // Store the source code and filename
-  ctx->source_code = strdup(content);
+  ctx->source_code = safe_strdup(content);
   if (!ctx->source_code) {
     parser_set_error(ctx, 5, "Memory allocation failed for source code");
     return false;
   }
   ctx->source_code_length = content_length;
-
-  if (filename) {
-    ctx->filename = strdup(filename);
-    if (!ctx->filename) {
-      parser_set_error(ctx, 6, "Memory allocation failed for filename");
-      return false;
-    }
+  // Defensive logging: check for NULL before using %.20s
+  if (ctx->source_code) {
+    log_debug("parser_parse_string: ctx->source_code pointer=%p, length=%zu, preview='%.20s%s'",
+              (void *)ctx->source_code, ctx->source_code_length, SAFE_STR(ctx->source_code),
+              ctx->source_code_length > 20 ? "..." : "");
+  } else {
+    log_debug("parser_parse_string: ctx->source_code pointer=NULL, length=%zu",
+              ctx->source_code_length);
   }
+
+  ctx->filename = filename_copy;
+  filename_copy = NULL;
 
   // Detect language if not specified
   if (language == LANG_UNKNOWN) {
-    language = parser_detect_language(filename, content, content_length);
+    language = parser_detect_language(ctx->filename, content, content_length);
     if (language == LANG_UNKNOWN) {
+      safe_free(ctx->source_code);
+      ctx->source_code = NULL;
+      safe_free(ctx->filename);
+      ctx->filename = NULL;
       parser_set_error(ctx, 7, "Failed to detect language");
       return false;
     }
   }
   ctx->language = language;
 
-  // Set up signal handling for crash recovery
-  signal(SIGSEGV, segfault_handler); // Use the handler declared in parser_internal.h
-
-  // Use setjmp/longjmp to recover from parser crashes
-  crash_occurred = 0;
-  if (setjmp(parse_crash_recovery) != 0) {
-    // Restore original signal handler
-    signal(SIGSEGV, SIG_DFL); // Restore default handler
-
-    parser_set_error(ctx, 8, "Parser crashed during parsing");
-    log_error("Recovered from parser crash");
-    return false;
-  }
-
-  log_error("===== PARSER_PARSE_STRING: STARTING PARSER INITIALIZATION =====");
-  log_error("Language type: %d (1=C, 2=CPP, 3=Python, 4=JavaScript, 5=TypeScript)", language);
-
   // Initialize the Tree-sitter parser for the specified language
   bool init_result = ts_init_parser(ctx, language);
-  log_error("ts_init_parser returned: %s", init_result ? "TRUE" : "FALSE");
+  log_info("ts_init_parser returned: %s", init_result ? "TRUE" : "FALSE");
 
   if (!init_result) {
+    safe_free(ctx->source_code);
+    ctx->source_code = NULL;
+    safe_free(ctx->filename);
+    ctx->filename = NULL;
     log_error("Failed to initialize Tree-sitter parser");
     return false;
   }
@@ -153,102 +305,118 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
   // Verify the parser language was actually set
   TSParser *ts_parser = ctx->ts_parser;
   const TSLanguage *current_lang = ts_parser_language(ts_parser);
-  log_error("After initialization: Tree-sitter parser=%p, language=%p", (void *)ts_parser,
-            (void *)current_lang);
+  log_info("After initialization: Tree-sitter parser=%p, language=%p", (void *)ts_parser,
+           (void *)current_lang);
 
   if (!current_lang) {
+    safe_free(ctx->source_code);
+    ctx->source_code = NULL;
+    safe_free(ctx->filename);
+    ctx->filename = NULL;
     parser_set_error(ctx, 8, "Tree-sitter parser language not set");
     return false;
   }
 
-  log_error("===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====");
+  log_info("===== PARSER_PARSE_STRING: PARSER INITIALIZATION COMPLETED =====");
 
   log_debug("Successfully initialized Tree-sitter parser for language %d", language);
 
   // Use Tree-sitter to generate a parse tree
   if (!ts_parser) {
+    safe_free(ctx->source_code);
+    ctx->source_code = NULL;
+    safe_free(ctx->filename);
+    ctx->filename = NULL;
     parser_set_error(ctx, 8, "Tree-sitter parser not initialized");
     return false;
   }
 
   // Log debugging information
   if (ctx->log_level <= LOG_DEBUG) {
-    log_debug("Parsing %s with Tree-sitter, content length: %zu, language: %d", filename,
+    log_debug("Parsing %s with Tree-sitter, content length: %zu, language: %d", SAFE_STR(ctx->filename),
               content_length, language);
     log_debug("Tree-sitter parser at %p, language object at %p", (void *)ts_parser,
               (void *)ts_parser_language(ts_parser));
   }
 
-  // Verify we've already checked that the language is properly set above, no need to check again
+  // Basic validation of content pointer - don't use memory_debug_is_valid_ptr since
+  // the content may come from Python and not be tracked by our memory system
+  if (!content) {
+    log_error("Null content pointer detected before parsing");
+    parser_set_error(ctx, 9, "Null content pointer detected before parsing");
+    return false;
+  }
 
-  // Parse the content
-  TSTree *ts_tree = ts_parser_parse_string(ts_parser, NULL, content, (uint32_t)content_length);
+  // Additional validation - check if the content appears valid by examining first few bytes
+  if (content_length > 0) {
+    const char *content_preview = content ? content : "(null)";
+    const char *content_suffix = (!content || strlen(content) <= 10) ? "" : "...";
+    log_debug("Content starts with: '%.10s%s'", content_preview, content_suffix);
+  }
+
+  // Validate content length
+  if (content_length == 0) {
+    log_error("Empty content detected before parsing");
+    parser_set_error(ctx, 9, "Empty content detected before parsing");
+    return false;
+  }
+
+  // Parse the content with error handling
+  TSTree *ts_tree = NULL;
+  void (*prev_handler)(int) = signal(SIGSEGV, segfault_handler);
+
+  if (setjmp(parse_crash_recovery) != 0) {
+    // We got here from a crash
+    signal(SIGSEGV, prev_handler);
+    if (ts_tree) {
+      ts_tree_delete(ts_tree);
+    }
+    parser_set_error(ctx, 8, "Parser crashed during parsing");
+    log_error("Recovered from parser crash");
+    return false;
+  }
+
+  // Try to parse the content
+  ts_tree = ts_parser_parse_string(ts_parser, NULL, content, (uint32_t)content_length);
+
+  // Restore signal handler
+  signal(SIGSEGV, prev_handler);
+
+  // Check result with detailed logging
   if (!ts_tree) {
     char error_msg[256];
     snprintf(error_msg, sizeof(error_msg), "Tree-sitter parsing failed for language %d", language);
     parser_set_error(ctx, 9, error_msg);
-    log_error("Tree-sitter parsing failed for %s (language %d)", filename, language);
+    log_error("Tree-sitter parsing failed for %s (language %d)", SAFE_STR(ctx->filename), language);
     return false;
   }
 
-  // Restore original signal handler
-  signal(SIGSEGV, SIG_DFL);
+  // Detect syntax errors in the produced Tree-sitter tree. If any `ERROR`
+  // nodes are present, flag this situation via `parser_set_error`. The parse
+  // may still proceed, but callers can inspect the error state to determine
+  // that the input contained invalid syntax.
+  TSNode ts_root_tmp = ts_tree_root_node(ts_tree);
+  if (ts_node_has_error(ts_root_tmp)) {
+    parser_set_error(ctx, 20, "Syntax error detected while parsing source");
+  }
+
+  log_debug("Successfully parsed content with Tree-sitter, tree=%p", (void *)ts_tree);
 
   // Generate CST if requested
+  bool success = true;
   if (ctx->mode == PARSE_CST || ctx->mode == PARSE_BOTH) {
-    TSNode root_node = ts_tree_root_node(ts_tree);
-    CSTNode *cst_root = ts_tree_to_cst(root_node, ctx);
-    parser_set_cst_root(ctx, cst_root);
-
-    if (!cst_root) {
-      parser_set_error(ctx, 10, "CST generation failed");
-      return false;
-    }
+    success = generate_cst(ctx, ts_tree, ctx->filename);
   }
 
   // Generate AST if requested
-  if (ctx->mode == PARSE_AST || ctx->mode == PARSE_BOTH) {
-    // Create root AST node
-    ASTNode *root = ast_node_create(NODE_ROOT, filename ? filename : "unknown", NULL,
-                                    (SourceRange){{0, 0, 0}, {0, 0, 0}});
-    if (!root) {
-      parser_set_error(ctx, 11, "Failed to create AST root node");
-      return false;
-    }
-
-    // Add to tracking
-    parser_add_ast_node(ctx, root);
-
-    // Execute queries to build the AST using Tree-sitter root node
-    TSNode root_node = ts_tree_root_node(ts_tree);
-    ASTNode *ast_root = ts_tree_to_ast(root_node, ctx);
-
-    // Add the AST root to the context if it was created successfully
-    if (ast_root) {
-      parser_add_ast_node(ctx, ast_root);
-      
-      // CRITICAL: Set the AST root node in the parser context
-      // This ensures the root is accessible via ctx->ast_root in tests
-      ctx->ast_root = ast_root;
-      
-      if (ctx->log_level <= LOG_DEBUG) {
-        log_debug("AST root set in parser context, node count: %zu", ast_root->num_children);
-      }
-    } else {
-      log_error("AST generation failed - falling back to initial root node");
-      // Use the basic root node as fallback
-      ctx->ast_root = root;
-      if (ctx->log_level <= LOG_WARNING) {
-        log_warning("Using fallback AST root with %zu children", root->num_children);
-      }
-    }
+  if (success && (ctx->mode == PARSE_AST || ctx->mode == PARSE_BOTH)) {
+    success = generate_ast(ctx, ts_tree, ctx->filename);
   }
 
-  // Free the Tree-sitter tree now that we've processed it
+  // Clean up Tree-sitter tree
   ts_tree_delete(ts_tree);
 
-  ctx->error_code = 0; // No error
-  return true;
+  return success;
 }
 
 /**
@@ -328,4 +496,89 @@ const CSTNode *parser_get_cst_root(const ParserContext *ctx) {
     return NULL;
   }
   return ctx->cst_root;
+}
+
+// === Tree-sitter integration public API ===
+bool ts_init_parser(ParserContext *ctx, Language language) {
+  fprintf(stderr, "[DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=%p, language=%d\n", (void *)ctx,
+          language);
+  if (!ctx) {
+    log_error("NULL context passed to ts_init_parser");
+    return false;
+  }
+  log_debug("ts_init_parser facade called, delegating to ts_init_parser_impl for language %d",
+            language);
+  return ts_init_parser_impl(ctx, language);
+}
+
+ASTNode *ts_tree_to_ast(TSNode root_node, ParserContext *ctx) {
+  if (ts_node_is_null(root_node) || !ctx) {
+    if (ctx) {
+      parser_set_error(ctx, -1, "Invalid arguments to ts_tree_to_ast");
+    }
+    return NULL;
+  }
+  return ts_tree_to_ast_impl(root_node, ctx);
+}
+
+CSTNode *ts_tree_to_cst(TSNode root_node, ParserContext *ctx) {
+  if (ts_node_is_null(root_node) || !ctx || !ctx->source_code) {
+    parser_set_error(ctx, -1, "Invalid context for CST generation");
+    return NULL;
+  }
+  return ts_tree_to_cst_impl(root_node, ctx);
+}
+
+/**
+ * @brief Minimal public API: Parse a C file and return the CST root node.
+ * See parser.h for documentation and ownership notes.
+ */
+CSTNode *parse_c_file_to_cst(const char *filename) {
+  if (!filename) {
+    log_error("parse_c_file_to_cst: filename is NULL");
+    return NULL;
+  }
+  ParserContext *ctx = parser_init();
+  if (!ctx) {
+    log_error("parse_c_file_to_cst: failed to allocate parser context");
+    return NULL;
+  }
+  ctx->mode = PARSE_CST;
+  ctx->language = LANG_C;
+  CSTNode *result = NULL;
+  if (parser_parse_file(ctx, filename, LANG_C)) {
+    result = ctx->cst_root;
+    ctx->cst_root = NULL; // Detach, caller owns result
+  } else {
+    log_error("parse_c_file_to_cst: parse failed: %s", SAFE_STR(parser_get_last_error(ctx)));
+  }
+  parser_context_free(ctx);
+  return result;
+}
+
+/**
+ * @brief Minimal public API: Parse a C source buffer and return the CST root node.
+ * See parser.h for documentation and ownership notes.
+ */
+CSTNode *parse_c_source_to_cst(const char *buffer, size_t len) {
+  if (!buffer || len == 0) {
+    log_error("parse_c_source_to_cst: buffer is NULL or length is zero");
+    return NULL;
+  }
+  ParserContext *ctx = parser_init();
+  if (!ctx) {
+    log_error("parse_c_source_to_cst: failed to allocate parser context");
+    return NULL;
+  }
+  ctx->mode = PARSE_CST;
+  ctx->language = LANG_C;
+  CSTNode *result = NULL;
+  if (parser_parse_string(ctx, buffer, len, NULL, LANG_C)) {
+    result = ctx->cst_root;
+    ctx->cst_root = NULL; // Detach, caller owns result
+  } else {
+    log_error("parse_c_source_to_cst: parse failed: %s", SAFE_STR(parser_get_last_error(ctx)));
+  }
+  parser_context_free(ctx);
+  return result;
 }

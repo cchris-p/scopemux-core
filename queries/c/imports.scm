@@ -1,2 +1,9 @@
-;; Empty placeholder for C imports (not applicable to C)
-;; This file exists to prevent file not found errors
+;; C imports - Tree-sitter patterns for #include directives
+
+;; System header includes
+(preproc_include
+  path: (system_lib_string) @name) @include
+
+;; Local includes with "" quotes
+(preproc_include
+  path: (string_literal) @name) @include

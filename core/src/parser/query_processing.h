@@ -36,9 +36,8 @@ bool process_query_results(ParserContext *ctx, void *results, const char *query_
  * @param filename Path to the file
  * @param content File content
  * @param content_length Length of the content
- * @return LanguageType Detected language or LANG_UNKNOWN
+ * @return Language Detected language or LANG_UNKNOWN
  */
-LanguageType parser_detect_language(const char *filename, const char *content,
-                                    size_t content_length);
+Language parser_detect_language(const char *filename, const char *content, size_t content_length);
 
 #endif /* SCOPEMUX_QUERY_PROCESSING_H */

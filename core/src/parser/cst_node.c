@@ -6,9 +6,15 @@
  * and memory management to ensure proper handling of concrete syntax trees.
  */
 
-#include "cst_node.h"
-#include "memory_tracking.h"
-#include "parser_internal.h"
+#include "../../core/src/parser/cst_node.h"
+#include "../../core/include/scopemux/memory_debug.h"
+#include "../../core/include/scopemux/memory_management.h"
+#include "../../core/src/parser/memory_tracking.h"
+#include "../../core/src/parser/parser_internal.h"
+#include <assert.h>
+
+// File-local conditional logging toggle for CST_FREE debug output
+static const int CST_FREE_DEBUG_LOGGING = 0;
 
 /**
  * Creates a new CST node with the specified type and content.
@@ -19,7 +25,7 @@ CSTNode *cst_node_new(const char *type, char *content) {
     return NULL;
   }
 
-  CSTNode *node = (CSTNode *)memory_debug_malloc(sizeof(CSTNode), __FILE__, __LINE__, "cst_node");
+  CSTNode *node = (CSTNode *)safe_malloc(sizeof(CSTNode));
   if (!node) {
     log_error("Failed to allocate memory for CST node");
     return NULL;
@@ -32,9 +38,14 @@ CSTNode *cst_node_new(const char *type, char *content) {
   memset(&node->range, 0, sizeof(SourceRange));
   node->children = NULL;
   node->children_count = 0;
+  node->is_freed = 0; // DEBUG: Not freed yet
+  node->owns_content = (content != NULL) ? 1 : 0;
 
   // Register the node for tracking
   register_cst_node(node, type);
+
+  log_debug("[CSTNode NEW] node=%p type=%s content=%p", (void *)node, SAFE_STR(type),
+            (void *)content);
 
   return node;
 }
@@ -50,7 +61,7 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
   // Create a new node with the same type
   char *content_copy = NULL;
   if (node->content) {
-    content_copy = strdup(node->content);
+    content_copy = safe_strdup(node->content);
     if (!content_copy) {
       log_error("Failed to duplicate CST node content");
       return NULL;
@@ -66,15 +77,14 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
   }
   if (!new_node) {
     if (content_copy) {
-      free(content_copy);
+      safe_free(content_copy);
     }
     return NULL;
   }
 
   // Recursively copy all children
   if (node->children_count > 0 && node->children) {
-    new_node->children = (CSTNode **)memory_debug_malloc(sizeof(CSTNode *) * node->children_count,
-                                                         __FILE__, __LINE__, "cst_node_children");
+    new_node->children = (CSTNode **)safe_malloc(sizeof(CSTNode *) * node->children_count);
 
     if (!new_node->children) {
       log_error("Failed to allocate memory for CST node children");
@@ -91,17 +101,34 @@ CSTNode *cst_node_copy_deep(const CSTNode *node) {
           for (unsigned int j = 0; j < i; j++) {
             cst_node_free(new_node->children[j]);
           }
-          memory_debug_free(new_node->children, __FILE__, __LINE__);
-          new_node->children = NULL;
+          safe_free(new_node->children);
           cst_node_free(new_node);
           return NULL;
         }
-        new_node->children_count++;
+      } else {
+        new_node->children[i] = NULL;
       }
     }
+    new_node->children_count = node->children_count;
   }
 
   return new_node;
+}
+
+// --- Public CSTNode getters ---
+const char *cst_node_get_type(const CSTNode *node) { return node ? node->type : NULL; }
+
+size_t cst_node_get_child_count(const CSTNode *node) { return node ? node->children_count : 0; }
+
+const CSTNode *cst_node_get_child(const CSTNode *node, size_t index) {
+  if (!node || !node->children || index >= node->children_count)
+    return NULL;
+  return node->children[index];
+}
+
+SourceRange cst_node_get_range(const CSTNode *node) {
+  static SourceRange empty = {0, 0, 0, 0, 0, 0};
+  return node ? node->range : empty;
 }
 
 /**
@@ -111,6 +138,20 @@ void cst_node_free(CSTNode *node) {
   if (!node) {
     return;
   }
+
+  if (CST_FREE_DEBUG_LOGGING) {
+    fprintf(stderr, "[CST_FREE] Entered for node=%p type=%s content=%p is_freed=%d\n", (void *)node,
+            SAFE_STR(node->type), (void *)node->content, node->is_freed);
+  }
+  log_debug("[CSTNode FREE] node=%p type=%s content=%p is_freed=%d", (void *)node,
+            SAFE_STR(node->type), (void *)node->content, node->is_freed);
+
+  // DEBUG: Assert not already freed
+  if (node->is_freed) {
+    log_error("[CSTNode DOUBLE FREE DETECTED] node=%p type=%s", (void *)node, SAFE_STR(node->type));
+    assert(0 && "Double free detected for CSTNode");
+  }
+  node->is_freed = 1;
 
   // Track this free operation
   mark_cst_node_freed(node);
@@ -123,18 +164,45 @@ void cst_node_free(CSTNode *node) {
         node->children[i] = NULL; // Prevent double-free
       }
     }
-    memory_debug_free(node->children, __FILE__, __LINE__);
+    if (CST_FREE_DEBUG_LOGGING) {
+      fprintf(stderr, "[CST_FREE] Freeing children array for node=%p children=%p\n", (void *)node,
+              (void *)node->children);
+    }
+    safe_free(node->children);
     node->children = NULL;
   }
 
-  // Free the content if it exists
+  // Ownership and freeing policy:
+  // - type: NEVER freed here (not heap-allocated, not owned by CSTNode)
+  // - content: Only free if non-NULL (ownership transferred at creation)
+  // - children: Always free if allocated
+
+  // Defensive: Never free node->type (not owned, not duplicated)
+  // (If you change cst_node_new to strdup type, then update this logic)
+
+  // Free the content if it exists and is owned
   if (node->content) {
-    memory_debug_free(node->content, __FILE__, __LINE__);
-    node->content = NULL;
+    if (node->owns_content) {
+      if (CST_FREE_DEBUG_LOGGING) {
+        fprintf(stderr, "[CST_FREE] Freeing content for node=%p content=%p (owns_content=1)\n",
+                (void *)node, (void *)node->content);
+      }
+      safe_free(node->content);
+      node->content = NULL;
+    } else {
+      if (CST_FREE_DEBUG_LOGGING) {
+        fprintf(stderr,
+                "[CST_FREE] Skipping free of content for node=%p content=%p (owns_content=0)\n",
+                (void *)node, (void *)node->content);
+      }
+    }
   }
 
   // Finally free the node itself
-  memory_debug_free(node, __FILE__, __LINE__);
+  if (CST_FREE_DEBUG_LOGGING) {
+    fprintf(stderr, "[CST_FREE] Freeing node struct itself: node=%p\n", (void *)node);
+  }
+  safe_free(node);
 }
 
 /**
@@ -146,18 +214,18 @@ bool cst_node_add_child(CSTNode *parent, CSTNode *child) {
     return false;
   }
 
+  log_debug("[CSTNode ADD_CHILD] parent=%p child=%p", (void *)parent, (void *)child);
+
   // Allocate or reallocate the children array
   unsigned int new_count = parent->children_count + 1;
   CSTNode **new_children;
 
   if (!parent->children) {
     // Initial allocation
-    new_children = (CSTNode **)memory_debug_malloc(sizeof(CSTNode *) * new_count, __FILE__,
-                                                   __LINE__, "cst_node_children");
+    new_children = (CSTNode **)safe_malloc(sizeof(CSTNode *) * new_count);
   } else {
     // Reallocation for additional child
-    new_children = (CSTNode **)memory_debug_realloc(parent->children, sizeof(CSTNode *) * new_count,
-                                                    __FILE__, __LINE__, "cst_node_children");
+    new_children = (CSTNode **)safe_realloc(parent->children, sizeof(CSTNode *) * new_count);
   }
 
   if (!new_children) {

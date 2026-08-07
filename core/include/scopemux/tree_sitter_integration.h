@@ -28,6 +28,15 @@
 #include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
 
 /**
+ * @brief Extract the source text spanned by a Tree-sitter node.
+ *
+ * @param node The Tree-sitter node.
+ * @param source_code The full source code buffer.
+ * @return Newly allocated string containing the node's text, or NULL on failure. Caller must free.
+ */
+char *ts_node_text(TSNode node, const char *source_code);
+
+/**
  * @brief Initializes or retrieves a Tree-sitter parser for the given language.
  *
  * This function is responsible for setting the `ts_parser` field on the
@@ -37,7 +46,7 @@
  * @param language The language to initialize the parser for.
  * @return True on success, false on failure.
  */
-bool ts_init_parser(ParserContext *ctx, LanguageType language);
+bool ts_init_parser(ParserContext *ctx, Language language);
 
 /**
  * @brief Converts a raw Tree-sitter tree into a ScopeMux Abstract Syntax Tree.

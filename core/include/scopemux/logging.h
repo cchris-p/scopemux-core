@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+// Safely handle NULL strings in format specifiers
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
+
 // Log levels
 typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR } LogLevel;
 
@@ -11,6 +14,15 @@ typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR } LogLevel;
 bool log_init(LogLevel level, const char *log_path);
 void log_cleanup(void);
 void log_set_level(LogLevel level);
+
+/**
+ * @brief Log a message at the specified level.
+ *
+ * @param level Log level
+ * @param format Format string
+ * @param ... Additional arguments
+ */
+void log_message(LogLevel level, const char *format, ...);
 
 void log_debug(const char *format, ...);
 void log_info(const char *format, ...);

@@ -21,7 +21,7 @@ extern const TSLanguage *tree_sitter_python(void);
  * @param language Language type to map
  * @return TSLanguage* Tree-sitter language or NULL on error
  */
-static TSLanguage *get_language_for_type(LanguageType language) {
+static TSLanguage *get_language_for_type(Language language) {
   switch (language) {
   case LANG_C:
     return (TSLanguage *)tree_sitter_c();
@@ -44,7 +44,7 @@ static TSLanguage *get_language_for_type(LanguageType language) {
  * @param language The language to initialize the parser for.
  * @return TreeSitterParser* Initialized parser or NULL on failure.
  */
-TreeSitterParser *ts_parser_init(LanguageType language) {
+TreeSitterParser *ts_parser_init(Language language) {
   if (language == LANG_UNKNOWN) {
     return NULL;
   }

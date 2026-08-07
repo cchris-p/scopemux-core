@@ -1,1 +1,1 @@
-/home/matrillo/apps/scopemux/vendor/tree-sitter/lib/include/tree_sitter/api.h
+../../../vendor/tree-sitter/lib/include/tree_sitter/api.h

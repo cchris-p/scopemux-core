@@ -19,7 +19,7 @@
  * language-specific information.
  */
 typedef struct {
-  LanguageType language;   // Type of language being parsed
+  Language language;       // Type of language being parsed
   TSParser *ts_parser;     // Tree-sitter parser instance
   TSLanguage *ts_language; // Tree-sitter language definition
 
@@ -32,7 +32,7 @@ typedef struct {
  * @param language The language to initialize the parser for.
  * @return TreeSitterParser* Initialized parser or NULL on failure.
  */
-TreeSitterParser *ts_parser_init(LanguageType language);
+TreeSitterParser *ts_parser_init(Language language);
 
 /**
  * @brief Free resources associated with a Tree-sitter parser.

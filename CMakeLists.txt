@@ -1,11 +1,22 @@
 cmake_minimum_required(VERSION 3.16)
 project(scopemux_project VERSION 0.1.0 LANGUAGES C CXX)
 
+# --- Build type setup ---
+# Set default build type to Debug if not specified (can override with -DCMAKE_BUILD_TYPE=Release, etc.)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+endif()
+message(STATUS "CMake build type: ${CMAKE_BUILD_TYPE}")
+# To override: cmake -B build-dir -DCMAKE_BUILD_TYPE=Release
+
 # Set C and C++ standards
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Write an exact compiler invocation for every TU in compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Include the ExternalProject module
 include(ExternalProject)
@@ -24,6 +35,7 @@ set(TS_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/tree-sitter-libs)
 file(MAKE_DIRECTORY ${TS_LIB_DIR})
 
 # Define paths for the built Tree-sitter libraries
+# Static libraries
 set(TS_CORE_LIB ${TS_LIB_DIR}/libtree-sitter.a)
 set(TS_C_LIB ${TS_LIB_DIR}/libtree-sitter-c.a)
 set(TS_CPP_LIB ${TS_LIB_DIR}/libtree-sitter-cpp.a)
@@ -31,27 +43,35 @@ set(TS_PYTHON_LIB ${TS_LIB_DIR}/libtree-sitter-python.a)
 set(TS_JS_LIB ${TS_LIB_DIR}/libtree-sitter-javascript.a)
 set(TS_TS_LIB ${TS_LIB_DIR}/libtree-sitter-typescript.a)
 
+# Shared libraries
+set(TS_CORE_SO ${TS_LIB_DIR}/libtree-sitter.so)
+set(TS_C_SO ${TS_LIB_DIR}/libtree-sitter-c.so)
+set(TS_CPP_SO ${TS_LIB_DIR}/libtree-sitter-cpp.so)
+set(TS_PYTHON_SO ${TS_LIB_DIR}/libtree-sitter-python.so)
+set(TS_JS_SO ${TS_LIB_DIR}/libtree-sitter-javascript.so)
+set(TS_TS_SO ${TS_LIB_DIR}/libtree-sitter-typescript.so)
+
 # Build the main Tree-sitter library
 ExternalProject_Add(tree_sitter_core
     SOURCE_DIR ${TS_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_DIR}
+    CONFIGURE_COMMAND "" # No configure step required
+    BUILD_COMMAND make -C ${TS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_DIR}/libtree-sitter.a
-        ${TS_CORE_LIB}
+    ${TS_DIR}/libtree-sitter.a
+    ${TS_CORE_LIB}
     BUILD_BYPRODUCTS ${TS_CORE_LIB}
 )
 
 # Build the Tree-sitter C grammar
 ExternalProject_Add(tree_sitter_c
     SOURCE_DIR ${TS_C_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_C_DIR}
+    CONFIGURE_COMMAND "" # No configure step required
+    BUILD_COMMAND make -C ${TS_C_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_C_DIR}/libtree-sitter-c.a
-        ${TS_C_LIB}
+    ${TS_C_DIR}/libtree-sitter-c.a
+    ${TS_C_LIB}
     BUILD_BYPRODUCTS ${TS_C_LIB}
     DEPENDS tree_sitter_core
 )
@@ -59,12 +79,12 @@ ExternalProject_Add(tree_sitter_c
 # Build the Tree-sitter C++ grammar
 ExternalProject_Add(tree_sitter_cpp
     SOURCE_DIR ${TS_CPP_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_CPP_DIR}
+    CONFIGURE_COMMAND "" # No configure step required
+    BUILD_COMMAND make -C ${TS_CPP_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_CPP_DIR}/libtree-sitter-cpp.a
-        ${TS_CPP_LIB}
+    ${TS_CPP_DIR}/libtree-sitter-cpp.a
+    ${TS_CPP_LIB}
     BUILD_BYPRODUCTS ${TS_CPP_LIB}
     DEPENDS tree_sitter_core
 )
@@ -72,12 +92,12 @@ ExternalProject_Add(tree_sitter_cpp
 # Build the Tree-sitter Python grammar
 ExternalProject_Add(tree_sitter_python
     SOURCE_DIR ${TS_PYTHON_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_PYTHON_DIR}
+    CONFIGURE_COMMAND "" # No configure step required
+    BUILD_COMMAND make -C ${TS_PYTHON_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_PYTHON_DIR}/libtree-sitter-python.a
-        ${TS_PYTHON_LIB}
+    ${TS_PYTHON_DIR}/libtree-sitter-python.a
+    ${TS_PYTHON_LIB}
     BUILD_BYPRODUCTS ${TS_PYTHON_LIB}
     DEPENDS tree_sitter_core
 )
@@ -85,12 +105,12 @@ ExternalProject_Add(tree_sitter_python
 # Build the Tree-sitter JavaScript grammar
 ExternalProject_Add(tree_sitter_javascript
     SOURCE_DIR ${TS_JS_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_JS_DIR}
+    CONFIGURE_COMMAND "" # No configure step required
+    BUILD_COMMAND make -C ${TS_JS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_JS_DIR}/libtree-sitter-javascript.a
-        ${TS_JS_LIB}
+    ${TS_JS_DIR}/libtree-sitter-javascript.a
+    ${TS_JS_LIB}
     BUILD_BYPRODUCTS ${TS_JS_LIB}
     DEPENDS tree_sitter_core
 )
@@ -98,12 +118,12 @@ ExternalProject_Add(tree_sitter_javascript
 # Build the Tree-sitter TypeScript grammar
 ExternalProject_Add(tree_sitter_typescript
     SOURCE_DIR ${TS_TS_DIR}
-    CONFIGURE_COMMAND ""  # No configure step required
-    BUILD_COMMAND make -C ${TS_TS_DIR}
+    CONFIGURE_COMMAND "" # No configure step required
+    BUILD_COMMAND make -C ${TS_TS_DIR} CFLAGS="-fPIC"
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${TS_TS_DIR}/libtree-sitter-typescript.a
-        ${TS_TS_LIB}
+    ${TS_TS_DIR}/libtree-sitter-typescript.a
+    ${TS_TS_LIB}
     BUILD_BYPRODUCTS ${TS_TS_LIB}
     DEPENDS tree_sitter_core
 )
@@ -153,8 +173,20 @@ set(TS_PYTHON_INCLUDE_DIR ${TS_PYTHON_DIR}/src CACHE FILEPATH "Tree-sitter Pytho
 set(TS_JS_INCLUDE_DIR ${TS_JS_DIR}/src CACHE FILEPATH "Tree-sitter JavaScript include directory")
 set(TS_TS_INCLUDE_DIR ${TS_TS_DIR}/src CACHE FILEPATH "Tree-sitter TypeScript include directory")
 
-# Finally add the main project subdirectory
+# Find Python packages needed for the project
+find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
+
+# Fetch pybind11 first, before we use any of its variables
+include(FetchContent)
+FetchContent_Declare(
+    pybind11
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/pybind11
+)
+FetchContent_MakeAvailable(pybind11)
+
+# Finally add the main project subdirectories
 add_subdirectory(core)
+add_subdirectory(core/tests)
 
 # Print configuration summary
 message(STATUS "Configuration summary:")

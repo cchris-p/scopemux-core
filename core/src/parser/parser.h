@@ -6,10 +6,19 @@
  * all parser components.
  */
 
+/*
+ * INTERNAL HEADER: parser.h (src/parser/)
+ *
+ * This file contains private implementation details for the parser module.
+ * It should only be included by source files within the parser module itself.
+ *
+ * External modules, tests, or users of ScopeMux should include only the public API header:
+ *   core/include/scopemux/parser.h
+ * Do not expose internal-only types or functions outside this module.
+ */
 #ifndef SCOPEMUX_PARSER_IMPL_H
 #define SCOPEMUX_PARSER_IMPL_H
 
-#include "../../core/include/scopemux/parser.h"
 #include "ast_node.h"
 #include "cst_node.h"
 #include "memory_tracking.h"
@@ -24,7 +33,7 @@
  * @param language Optional language hint (LANG_UNKNOWN to auto-detect)
  * @return bool True on success, false on failure
  */
-bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType language);
+bool parser_parse_file(ParserContext *ctx, const char *filename, Language language);
 
 /**
  * @brief Parse a string and generate the AST and/or CST
@@ -37,7 +46,7 @@ bool parser_parse_file(ParserContext *ctx, const char *filename, LanguageType la
  * @return bool True on success, false on failure
  */
 bool parser_parse_string(ParserContext *ctx, const char *content, size_t content_length,
-                         const char *filename, LanguageType language);
+                         const char *filename, Language language);
 
 /**
  * @brief Get the AST node for a specific entity

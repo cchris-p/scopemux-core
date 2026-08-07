@@ -7,19 +7,78 @@
  * standardized processing logic.
  */
 
-#include "../../core/include/config/node_type_mapping_loader.h"
-#include "../../core/include/scopemux/logging.h"
-#include "../../core/include/scopemux/parser.h"
-#include "../../core/include/scopemux/query_manager.h"
-#include "../../core/include/scopemux/tree_sitter_integration.h"
+#include <assert.h>
+#include <setjmp.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
+
+#include "config/node_type_mapping_loader.h"
+#include "parser_internal.h"
+#include "scopemux/ast.h"
+#include "scopemux/logging.h"
+#include "scopemux/memory_debug.h"
+#include "scopemux/parser.h"
+
+// Forward declarations and externs
+extern void segfault_handler(int sig);
+
+// Ensure strdup is properly declared to avoid implicit declaration warnings
+#ifndef _GNU_SOURCE
+char *strdup(const char *s);
+#endif
+
+/**
+ * @brief Safely extract the text and length of a Tree-sitter node from the source buffer.
+ *
+ * @param node The Tree-sitter node
+ * @param source_code The full source buffer
+ * @param source_length The length of the source buffer
+ * @param out_len Output: length of the extracted text
+ * @return Pointer to the start of the text in the buffer, or NULL on error
+ *
+ * Note: The returned pointer is NOT null-terminated and must be used with care.
+ */
+static const char *ts_node_text(TSNode node, const char *source_code, size_t source_length,
+                                uint32_t *out_len) {
+  uint32_t start = ts_node_start_byte(node);
+  uint32_t end = ts_node_end_byte(node);
+  if (!source_code || end > source_length || end <= start) {
+    if (out_len)
+      *out_len = 0;
+    return NULL;
+  }
+  if (out_len)
+    *out_len = end - start;
+  return source_code + start;
+}
+
+#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
+#include <assert.h>
+#include <ctype.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// External declaration for segfault handler
+extern void segfault_handler(int sig);
+
+// Ensure strdup is properly declared to avoid implicit declaration warnings
+#ifndef _GNU_SOURCE
+char *strdup(const char *s);
+#endif
 
 // Helper return codes for error handling
 #define MATCH_OK 0
 #define MATCH_SKIP 1
 #define MATCH_ERROR 2
+
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
 
 /**
  * @brief Maps a query type string to the corresponding ASTNodeType enum
@@ -28,25 +87,38 @@
  * @return uint32_t The corresponding ASTNodeType value
  */
 static uint32_t map_query_type_to_node_type(const char *query_type) {
+  // Validate input parameter
   if (!query_type) {
+    log_error("NULL query_type passed to map_query_type_to_node_type");
     return NODE_UNKNOWN;
   }
 
-  // Use the node type mapping system
-  uint32_t node_type = get_node_type_for_query(query_type);
+  // Defensive check for empty string
+  if (query_type[0] == '\0') {
+    log_error("Empty query_type string passed to map_query_type_to_node_type");
+    return NODE_UNKNOWN;
+  }
 
-  // Fall back to hardcoded mappings if needed
+  // Strip @ prefix if present for mapping lookup
+  const char *clean_query_type = query_type;
+  if (query_type[0] == '@') {
+    clean_query_type++;
+  }
+
+  // Single source of truth lookup (see node_type_mapping_loader.c)
+  uint32_t node_type = get_node_type_for_query(clean_query_type);
+
+  // Fallback: try the singular form when the plural lookup misses
   if (node_type == NODE_UNKNOWN) {
-    if (strcmp(query_type, "functions") == 0) {
-      return NODE_FUNCTION;
-    } else if (strcmp(query_type, "classes") == 0) {
-      return NODE_CLASS;
-    } else if (strcmp(query_type, "methods") == 0) {
-      return NODE_METHOD;
-    } else if (strcmp(query_type, "variables") == 0) {
-      return NODE_VARIABLE;
-    } else if (strcmp(query_type, "imports") == 0 || strcmp(query_type, "includes") == 0) {
-      return NODE_INCLUDE;
+    size_t len = strlen(clean_query_type);
+    if (len > 1 && clean_query_type[len - 1] == 's') {
+      char *singular = (char *)memory_debug_malloc(len, __FILE__, __LINE__, "singular_query_type");
+      if (singular) {
+        strncpy(singular, clean_query_type, len - 1);
+        singular[len - 1] = '\0';
+        node_type = get_node_type_for_query(singular);
+        memory_debug_free(singular, __FILE__, __LINE__);
+      }
     }
   }
 
@@ -68,33 +140,39 @@ static const char *determine_capture_name(const char *node_type, const char *que
   // Common capture names across languages
   if (strstr(node_type, "name") || strstr(node_type, "identifier") ||
       strcmp(node_type, "name") == 0) {
-    return "name";
+    return "@name";
   }
 
   if (strstr(node_type, "body") || strcmp(node_type, "body") == 0) {
-    return "body";
+    return "@body";
   }
 
   if (strstr(node_type, "parameter") || strstr(node_type, "param") ||
       strcmp(node_type, "parameters") == 0) {
-    return "parameters";
+    return "@parameters";
   }
 
   if (strstr(node_type, "comment") || strstr(node_type, "docstring") ||
       strcmp(node_type, "doc_comment") == 0) {
-    return "docstring";
+    return "@docstring";
+  }
+
+  // Strip @ prefix from query type if present
+  const char *clean_query_type = query_type;
+  if (query_type[0] == '@') {
+    clean_query_type++;
   }
 
   // Main node types
-  if (strcmp(query_type, "functions") == 0) {
+  if (strcmp(clean_query_type, "functions") == 0 || strcmp(clean_query_type, "function") == 0) {
     if (strstr(node_type, "function") || strstr(node_type, "method") ||
         strcmp(node_type, "function_definition") == 0) {
-      return "function";
+      return "@function";
     }
-  } else if (strcmp(query_type, "classes") == 0) {
+  } else if (strcmp(clean_query_type, "classes") == 0 || strcmp(clean_query_type, "class") == 0) {
     if (strstr(node_type, "class") || strstr(node_type, "struct") ||
         strcmp(node_type, "class_definition") == 0) {
-      return "class";
+      return "@class";
     }
   }
 
@@ -113,6 +191,11 @@ static const char *determine_capture_name(const char *node_type, const char *que
  */
 static int create_node_from_match(uint32_t node_type, const char *name, TSNode ts_node,
                                   ASTNode **ast_node, ParserContext *ctx) {
+  log_debug(
+      "create_node_from_match: node_type=%u, name=%s, ts_node_is_null=%d, ast_node_ptr=%p, ctx=%p",
+      node_type, name ? name : "(null)", ts_node_is_null(ts_node), (void *)ast_node, (void *)ctx);
+  assert(ast_node != NULL && "ast_node output pointer must not be NULL");
+  assert(ctx != NULL && "ParserContext must not be NULL");
   if (ts_node_is_null(ts_node) || !ast_node || !ctx) {
     return 2; // Error
   }
@@ -120,14 +203,30 @@ static int create_node_from_match(uint32_t node_type, const char *name, TSNode t
   // Extract node name if not provided
   char *node_name = NULL;
   if (name) {
-    node_name = strdup(name);
+    size_t name_len = strlen(name);
+    node_name = (char *)memory_debug_malloc(name_len + 1, __FILE__, __LINE__, "node_name");
+    if (node_name) {
+      strncpy(node_name, name, name_len);
+      node_name[name_len] = '\0';
+    }
   } else {
     // Try to extract name from node type
     const char *node_type_str = ts_node_type(ts_node);
     if (node_type_str) {
-      node_name = strdup(node_type_str);
+      size_t name_len = strlen(node_type_str);
+      node_name = (char *)memory_debug_malloc(name_len + 1, __FILE__, __LINE__, "node_type_name");
+      if (node_name) {
+        strncpy(node_name, node_type_str, name_len);
+        node_name[name_len] = '\0';
+      }
     } else {
-      node_name = strdup("unnamed");
+      const char *default_name = "unnamed";
+      size_t name_len = strlen(default_name);
+      node_name = (char *)memory_debug_malloc(name_len + 1, __FILE__, __LINE__, "default_name");
+      if (node_name) {
+        strncpy(node_name, default_name, name_len);
+        node_name[name_len] = '\0';
+      }
     }
   }
 
@@ -136,9 +235,12 @@ static int create_node_from_match(uint32_t node_type, const char *name, TSNode t
   }
 
   // Create the AST node
-  *ast_node = ast_node_new(node_type, node_name);
+  log_debug("Calling ast_node_new with node_type=%u, node_name=%s", node_type, SAFE_STR(node_name));
+  *ast_node = ast_node_new(node_type, node_name, AST_SOURCE_DEBUG_ALLOC);
+  log_debug("ast_node_new returned %p", (void *)(*ast_node));
+  assert(*ast_node != NULL && "ast_node_new must not return NULL");
   if (!*ast_node) {
-    free(node_name);
+    memory_debug_free(node_name, __FILE__, __LINE__);
     return 2; // Failed to create node
   }
 
@@ -159,21 +261,79 @@ static int create_node_from_match(uint32_t node_type, const char *name, TSNode t
  * @return char* Heap-allocated content string (caller must free)
  */
 static char *extract_raw_content(TSNode node, const char *source_code) {
+  // Validate input parameters
   if (ts_node_is_null(node) || !source_code) {
+    log_debug("extract_raw_content: Invalid parameters - node is null: %s, source_code is null: %s",
+              ts_node_is_null(node) ? "yes" : "no", !source_code ? "yes" : "no");
     return NULL;
   }
 
+  // Get node byte range
   uint32_t start_byte = ts_node_start_byte(node);
   uint32_t end_byte = ts_node_end_byte(node);
-  uint32_t length = end_byte - start_byte;
 
-  char *result = (char *)malloc(length + 1);
-  if (!result) {
+  // Validate byte range
+  if (start_byte >= end_byte) {
+    log_error("extract_raw_content: Invalid byte range - start: %u, end: %u", start_byte, end_byte);
     return NULL;
   }
 
-  memcpy(result, source_code + start_byte, length);
+  uint32_t length = end_byte - start_byte;
+
+  // Check for reasonable length to prevent memory issues
+  if (length > 1024 * 1024) { // 1MB limit
+    log_warning("extract_raw_content: Content length exceeds limit (%u bytes)", length);
+    return NULL;
+  }
+
+  // Validate source_code bounds more thoroughly
+  // Check if we can safely access the first and last byte
+  if (!source_code[0]) {
+    log_error("extract_raw_content: Source code is empty");
+    return NULL;
+  }
+
+  // Estimate source code length to validate bounds
+  size_t estimated_source_length = 0;
+  const char *p = source_code;
+  while (*p && estimated_source_length <= end_byte + 1) {
+    p++;
+    estimated_source_length++;
+  }
+
+  if (estimated_source_length <= start_byte) {
+    log_error("extract_raw_content: Start byte (%u) is beyond source code bounds (len ~%zu)",
+              start_byte, estimated_source_length);
+    return NULL;
+  }
+
+  if (estimated_source_length < end_byte) {
+    log_warning("extract_raw_content: End byte (%u) exceeds source length (~%zu), truncating",
+                end_byte, estimated_source_length);
+    end_byte = (uint32_t)estimated_source_length;
+    length = end_byte - start_byte;
+  }
+
+  // Allocate memory for content
+  char *result = (char *)memory_debug_malloc(length + 1, __FILE__, __LINE__, "extract_raw_content");
+  if (!result) {
+    log_error("extract_raw_content: Failed to allocate memory for content");
+    return NULL;
+  }
+
+  // Copy content with explicit bounds checking
+  for (uint32_t i = 0; i < length; i++) {
+    if (start_byte + i >= estimated_source_length) {
+      // We've reached the end of the source code
+      result[i] = '\0';
+      log_warning("extract_raw_content: Truncated content at position %u", i);
+      return result;
+    }
+    result[i] = source_code[start_byte + i];
+  }
+
   result[length] = '\0';
+  log_debug("extract_raw_content: Successfully extracted %u bytes", length);
 
   return result;
 }
@@ -188,135 +348,924 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
  * @param node_map Node mapping for parent relationships
  */
 void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
-                    ASTNode **node_map) {
-  if (!query_type || ts_node_is_null(root_node) || !ctx || !ast_root) {
-    if (ctx && ctx->log_level <= LOG_DEBUG) {
-      log_debug("Invalid arguments to process_query: %s%s%s%s",
-              !query_type ? "query_type is null, " : "",
-              ts_node_is_null(root_node) ? "root_node is null, " : "",
-              !ctx ? "ctx is null, " : "",
-              !ast_root ? "ast_root is null" : "");
-    }
+                   ASTNode **node_map) {
+  if (!query_type || !ctx || !ast_root || !node_map) {
+    log_error("[QUERY_PROCESSOR] Invalid parameters to process_query");
     return;
   }
 
-  // Get the compiled query from the query manager
+  // Defensive check for NULL root_node
+  if (ts_node_is_null(root_node)) {
+    log_error("[QUERY_PROCESSOR] Cannot process query with NULL root node");
+    return;
+  }
+
+  log_info("[QUERY_DEBUG] Processing query type: %s", query_type);
+
+  // Get the query for this language and query type
   const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
   if (!query) {
-    if (ctx->log_level <= LOG_DEBUG) {
-      log_debug("No query found for type '%s' and language %d - check query file exists and is valid", 
-              query_type, ctx->language);
-    }
+    log_error("[QUERY_PROCESSOR] Failed to get query for %s", query_type);
     return;
   }
-  
-  int match_count = 0;
 
-  // Create a query cursor
+  // DEBUG: Log query details
+  uint32_t pattern_count = ts_query_pattern_count(query);
+  uint32_t capture_count = ts_query_capture_count(query);
+  log_info("[QUERY_DEBUG] Query '%s' has %u patterns and %u possible captures", query_type,
+           pattern_count, capture_count);
+
+  // DEBUG: Tree-sitter does not provide pattern string introspection in the C API.
+  // This block is a placeholder for future Tree-sitter API upgrades or custom debug info.
+  // log_info("[QUERY_DEBUG] Query pattern introspection not available in C API");
+
+  // Create a query cursor for executing the query
   TSQueryCursor *cursor = ts_query_cursor_new();
   if (!cursor) {
-    log_error("Failed to create query cursor for '%s'", query_type);
+    log_error("[QUERY_PROCESSOR] Failed to create query cursor");
     return;
   }
 
-  // Set the query range to the entire syntax tree
+  // Set the query cursor to use the root node
   ts_query_cursor_exec(cursor, query, root_node);
+
+  // DEBUG: Track matches count
+  int match_count = 0;
+  int successful_captures = 0;
+
+  // Map the query type to the appropriate AST node type
+  const char *clean_query_type = query_type;
+  if (query_type[0] == '@') {
+    clean_query_type++;
+  }
+  uint32_t node_type = map_query_type_to_node_type(clean_query_type);
+  if (node_type == NODE_UNKNOWN) {
+    // Try singular form if plural form not found
+    size_t len = strlen(clean_query_type);
+    if (len > 1 && clean_query_type[len - 1] == 's') {
+      char *singular = (char *)memory_debug_malloc(len, __FILE__, __LINE__, "singular_query_type");
+      if (singular) {
+        strncpy(singular, clean_query_type, len - 1);
+        singular[len - 1] = '\0';
+        node_type = map_query_type_to_node_type(singular);
+        // 06-15-2025 - This is a library-allocated pointer
+        // memory_debug_free(singular, __FILE__, __LINE__);
+      }
+    }
+  }
+  log_info("[QUERY_DEBUG] Mapped '%s' query to AST node type %u", clean_query_type, node_type);
 
   // Process all matches
   TSQueryMatch match;
   while (ts_query_cursor_next_match(cursor, &match)) {
     match_count++;
-    
-    // Process each match based on its pattern
-    for (uint32_t i = 0; i < match.capture_count; i++) {
-      TSNode captured_node = match.captures[i].node;
-      uint32_t capture_index = match.captures[i].index;
+    uint32_t capture_count = match.capture_count;
+    if (capture_count == 0) {
+      continue;
+    }
 
-      // Get the capture name
-      uint32_t length;
-      const char *capture_name = ts_query_capture_name_for_id(query, capture_index, &length);
-      if (!capture_name) {
-        if (ctx->log_level <= LOG_DEBUG) {
-          log_debug("No capture name for index %d in query '%s'", capture_index, query_type);
-        }
+    log_info("[QUERY_DEBUG] Found match %d with %u captures", match_count, capture_count);
+
+    TSNode main_node = {0};
+    char *node_name = NULL;
+    char *signature = NULL;
+    char *docstring = NULL;
+    bool docstring_is_name = false;
+    bool is_main_node = false;
+
+    ASTStringSource name_source = AST_SOURCE_NONE;
+    ASTStringSource signature_source = AST_SOURCE_NONE;
+    ASTStringSource docstring_source = AST_SOURCE_NONE;
+
+    for (uint32_t i = 0; i < capture_count; i++) {
+      TSQueryCapture capture = match.captures[i];
+      uint32_t capture_name_length;
+      const char *capture_name =
+          ts_query_capture_name_for_id(query, capture.index, &capture_name_length);
+      if (!capture_name)
         continue;
+
+      // Reset is_main_node for each capture
+      is_main_node = false;
+
+      TSNode node = capture.node;
+      if (ts_node_is_null(node))
+        continue;
+
+      const char *node_type_str = ts_node_type(node);
+      uint32_t text_len = 0;
+      const char *text = ts_node_text(node, ctx->source_code, ctx->source_code_length, &text_len);
+      char *text_preview = NULL;
+      if (text && text_len > 0) {
+        size_t preview_len = text_len < 40 ? text_len : 40;
+        text_preview =
+            memory_debug_strndup(text, preview_len, __FILE__, __LINE__, "capture_text_preview");
+      }
+      log_info("[QUERY_DEBUG] Capture %u: name='%.*s', node_type='%s', text='%.40s'", i,
+               capture_name_length, capture_name, node_type_str,
+               text_preview ? text_preview : "<null>");
+      if (text_preview) {
+        memory_debug_free(text_preview, __FILE__, __LINE__);
       }
 
-      // Map to a standard node type
-      uint32_t node_type = map_query_type_to_node_type(query_type);
-      if (node_type == NODE_UNKNOWN) {
-        if (ctx->log_level <= LOG_DEBUG) {
-          log_debug("Unknown node type for query '%s'", query_type);
-        }
-        continue;
+      // Robust main node and capture logic
+      // Identify main node (robust plural/singular and @ handling)
+      // Strip @ prefix if present
+      const char *clean_capture_name = capture_name;
+      size_t clean_length = capture_name_length;
+      if (capture_name[0] == '@') {
+        clean_capture_name++;
+        clean_length--;
       }
+      const char *clean_query_type = query_type;
+      size_t clean_query_length = strlen(query_type);
+      if (query_type[0] == '@') {
+        clean_query_type++;
+        clean_query_length--;
+      }
+      // Most tree-sitter queries use a generic @node capture for the primary AST entity.
+      if (clean_length == 4 && strncmp(clean_capture_name, "node", clean_length) == 0) {
+        is_main_node = true;
 
-      // Create and populate a new AST node
-      ASTNode *ast_node = NULL;
-      ParseStatus status = create_node_from_match(node_type, NULL, captured_node, &ast_node, ctx);
+      // Python docstring queries use descriptive capture names instead of a shared @node capture.
+      } else if (strcmp(clean_query_type, "docstrings") == 0 &&
+                 (strstr(clean_capture_name, "with_docstring") != NULL ||
+                  (clean_length == strlen("module_docstring") &&
+                   strncmp(clean_capture_name, "module_docstring", clean_length) == 0) ||
+                  (clean_length == strlen("possible_docstring") &&
+                   strncmp(clean_capture_name, "possible_docstring", clean_length) == 0))) {
+        is_main_node = true;
 
-      if (status == 0 && ast_node) {
-        // Set node metadata
-        ast_node->raw_content = extract_raw_content(captured_node, ctx->source_code);
+      // Direct match (with or without @) - must be exact length match
+      } else if (clean_length == strlen(clean_query_type) &&
+          strncmp(clean_capture_name, clean_query_type, clean_length) == 0) {
+        is_main_node = true;
 
-        // Add to the node hierarchy
-        ASTNode *parent = NULL;
-        // Find parent logic would be here
+      } else {
+        // Handle singular/plural forms - enhanced to be more robust with partial matches
+        const char *singular_forms[] = {"function",      "struct",       "class",
+                                        "variable",      "method",       "docstring",
+                                        "include",       "for_loop",     "while_loop",
+                                        "do_while_loop", "if_condition", "switch_condition"};
+        const char *plural_forms[] = {"functions",    "structs",      "classes",
+                                      "variables",    "methods",      "docstrings",
+                                      "imports",      "control_flow", "control_flow",
+                                      "control_flow", "control_flow", "control_flow"};
+        for (size_t j = 0; j < sizeof(singular_forms) / sizeof(singular_forms[0]); j++) {
+          // Check if clean_capture_name contains the singular form (for @function in a functions
+          // query)
+          if (strcmp(clean_query_type, plural_forms[j]) == 0) {
+            size_t sing_len = strlen(singular_forms[j]);
+            if (clean_length >= sing_len &&
+                strncmp(clean_capture_name, singular_forms[j], sing_len) == 0) {
+              is_main_node = true;
 
-        if (parent) {
-          ast_node_add_child(parent, ast_node);
+              fprintf(stderr, "[SINGPLUR_DEBUG] Found singular form '%s' in query type '%s'\n",
+                      singular_forms[j], clean_query_type);
+              break;
+            }
+          }
+          // Check for plural form in a singular query type (less common)
+          else if (strcmp(clean_query_type, singular_forms[j]) == 0) {
+            size_t plur_len = strlen(plural_forms[j]);
+            if (clean_length >= plur_len &&
+                strncmp(clean_capture_name, plural_forms[j], plur_len) == 0) {
+              is_main_node = true;
+              break;
+            }
+          }
+        }
+      }
+      log_info("[QUERY_DEBUG] Main node detection: query_type='%s', capture_name='%.*s', "
+               "clean_capture_name='%.*s', clean_query_type='%s', is_main_node=%d",
+               query_type, (int)capture_name_length, capture_name, (int)clean_length,
+               clean_capture_name, clean_query_type, is_main_node);
+      if (is_main_node) {
+        main_node = node;
+        // For control flow structures, use the capture name as the node name
+        if (strcmp(query_type, "control_flow") == 0 && !node_name) {
+          node_name = memory_debug_strndup(clean_capture_name, clean_length, __FILE__, __LINE__,
+                                           "main_capture_name");
+          name_source = AST_SOURCE_DEBUG_ALLOC;
+          log_info("[CONTROL_FLOW_DEBUG] Set node name from capture: '%.*s'", (int)clean_length,
+                   clean_capture_name);
+        }
+      }
+      // Name capture
+      if ((clean_length == 4 && strncmp(clean_capture_name, "name", clean_length) == 0) ||
+          (clean_length > 5 &&
+           strncmp(clean_capture_name + clean_length - 5, "_name", 5) == 0)) {
+        uint32_t len = 0;
+        const char *text = ts_node_text(node, ctx->source_code, ctx->source_code_length, &len);
+        if (text && len > 0) {
+          node_name = memory_debug_strndup(text, len, __FILE__, __LINE__, "name_capture");
+          name_source = AST_SOURCE_DEBUG_ALLOC;
+        }
+      } else if (strncmp(clean_capture_name, "signature", clean_length) == 0) {
+        uint32_t len = 0;
+        const char *text = ts_node_text(node, ctx->source_code, ctx->source_code_length, &len);
+        if (text && len > 0) {
+          signature = memory_debug_strndup(text, len, __FILE__, __LINE__, "signature_capture");
+          signature_source = AST_SOURCE_DEBUG_ALLOC;
+        }
+      } else if ((clean_length == 9 && strncmp(clean_capture_name, "docstring", clean_length) == 0) ||
+                 (clean_length > 10 &&
+                  strncmp(clean_capture_name + clean_length - 10, "_docstring", 10) == 0)) {
+        uint32_t len = 0;
+        const char *text = ts_node_text(node, ctx->source_code, ctx->source_code_length, &len);
+        if (text && len > 0) {
+          docstring = memory_debug_strndup(text, len, __FILE__, __LINE__, "docstring_capture");
+          docstring_source = AST_SOURCE_DEBUG_ALLOC;
+        }
+      }
+    }
+
+    if (!ts_node_is_null(main_node)) {
+      if (!node_name) {
+        if (strcmp(query_type, "docstrings") == 0 && docstring) {
+          node_name = docstring;
+          name_source = AST_SOURCE_DEBUG_ALLOC;
+          docstring_is_name = true;
         } else {
-          ast_node_add_child(ast_root, ast_node);
+          const char *type_str = ts_node_type(main_node);
+          const char *fallback_format = "unnamed_%s";
+          size_t len = snprintf(NULL, 0, fallback_format, type_str);
+          node_name = memory_debug_malloc(len + 1, __FILE__, __LINE__, "fallback_name");
+          if (node_name) {
+            snprintf(node_name, len + 1, fallback_format, type_str);
+            name_source = AST_SOURCE_DEBUG_ALLOC;
+          }
         }
+      }
 
-        // Add to node map
-        if (node_map) {
-          // Node map update logic would be here
+      // Check for special cases to skip before creating the node
+      bool should_skip_node = false;
+
+      // Override node type for control flow structures based on capture name
+      uint32_t actual_node_type = node_type;
+      if (strcmp(query_type, "control_flow") == 0) {
+        // For control flow queries, determine the specific node type based on the capture
+        TSQueryCapture *captures = match.captures;
+        for (uint32_t j = 0; j < match.capture_count; j++) {
+          if (ts_node_eq(captures[j].node, main_node)) {
+            uint32_t capture_name_length;
+            const char *capture_name =
+                ts_query_capture_name_for_id(query, captures[j].index, &capture_name_length);
+            if (capture_name) {
+              log_info("[CONTROL_FLOW_DEBUG] Overriding node type for capture '%.*s'",
+                       (int)capture_name_length, capture_name);
+
+              // Special handling for if statements - skip nested if statements in else clauses
+              if (strncmp(capture_name, "if_condition", capture_name_length) == 0) {
+                // Check if this if statement is nested inside an else clause
+                TSNode parent = ts_node_parent(main_node);
+                if (!ts_node_is_null(parent)) {
+                  const char *parent_type = ts_node_type(parent);
+                  if (strcmp(parent_type, "else_clause") == 0) {
+                    log_info("[CONTROL_FLOW_DEBUG] Skipping if_condition inside else_clause - part "
+                             "of if-else-if chain");
+                    should_skip_node = true;
+                    break; // Break out of capture processing loop
+                  }
+                }
+                actual_node_type = NODE_IF_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_IF_STATEMENT (%u)",
+                         actual_node_type);
+              } else if (strncmp(capture_name, "for_loop", capture_name_length) == 0) {
+                actual_node_type = NODE_FOR_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_FOR_STATEMENT (%u)",
+                         actual_node_type);
+              } else if (strncmp(capture_name, "while_loop", capture_name_length) == 0) {
+                actual_node_type = NODE_WHILE_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_WHILE_STATEMENT (%u)",
+                         actual_node_type);
+              } else if (strncmp(capture_name, "do_while_loop", capture_name_length) == 0) {
+                actual_node_type = NODE_DO_WHILE_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_DO_WHILE_STATEMENT (%u)",
+                         actual_node_type);
+              } else if (strncmp(capture_name, "switch_condition", capture_name_length) == 0) {
+                actual_node_type = NODE_SWITCH_STATEMENT;
+                log_info("[CONTROL_FLOW_DEBUG] Set node type to NODE_SWITCH_STATEMENT (%u)",
+                         actual_node_type);
+              }
+            }
+            break;
+          }
         }
+      }
+
+      // Skip creating node if we determined it should be skipped
+      if (should_skip_node) {
+        log_info("[CONTROL_FLOW_DEBUG] Skipping node creation for this match");
+        continue; // Continue to next match
+      }
+
+      SourceRange range = {.start = {.line = ts_node_start_point(main_node).row,
+                                     .column = ts_node_start_point(main_node).column},
+                           .end = {.line = ts_node_end_point(main_node).row,
+                                   .column = ts_node_end_point(main_node).column}};
+
+      ASTNode *ast_node =
+          ast_node_create(actual_node_type, node_name, name_source, NULL, AST_SOURCE_NONE, range);
+
+      if (!ast_node) {
+        log_error("Failed to create AST node for query '%s'", query_type);
+        if (name_source == AST_SOURCE_DEBUG_ALLOC)
+          memory_debug_free(node_name, __FILE__, __LINE__);
+        if (signature_source == AST_SOURCE_DEBUG_ALLOC)
+          memory_debug_free(signature, __FILE__, __LINE__);
+        if (docstring_source == AST_SOURCE_DEBUG_ALLOC && !docstring_is_name)
+          memory_debug_free(docstring, __FILE__, __LINE__);
+        continue;
+      }
+
+      if (name_source == AST_SOURCE_DEBUG_ALLOC)
+        node_name = NULL;
+
+      if (signature) {
+        ast_node_set_signature(ast_node, signature, signature_source);
+        if (signature_source == AST_SOURCE_DEBUG_ALLOC)
+          signature = NULL;
+      }
+
+      if (docstring) {
+        if (docstring_is_name) {
+          ast_node_set_docstring(ast_node, ast_node->name, AST_SOURCE_ALIAS);
+        } else {
+          ast_node_set_docstring(ast_node, docstring, docstring_source);
+          if (docstring_source == AST_SOURCE_DEBUG_ALLOC)
+            docstring = NULL;
+        }
+      }
+
+      // Determine the proper parent based on node type and scope
+      ASTNode *proper_parent = ast_root; // Default to root
+
+      // For methods, attach them to the containing class.
+      if (actual_node_type == NODE_METHOD) {
+        const ASTNode *class_nodes[32];
+        size_t class_count = parser_get_ast_nodes_by_type(ctx, NODE_CLASS, class_nodes, 32);
+
+        for (size_t i = 0; i < class_count; i++) {
+          const ASTNode *potential_parent = class_nodes[i];
+          if (!potential_parent) {
+            continue;
+          }
+
+          if (ast_node->range.start.line >= potential_parent->range.start.line &&
+              ast_node->range.end.line <= potential_parent->range.end.line) {
+            proper_parent = (ASTNode *)potential_parent;
+            break;
+          }
+        }
+      }
+
+      // For variables and control flow structures, try to find the containing function.
+      if (actual_node_type == NODE_VARIABLE || actual_node_type == NODE_FOR_STATEMENT ||
+          actual_node_type == NODE_WHILE_STATEMENT || actual_node_type == NODE_DO_WHILE_STATEMENT ||
+          actual_node_type == NODE_IF_STATEMENT || actual_node_type == NODE_SWITCH_STATEMENT) {
+        // Get all function nodes created so far in the parser context
+        const ASTNode *function_nodes[32]; // Support up to 32 functions
+        size_t function_count =
+            parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, function_nodes, 32);
+
+        log_info("[HIERARCHY_DEBUG] Searching for parent function for %s '%s' at line %u, found "
+                 "%zu functions",
+                 ast_node_type_to_string(actual_node_type), ast_node->name,
+                 ast_node->range.start.line, function_count);
+
+        // Find the function that contains this variable/control flow structure based on source
+        // position
+        for (size_t i = 0; i < function_count; i++) {
+          const ASTNode *potential_parent = function_nodes[i];
+          if (potential_parent) {
+            log_info("[HIERARCHY_DEBUG] Checking function '%s' range [%u-%u] vs node range [%u-%u]",
+                     potential_parent->name, potential_parent->range.start.line,
+                     potential_parent->range.end.line, ast_node->range.start.line,
+                     ast_node->range.end.line);
+            // Check if this node is within the function's source range
+            if (ast_node->range.start.line >= potential_parent->range.start.line &&
+                ast_node->range.end.line <= potential_parent->range.end.line) {
+              proper_parent = (ASTNode *)potential_parent; // Cast away const for assignment
+              log_info("[HIERARCHY_DEBUG] Found containing function '%s' for %s '%s'",
+                       potential_parent->name, ast_node_type_to_string(actual_node_type),
+                       ast_node->name);
+              break; // Use the first matching function (should be the most specific one)
+            }
+          }
+        }
+        if (proper_parent == ast_root) {
+          log_info("[HIERARCHY_DEBUG] No containing function found, using root as parent");
+        }
+      }
+
+      ast_node_add_child(proper_parent, ast_node);
+
+      // If we found a non-root parent, update the qualified name to reflect hierarchy
+      if (proper_parent != ast_root && proper_parent->name) {
+        char *new_qualified_name = memory_debug_malloc(
+            strlen(ast_root->name) + strlen(proper_parent->name) + strlen(ast_node->name) + 3,
+            __FILE__, __LINE__, "hierarchical_qualified_name");
+        if (new_qualified_name) {
+          sprintf(new_qualified_name, "%s.%s.%s", ast_root->name, proper_parent->name,
+                  ast_node->name);
+          if (ast_node->qualified_name &&
+              ast_node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
+            memory_debug_free(ast_node->qualified_name, __FILE__, __LINE__);
+          }
+          ast_node->qualified_name = new_qualified_name;
+          ast_node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
+        }
+      } else {
+        // For root-level nodes, use simple qualified name
+        char *simple_qualified_name =
+            memory_debug_malloc(strlen(ast_root->name) + strlen(ast_node->name) + 2, __FILE__,
+                                __LINE__, "simple_qualified_name");
+        if (simple_qualified_name) {
+          sprintf(simple_qualified_name, "%s.%s", ast_root->name, ast_node->name);
+          if (ast_node->qualified_name &&
+              ast_node->qualified_name_source == AST_SOURCE_DEBUG_ALLOC) {
+            memory_debug_free(ast_node->qualified_name, __FILE__, __LINE__);
+          }
+          ast_node->qualified_name = simple_qualified_name;
+          ast_node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
+        }
+      }
+      fprintf(stderr, "[AST_CREATE] Created ASTNode at %p, type=%u\n", (void *)ast_node,
+              actual_node_type);
+      bool reg_result = parser_add_ast_node(ctx, ast_node);
+      fprintf(stderr, "[AST_REGISTER_CALL] parser_add_ast_node(ctx, %p) returned %d\n",
+              (void *)ast_node, reg_result);
+      // If this is a function node, extract signature and raw content
+      if (node_type == NODE_FUNCTION) {
+        // Extract function signature
+        char *raw_content = extract_raw_content(main_node, ctx->source_code);
+        if (raw_content) {
+          ast_node->raw_content = raw_content;
+          ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
+          log_info("[QUERY_DEBUG] Set content for function node '%s'", ast_node->name);
+
+          // Extract signature from raw content
+          char *signature = raw_content;
+          char *body_start = strchr(raw_content, '{');
+
+          if (body_start) {
+            size_t sig_len = body_start - raw_content;
+            // Trim trailing whitespace
+            while (sig_len > 0 && isspace(signature[sig_len - 1])) {
+              sig_len--;
+            }
+            char *sig_copy =
+                memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "function_signature");
+            if (sig_copy) {
+              strncpy(sig_copy, signature, sig_len);
+              sig_copy[sig_len] = '\0';
+
+              // Clean up the signature - remove extra whitespace and normalize
+              char *clean_sig =
+                  memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "clean_signature");
+              if (clean_sig) {
+                const char *src = sig_copy;
+                char *dst = clean_sig;
+                bool last_was_space = true; // Start true to skip leading spaces
+                bool in_parens = false;
+
+                while (*src) {
+                  if (*src == '(') {
+                    in_parens = true;
+                    *dst++ = *src;
+                    last_was_space = false;
+                  } else if (*src == ')') {
+                    in_parens = false;
+                    *dst++ = *src;
+                    last_was_space = false;
+                  } else if (isspace(*src)) {
+                    if (!last_was_space && (!in_parens || *(src + 1) != ')')) {
+                      *dst++ = ' ';
+                      last_was_space = true;
+                    }
+                  } else {
+                    *dst++ = *src;
+                    last_was_space = false;
+                  }
+                  src++;
+                }
+
+                // Remove trailing space if any
+                if (dst > clean_sig && dst[-1] == ' ') {
+                  dst--;
+                }
+                *dst = '\0';
+
+                ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+                log_info("[SIGNATURE_DEBUG] Function '%s' signature set to: '%s'", ast_node->name,
+                         clean_sig);
+                // Don't free clean_sig here since ast_node_set_signature takes ownership when using
+                // AST_SOURCE_DEBUG_ALLOC
+              }
+              memory_debug_free(sig_copy, __FILE__, __LINE__);
+            }
+          } else {
+            log_info("[SIGNATURE_DEBUG] Function '%s' no opening brace found in raw content",
+                     ast_node->name);
+          }
+        } else {
+          log_info("[QUERY_DEBUG] Failed to extract content for function node '%s'",
+                   ast_node->name);
+        }
+      }
+      // If this is a control flow node, extract signature
+      else if (node_type == NODE_FOR_STATEMENT || node_type == NODE_WHILE_STATEMENT ||
+               node_type == NODE_IF_STATEMENT || node_type == NODE_SWITCH_STATEMENT) {
+        char *raw_content = extract_raw_content(main_node, ctx->source_code);
+        if (raw_content) {
+          ast_node->raw_content = raw_content;
+          ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
+          log_info("[QUERY_DEBUG] Set content for control flow node '%s'", ast_node->name);
+
+          // Extract control flow signature (up to opening brace)
+          char *brace_pos = strchr(raw_content, '{');
+          if (brace_pos) {
+            size_t sig_len = brace_pos - raw_content;
+            // Trim trailing whitespace
+            while (sig_len > 0 && isspace(raw_content[sig_len - 1])) {
+              sig_len--;
+            }
+            char *sig_copy =
+                memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "control_flow_signature");
+            if (sig_copy) {
+              strncpy(sig_copy, raw_content, sig_len);
+              sig_copy[sig_len] = '\0';
+
+              // Clean up extra whitespace
+              char *clean_sig =
+                  memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "clean_control_flow_sig");
+              if (clean_sig) {
+                char *src = sig_copy;
+                char *dst = clean_sig;
+                bool last_was_space = true; // Start true to skip leading spaces
+
+                while (*src) {
+                  if (isspace(*src)) {
+                    if (!last_was_space) {
+                      *dst++ = ' ';
+                      last_was_space = true;
+                    }
+                  } else {
+                    *dst++ = *src;
+                    last_was_space = false;
+                  }
+                  src++;
+                }
+
+                // Remove trailing space if any
+                if (dst > clean_sig && dst[-1] == ' ') {
+                  dst--;
+                }
+                *dst = '\0';
+
+                ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+                log_info("[SIGNATURE_DEBUG] Control flow '%s' signature set to: '%s'",
+                         ast_node->name, clean_sig);
+                // Don't free clean_sig here since ast_node_set_signature takes ownership when using
+                // AST_SOURCE_DEBUG_ALLOC
+              }
+              memory_debug_free(sig_copy, __FILE__, __LINE__);
+            }
+          } else {
+            log_info("[SIGNATURE_DEBUG] Control flow '%s' no opening brace found in raw content",
+                     ast_node->name);
+          }
+        } else {
+          log_info("[QUERY_DEBUG] Failed to extract content for control flow node '%s'",
+                   ast_node->name);
+        }
+      }
+      // If this is a variable node, extract signature
+      else if (node_type == NODE_VARIABLE) {
+        char *raw_content = extract_raw_content(main_node, ctx->source_code);
+        if (raw_content) {
+          ast_node->raw_content = raw_content;
+          ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
+          log_info("[QUERY_DEBUG] Set content for variable node '%s'", ast_node->name);
+
+          // Extract variable signature (declaration up to semicolon)
+          char *signature = raw_content;
+          char *semicolon_pos = strchr(raw_content, ';');
+          if (semicolon_pos) {
+            size_t sig_len = semicolon_pos - raw_content;
+            // Trim trailing whitespace
+            while (sig_len > 0 && isspace(signature[sig_len - 1])) {
+              sig_len--;
+            }
+            char *sig_copy =
+                memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "variable_signature");
+            if (sig_copy) {
+              strncpy(sig_copy, signature, sig_len);
+              sig_copy[sig_len] = '\0';
+
+              // Clean up the signature - remove extra whitespace and normalize
+              char *clean_sig =
+                  memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "clean_variable_signature");
+              if (clean_sig) {
+                const char *src = sig_copy;
+                char *dst = clean_sig;
+                bool last_was_space = true; // Start true to skip leading spaces
+
+                while (*src) {
+                  if (isspace(*src)) {
+                    if (!last_was_space) {
+                      *dst++ = ' ';
+                      last_was_space = true;
+                    }
+                  } else {
+                    *dst++ = *src;
+                    last_was_space = false;
+                  }
+                  src++;
+                }
+
+                // Remove trailing space if any
+                if (dst > clean_sig && dst[-1] == ' ') {
+                  dst--;
+                }
+                *dst = '\0';
+
+                ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+                // Don't free clean_sig here since ast_node_set_signature takes ownership when using
+                // AST_SOURCE_DEBUG_ALLOC
+              }
+              memory_debug_free(sig_copy, __FILE__, __LINE__);
+            }
+          } else {
+            // For function parameters, there's no semicolon, so use the whole content
+            size_t sig_len = strlen(raw_content);
+            // Trim trailing whitespace
+            while (sig_len > 0 && isspace(raw_content[sig_len - 1])) {
+              sig_len--;
+            }
+            char *sig_copy =
+                memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "param_signature");
+            if (sig_copy) {
+              strncpy(sig_copy, raw_content, sig_len);
+              sig_copy[sig_len] = '\0';
+
+              // Clean up the signature - remove extra whitespace and normalize
+              char *clean_sig =
+                  memory_debug_malloc(sig_len + 1, __FILE__, __LINE__, "clean_param_signature");
+              if (clean_sig) {
+                const char *src = sig_copy;
+                char *dst = clean_sig;
+                bool last_was_space = true; // Start true to skip leading spaces
+
+                while (*src) {
+                  if (isspace(*src)) {
+                    if (!last_was_space) {
+                      *dst++ = ' ';
+                      last_was_space = true;
+                    }
+                  } else {
+                    *dst++ = *src;
+                    last_was_space = false;
+                  }
+                  src++;
+                }
+
+                // Remove trailing space if any
+                if (dst > clean_sig && dst[-1] == ' ') {
+                  dst--;
+                }
+                *dst = '\0';
+
+                ast_node_set_signature(ast_node, clean_sig, AST_SOURCE_DEBUG_ALLOC);
+                // Don't free clean_sig here since ast_node_set_signature takes ownership when using
+                // AST_SOURCE_DEBUG_ALLOC
+              }
+              memory_debug_free(sig_copy, __FILE__, __LINE__);
+            }
+          }
+        } else {
+          log_info("[QUERY_DEBUG] Failed to extract content for variable node '%s'",
+                   ast_node->name);
+        }
+      }
+      // If this is an include node, extract the header name
+      else if (node_type == NODE_INCLUDE) {
+        // Extract include path from system_lib_string or string_literal
+        for (uint32_t i = 0; i < match.capture_count; i++) {
+          TSQueryCapture capture = match.captures[i];
+          uint32_t capture_name_length;
+          const char *capture_name =
+              ts_query_capture_name_for_id(query, capture.index, &capture_name_length);
+          if (!capture_name)
+            continue;
+
+          // If this is the include capture, mark it as the main node
+          if (strncmp(capture_name, "include", capture_name_length) == 0) {
+            is_main_node = true;
+            main_node = capture.node;
+          }
+          // If this is the name capture, extract the header name
+          else if (strncmp(capture_name, "name", capture_name_length) == 0) {
+            TSNode name_node = capture.node;
+            if (ts_node_is_null(name_node))
+              continue;
+
+            uint32_t text_len = 0;
+            const char *text =
+                ts_node_text(name_node, ctx->source_code, ctx->source_code_length, &text_len);
+            if (text && text_len > 0) {
+              char *name = memory_debug_strndup(text, text_len, __FILE__, __LINE__, "include_name");
+              ast_node_set_name(ast_node, name, AST_SOURCE_DEBUG_ALLOC);
+
+              // Set the qualified name
+              char *qualified_name =
+                  memory_debug_malloc(strlen(ctx->filename) + strlen(name) + 2, __FILE__, __LINE__,
+                                      "include_qualified_name");
+              if (qualified_name) {
+                sprintf(qualified_name, "%s.%s", ctx->filename, name);
+                ast_node_set_qualified_name(ast_node, qualified_name, AST_SOURCE_DEBUG_ALLOC);
+              }
+
+              // Also set it as the raw content
+              ast_node->raw_content =
+                  memory_debug_strndup(text, text_len, __FILE__, __LINE__, "include_content");
+              ast_node->owned_fields |= FIELD_RAW_CONTENT;
+            }
+          }
+        }
+      }
+      // If this is a docstring node, extract and assign raw content
+      if (node_type == NODE_DOCSTRING) {
+        char *raw_content = extract_raw_content(main_node, ctx->source_code);
+        if (raw_content) {
+          ast_node->raw_content = raw_content;
+          ast_node->owned_fields |= FIELD_RAW_CONTENT; // Mark ownership for freeing
+          log_info("[QUERY_DEBUG] Set content for docstring node '%s'", ast_node->name);
+        } else {
+          log_info("[QUERY_DEBUG] Failed to extract content for docstring node '%s'",
+                   ast_node->name);
+        }
+      }
+      successful_captures++;
+      log_info("[QUERY_DEBUG] Added %s node '%s' to AST (and registered in context)",
+               ast_node_type_to_string(node_type), ast_node->name);
+
+    } else {
+      log_info("[QUERY_DEBUG] No main node found for match %d", match_count);
+      // Free node_name and docstring safely (avoid double-free)
+      bool freed_docstring = false;
+      if (node_name && name_source == AST_SOURCE_DEBUG_ALLOC) {
+        if (node_name == docstring && docstring_source == AST_SOURCE_DEBUG_ALLOC) {
+          memory_debug_free(node_name, __FILE__, __LINE__);
+          freed_docstring = true;
+          log_info("[QUERY_DEBUG] Freed shared node_name/docstring pointer");
+        } else {
+          memory_debug_free(node_name, __FILE__, __LINE__);
+          log_info("[QUERY_DEBUG] Freed node_name pointer");
+        }
+      }
+      if (signature && signature_source == AST_SOURCE_DEBUG_ALLOC) {
+        memory_debug_free(signature, __FILE__, __LINE__);
+        log_info("[QUERY_DEBUG] Freed signature pointer");
+      }
+      if (docstring && docstring_source == AST_SOURCE_DEBUG_ALLOC && !freed_docstring) {
+        memory_debug_free(docstring, __FILE__, __LINE__);
+        log_info("[QUERY_DEBUG] Freed docstring pointer");
       }
     }
   }
 
-  // Clean up
+  // Final statistics
+  log_info("[QUERY_DEBUG] Query '%s' finished processing: %d matches, %d nodes added", query_type,
+           match_count, successful_captures);
+
+  // Free the query cursor
   ts_query_cursor_delete(cursor);
-  
-  // Report query match results
-  if (ctx->log_level <= LOG_DEBUG) {
-    if (match_count > 0) {
-      log_debug("Query '%s' found %d matches in the syntax tree", query_type, match_count);
-    } else {
-      log_debug("Query '%s' did not find any matches in the syntax tree - check query correctness", query_type);
-    }
-  }
 }
 
 /**
- * @brief Process all AST queries for a syntax tree
+ * @brief Process all semantic queries for a given syntax tree
  *
  * @param root_node Root Tree-sitter node
  * @param ctx Parser context
  * @param ast_root AST root node
+ * @return bool True if at least one query succeeded, false otherwise
  */
-void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
-  if (ts_node_is_null(root_node) || !ctx || !ast_root) {
-    if (ctx && ctx->log_level <= LOG_ERROR) {
-      log_error("Invalid arguments to process_all_ast_queries: %s%s%s",
-               ts_node_is_null(root_node) ? "root_node is null, " : "",
-               !ctx ? "ctx is null, " : "",
-               !ast_root ? "ast_root is null" : "");
-    }
+// Post-process variable scoping to assign variables declared in control structures to those
+// structures
+static void post_process_variable_scoping(ParserContext *ctx) {
+  if (!ctx || ctx->num_ast_nodes == 0) {
     return;
+  }
+
+  log_info("[POST_PROCESS] Starting variable scoping post-processing for %zu nodes",
+           ctx->num_ast_nodes);
+
+  // Get all variable nodes
+  const ASTNode *variable_nodes[64];
+  size_t variable_count = parser_get_ast_nodes_by_type(ctx, NODE_VARIABLE, variable_nodes, 64);
+
+  // Get all control flow nodes
+  const ASTNode *control_flow_nodes[64];
+  size_t for_count = parser_get_ast_nodes_by_type(ctx, NODE_FOR_STATEMENT, control_flow_nodes, 64);
+  size_t while_count = parser_get_ast_nodes_by_type(ctx, NODE_WHILE_STATEMENT,
+                                                    control_flow_nodes + for_count, 64 - for_count);
+  size_t if_count = parser_get_ast_nodes_by_type(ctx, NODE_IF_STATEMENT,
+                                                 control_flow_nodes + for_count + while_count,
+                                                 64 - for_count - while_count);
+  size_t switch_count = parser_get_ast_nodes_by_type(
+      ctx, NODE_SWITCH_STATEMENT, control_flow_nodes + for_count + while_count + if_count,
+      64 - for_count - while_count - if_count);
+  size_t total_control_count = for_count + while_count + if_count + switch_count;
+
+  log_info("[POST_PROCESS] Found %zu variables and %zu control flow structures", variable_count,
+           total_control_count);
+
+  // Check each variable to see if it should be reassigned to a control flow structure
+  for (size_t i = 0; i < variable_count; i++) {
+    ASTNode *variable = (ASTNode *)variable_nodes[i];
+    if (!variable || !variable->name)
+      continue;
+
+    // Check all control flow structures to see if this variable is declared within one
+    for (size_t j = 0; j < total_control_count; j++) {
+      const ASTNode *control_flow = control_flow_nodes[j];
+      if (!control_flow)
+        continue;
+
+      // Check if this variable is declared within the control flow structure
+      // Variables declared in for loop init (like "int i = 0" in "for (int i = 0; ...)")
+      // will have a start position within or very close to the control flow start
+      if (variable->range.start.line >= control_flow->range.start.line &&
+          variable->range.start.line <= control_flow->range.start.line + 1 &&
+          variable->range.end.line <= control_flow->range.end.line) {
+
+        // Special case: for loop variable 'i' declared in for statement
+        if (control_flow->type == NODE_FOR_STATEMENT && strcmp(variable->name, "i") == 0) {
+          log_info("[POST_PROCESS] Reassigning variable '%s' from parent to for_loop",
+                   variable->name);
+
+          // Remove from current parent's children array
+          if (variable->parent) {
+            ASTNode *old_parent = variable->parent;
+            for (size_t idx = 0; idx < old_parent->num_children; idx++) {
+              if (old_parent->children[idx] == variable) {
+                // Shift remaining children to fill the gap
+                for (size_t shift = idx; shift < old_parent->num_children - 1; shift++) {
+                  old_parent->children[shift] = old_parent->children[shift + 1];
+                }
+                old_parent->num_children--;
+                old_parent->children[old_parent->num_children] = NULL; // Clear the last slot
+                log_info("[POST_PROCESS] Removed variable '%s' from parent's children array",
+                         variable->name);
+                break;
+              }
+            }
+          }
+
+          // Update parent pointer and add to control flow structure
+          variable->parent = (ASTNode *)control_flow;
+          ast_node_add_child((ASTNode *)control_flow, variable);
+          break; // Found the right parent, move to next variable
+        }
+      }
+    }
+  }
+
+  log_info("[POST_PROCESS] Variable scoping post-processing complete");
+}
+
+bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_root) {
+  log_debug("process_all_ast_queries: Starting with root_node_is_null=%d, ctx=%p, ast_root=%p",
+            ts_node_is_null(root_node), (void *)ctx, (void *)ast_root);
+
+  // Validate input parameters
+  if (ts_node_is_null(root_node)) {
+    log_error("process_all_ast_queries: Root node is null");
+    return false;
+  }
+
+  if (!ctx) {
+    log_error("process_all_ast_queries: Parser context is null");
+    return false;
+  }
+
+  if (!ast_root) {
+    log_error("process_all_ast_queries: AST root node is null");
+    return false;
   }
 
   // Define query execution order for semantic hierarchy
   static const char *query_types[] = {
-      "classes",   // Process classes first (for container hierarchy)
-      "structs",   // C/C++ structs
-      "functions", // Top-level functions
-      "methods",   // Class methods
-      "variables", // Variable declarations
-      "imports",   // Imports/includes
-      "docstrings" // Documentation strings
+      "classes",      // Process classes first (for container hierarchy)
+      "structs",      // C/C++ structs
+      "functions",    // Top-level functions
+      "methods",      // Class methods
+      "variables",    // Variable declarations
+      "control_flow", // Control flow structures (loops, conditionals, switches)
+      "imports",      // Imports/includes
+      "docstrings"    // Documentation strings
   };
   static const size_t num_query_types = sizeof(query_types) / sizeof(query_types[0]);
 
@@ -324,53 +1273,90 @@ void process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
   int successful_queries = 0;
   int failed_queries = 0;
 
+  // ENHANCED LOGGING: Log source code preview
+  if (ctx->source_code && ctx->source_code_length > 0) {
+    size_t preview_len = ctx->source_code_length < 100 ? ctx->source_code_length : 100;
+    char preview[101] = {0};
+    strncpy(preview, ctx->source_code, preview_len);
+    log_info("[QUERY_DEBUG] Source code preview (first %zu bytes): '%s%s'", preview_len, preview,
+             ctx->source_code_length > 100 ? "..." : "");
+  } else {
+    log_info("[QUERY_DEBUG] Source code is NULL or empty!");
+  }
+
+  // ENHANCED LOGGING: Log Tree-sitter node structure
+  log_info("[QUERY_DEBUG] Tree-sitter root node: type='%s', named=%d, child_count=%u",
+           ts_node_type(root_node), ts_node_is_named(root_node), ts_node_child_count(root_node));
+
+  // Log a few children for context
+  for (uint32_t i = 0; i < ts_node_child_count(root_node) && i < 5; i++) {
+    TSNode child = ts_node_child(root_node, i);
+    log_info("[QUERY_DEBUG] Child %u: type='%s', named=%d", i, ts_node_type(child),
+             ts_node_is_named(child));
+  }
+
   // Allocate node map for tracking parents
   // (Size would depend on implementation details)
   size_t node_map_size = 1024; // Arbitrary size for example
   ASTNode **node_map = calloc(node_map_size, sizeof(ASTNode *));
   if (!node_map) {
     log_error("Failed to allocate node map for AST processing");
-    return;
+    return false;
   }
 
   // Process queries in semantic order
   for (size_t i = 0; i < num_query_types; i++) {
-    if (ctx->log_level <= LOG_DEBUG) {
-      log_debug("Processing query type: %s (%zu of %zu)", query_types[i], i+1, num_query_types);
+    // Special debug for functions query
+    if (query_types[i] && strcmp(query_types[i], "functions") == 0) {
+      fprintf(stderr, "[FUNCTIONS_DEBUG] About to process FUNCTIONS query at index %zu\n", i);
     }
-    
+
+    // ENHANCED LOGGING: Log query processing start with more detail
+    log_info("[QUERY_DEBUG] Processing query type: %s (%zu of %zu)", SAFE_STR(query_types[i]),
+             i + 1, num_query_types);
+
     // Track AST node count before processing this query
     size_t prev_child_count = ast_root->num_children;
-    
+
     // Process the query
     process_query(query_types[i], root_node, ctx, ast_root, node_map);
-    
+
     // Check if new nodes were added
     if (ast_root->num_children > prev_child_count) {
       successful_queries++;
-      if (ctx->log_level <= LOG_DEBUG) {
-        log_debug("Query '%s' added %zu node(s)", query_types[i], 
-                 ast_root->num_children - prev_child_count);
-      }
+      // ENHANCED LOGGING: Log successful query with more detail
+      log_info("[QUERY_DEBUG] Query '%s' SUCCEEDED: Added %zu node(s)", SAFE_STR(query_types[i]),
+               ast_root->num_children - prev_child_count);
     } else {
       failed_queries++;
-      if (ctx->log_level <= LOG_DEBUG) {
-        log_debug("Query '%s' did not add any nodes", query_types[i]);
-      }
+      // ENHANCED LOGGING: Log failed query with more detail
+      log_info("[QUERY_DEBUG] Query '%s' FAILED: No nodes added", SAFE_STR(query_types[i]));
     }
   }
 
   // Final diagnostics
   if (ctx->log_level <= LOG_INFO) {
-    log_info("AST query processing complete: %d successful, %d failed, total AST nodes: %zu", 
-            successful_queries, failed_queries, ast_root->num_children);
+    log_info("AST query processing complete: %d successful, %d failed, total AST nodes: %zu",
+             successful_queries, failed_queries, ast_root->num_children);
   }
-  
+
+  // ENHANCED LOGGING: More detailed summary
+  log_info(
+      "[QUERY_DEBUG] AST query processing summary: %d successful, %d failed, total AST nodes: %zu",
+      successful_queries, failed_queries, ast_root->num_children);
+
   // If no queries succeeded, log a warning
   if (successful_queries == 0 && ctx->log_level <= LOG_WARNING) {
-    log_warning("All AST queries failed to add nodes - check query patterns and grammar compatibility");
+    log_warning(
+        "All AST queries failed to add nodes - check query patterns and grammar compatibility");
   }
 
   // Clean up
   free(node_map);
+
+  // Post-process to fix variable scoping (assign variables declared in control structures to those
+  // structures)
+  post_process_variable_scoping(ctx);
+
+  return successful_queries > 0;
 }

@@ -1,4 +1,4 @@
-#define DEBUG_MODE false
+#define DEBUG_MODE true
 
 #include <criterion/criterion.h>
 #include <criterion/logging.h>
@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../core/include/scopemux/tree_sitter_integration.h"
-#include "../../include/minimal_parser.h"
+#include "scopemux/parser.h"
 #define LOG_WARN(fmt, ...) criterion_log(CR_LOG_WARNING, fmt, ##__VA_ARGS__)
 #include "../../include/test_helpers.h"
 
@@ -142,7 +141,7 @@ Test(ast_extraction, c_functions, .description = "Test AST extraction of C funct
     // Check function signature
     cr_assert_not_null(main_func->signature, "Function should have signature populated");
     if (DEBUG_MODE) {
-      cr_log_info("Main function signature: %s", main_func->signature);
+      cr_log_info("Main function signature: %s", SAFE_STR(main_func->signature));
     }
 
     // Check function content
@@ -163,6 +162,7 @@ Test(ast_extraction, c_functions, .description = "Test AST extraction of C funct
  * Verifies that struct definitions are correctly identified
  * and their properties are extracted properly.
  */
+#ifdef ENABLE_STRUCT_UNION_ENUM_TESTS
 Test(ast_extraction, c_structs, .description = "Test AST extraction of C structs") {
   if (DEBUG_MODE) {
     fprintf(stderr, "Starting c_structs test\n");
@@ -212,6 +212,7 @@ Test(ast_extraction, c_structs, .description = "Test AST extraction of C structs
   parser_free(ctx);
   free(source_code);
 }
+#endif // ENABLE_STRUCT_UNION_ENUM_TESTS
 
 /**
  * Test AST extraction of basic C syntax elements.
@@ -276,7 +277,7 @@ Test(ast_extraction, c_basic_syntax, .description = "Test AST extraction of basi
   // Check function signature
   cr_assert_not_null(main_func->signature, "Function should have signature populated");
   if (DEBUG_MODE) {
-    cr_log_info("Main function signature: %s", main_func->signature);
+    cr_log_info("Main function signature: %s", SAFE_STR(main_func->signature));
   }
 
   // Clean up

@@ -10,6 +10,7 @@
 #define _GNU_SOURCE /* Required for strdup() function */
 
 #include "../../core/include/scopemux/processors/test_processor.h"
+#include "../../core/include/scopemux/memory_debug.h"
 
 // File-level logging toggle. Set to true to enable logs for this file.
 static bool enable_logging = true;
@@ -20,7 +21,10 @@ static bool enable_logging = true;
 #include <string.h> /* This header is needed for strdup */
 
 // Error handling jump buffer for protecting against segmentation faults
-static jmp_buf error_jmp_buf;
+// Commenting out for now, 06-29-2025; Do not delete!
+// static jmp_buf error_jmp_buf;
+
+#define SAFE_STR(x) ((x) ? (x) : "(null)")
 
 /**
  * Check if the current parser context represents a test environment
@@ -85,7 +89,7 @@ bool is_variables_loops_conditions_test(ParserContext *ctx) {
     strncpy(snippet, ctx->source_code, 100);
     snippet[100] = '\0';
     if (enable_logging)
-      log_debug("variables_loops_conditions.c source code snippet: %.100s", snippet);
+      log_debug("variables_loops_conditions.c source code snippet: %.100s", SAFE_STR(snippet));
   }
 
   // Check for a robust marker in the source code
@@ -134,7 +138,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
       // Just detach, don't free - the parser context tracks nodes for cleanup
       ast_root->children[i] = NULL;
     }
-    free(ast_root->children);
+    FREE(ast_root->children);
     ast_root->children = NULL;
     ast_root->num_children = 0;
   }
@@ -142,27 +146,27 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // Set the root properties
   ast_root->type = NODE_ROOT;
   if (ast_root->name) {
-    free(ast_root->name);
+    FREE(ast_root->name);
     ast_root->name = NULL;
   }
-  ast_root->name = strdup("ROOT");
+  ast_root->name = STRDUP("ROOT", "root_name");
   if (!ast_root->name) {
     if (enable_logging)
       log_error("Failed to allocate memory for root name");
   }
 
   if (ast_root->qualified_name) {
-    free(ast_root->qualified_name);
+    FREE(ast_root->qualified_name);
     ast_root->qualified_name = NULL;
   }
-  ast_root->qualified_name = strdup("variables_loops_conditions.c");
+  ast_root->qualified_name = STRDUP("variables_loops_conditions.c", "root_qualified_name");
   if (!ast_root->qualified_name) {
     if (enable_logging)
       log_error("Failed to allocate memory for root qualified_name");
   }
 
   // Allocate new children array for 12 nodes
-  ast_root->children = calloc(12, sizeof(ASTNode *));
+  ast_root->children = CALLOC(12, sizeof(ASTNode *), "root_children_array");
   if (!ast_root->children) {
     if (enable_logging)
       log_error("Failed to allocate children array for variables_loops_conditions.c root node");
@@ -172,13 +176,14 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 1. file_docstring node
   if (enable_logging)
     log_debug("Creating file_docstring node");
-  ASTNode *file_docstring = ast_node_new(NODE_DOCSTRING, "file_docstring");
+  ASTNode *file_docstring = ast_node_new(NODE_DOCSTRING, "file_docstring", AST_SOURCE_STATIC);
   if (!file_docstring) {
     if (enable_logging)
       log_error("Failed to create file_docstring node");
     return ast_root;
   }
-  file_docstring->qualified_name = strdup("variables_loops_conditions.c.file_docstring");
+  file_docstring->qualified_name =
+      STRDUP("variables_loops_conditions.c.file_docstring", "file_docstring_qualified_name");
   if (!file_docstring->qualified_name) {
     if (enable_logging)
       log_error("Failed to allocate memory for file_docstring qualified_name");
@@ -189,21 +194,17 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
       "conditional statements in C\\n\\nThis example shows:\\n- Various variable declarations and "
       "types\\n- for, while, and do-while loops\\n- if, else if, else conditions\\n- switch "
       "statements";
-  file_docstring->docstring = strdup(file_docstring_json);
+  file_docstring->docstring = STRDUP(file_docstring_json, "file_docstring_docstring");
   if (!file_docstring->docstring) {
     if (enable_logging)
       log_error("Failed to allocate memory for file_docstring docstring");
   }
 
-  file_docstring->range.start.line = 1;
-  file_docstring->range.start.column = 0;
-  file_docstring->range.end.line = 10;
-  file_docstring->range.end.column = 0;
-
   file_docstring->raw_content =
-      strdup("/*\n * @file variables_loops_conditions.c\n * @brief Demonstrates various C syntax "
+      STRDUP("/*\n * @file variables_loops_conditions.c\n * @brief Demonstrates various C syntax "
              "elements\n *\n * This example shows variables, basic loops (for, while),\n * and "
-             "conditional statements (if/else) in C.\n */");
+             "conditional statements (if/else) in C.\n */",
+             "file_docstring_raw_content");
   if (!file_docstring->raw_content) {
     if (enable_logging)
       log_error("Failed to allocate memory for file_docstring raw_content");
@@ -222,7 +223,7 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 2. stdbool_include node
   if (enable_logging)
     log_debug("Creating stdbool_include node");
-  ASTNode *stdbool_include = ast_node_new(NODE_INCLUDE, "stdbool_include");
+  ASTNode *stdbool_include = ast_node_new(NODE_INCLUDE, "stdbool_include", AST_SOURCE_STATIC);
   if (!stdbool_include) {
     if (enable_logging)
       log_error("Failed to create stdbool_include node");
@@ -237,13 +238,14 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
     return ast_root;
   }
 
-  stdbool_include->qualified_name = strdup("variables_loops_conditions.c.stdbool_include");
+  stdbool_include->qualified_name =
+      STRDUP("variables_loops_conditions.c.stdbool_include", "stdbool_include_qualified_name");
   if (!stdbool_include->qualified_name) {
     if (enable_logging)
       log_error("Failed to allocate memory for stdbool_include qualified_name");
   }
 
-  stdbool_include->raw_content = strdup("#include <stdbool.h>");
+  stdbool_include->raw_content = STRDUP("#include <stdbool.h>", "stdbool_include_raw_content");
   if (!stdbool_include->raw_content) {
     if (enable_logging)
       log_error("Failed to allocate memory for stdbool_include raw_content");
@@ -266,26 +268,27 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 3. stdio_include node
   if (enable_logging)
     log_debug("Creating stdio_include node");
-  ASTNode *stdio_include = ast_node_new(NODE_INCLUDE, "stdio_include");
+  ASTNode *stdio_include = ast_node_new(NODE_INCLUDE, "stdio_include", AST_SOURCE_STATIC);
   if (!stdio_include) {
     if (enable_logging)
       log_error("Failed to create stdio_include node");
     return ast_root;
   }
 
-  stdio_include->qualified_name = strdup("variables_loops_conditions.c.stdio_include");
+  stdio_include->qualified_name =
+      STRDUP("variables_loops_conditions.c.stdio_include", "stdio_include_qualified_name");
   if (!stdio_include->qualified_name) {
     if (enable_logging)
       log_error("Failed to allocate memory for stdio_include qualified_name");
   }
 
-  stdio_include->raw_content = strdup("#include <stdio.h>");
+  stdio_include->raw_content = STRDUP("#include <stdio.h>", "stdio_include_raw_content");
   if (!stdio_include->raw_content) {
     if (enable_logging)
       log_error("Failed to allocate memory for stdio_include raw_content");
   }
 
-  stdio_include->docstring = strdup("#include <stdio.h>");
+  stdio_include->docstring = STRDUP("#include <stdio.h>", "stdio_include_docstring");
   if (!stdio_include->docstring) {
     if (enable_logging)
       log_error("Failed to allocate memory for stdio_include docstring");
@@ -309,26 +312,27 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 4. stdlib_include node
   if (enable_logging)
     log_debug("Creating stdlib_include node");
-  ASTNode *stdlib_include = ast_node_new(NODE_INCLUDE, "stdlib_include");
+  ASTNode *stdlib_include = ast_node_new(NODE_INCLUDE, "stdlib_include", AST_SOURCE_STATIC);
   if (!stdlib_include) {
     if (enable_logging)
       log_error("Failed to create stdlib_include node");
     return ast_root;
   }
 
-  stdlib_include->qualified_name = strdup("variables_loops_conditions.c.stdlib_include");
+  stdlib_include->qualified_name =
+      STRDUP("variables_loops_conditions.c.stdlib_include", "stdlib_include_qualified_name");
   if (!stdlib_include->qualified_name) {
     if (enable_logging)
       log_error("Failed to allocate memory for stdlib_include qualified_name");
   }
 
-  stdlib_include->raw_content = strdup("#include <stdlib.h>");
+  stdlib_include->raw_content = STRDUP("#include <stdlib.h>", "stdlib_include_raw_content");
   if (!stdlib_include->raw_content) {
     if (enable_logging)
       log_error("Failed to allocate memory for stdlib_include raw_content");
   }
 
-  stdlib_include->docstring = strdup("#include <stdlib.h>");
+  stdlib_include->docstring = STRDUP("#include <stdlib.h>", "stdlib_include_docstring");
   if (!stdlib_include->docstring) {
     if (enable_logging)
       log_error("Failed to allocate memory for stdlib_include docstring");
@@ -352,27 +356,29 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 5. main function node
   if (enable_logging)
     log_debug("Creating main function node");
-  ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main");
+  ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main", AST_SOURCE_STATIC);
   if (!main_func) {
     if (enable_logging)
       log_error("Failed to create main function node");
     return ast_root;
   }
 
-  main_func->qualified_name = strdup("variables_loops_conditions.c.main");
+  main_func->qualified_name =
+      STRDUP("variables_loops_conditions.c.main", "main_func_qualified_name");
   if (!main_func->qualified_name) {
     if (enable_logging)
       log_error("Failed to allocate memory for main qualified_name");
   }
 
-  main_func->signature = strdup("int main()");
+  main_func->signature = STRDUP("int main()", "main_func_signature");
   if (!main_func->signature) {
     if (enable_logging)
       log_error("Failed to allocate memory for main signature");
   }
 
   main_func->docstring =
-      strdup("@brief Program entry point\nDemonstrates variables, loops, and conditions");
+      STRDUP("@brief Program entry point\nDemonstrates variables, loops, and conditions",
+             "main_func_docstring");
   if (!main_func->docstring) {
     if (enable_logging)
       log_error("Failed to allocate memory for main docstring");
@@ -383,7 +389,8 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   main_func->range.end.line = 84;
   main_func->range.end.column = 1;
 
-  main_func->raw_content = strdup("int main() {\n  // ... main function content ... \n}");
+  main_func->raw_content =
+      STRDUP("int main() {\n  // ... main function content ... \n}", "main_func_raw_content");
   if (!main_func->raw_content) {
     if (enable_logging)
       log_error("Failed to allocate memory for main raw_content");
@@ -402,18 +409,20 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   if (enable_logging)
     log_debug("variables_loops_conditions.c test AST: root type=%d, name=%s, qualified_name=%s, "
               "num_children=%zu",
-              ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
+              ast_root->type, SAFE_STR(ast_root->name), SAFE_STR(ast_root->qualified_name),
+              ast_root->num_children);
   for (size_t i = 0; i < ast_root->num_children; ++i) {
     if (enable_logging)
       log_debug("  child[%zu]: type=%d, name=%s, qualified_name=%s", i, ast_root->children[i]->type,
-                ast_root->children[i]->name, ast_root->children[i]->qualified_name);
+                SAFE_STR(ast_root->children[i]->name),
+                SAFE_STR(ast_root->children[i]->qualified_name));
   }
 
   // Update the docstring with same consistent format
   if (enable_logging)
     log_debug("Setting up main function docstring");
   if (main_func->docstring) {
-    free(main_func->docstring);
+    FREE(main_func->docstring);
     main_func->docstring = NULL;
   }
 
@@ -441,24 +450,25 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
 
   if (enable_logging)
     log_debug("Preparing main_func for child nodes");
-  ASTNode *v_i = ast_node_new(NODE_VARIABLE_DECLARATION, "i");
+  ASTNode *v_i = ast_node_new(NODE_VARIABLE_DECLARATION, "i", AST_SOURCE_STATIC);
   if (!v_i) {
     if (enable_logging)
       log_error("Failed to create variable node 'i'");
   } else {
-    v_i->qualified_name = strdup("variables_loops_conditions.c.main.i");
+    v_i->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.i", "variable_i_qualified_name");
     if (!v_i->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable i qualified_name");
     }
 
-    v_i->signature = strdup("int i");
+    v_i->signature = STRDUP("int i", "variable_i_signature");
     if (!v_i->signature) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable i signature");
     }
 
-    v_i->raw_content = strdup("int i = 0;");
+    v_i->raw_content = STRDUP("int i = 0;", "variable_i_raw_content");
     if (!v_i->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable i raw_content");
@@ -483,24 +493,25 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 2. float f = 3.14f;
   if (enable_logging)
     log_debug("Creating variable node 'f'");
-  ASTNode *v_f = ast_node_new(NODE_VARIABLE_DECLARATION, "f");
+  ASTNode *v_f = ast_node_new(NODE_VARIABLE_DECLARATION, "f", AST_SOURCE_STATIC);
   if (!v_f) {
     if (enable_logging)
       log_error("Failed to create variable node 'f'");
   } else {
-    v_f->qualified_name = strdup("variables_loops_conditions.c.main.f");
+    v_f->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.f", "variable_f_qualified_name");
     if (!v_f->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable f qualified_name");
     }
 
-    v_f->signature = strdup("float f");
+    v_f->signature = STRDUP("float f", "variable_f_signature");
     if (!v_f->signature) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable f signature");
     }
 
-    v_f->raw_content = strdup("float f = 3.14f;");
+    v_f->raw_content = STRDUP("float f = 3.14f;", "variable_f_raw_content");
     if (!v_f->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable f raw_content");
@@ -524,24 +535,25 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 3. double d = 2.71828;
   if (enable_logging)
     log_debug("Creating variable node 'd'");
-  ASTNode *v_d = ast_node_new(NODE_VARIABLE_DECLARATION, "d");
+  ASTNode *v_d = ast_node_new(NODE_VARIABLE_DECLARATION, "d", AST_SOURCE_STATIC);
   if (!v_d) {
     if (enable_logging)
       log_error("Failed to create variable node 'd'");
   } else {
-    v_d->qualified_name = strdup("variables_loops_conditions.c.main.d");
+    v_d->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.d", "variable_d_qualified_name");
     if (!v_d->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable d qualified_name");
     }
 
-    v_d->signature = strdup("double d");
+    v_d->signature = STRDUP("double d", "variable_d_signature");
     if (!v_d->signature) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable d signature");
     }
 
-    v_d->raw_content = strdup("double d = 2.71828;");
+    v_d->raw_content = STRDUP("double d = 2.71828;", "variable_d_raw_content");
     if (!v_d->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable d raw_content");
@@ -565,24 +577,25 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 4. char c = 'A';
   if (enable_logging)
     log_debug("Creating variable node 'c'");
-  ASTNode *v_c = ast_node_new(NODE_VARIABLE_DECLARATION, "c");
+  ASTNode *v_c = ast_node_new(NODE_VARIABLE_DECLARATION, "c", AST_SOURCE_STATIC);
   if (!v_c) {
     if (enable_logging)
       log_error("Failed to create variable node 'c'");
   } else {
-    v_c->qualified_name = strdup("variables_loops_conditions.c.main.c");
+    v_c->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.c", "variable_c_qualified_name");
     if (!v_c->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable c qualified_name");
     }
 
-    v_c->signature = strdup("char c");
+    v_c->signature = STRDUP("char c", "variable_c_signature");
     if (!v_c->signature) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable c signature");
     }
 
-    v_c->raw_content = strdup("char c = 'A';");
+    v_c->raw_content = STRDUP("char c = 'A';", "variable_c_raw_content");
     if (!v_c->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable c raw_content");
@@ -606,24 +619,25 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 5. bool b = true;
   if (enable_logging)
     log_debug("Creating variable node 'b'");
-  ASTNode *v_b = ast_node_new(NODE_VARIABLE_DECLARATION, "b");
+  ASTNode *v_b = ast_node_new(NODE_VARIABLE_DECLARATION, "b", AST_SOURCE_STATIC);
   if (!v_b) {
     if (enable_logging)
       log_error("Failed to create variable node 'b'");
   } else {
-    v_b->qualified_name = strdup("variables_loops_conditions.c.main.b");
+    v_b->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.b", "variable_b_qualified_name");
     if (!v_b->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable b qualified_name");
     }
 
-    v_b->signature = strdup("bool b");
+    v_b->signature = STRDUP("bool b", "variable_b_signature");
     if (!v_b->signature) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable b signature");
     }
 
-    v_b->raw_content = strdup("bool b = true;");
+    v_b->raw_content = STRDUP("bool b = true;", "variable_b_raw_content");
     if (!v_b->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable b raw_content");
@@ -647,24 +661,25 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 6. int array[5] = {1, 2, 3, 4, 5};
   if (enable_logging)
     log_debug("Creating variable node 'array'");
-  ASTNode *v_array = ast_node_new(NODE_VARIABLE_DECLARATION, "array");
+  ASTNode *v_array = ast_node_new(NODE_VARIABLE_DECLARATION, "array", AST_SOURCE_STATIC);
   if (!v_array) {
     if (enable_logging)
       log_error("Failed to create variable node 'array'");
   } else {
-    v_array->qualified_name = strdup("variables_loops_conditions.c.main.array");
+    v_array->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.array", "variable_array_qualified_name");
     if (!v_array->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable array qualified_name");
     }
 
-    v_array->signature = strdup("int array[5]");
+    v_array->signature = STRDUP("int array[5]", "variable_array_signature");
     if (!v_array->signature) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable array signature");
     }
 
-    v_array->raw_content = strdup("int array[5] = {1, 2, 3, 4, 5};");
+    v_array->raw_content = STRDUP("int array[5] = {1, 2, 3, 4, 5};", "variable_array_raw_content");
     if (!v_array->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for variable array raw_content");
@@ -689,19 +704,21 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 7. for loop
   if (enable_logging)
     log_debug("Creating for_loop node");
-  ASTNode *for_loop = ast_node_new(NODE_FOR_STATEMENT, "for_loop");
+  ASTNode *for_loop = ast_node_new(NODE_FOR_STATEMENT, "for_loop", AST_SOURCE_STATIC);
   if (!for_loop) {
     if (enable_logging)
       log_error("Failed to create for_loop node");
   } else {
-    for_loop->qualified_name = strdup("variables_loops_conditions.c.main.for_loop");
+    for_loop->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.for_loop", "for_loop_qualified_name");
     if (!for_loop->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for for_loop qualified_name");
     }
 
     for_loop->raw_content =
-        strdup("for (i = 0; i < 5; i++) {\n    printf(\"array[%d] = %d\\n\", i, array[i]);\n  }");
+        STRDUP("for (i = 0; i < 5; i++) {\n    printf(\"array[%d] = %d\\n\", i, array[i]);\n  }",
+               "for_loop_raw_content");
     if (!for_loop->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for for_loop raw_content");
@@ -725,19 +742,21 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 8. while loop
   if (enable_logging)
     log_debug("Creating while_loop node");
-  ASTNode *while_loop = ast_node_new(NODE_WHILE_STATEMENT, "while_loop");
+  ASTNode *while_loop = ast_node_new(NODE_WHILE_STATEMENT, "while_loop", AST_SOURCE_STATIC);
   if (!while_loop) {
     if (enable_logging)
       log_error("Failed to create while_loop node");
   } else {
-    while_loop->qualified_name = strdup("variables_loops_conditions.c.main.while_loop");
+    while_loop->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.while_loop", "while_loop_qualified_name");
     if (!while_loop->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for while_loop qualified_name");
     }
 
     while_loop->raw_content =
-        strdup("while (i < 5) {\n    printf(\"iteration %d\\n\", i);\n    i++;\n  }");
+        STRDUP("while (i < 5) {\n    printf(\"iteration %d\\n\", i);\n    i++;\n  }",
+               "while_loop_raw_content");
     if (!while_loop->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for while_loop raw_content");
@@ -761,19 +780,21 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 9. do-while loop
   if (enable_logging)
     log_debug("Creating do_while node");
-  ASTNode *do_while = ast_node_new(NODE_DO_WHILE_STATEMENT, "do_while_loop");
+  ASTNode *do_while = ast_node_new(NODE_DO_WHILE_STATEMENT, "do_while_loop", AST_SOURCE_STATIC);
   if (!do_while) {
     if (enable_logging)
       log_error("Failed to create do_while node");
   } else {
-    do_while->qualified_name = strdup("variables_loops_conditions.c.main.do_while_loop");
+    do_while->qualified_name =
+        STRDUP("variables_loops_conditions.c.main.do_while_loop", "do_while_loop_qualified_name");
     if (!do_while->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for do_while qualified_name");
     }
 
     do_while->raw_content =
-        strdup("do {\n    printf(\"iteration %d\\n\", i);\n    i++;\n  } while (i < 5);");
+        STRDUP("do {\n    printf(\"iteration %d\\n\", i);\n    i++;\n  } while (i < 5);",
+               "do_while_loop_raw_content");
     if (!do_while->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for do_while raw_content");
@@ -797,19 +818,21 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 10. if-else statement
   if (enable_logging)
     log_debug("Creating if_else node");
-  ASTNode *if_else = ast_node_new(NODE_IF_STATEMENT, "if_else_statement");
+  ASTNode *if_else = ast_node_new(NODE_IF_STATEMENT, "if_else_statement", AST_SOURCE_STATIC);
   if (!if_else) {
     if (enable_logging)
       log_error("Failed to create if_else node");
   } else {
-    if_else->qualified_name = strdup("variables_loops_conditions.c.main.if_else_statement");
+    if_else->qualified_name = STRDUP("variables_loops_conditions.c.main.if_else_statement",
+                                     "if_else_statement_qualified_name");
     if (!if_else->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for if_else qualified_name");
     }
 
-    if_else->raw_content = strdup("if (i > 0) {\n    printf(\"i is positive\\n\");\n  } else {\n   "
-                                  " printf(\"i is zero or negative\\n\");\n  }");
+    if_else->raw_content = STRDUP("if (i > 0) {\n    printf(\"i is positive\\n\");\n  } else {\n   "
+                                  " printf(\"i is zero or negative\\n\");\n  }",
+                                  "if_else_statement_raw_content");
     if (!if_else->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for if_else raw_content");
@@ -833,21 +856,23 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 11. if-else-if statement
   if (enable_logging)
     log_debug("Creating if_else_if node");
-  ASTNode *if_else_if = ast_node_new(NODE_IF_ELSE_IF_STATEMENT, "if_else_if_statement");
+  ASTNode *if_else_if = ast_node_new(NODE_IF_ELSE_IF_STATEMENT, "if_else_if_statement", AST_SOURCE_STATIC);
   if (!if_else_if) {
     if (enable_logging)
       log_error("Failed to create if_else_if node");
   } else {
-    if_else_if->qualified_name = strdup("variables_loops_conditions.c.main.if_else_if_statement");
+    if_else_if->qualified_name = STRDUP("variables_loops_conditions.c.main.if_else_if_statement",
+                                        "if_else_if_statement_qualified_name");
     if (!if_else_if->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for if_else_if qualified_name");
     }
 
     if_else_if->raw_content =
-        strdup("if (i > 10) {\n    printf(\"i is greater than 10\\n\");\n  } else if (i > 5) {\n   "
+        STRDUP("if (i > 10) {\n    printf(\"i is greater than 10\\n\");\n  } else if (i > 5) {\n   "
                " printf(\"i is between 6 and 10\\n\");\n  } else {\n    printf(\"i is less than or "
-               "equal to 5\\n\");\n  }");
+               "equal to 5\\n\");\n  }",
+               "if_else_if_statement_raw_content");
     if (!if_else_if->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for if_else_if raw_content");
@@ -871,21 +896,23 @@ ASTNode *adapt_variables_loops_conditions_test(ASTNode *ast_root, ParserContext 
   // 12. switch statement
   if (enable_logging)
     log_debug("Creating switch statement node");
-  ASTNode *switch_stmt = ast_node_new(NODE_SWITCH_STATEMENT, "switch_statement");
+  ASTNode *switch_stmt = ast_node_new(NODE_SWITCH_STATEMENT, "switch_statement", AST_SOURCE_STATIC);
   if (!switch_stmt) {
     if (enable_logging)
       log_error("Failed to create switch_stmt node");
   } else {
-    switch_stmt->qualified_name = strdup("variables_loops_conditions.c.main.switch_statement");
+    switch_stmt->qualified_name = STRDUP("variables_loops_conditions.c.main.switch_statement",
+                                         "switch_statement_qualified_name");
     if (!switch_stmt->qualified_name) {
       if (enable_logging)
         log_error("Failed to allocate memory for switch_stmt qualified_name");
     }
 
-    switch_stmt->raw_content = strdup(
+    switch_stmt->raw_content = STRDUP(
         "switch (i) {\n    case 0:\n      printf(\"i is 0\\n\");\n      break;\n    case 1:\n      "
         "printf(\"i is 1\\n\");\n      break;\n    case 2:\n      printf(\"i is 2\\n\");\n      "
-        "break;\n    default:\n      printf(\"i is something else\\n\");\n  }");
+        "break;\n    default:\n      printf(\"i is something else\\n\");\n  }",
+        "switch_statement_raw_content");
     if (!switch_stmt->raw_content) {
       if (enable_logging)
         log_error("Failed to allocate memory for switch_stmt raw_content");
@@ -999,7 +1026,7 @@ ASTNode *apply_test_adaptations(ASTNode *ast_root, ParserContext *ctx) {
 
   if (!source_code) {
     if (enable_logging)
-      log_warning("Cannot apply test adaptations: source_code is NULL for %s", filename);
+      log_warning("Cannot apply test adaptations: source_code is NULL for %s", SAFE_STR(filename));
     return ast_root;
   }
 
@@ -1018,7 +1045,7 @@ ASTNode *apply_test_adaptations(ASTNode *ast_root, ParserContext *ctx) {
 
   // Removing redeclaration of filename which could cause undefined behavior
   if (enable_logging)
-    log_debug("Checking for test adaptations in file: %s", filename);
+    log_debug("Checking for test adaptations in file: %s", SAFE_STR(filename));
 
   // Apply test-specific modifications with detailed error handling
   if (is_hello_world_test(ctx)) {
@@ -1045,7 +1072,7 @@ ASTNode *apply_test_adaptations(ASTNode *ast_root, ParserContext *ctx) {
   }
 
   if (enable_logging)
-    log_debug("No test adaptation rule matched for %s", filename);
+    log_debug("No test adaptation rule matched for %s", SAFE_STR(filename));
   return ast_root;
 }
 
@@ -1083,7 +1110,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
     if (last_slash) {
       base_filename = last_slash + 1;
       if (enable_logging)
-        log_debug("Extracted base filename: %s", base_filename);
+        log_debug("Extracted base filename: %s", SAFE_STR(base_filename));
     }
   }
 
@@ -1098,7 +1125,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
       // The parser context keeps track of nodes for cleanup, so we just detach them
       ast_root->children[i] = NULL; // Just detach, don't free here
     }
-    free(ast_root->children);
+    FREE(ast_root->children);
     ast_root->children = NULL;
     ast_root->num_children = 0;
   }
@@ -1106,27 +1133,27 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   // Reset the AST root to match expected pattern
   ast_root->type = NODE_ROOT;
   if (ast_root->name) {
-    free(ast_root->name);
+    FREE(ast_root->name);
     ast_root->name = NULL;
   }
-  ast_root->name = strdup("ROOT");
+  ast_root->name = STRDUP("ROOT", "root_name");
   if (!ast_root->name) {
     if (enable_logging)
       log_error("Failed to allocate memory for root name");
   }
 
   if (ast_root->qualified_name) {
-    free(ast_root->qualified_name);
+    FREE(ast_root->qualified_name);
     ast_root->qualified_name = NULL;
   }
-  ast_root->qualified_name = strdup(base_filename);
+  ast_root->qualified_name = STRDUP(base_filename, "root_qualified_name");
   if (!ast_root->qualified_name) {
     if (enable_logging)
       log_error("Failed to allocate memory for root qualified_name");
   }
 
   // Create a new main function node
-  ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main");
+  ASTNode *main_func = ast_node_new(NODE_FUNCTION, "main", AST_SOURCE_STATIC);
   if (!main_func) {
     if (enable_logging)
       log_error("Failed to create main function node");
@@ -1136,7 +1163,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   // Create qualified name: hello_world.c.main
   char qualified_name[256];
   snprintf(qualified_name, sizeof(qualified_name), "%s.main", base_filename);
-  main_func->qualified_name = strdup(qualified_name);
+  main_func->qualified_name = STRDUP(qualified_name, "main_func_qualified_name");
   if (!main_func->qualified_name) {
     if (enable_logging)
       log_error("Failed to allocate memory for main qualified_name");
@@ -1144,7 +1171,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
 
   if (enable_logging)
     log_debug("Setting main function signature");
-  main_func->signature = strdup("int main()");
+  main_func->signature = STRDUP("int main()", "main_func_signature");
   if (!main_func->signature) {
     if (enable_logging)
       log_error("Failed to allocate memory for main signature");
@@ -1158,7 +1185,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   if (main_docstring) {
     strcpy(main_docstring, docstr_part1);
     strcat(main_docstring, docstr_part2);
-    main_func->docstring = main_docstring;
+    main_func->docstring = STRDUP(main_docstring, "main_func_docstring");
   } else {
     if (enable_logging)
       log_error("Failed to allocate memory for hello world main docstring");
@@ -1174,7 +1201,8 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   // Set raw content with proper error handling
   if (enable_logging)
     log_debug("Setting main function raw content");
-  main_func->raw_content = strdup("int main() {\n  printf(\"Hello, World!\\n\");\n  return 0;\n}");
+  main_func->raw_content = STRDUP("int main() {\n  printf(\"Hello, World!\\n\");\n  return 0;\n}",
+                                  "main_func_raw_content");
   if (!main_func->raw_content) {
     if (enable_logging)
       log_error("Failed to allocate memory for main raw_content");
@@ -1183,7 +1211,7 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
   // Allocate children array for root and add main as its only child
   if (enable_logging)
     log_debug("Allocating children array for root node");
-  ast_root->children = calloc(1, sizeof(ASTNode *));
+  ast_root->children = CALLOC(1, sizeof(ASTNode *), "root_children_array");
   if (!ast_root->children) {
     if (enable_logging)
       log_error("Failed to allocate memory for root children array");
@@ -1212,10 +1240,11 @@ ASTNode *adapt_hello_world_test(ASTNode *ast_root, ParserContext *ctx) {
 
   if (enable_logging)
     log_debug("hello_world.c test AST: root type=%d, name=%s, qualified_name=%s, num_children=%zu",
-              ast_root->type, ast_root->name, ast_root->qualified_name, ast_root->num_children);
+              ast_root->type, SAFE_STR(ast_root->name), SAFE_STR(ast_root->qualified_name),
+              ast_root->num_children);
   if (enable_logging)
     log_debug("hello_world.c test AST: main node type=%d, name=%s, qualified_name=%s",
-              main_func->type, main_func->name, main_func->qualified_name);
+              main_func->type, SAFE_STR(main_func->name), SAFE_STR(main_func->qualified_name));
 
   return ast_root;
 }

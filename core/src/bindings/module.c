@@ -6,6 +6,9 @@
  * for ScopeMux. It uses pybind11 to expose the C API to Python.
  */
 
+#include "../../core/include/scopemux/crash_handler.h"
+#include "../../core/include/scopemux/lang_compliance.h"
+#include "../../core/include/scopemux/memory_debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -60,7 +63,12 @@ static const char module_docstring[] =
  * @param m Pointer to the Python module
  */
 void init_scopemux_module(void *m) {
+  // Memory debugging is already initialized in PyInit_scopemux_core
+  log_debug("Setting up module components");
   PyObject *module = (PyObject *)m;
+
+  // Register all language compliance adapters
+  register_all_language_compliance();
 
   // Set module docstring
   PyModule_AddObject(module, "__doc__", PyUnicode_FromString(module_docstring));
@@ -110,14 +118,37 @@ static PyModuleDef scopemux_module = {
 };
 
 /**
+ * @brief Memory debugging cleanup function for atexit
+ */
+static void memory_debug_atexit_cleanup(void) {
+  log_info("Performing memory debugging cleanup at exit");
+  memory_debug_print_stats();
+  memory_debug_dump_allocations();
+  memory_debug_cleanup();
+}
+
+/**
  * @brief Module initialization function
  *
  * This is the entry point for Python when importing the module.
  * Also loads the tree-sitter shared libraries with RTLD_GLOBAL to make symbols available.
  */
 PyMODINIT_FUNC PyInit_scopemux_core(void) {
+  // Initialize logging first
+  log_set_level(LOG_DEBUG);
+  log_info("Initializing scopemux_core Python module");
+
+  // Initialize memory debugging as early as possible
+  log_info("Setting up memory debugging");
+  memory_debug_configure(true, true, true);
+  memory_debug_init();
+
+  // Register cleanup function to run at interpreter exit
+  atexit(memory_debug_atexit_cleanup);
+
   // Load tree-sitter libraries with RTLD_GLOBAL flag to make symbols available to dependent
   // libraries
+  log_debug("Loading Tree-sitter shared libraries");
   dlopen("libtree-sitter.so", RTLD_NOW | RTLD_GLOBAL);
   dlopen("libtree-sitter-c.so", RTLD_NOW | RTLD_GLOBAL);
   dlopen("libtree-sitter-cpp.so", RTLD_NOW | RTLD_GLOBAL);
@@ -126,13 +157,17 @@ PyMODINIT_FUNC PyInit_scopemux_core(void) {
   dlopen("libtree-sitter-typescript.so", RTLD_NOW | RTLD_GLOBAL);
 
   // Create the module
+  log_debug("Creating Python module");
   PyObject *m = PyModule_Create(&scopemux_module);
   if (m == NULL) {
+    log_error("Failed to create Python module");
     return NULL;
   }
 
   // Initialize module components
+  log_debug("Initializing module components");
   init_scopemux_module(m);
 
+  log_info("scopemux_core module initialization complete");
   return m;
 }

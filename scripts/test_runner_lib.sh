@@ -1,5 +1,68 @@
 #!/bin/bash
 # test_runner_lib.sh - Common functions for all language test runners in ScopeMux
+#
+# Purpose:
+#   Provides setup, environment configuration, and utility functions for all test runners.
+#   Ensures Tree-sitter shared libraries are present for dynamic loading (via dlopen/dlsym).
+#
+# Shared Library Build Step:
+#   Automatically checks for required Tree-sitter .so files in build/tree-sitter-libs.
+#   If any are missing, runs scripts/build_shared_libs.sh to generate them from static .a files.
+#   This avoids manual intervention and guarantees tests always have correct runtime dependencies.
+#
+# Caveats:
+#   - Assumes static libraries are built (via build_all_and_pybind.sh or equivalent) before running tests.
+#   - This script should be sourced or invoked by all test runners (run_c_tests.sh, etc).
+#   - Do not invoke scripts/build_shared_libs.sh manually except for debugging.
+#
+# Usage:
+#   Source this script in test runners to ensure a consistent and robust test environment.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+TS_LIBS_DIR="${PROJECT_ROOT_DIR}/build/tree-sitter-libs"
+
+# ========================================
+# TEST GRANULARITY LEVEL CONFIGURATION
+# ========================================
+# Controls how fine-tuned the AST validation tests are across ALL language test runners:
+# Level 1 (SMOKE): Basic parsing success - just verify parser doesn't crash
+# Level 2 (STRUCTURAL): Validate root node type and basic structure
+# Level 3 (SEMANTIC): Validate node types, names, and child counts (DEFAULT)
+# Level 4 (DETAILED): Validate all node properties (signatures, docstrings, qualified_names)
+# Level 5 (EXACT): Every node must match expected JSON exactly (finest granularity)
+#
+# CHANGE THIS VALUE TO SET THE GRANULARITY LEVEL FOR ALL LANGUAGE TESTS:
+TEST_GRANULARITY_LEVEL=3
+
+# Export test granularity level for test executables
+export TEST_GRANULARITY_LEVEL
+
+# Function to display granularity level name
+get_granularity_name() {
+    case $TEST_GRANULARITY_LEVEL in
+        1) echo "SMOKE" ;;
+        2) echo "STRUCTURAL" ;;
+        3) echo "SEMANTIC" ;;
+        4) echo "DETAILED" ;;
+        5) echo "EXACT" ;;
+        *) echo "UNKNOWN" ;;
+    esac
+}
+
+# Display current test granularity level
+echo "[test_runner_lib] Test granularity level: $TEST_GRANULARITY_LEVEL ($(get_granularity_name))"
+
+# Ensure Tree-sitter shared libraries exist (build if missing)
+if [ ! -f "${TS_LIBS_DIR}/libtree-sitter-c.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-cpp.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-python.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-javascript.so" ] || [ ! -f "${TS_LIBS_DIR}/libtree-sitter-typescript.so" ]; then
+    echo "[test_runner_lib] Shared libraries missing, running scripts/build_shared_libs.sh..."
+    bash "${SCRIPT_DIR}/build_shared_libs.sh"
+fi
+
+# Set LD_LIBRARY_PATH to include the Tree-sitter shared libraries directory
+# This ensures that the dynamic loader can find the shared libraries at runtime
+export LD_LIBRARY_PATH="${TS_LIBS_DIR}:${LD_LIBRARY_PATH:-}"
+echo "[test_runner_lib] Setting LD_LIBRARY_PATH to include: ${TS_LIBS_DIR}"
 
 # Global variables
 PARALLEL_JOBS=4
@@ -9,11 +72,18 @@ TOTAL_MISSING_JSON=0
 START_TIME=$(date +%s)
 # Associative array for per-suite results (Bash 4+)
 declare -A TEST_SUITE_RESULTS
+EXAMPLE_CATEGORY_MANIFEST="${PROJECT_ROOT_DIR}/core/tests/example_category_manifest.txt"
+
+# Clear Address Sanitizer logs
+rm -f asan.log*
+
+# Global build directory variable (should be set by each test runner)
+# CMAKE_BUILD_DIR=""
 
 # Standardized error handling
 # Handles errors by printing a message and returning 1 (does not exit the script).
 handle_error() {
-    echo "❌ ERROR: $1"
+    echo " ERROR: $1"
     return 1
 }
 
@@ -27,25 +97,125 @@ cleanup() {
 # Register cleanup function to run on script exit
 trap cleanup EXIT
 
+# Standardized runner script logging
+setup_runner_logging() {
+    local script_path="$1"
+    local project_root_dir="${2:-$PROJECT_ROOT_DIR}"
+    local script_basename
+    script_basename="$(basename "$script_path" .sh)"
+    local output_file="${project_root_dir}/${script_basename}.txt"
+
+    exec > >(tee "$output_file") 2>&1
+}
+
+# Standardized runner build directory initialization
+initialize_runner_build_dir() {
+    local project_root_dir="$1"
+    local build_dir_name="$2"
+
+    CMAKE_BUILD_DIR="${project_root_dir}/${build_dir_name}"
+    export CMAKE_BUILD_DIR
+
+    if [ -z "$CMAKE_BUILD_DIR" ]; then
+        echo "ERROR: CMAKE_BUILD_DIR is not set"
+        exit 1
+    fi
+}
+
+# Standardized build directory preparation and CMake configuration
+prepare_and_configure_build() {
+    local project_root_dir="$1"
+    local build_dir="$2"
+    local clean_build="$3"
+
+    prepare_clean_build_dir "$build_dir" "$clean_build"
+    setup_cmake_config "$project_root_dir" "$build_dir"
+}
+
 # Standardized build function with improved logging
 # Builds a test target. On failure, prints the build log and returns 1 (does not exit the script).
 build_test_target() {
     local target_name="$1"
-    local display_name="$2"
+    local build_dir=""
+    local display_name=""
+
+    if [ $# -ge 3 ]; then
+        build_dir="$2"
+        display_name="$3"
+    elif [ $# -eq 2 ]; then
+        if [ -d "$2" ]; then
+            build_dir="$2"
+            display_name="$target_name"
+        else
+            build_dir="${CMAKE_BUILD_DIR}"
+            display_name="$2"
+        fi
+    else
+        build_dir="${CMAKE_BUILD_DIR}"
+        display_name="$target_name"
+    fi
+
     local build_log="$TMP_DIR/${target_name}_build.log"
 
-    echo "[test_runner_lib] Building ${display_name}..."
-    make "${target_name}" >"$build_log" 2>&1
+    echo "[test_runner_lib] Building ${display_name} in ${build_dir}..."
+    make -C "$build_dir" "$target_name" >"$build_log" 2>&1
     local build_exit_code=$?
 
     if [ $build_exit_code -ne 0 ]; then
-        echo "❌ ERROR: Failed to build test target '${display_name}'."
+        echo " ERROR: Failed to build test target '${display_name}'."
         echo "Build log output:"
         cat "$build_log"
         return 1
     else
         echo "[test_runner_lib] Successfully built ${display_name}"
     fi
+}
+
+# Standardized build-and-run flow for test targets with shared error handling.
+build_and_run_test_target() {
+    local script_name="$1"
+    local build_dir="$2"
+    local target_name="$3"
+    local display_name="$4"
+    local executable_relpath="$5"
+    local build_failure_mode="${6:-count}"
+    local missing_executable_mode="${7:-$build_failure_mode}"
+
+    echo "[$script_name] Building $display_name ($target_name)..."
+    build_test_target "$target_name" "$build_dir" "$display_name"
+    local build_result=$?
+
+    if [ $build_result -ne 0 ]; then
+        echo "[$script_name] ERROR: Failed to build $target_name"
+        if [ "$build_failure_mode" = "exit" ]; then
+            exit 1
+        fi
+        ((TEST_FAILURES++))
+        return 1
+    fi
+
+    local executable_path="${build_dir}/${executable_relpath}"
+    if [ ! -f "$executable_path" ]; then
+        echo "[$script_name] ERROR: Executable not found at $executable_path"
+        if [ "$missing_executable_mode" = "exit" ]; then
+            exit 1
+        fi
+        ((TEST_FAILURES++))
+        return 1
+    fi
+
+    echo "[$script_name] Running $display_name..."
+    run_test_suite "$display_name" "$executable_path"
+    local test_result=$?
+
+    if [ $test_result -ne 0 ]; then
+        echo "[$script_name] ERROR: Test $target_name failed with exit code $test_result"
+        ((TEST_FAILURES++))
+        return "$test_result"
+    fi
+
+    echo "[$script_name] Test $target_name passed"
+    return 0
 }
 
 # Standardized test execution with improved logging
@@ -55,36 +225,44 @@ run_test_suite() {
     # Use test name for log file instead of timestamp for easier debugging
     local test_log="$TMP_DIR/$(basename "${executable_path}").log"
 
+    echo "[test_runner_lib] Checking for test executable: ${executable_path}"
+
     if [ ! -f "${executable_path}" ]; then
-        echo "❌ FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
+        echo " FAIL: ${test_suite_name}. Executable not found: ${executable_path}"
+        # Try to help diagnose the issue
+        echo "[test_runner_lib] Searching for the missing executable..."
+        find "$(dirname "${executable_path}")" -type f -executable -name "$(basename "${executable_path}")" || true
         TEST_SUITE_RESULTS["$test_suite_name"]="FAIL"
         return 1
     fi
 
-    echo "[test_runner_lib] Running ${test_suite_name}..."
+    echo "[test_runner_lib] Running ${test_suite_name}: ${executable_path}"
 
-    pushd "$(dirname "${executable_path}")" >/dev/null
+    # Execute directly with full path instead of changing directory
     # Capture output to a temporary log file first
     local raw_log="${test_log}.raw"
-    "./$(basename "${executable_path}")" >"$raw_log" 2>&1
+    "${executable_path}" >"$raw_log" 2>&1
     local test_exit_code=$?
 
     # Add test name prefix to each line for better readability with parallel execution
     awk -v prefix="[${test_suite_name}] " '{print prefix $0}' "$raw_log" >"$test_log"
     rm -f "$raw_log"
-    popd >/dev/null
+
+    # Output the test result log with line identification
+    echo "[test_runner_lib] Test output from ${test_suite_name}:"
+    cat "$test_log"
 
     # Remove misleading Criterion summary line from output (both stdout and stderr)
-    grep -v "FAIL: .* (One or more tests failed)" "$test_log"
+    grep -v "FAIL: .* (One or more tests failed)" "$test_log" >/dev/null 2>&1
 
     # Check for the summary line indicating all tests passed
     if grep -q "Failing: 0 | Crashing: 0" "$test_log"; then
         # All tests passed in suite
-        echo -e "\033[1;32m✅✅ PASS: ${test_suite_name} (All tests passed)\033[0m"
+        echo -e "\033[1;32m PASS: ${test_suite_name} (All tests passed)\033[0m"
         TEST_SUITE_RESULTS["$test_suite_name"]="PASS"
         return 0
     else
-        echo -e "\033[1;31m❌ FAIL: ${test_suite_name} (One or more tests failed)\033[0m"
+        echo -e "\033[1;31m FAIL: ${test_suite_name} (One or more tests failed)\033[0m"
         TEST_SUITE_RESULTS["$test_suite_name"]="FAIL"
         if [ "$test_exit_code" -eq 0 ]; then
             return 1 # Ensure we return failure even if binary exited with 0
@@ -94,15 +272,39 @@ run_test_suite() {
     fi
 }
 
-
 # Standardized directory processing (recursive, parallel, sorted)
 # Handles testing source files with expected JSON output
+load_example_categories() {
+    local lang="$1"
+    local -n categories_ref=$2
+    categories_ref=()
+
+    if [ ! -f "$EXAMPLE_CATEGORY_MANIFEST" ]; then
+        echo "[test_runner_lib] ERROR: Missing example category manifest: $EXAMPLE_CATEGORY_MANIFEST"
+        return 1
+    fi
+
+    local line
+    line=$(rg --max-count 1 "^${lang}:" "$EXAMPLE_CATEGORY_MANIFEST")
+    if [ -z "$line" ]; then
+        echo "[test_runner_lib] ERROR: No manifest entry found for language: $lang"
+        return 1
+    fi
+
+    line=${line#*:}
+    read -r -a categories_ref <<<"$line"
+
+    if [ ${#categories_ref[@]} -eq 0 ]; then
+        echo "[test_runner_lib] ERROR: Manifest entry for $lang had no categories"
+        return 1
+    fi
+}
+
 process_language_tests() {
     local lang=$1
     local -n categories=$2
     local example_executable_path=$3
     local parallel_jobs=${4:-$PARALLEL_JOBS}
-    # Default extension is '.c', but can be overridden for other languages
     local file_extension=${5:-.c}
 
     for category in "${categories[@]}"; do
@@ -114,29 +316,9 @@ process_language_tests() {
 
         echo "[test_runner_lib] Processing $lang/$category tests..."
 
-        # Local counters for this directory
         local failed_tests=0
         local missing_json=0
-        
-        # Create temporary files to track failures across parallel jobs
-        local fail_counter="$TMP_DIR/${lang}_${category}_failures"
-        local missing_counter="$TMP_DIR/${lang}_${category}_missing"
-        echo 0 > "$fail_counter"
-        echo 0 > "$missing_counter"
 
-        # Create a semaphore with $PARALLEL_JOBS slots
-        local sem="$TMP_DIR/semaphore_$$"
-        mkfifo "$sem"
-        exec 3<>"$sem"
-        rm -f "$sem"
-
-        # Initialize semaphore with $PARALLEL_JOBS tokens
-        for ((i = 1; i <= parallel_jobs; i++)); do
-            echo >&3
-        done
-
-        # Process all test files in directory (sorted alphabetically)
-        # Use find to recursively locate all test files and sort them alphabetically
         local OLD_IFS="$IFS"
         IFS=$'\n'
         test_files=($(find "$dir" -type f -name "*.${file_extension#.}" | sort))
@@ -149,86 +331,55 @@ process_language_tests() {
 
         echo "[test_runner_lib] Found ${#test_files[@]} test files"
 
-        # Process each test file in parallel (limited by semaphore)
+        local test_counter=0
         for test_file in "${test_files[@]}"; do
-            # Wait for a semaphore slot
-            read -u 3
+            test_counter=$((test_counter + 1))
 
-            # Run in background
-            {
-                # Generate expected JSON filename
-                expected_json_file="${test_file}.expected.json"
+            expected_json_file="${test_file}.expected.json"
 
-                # Check if expected JSON exists
-                if [ -f "$expected_json_file" ]; then
-                    # Set environment for tests
-                    export SCOPEMUX_TEST_FILE="$test_file"
-                    export SCOPEMUX_EXPECTED_JSON="$expected_json_file"
+            if [ -f "$expected_json_file" ]; then
+                local build_test_file="$test_file"
+                local build_expected_json="$expected_json_file"
 
-                    local test_name="$lang Example Test: $(basename "$test_file")"
-                    echo "[test_runner_lib] Testing: $test_file"
+                export SCOPEMUX_TEST_FILE="$build_test_file"
+                export SCOPEMUX_EXPECTED_JSON="$build_expected_json"
 
-                    local test_log="$TMP_DIR/$(basename "${test_file}").log"
-                    pushd "$(dirname "${example_executable_path}")" >/dev/null
-                    local executable="./$(basename "${example_executable_path}")"
-                    local test_result=1
-                    local raw_log="${test_log}.raw"
-                    
-                    if [ -x "$executable" ]; then
-                        "$executable" >"$raw_log" 2>&1
-                        test_result=$?
-                        awk -v prefix="[$test_name] " '{print prefix $0}' "$raw_log" >"$test_log"
-                        grep -v "FAIL: .* (One or more tests failed)" "$test_log" || true
-                    else
-                        echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
-                        echo "[$test_name] This is likely due to a build failure. Check the build logs for errors." >>"$test_log"
-                        cat "$test_log"
-                    fi
-                    
-                    rm -f "$raw_log"
-                    popd >/dev/null
+                local test_name="$lang Example Test: $(basename "$test_file")"
+                echo "[test_runner_lib] Testing: $test_file"
 
-                    # Don't need additional filtering as it's already done above
+                local test_log="$TMP_DIR/$(basename "${test_file}").log"
+                local executable="${example_executable_path}"
+                local test_result=1
+                local raw_log="${test_log}.raw"
 
-                    if [ $test_result -ne 0 ]; then
-                        # Update the failure counter in the temp file atomically
-                        local current_fails=$(cat "$fail_counter")
-                        echo $((current_fails + 1)) > "$fail_counter"
-                        echo "❌ FAIL: $test_name ($((i+1))/$total_tests)"
-                    else
-                        echo "✅ PASS: $test_name ($((i+1))/$total_tests)"
-                    fi
+                if [ -x "$executable" ]; then
+                    "$executable" >>"$raw_log" 2>&1
+                    test_result=$?
 
-                    unset SCOPEMUX_TEST_FILE
-                    unset SCOPEMUX_EXPECTED_JSON
+                    grep -v '\[====\] Synthesis:' "$raw_log" | awk -v prefix="[$test_name] " '{print prefix $0}' >"$test_log"
                 else
-                    echo "❌ ERROR: Missing expected JSON for test: $test_file"
-                    # Update the missing counter in the temp file atomically
-                    local current_missing=$(cat "$missing_counter")
-                    echo $((current_missing + 1)) > "$missing_counter"
+                    echo "[$test_name] ERROR: Executable not found: $executable" >"$test_log"
+                    echo "[$test_name] This is likely due to a build failure. Check the build logs for errors." >>"$test_log"
+                    cat "$test_log"
                 fi
 
-                # Return the token
-                echo >&3
-            } &
+                rm -f "$raw_log"
+
+                if [ $test_result -ne 0 ]; then
+                    failed_tests=$((failed_tests + 1))
+                    echo " FAIL: $test_name ($test_counter/${#test_files[@]})"
+                else
+                    echo " PASS: $test_name ($test_counter/${#test_files[@]})"
+                fi
+
+                unset SCOPEMUX_TEST_FILE
+                unset SCOPEMUX_EXPECTED_JSON
+            else
+                echo " ERROR: Missing expected JSON for test: $test_file"
+                missing_json=$((missing_json + 1))
+            fi
         done
 
-        # Wait for all background jobs to finish
-        for job in $(jobs -p); do
-            wait $job
-        done
-        
-        # Collect failure counts from temporary files
-        failed_tests=$(cat "$fail_counter")
-        missing_json=$(cat "$missing_counter")
-        
-        # Clean up temporary counter files
-        rm -f "$fail_counter" "$missing_counter"
-
-        # Close the semaphore
-        exec 3>&-
-
-        # Return cumulative error status (don't return immediately on first error)
         local dir_errors=0
 
         if [ $failed_tests -gt 0 ]; then
@@ -239,30 +390,34 @@ process_language_tests() {
         if [ $missing_json -gt 0 ]; then
             echo "[test_runner_lib] $missing_json JSON files missing in directory: $dir"
             dir_errors=$((dir_errors + missing_json))
-            # Track missing JSON files globally
             TOTAL_MISSING_JSON=$((TOTAL_MISSING_JSON + missing_json))
         fi
 
         local total_tests=${#test_files[@]}
         local passed_tests=$((total_tests - failed_tests - missing_json))
         if [ $dir_errors -eq 0 ]; then
-            # All tests passed in directory
-            echo -e "\033[1;32m✅✅ PASS: $lang/$category ($passed_tests/$total_tests tests passed)\033[0m"
+            echo -e "\033[1;32m PASS: $lang/$category ($passed_tests/$total_tests tests passed)\033[0m"
             TEST_SUITE_RESULTS["$lang/$category"]="PASS"
         else
-            # Some tests failed or missing JSON
-            echo -e "\033[1;31m❌ FAIL: $lang/$category ($passed_tests/$total_tests tests passed, $dir_errors problems in directory)\033[0m"
+            echo -e "\033[1;31m FAIL: $lang/$category ($passed_tests/$total_tests tests passed, $dir_errors problems in directory)\033[0m"
             TEST_SUITE_RESULTS["$lang/$category"]="FAIL"
             TEST_FAILURES=$((TEST_FAILURES + 1))
         fi
     done
 }
 
-
 # Setup CMake configuration
 setup_cmake_config() {
-    local project_root_dir=$1
-    local build_dir="${project_root_dir}/build"
+    local project_root_dir="$1"
+    local build_dir="${2:-$CMAKE_BUILD_DIR}"
+
+    echo "DEBUG: setup_cmake_config received project_root_dir='$project_root_dir', build_dir='$build_dir'"
+
+    # Ensure build directory is set
+    if [ -z "$build_dir" ]; then
+        echo "[test_runner_lib] ERROR: Build directory not specified for CMake"
+        return 1
+    fi
 
     # Always run CMake configuration in the build directory
     if [ ! -d "$build_dir" ]; then
@@ -280,15 +435,13 @@ setup_cmake_config() {
 # Usage: prepare_clean_build_dir <build_dir> <clean_flag>
 prepare_clean_build_dir() {
     local build_dir="$1"
-    local clean_flag="$2"
-    if [ "$clean_flag" = true ] && [ -d "$build_dir" ]; then
-        echo "[test_runner_lib] Cleaning build directory: $build_dir"
+    local clean="$2"
+    echo "DEBUG: prepare_clean_build_dir received build_dir='$build_dir'"
+    echo "[test_runner_lib] Creating build directory: '$build_dir'"
+    if [ "$clean" = true ] && [ -d "$build_dir" ]; then
         rm -rf "$build_dir"
     fi
-    if [ ! -d "$build_dir" ]; then
-        echo "[test_runner_lib] Creating build directory: $build_dir"
-        mkdir -p "$build_dir"
-    fi
+    mkdir -p "$build_dir"
 }
 
 # Print test summary
@@ -309,9 +462,9 @@ print_test_summary() {
         for suite in "${!TEST_SUITE_RESULTS[@]}"; do
             result="${TEST_SUITE_RESULTS[$suite]}"
             if [ "$result" = "PASS" ]; then
-                printf "\033[1;32m%-40s | %-8s\033[0m\n" "$suite" "✅ PASS"
+                printf "\033[1;32m%-40s | %-8s\033[0m\n" "$suite" " PASS"
             else
-                printf "\033[1;31m%-40s | %-8s\033[0m\n" "$suite" "❌ FAIL"
+                printf "\033[1;31m%-40s | %-8s\033[0m\n" "$suite" " FAIL"
             fi
         done
         echo ""
@@ -319,15 +472,39 @@ print_test_summary() {
 
     # Report on missing JSON files even if tests pass
     if [ $TOTAL_MISSING_JSON -gt 0 ]; then
-        echo "⚠️ Missing JSON files: $TOTAL_MISSING_JSON"
+        echo " Missing JSON files: $TOTAL_MISSING_JSON"
     fi
 
     if [ $TEST_FAILURES -eq 0 ]; then
-        echo "✅ ALL TESTS PASSED"
+        echo " ALL TESTS PASSED"
         exit 0
     else
-        echo "❌ TESTS FAILED: $TEST_FAILURES"
+        echo " TESTS FAILED: $TEST_FAILURES"
         exit 1
     fi
 }
 
+# Shared help function for test granularity system
+show_test_granularity_help() {
+    local script_name="$1"
+    echo "Usage: $script_name [options]"
+    echo "Options:"
+    echo "  --no-clean      : Skip cleaning build directory"
+    echo "  --help          : Show this help message"
+    echo ""
+    echo "Test Granularity Configuration:"
+    echo "  Granularity level is set in scripts/test_runner_lib.sh (TEST_GRANULARITY_LEVEL)"
+    echo "  Edit scripts/test_runner_lib.sh to change the validation level (1-5) for ALL language tests:"
+    echo "    1 (SMOKE)      : Basic parsing success - just verify parser doesn't crash"
+    echo "    2 (STRUCTURAL) : Validate root node type and basic structure"
+    echo "    3 (SEMANTIC)   : Validate node types, names, and child counts (DEFAULT)"
+    echo "    4 (DETAILED)   : Validate all node properties (signatures, docstrings, qualified_names)"
+    echo "    5 (EXACT)      : Every node must match expected JSON exactly (finest granularity)"
+    echo ""
+    echo "To change granularity for ALL language tests:"
+    echo "  1. Edit the shared library: nano scripts/test_runner_lib.sh"
+    echo "  2. Change TEST_GRANULARITY_LEVEL=3 to desired level"
+    echo "  3. Save and run any language test: $script_name"
+    echo ""
+    echo "Current granularity level: $TEST_GRANULARITY_LEVEL ($(get_granularity_name))"
+}

@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L // For strdup
 
 #include "../../core/include/scopemux/context_engine.h"
+#include "../../core/include/scopemux/ast.h"
 #include <stdio.h>  // For snprintf
 #include <stdlib.h> // For malloc, calloc, free
 #include <string.h> // For strlen, strncpy, strdup
@@ -286,6 +287,47 @@ size_t context_engine_add_parser_context(ContextEngine *engine, const ParserCont
 
   // For now, just return 0 to indicate no nodes were added
   return 0;
+}
+
+bool context_engine_get_node_names(ContextEngine *engine, const char *file_path,
+                                   const char **node_names, size_t *num_nodes) {
+  if (!engine || !file_path || !num_nodes) {
+    return false;
+  }
+  size_t count = 0;
+  // First pass: count matching nodes
+  for (InfoBlock *block = engine->blocks; block != NULL; block = block->next) {
+    if (!block->ast_node)
+      continue;
+    if (!block->ast_node->file_path)
+      continue;
+    if (strcmp(block->ast_node->file_path, file_path) == 0) {
+      count++;
+    }
+  }
+  if (node_names == NULL) {
+    *num_nodes = count;
+    return true;
+  }
+  // Second pass: fill node_names array
+  size_t filled = 0;
+  for (InfoBlock *block = engine->blocks; block != NULL && filled < *num_nodes;
+       block = block->next) {
+    if (!block->ast_node)
+      continue;
+    if (!block->ast_node->file_path)
+      continue;
+    if (strcmp(block->ast_node->file_path, file_path) == 0) {
+      // Prefer qualified_name, fallback to name
+      const char *name =
+          block->ast_node->qualified_name ? block->ast_node->qualified_name : block->ast_node->name;
+      if (name) {
+        node_names[filled++] = name;
+      }
+    }
+  }
+  *num_nodes = filled;
+  return true;
 }
 
 // Note: The following functions were removed because they're already defined elsewhere:

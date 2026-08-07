@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "../../../core/include/scopemux/parser.h"
-#include "../../../core/include/scopemux/tree_sitter_integration.h"
+
 #include "../../include/test_helpers.h"
 
 //=================================
@@ -29,7 +29,7 @@ Test(ast_extraction, python_functions, .description = "Test AST extraction of Py
   // Initialize parser context (updated API)
   ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->filename = "functions.py"; // Updated: use filename
+  ctx->filename = strdup("functions.py"); // Updated: use heap-allocated filename
 
   // Parse the source code
   parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);
@@ -76,7 +76,7 @@ Test(ast_extraction, python_classes, .description = "Test AST extraction of Pyth
   // Initialize parser context (updated API)
   ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->filename = "classes.py"; // Updated: use filename
+  ctx->filename = strdup("classes.py"); // Updated: use heap-allocated filename
 
   // Parse the source code
   parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);
@@ -111,6 +111,12 @@ Test(ast_extraction, python_classes, .description = "Test AST extraction of Pyth
     }
   }
 
+  // Debug: Dump AST structure to visualize the parsed tree
+  // Uncomment if needed for debugging
+  // for (size_t i = 0; i < node_count; i++) {
+  //   dump_ast_structure(ast_nodes[i], 0);
+  // }
+
   // Clean up
   parser_free(ctx);
   free(source_code);
@@ -134,7 +140,7 @@ Test(ast_extraction, python_hierarchy,
   // Initialize parser context (updated API)
   ParserContext *ctx = parser_init();
   ctx->language = LANG_PYTHON;
-  ctx->filename = "classes.py"; // Updated: use filename
+  ctx->filename = strdup("classes.py"); // Updated: use heap-allocated filename
 
   // Parse the source code
   parser_parse_string(ctx, source_code, strlen(source_code), ctx->filename, LANG_PYTHON);

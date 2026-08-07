@@ -1,12 +1,11 @@
 #pragma once
 
-#include "../common.h"                  // For LanguageType
-#include "../parser.h"                  // For ASTNode, ParserContext
-#include "../tree_sitter_integration.h" // For TSNode, TSQuery, TSQueryMatch
-#include <stdint.h>                     // For uint32_t
+#include "../../../../vendor/tree-sitter/lib/include/tree_sitter/api.h" // For TSNode, TSQuery, TSQueryMatch
+#include "../parser.h" // For ASTNode, ParserContext
+#include <stdint.h>    // For uint32_t
 
 typedef struct LanguageAdapter {
-  LanguageType language_type;
+  Language language_type;
   const char *language_name;
 
   // Core processing functions
@@ -17,4 +16,11 @@ typedef struct LanguageAdapter {
   // Query processing
   void (*pre_process_query)(const char *query_type, TSQuery *query);
   void (*post_process_match)(ASTNode *node, TSQueryMatch *match);
+
+  const TSLanguage *(*get_ts_language)(void);
 } LanguageAdapter;
+
+// NOTE: This array is the single source of truth (SSOT) for all supported languages in ScopeMux.
+// To add a new language, create a LanguageAdapter instance and add it to this array.
+extern struct LanguageAdapter *all_adapters[];
+struct LanguageAdapter *get_adapter_by_language(Language lang);

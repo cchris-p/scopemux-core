@@ -33,8 +33,9 @@ void order_ast_nodes(ASTNode *ast_root);
  * Removes temporary and unwanted nodes from the AST
  *
  * @param ast_root The root AST node
+ * @param ctx Parser context for node tracking
  * @return The number of remaining nodes after cleanup
  */
-size_t cleanup_ast_nodes(ASTNode *ast_root);
+size_t cleanup_ast_nodes(ASTNode *ast_root, ParserContext *ctx);
 
 #endif /* SCOPEMUX_AST_POST_PROCESSOR_H */

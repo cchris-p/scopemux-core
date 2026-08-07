@@ -19,10 +19,12 @@
 #include <string.h>
 
 /* ScopeMux header includes */
-#include "../../core/include/scopemux/parser.h"
-#include "../../core/include/scopemux/python_bindings.h"
-#include "../../core/include/scopemux/python_utils.h"
-#include "../../core/include/tree_sitter/api.h"
+#include "../../core/src/parser/cst_node.h"
+#include "../../include/scopemux/ast.h"
+#include "../../include/scopemux/parser.h"
+#include "../../include/scopemux/python_bindings.h"
+#include "../../include/scopemux/python_utils.h"
+#include "../../include/tree_sitter/api.h"
 
 /* Tree-sitter function declarations */
 void ts_parser_delete(TSParser *parser);
@@ -140,7 +142,7 @@ static PyObject *ParserContext_parse_file(PyObject *self_obj, PyObject *args, Py
     return NULL;
   }
 
-  bool success = parser_parse_file(self->context, filename, (LanguageType)language);
+  bool success = parser_parse_file(self->context, filename, (Language)language);
   if (!success) {
     PyErr_SetString(PyExc_RuntimeError, parser_get_last_error(self->context));
     return NULL;
@@ -165,7 +167,7 @@ static PyObject *ParserContext_parse_string(PyObject *self_obj, PyObject *args, 
     return NULL;
   }
 
-  LanguageType language = LANG_UNKNOWN;
+  Language language = LANG_UNKNOWN;
 
   // Handle language parameter - can be string or integer
   if (language_obj != NULL) {
@@ -190,7 +192,7 @@ static PyObject *ParserContext_parse_string(PyObject *self_obj, PyObject *args, 
     } else if (PyLong_Check(language_obj)) {
       long lang_int = PyLong_AsLong(language_obj);
       if (lang_int >= LANG_UNKNOWN && lang_int <= LANG_TYPESCRIPT) {
-        language = (LanguageType)lang_int;
+        language = (Language)lang_int;
       } else {
         PyErr_SetString(PyExc_ValueError, "Invalid language integer value");
         return NULL;
@@ -469,18 +471,7 @@ static PyObject *cst_node_to_py_dict(const CSTNode *node) {
     return NULL;
   }
 
-  // Add method accessors that don't create circular references
-  PyObject *type_ref = PyDict_GetItemString(dict, "type");
-  PyObject *content_ref = PyDict_GetItemString(dict, "content");
-  PyObject *range_ref = PyDict_GetItemString(dict, "range");
-  PyObject *children_ref = PyDict_GetItemString(dict, "children");
-
-  // PyDict_GetItemString returns borrowed references, don't need to incref/decref
-  // We simply store pointers to existing dictionary values
-  PyDict_SetItemString(dict, "get_type", type_ref);
-  PyDict_SetItemString(dict, "get_content", content_ref);
-  PyDict_SetItemString(dict, "get_range", range_ref);
-  PyDict_SetItemString(dict, "get_children", children_ref);
+  // Removed redundant 'get_*' fields from CST serialization for output size sanity.
 
   // Clean up
   Py_DECREF(methods);
@@ -677,7 +668,8 @@ static PyObject *ASTNode_get_type(ASTNodeObject *self, void *closure) {
   if (!self->node) {
     Py_RETURN_NONE;
   }
-  return PyLong_FromLong(self->node->type);
+  // Return the canonical string representation of the node type
+  return PyUnicode_FromString(ast_node_type_to_string(self->node->type));
 }
 
 /**
@@ -688,7 +680,8 @@ static PyObject *ASTNode_method_get_type(ASTNodeObject *self, PyObject *args) {
   if (!self->node) {
     Py_RETURN_NONE;
   }
-  return PyLong_FromLong(self->node->type);
+  // Return the canonical string representation of the node type
+  return PyUnicode_FromString(ast_node_type_to_string(self->node->type));
 }
 
 static PyObject *ASTNode_method_get_name(ASTNodeObject *self, PyObject *args) {
@@ -1012,14 +1005,32 @@ static PyObject *detect_language(PyObject *self, PyObject *args, PyObject *kwds)
     return NULL;
   }
 
-  LanguageType language = parser_detect_language(filename, content, content_length);
+  Language language = parser_detect_language(filename, content, content_length);
   return PyLong_FromLong((long)language);
 }
 
 /**
  * @brief Module methods
  */
+static PyObject *parse_c_file_to_cst_py(PyObject *self, PyObject *args, PyObject *kwds) {
+  (void)self;
+  const char *filename = NULL;
+  static char *kwlist[] = {"filename", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &filename)) {
+    return NULL;
+  }
+  CSTNode *root = parse_c_file_to_cst(filename);
+  if (!root) {
+    Py_RETURN_NONE;
+  }
+  PyObject *result = cst_node_to_py_dict(root);
+  cst_node_free(root);
+  return result;
+}
+
 const PyMethodDef module_methods[] = {
+    {"parse_c_file_to_cst", (PyCFunction)parse_c_file_to_cst_py, METH_VARARGS | METH_KEYWORDS,
+     "Parse a C file and return the CST as a Python dict."},
     {"detect_language", (PyCFunction)detect_language, METH_VARARGS | METH_KEYWORDS,
      "Detect language from filename and optionally content"},
     {NULL, NULL, 0, NULL} /* Sentinel */

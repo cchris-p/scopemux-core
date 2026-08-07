@@ -75,7 +75,17 @@ void mark_cst_node_freed(CSTNode *node) {
 
 // Signal handler for segmentation faults during parsing
 SCOPEMUX_API void segfault_handler(int sig) {
-  (void)sig; // Silence unused parameter warning
+  fprintf(stderr, "\n*** SEGMENTATION FAULT DETECTED (signal %d) ***\n", sig);
+  fprintf(stderr, "Dumping memory allocation information for diagnostics...\n");
+
+  // Dump memory allocation information
+  memory_debug_print_stats();
+  memory_debug_dump_allocations();
+
+  // Print stack trace if possible
+  fprintf(stderr, "\nAttempting to recover from crash...\n");
+
+  // Set the crash flag and jump back to recovery point
   crash_occurred = 1;
   longjmp(parse_crash_recovery, 1);
 }

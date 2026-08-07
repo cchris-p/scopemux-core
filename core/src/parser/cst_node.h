@@ -9,7 +9,18 @@
 #ifndef SCOPEMUX_CST_NODE_H
 #define SCOPEMUX_CST_NODE_H
 
-#include "../../core/include/scopemux/parser.h"
+#include "../../include/scopemux/parser.h"
+
+// Full definition of CSTNode
+struct CSTNode {
+  const char *type;
+  char *content;
+  SourceRange range;
+  struct CSTNode **children;
+  unsigned int children_count;
+  int is_freed; // DEBUG: Set to 1 when node is freed
+  uint8_t owns_content; // 1 if content is heap-allocated and should be freed, 0 otherwise
+};
 
 /**
  * @brief Create a new CST node

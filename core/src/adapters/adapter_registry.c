@@ -11,7 +11,7 @@ void register_adapter(LanguageAdapter *adapter) {
   registered_adapters[adapter->language_type] = adapter;
 }
 
-LanguageAdapter *get_adapter(LanguageType lang) {
+LanguageAdapter *get_adapter(Language lang) {
   if (lang >= MAX_ADAPTERS)
     return NULL;
   return registered_adapters[lang];
