@@ -24,7 +24,7 @@
 #include "../../include/scopemux/parser.h"
 #include "../../include/scopemux/python_bindings.h"
 #include "../../include/scopemux/python_utils.h"
-#include "../../include/tree_sitter/api.h"
+#include <tree_sitter/api.h>
 
 /* Tree-sitter function declarations */
 void ts_parser_delete(TSParser *parser);

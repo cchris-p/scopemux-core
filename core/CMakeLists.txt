@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(scopemux_core)
 
+option(SCOPEMUX_BUILD_TESTS "Build ScopeMux test targets" ON)
+
 # Set compiler flags for this directory
 # Note: C/C++ standards are already set in the root CMakeLists.txt
 
@@ -131,10 +133,10 @@ set_target_properties(parser_core PROPERTIES
 )
 
 set(CONTEXT_ENGINE_SOURCES
+    src/context_engine/context_engine.c
     src/context_engine/compressor.c
     src/context_engine/expander.c
     src/context_engine/token_budgeter.c
-    src/context_engine/context_engine.c
 )
 
 set(COMMON_SOURCES
@@ -248,11 +250,19 @@ target_link_options(scopemux_core PRIVATE
 )
 
 # Installation rules
-install(TARGETS scopemux_core DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS scopemux_core LIBRARY DESTINATION . RUNTIME DESTINATION .)
 
-# Add subdirectories for other components if they exist
+# Add subdirectories for non-test support code when they exist
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/adapters)
     add_subdirectory(src/adapters)
+endif()
+
+if(SCOPEMUX_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    add_subdirectory(tests)
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples)
+    add_subdirectory(examples)
 endif()
 
 # Print configuration summary

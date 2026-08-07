@@ -24,8 +24,8 @@
 #include "./parser.h"
 #include <stdbool.h>
 
-// Directly include the Tree-sitter API header
-#include "../../../vendor/tree-sitter/lib/include/tree_sitter/api.h"
+// Use the configured Tree-sitter include path instead of repo-relative headers.
+#include <tree_sitter/api.h>
 
 /**
  * @brief Extract the source text spanned by a Tree-sitter node.

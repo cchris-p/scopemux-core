@@ -1,7 +1,7 @@
 #ifndef SCOPEMUX_QUERY_MANAGER_H
 #define SCOPEMUX_QUERY_MANAGER_H
 
-#include "../tree_sitter/api.h"
+#include <tree_sitter/api.h>
 #include "language.h"
 
 // Forward declaration of the QueryManager structure.
