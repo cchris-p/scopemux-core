@@ -11,7 +11,7 @@
 #include "parser_internal.h"
 
 // Include tree-sitter API for query functions
-#include "../../core/include/tree_sitter/api.h"
+#include <tree_sitter/api.h>
 
 // Define function signatures for Tree-sitter query API to avoid compilation warnings
 // These should match the actual Tree-sitter API signatures

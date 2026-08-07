@@ -67,17 +67,14 @@ The simplest supported path is:
 ```
 
 This script:
-- configures a fresh CMake build
-- builds the Tree-sitter libraries
-- builds the `scopemux_core` Python extension
-- places build artifacts under `build/`
+- installs `scopemux_core` as an editable dependency from `./core`
+- drives the native build through `core/pyproject.toml`
+- builds the `scopemux_core` Python extension without manual `PYTHONPATH` setup
 
-After a successful build, use the local extension from `build/core/`.
-
-Example:
+You can also run the editable install directly:
 
 ```bash
-PYTHONPATH="$(pwd)/build/core" python3
+python3 -m pip install -e ./core
 ```
 
 ## Run Tests
