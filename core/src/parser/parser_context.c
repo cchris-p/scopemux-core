@@ -38,21 +38,15 @@
  */
 ParserContext *parser_init(void) {
   // Allocate memory for the context
-  fprintf(stderr, "DEBUG: About to allocate ParserContext of size %zu\n", sizeof(ParserContext));
   void *raw_ptr = safe_malloc(sizeof(ParserContext));
-  fprintf(stderr, "DEBUG: safe_malloc returned raw_ptr=%p\n", raw_ptr);
   ParserContext *ctx = (ParserContext *)raw_ptr;
-  fprintf(stderr, "DEBUG: after cast ctx=%p\n", (void *)ctx);
   if (!ctx) {
     log_error("Failed to allocate memory for parser context");
     return NULL;
   }
 
   // Initialize with default values
-  fprintf(stderr, "DEBUG: About to memset ctx=%p with size %zu\n", (void *)ctx,
-          sizeof(ParserContext));
   memset(ctx, 0, sizeof(ParserContext));
-  fprintf(stderr, "DEBUG: memset completed successfully\n");
 
   // Initialize Tree-sitter parser through the integration layer
   ctx->ts_parser = ts_parser_new();
@@ -104,9 +98,6 @@ void parser_clear(ParserContext *ctx) {
     return;
   }
 
-  fprintf(stderr, "[DEBUG] parser_clear starting for ctx=%p\n", (void *)ctx);
-  fprintf(stderr, "[DEBUG] ctx->num_ast_nodes=%zu\n", ctx->num_ast_nodes);
-  
   log_debug("[LIFECYCLE] Entering parser_clear for ctx=%p", (void *)ctx);
 
   // Check for static assignment (simple heuristic: check if pointer is in static range)
@@ -168,24 +159,18 @@ void parser_clear(ParserContext *ctx) {
   size_t freed_nodes = 0;
   size_t skipped_children = 0;
   if (ctx->all_ast_nodes) {
+    ASTNode **root_nodes = NULL;
+    size_t root_count = 0;
+
     for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
       ASTNode *node = ctx->all_ast_nodes[i];
       if (!node) {
-        log_debug("[AST_FREE] Skipping NULL node at index %zu", i);
         continue;
       }
 
-      fprintf(stderr, "[DEBUG] About to check magic for node at index %zu, ptr=%p\n", i, (void *)node);
-      
-      // Check magic number first to detect already-freed nodes
-      // Use volatile to prevent compiler optimization that might cache the value
-      volatile uint32_t magic = node->magic;
-      
-      fprintf(stderr, "[DEBUG] Successfully read magic=0x%X for node at index %zu, ptr=%p\n", magic, i, (void *)node);
+      uint32_t magic = node->magic;
       if (magic != ASTNODE_MAGIC) {
-        if (magic == 0xDEADBEEF) {
-          log_debug("[AST_FREE] Skipping already-freed node at index %zu, ptr=%p", i, (void *)node);
-        } else {
+        if (magic != 0xDEADBEEF) {
           log_debug("[AST_FREE] Invalid magic number in AST node %zu: expected 0x%X, found 0x%X "
                     "(possibly freed)",
                     i, ASTNODE_MAGIC, magic);
@@ -203,21 +188,35 @@ void parser_clear(ParserContext *ctx) {
       // CRITICAL: Only free root nodes (nodes without parents)
       // Child nodes will be freed recursively by their parents
       if (node->parent != NULL) {
-        log_debug("[AST_FREE] Skipping child node at index %zu, ptr=%p (parent=%p)", i,
-                  (void *)node, (void *)node->parent);
         skipped_children++;
         ctx->all_ast_nodes[i] = NULL;
         continue;
       }
 
-      log_debug("[AST_FREE] About to free ROOT ASTNode at index %zu, ptr=%p, magic=0x%X", i,
-                (void *)node, node->magic);
-      ast_node_free(node); // This will recursively free all children
-      log_debug("[AST_FREE] Freed ROOT ASTNode at index %zu, ptr=%p (and all its children)", i,
-                (void *)node);
-      freed_nodes++;
+      ASTNode **new_root_nodes =
+          (ASTNode **)safe_realloc(root_nodes, (root_count + 1) * sizeof(ASTNode *));
+      if (!new_root_nodes) {
+        log_error("[AST_FREE] Failed to grow root node list during cleanup");
+        ctx->all_ast_nodes[i] = NULL;
+        continue;
+      }
+
+      root_nodes = new_root_nodes;
+      root_nodes[root_count++] = node;
       ctx->all_ast_nodes[i] = NULL;
     }
+
+    for (size_t i = 0; i < root_count; i++) {
+      ASTNode *node = root_nodes[i];
+      if (!node) {
+        continue;
+      }
+
+      ast_node_free(node); // This will recursively free all children
+      freed_nodes++;
+    }
+
+    safe_free(root_nodes);
   }
   log_info("AST node cleanup summary: freed %zu root nodes, skipped %zu child nodes (freed "
            "recursively), total tracked: %zu",

@@ -235,10 +235,6 @@ bool parser_parse_string(ParserContext *ctx, const char *content, size_t content
                          const char *filename, Language language) {
   char *filename_copy = NULL;
 
-  fprintf(stderr,
-          "[DIAGNOSTIC-ENTRY] Entered parser_parse_string: ctx=%p, content=%p, content_length=%zu, "
-          "filename=%s, language=%d\n",
-          (void *)ctx, (void *)content, content_length, SAFE_STR(filename), language);
   if (!ctx || !content) {
     log_error("Cannot parse string: %s", !ctx ? "context is NULL" : "content is NULL");
     return false;
@@ -500,8 +496,6 @@ const CSTNode *parser_get_cst_root(const ParserContext *ctx) {
 
 // === Tree-sitter integration public API ===
 bool ts_init_parser(ParserContext *ctx, Language language) {
-  fprintf(stderr, "[DIAGNOSTIC-FACADE] Entered ts_init_parser: ctx=%p, language=%d\n", (void *)ctx,
-          language);
   if (!ctx) {
     log_error("NULL context passed to ts_init_parser");
     return false;

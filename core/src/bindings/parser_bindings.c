@@ -42,63 +42,29 @@ PyTypeObject CSTNodePyType;
  * This function is critical for preventing memory leaks and double free issues
  */
 static void ParserContext_dealloc(ParserContextObject *self) {
-  printf("[PYTHON_DEALLOC] ENTER: self=%p\n", (void *)self);
-  fflush(stdout);
-
   // Guard against NULL self pointer
   if (!self) {
-    printf("[PYTHON_DEALLOC] EXIT: self is NULL\n");
-    fflush(stdout);
     return;
   }
 
-  printf("[PYTHON_DEALLOC] Python object type: %s\n", Py_TYPE(self)->tp_name);
-  fflush(stdout);
-
   // Check if we have a valid context to clean up
   if (self->context) {
-    printf("[PYTHON_DEALLOC] Starting cleanup of parser context at %p\n", (void *)self->context);
-    fflush(stdout);
-
     // CRITICAL: First ensure CST root is cleared before freeing the parser context
     // This prevents double free issues when the parser context is freed
-    printf("[PYTHON_DEALLOC] Clearing CST root before freeing parser context\n");
-    fflush(stdout);
-
     // Use parser_set_cst_root with NULL to safely clear the CST root
     // This function handles proper cleanup of any existing CST root
     parser_set_cst_root(self->context, NULL);
 
     // Now that CST root is safely cleared, free the parser context
-    printf("[PYTHON_DEALLOC] Now freeing parser context at %p\n", (void *)self->context);
-    fflush(stdout);
-
     // parser_free will handle all remaining cleanup including AST nodes
     parser_free(self->context);
 
     // Clear the pointer to avoid any potential use-after-free
     self->context = NULL;
-
-    printf("[PYTHON_DEALLOC] Parser context cleanup complete\n");
-    fflush(stdout);
-  } else {
-    printf("[PYTHON_DEALLOC] No parser context to free (already NULL)\n");
-    fflush(stdout);
   }
 
-  // Free the Python object
-  printf("[PYTHON_DEALLOC] About to free Python object at %p\n", (void *)self);
-  fflush(stdout);
-
   PyTypeObject *type = Py_TYPE(self);
-  printf("[PYTHON_DEALLOC] Using tp_free function at %p from type %s\n", (void *)type->tp_free,
-         type->tp_name);
-  fflush(stdout);
-
   type->tp_free((PyObject *)self);
-
-  printf("[PYTHON_DEALLOC] EXIT: Python object freed successfully\n");
-  fflush(stdout);
 }
 
 /**
@@ -271,10 +237,12 @@ static PyObject *ParserContext_get_ast_root(PyObject *self_obj, PyObject *Py_UNU
     return NULL;
   }
 
-  // We don't need to copy the node since the Python object will take ownership
-  // of the AST node. The node will be freed when the Python object is deallocated.
+  // Borrow the AST from the parser context and keep the context alive while the
+  // wrapper exists so parser teardown cannot free the native node early.
   py_node->node = (ASTNode *)ast_root;
-  py_node->owned = true; // Set ownership flag
+  py_node->owner = self_obj;
+  Py_INCREF(self_obj);
+  py_node->owned = false;
 
   return (PyObject *)py_node;
 }
@@ -487,73 +455,34 @@ static PyObject *cst_node_to_py_dict(const CSTNode *node) {
  * and then clears the CST root in the parser context to prevent double free.
  */
 static PyObject *ParserContext_get_cst_root(PyObject *self_obj, PyObject *Py_UNUSED(args)) {
-  printf("[GET_CST_ROOT] ENTER: self_obj=%p\n", (void *)self_obj);
-  fflush(stdout);
-
   ParserContextObject *self = (ParserContextObject *)self_obj;
-  printf("[GET_CST_ROOT] Cast to ParserContextObject: self=%p\n", (void *)self);
-  fflush(stdout);
 
   if (!self->context) {
-    printf("[GET_CST_ROOT] ERROR: Parser context is not initialized\n");
-    fflush(stdout);
     PyErr_SetString(PyExc_RuntimeError, "Parser context is not initialized");
     return NULL;
   }
 
-  printf("[GET_CST_ROOT] Parser context at %p\n", (void *)self->context);
-  fflush(stdout);
-
   // Get the CST root node from the parser context
   const CSTNode *cst_root_const = parser_get_cst_root(self->context);
   if (!cst_root_const) {
-    printf("[GET_CST_ROOT] ERROR: Failed to get CST root node\n");
-    fflush(stdout);
     PyErr_SetString(PyExc_RuntimeError,
                     "Failed to get CST root node. Make sure the file is parsed successfully.");
     return NULL;
   }
 
-  printf("[GET_CST_ROOT] Retrieved CST root at %p (type=%s)\n", (void *)cst_root_const,
-         cst_root_const->type);
-  fflush(stdout);
-
   // Create a pure Python dictionary directly from the CST node
   // This creates a deep copy without maintaining references to C structures
-  printf("[GET_CST_ROOT] Converting CST node to Python dictionary...\n");
-  fflush(stdout);
-
   PyObject *py_dict = cst_node_to_py_dict(cst_root_const);
   if (!py_dict) {
-    printf("[GET_CST_ROOT] ERROR: Failed to convert CST node to Python dictionary\n");
-    fflush(stdout);
     PyErr_SetString(PyExc_MemoryError, "Failed to convert CST node to Python dictionary");
     return NULL;
   }
 
-  printf("[GET_CST_ROOT] Successfully converted CST node to Python dictionary at %p\n",
-         (void *)py_dict);
-  fflush(stdout);
-
   // CRITICAL FIX: After converting to Python dictionary, set the CST root to NULL
   // This prevents double-free when the parser context is cleaned up
-  printf("[GET_CST_ROOT] Transferring ownership: Setting CST root to NULL after conversion\n");
-  fflush(stdout);
-
   // Set the CST root to NULL in the parser context to prevent double-free
   // This transfers ownership of the CST node to Python
-  printf("[GET_CST_ROOT] Before transfer: CST root at %p\n",
-         (void *)parser_get_cst_root(self->context));
-  fflush(stdout);
-
   parser_set_cst_root(self->context, NULL);
-
-  printf("[GET_CST_ROOT] After transfer: CST root at %p\n",
-         (void *)parser_get_cst_root(self->context));
-  fflush(stdout);
-
-  printf("[GET_CST_ROOT] EXIT: Returning Python dictionary at %p\n", (void *)py_dict);
-  fflush(stdout);
 
   return py_dict;
 }
@@ -592,6 +521,8 @@ static void ASTNode_dealloc(ASTNodeObject *self) {
     ast_node_free(self->node);
     self->node = NULL;
   }
+  Py_XDECREF(self->owner);
+  self->owner = NULL;
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -605,6 +536,7 @@ static PyObject *ASTNode_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   self = (ASTNodeObject *)type->tp_alloc(type, 0);
   if (self != NULL) {
     self->node = NULL;
+    self->owner = NULL;
     self->owned = 0;
   }
   return (PyObject *)self;

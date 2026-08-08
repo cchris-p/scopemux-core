@@ -48,6 +48,8 @@ typedef struct {
   PyObject_HEAD
       /* The C ASTNode instance */
       struct ASTNode *node;
+  /* Keep the owning parser context alive for borrowed nodes */
+  PyObject *owner;
   /* Flag to indicate if we own the ASTNode memory */
   int owned;
 } ASTNodeObject;

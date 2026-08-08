@@ -171,36 +171,20 @@ QueryManager *query_manager_init(const char *queries_dir) {
  * @param manager The query manager to free.
  */
 void query_manager_free(QueryManager *manager) {
-  printf("[QUERY_MANAGER_FREE] ENTER: manager=%p\n", (void *)manager);
-  fflush(stdout);
-
   if (!manager) {
-    printf("[QUERY_MANAGER_FREE] EXIT: manager is NULL\n");
-    fflush(stdout);
     return;
   }
 
   // Free queries_dir
   if (manager->queries_dir) {
-    printf("[QUERY_MANAGER_FREE] Freeing queries_dir at %p\n", (void *)manager->queries_dir);
-    fflush(stdout);
     safe_free((void *)manager->queries_dir);
     manager->queries_dir = NULL;
   }
 
   // Free all cached queries and their names
   if (manager->cached_queries) {
-    printf("[QUERY_MANAGER_FREE] Freeing cached queries array at %p (language_count=%zu)\n",
-           (void *)manager->cached_queries, manager->language_count);
-    fflush(stdout);
-
     for (size_t i = 0; i < manager->language_count; i++) {
       if (manager->cached_queries[i]) {
-        printf("[QUERY_MANAGER_FREE] Freeing cached queries for language %zu at %p "
-               "(query_count=%zu)\n",
-               i, (void *)manager->cached_queries[i], manager->query_counts[i]);
-        fflush(stdout);
-
         // Free each query in the language
         for (size_t j = 0; j < manager->query_counts[i]; j++) {
           if (manager->cached_queries[i][j].query_name) {
@@ -210,55 +194,34 @@ void query_manager_free(QueryManager *manager) {
             ts_query_delete((TSQuery *)manager->cached_queries[i][j].query);
           }
         }
-
-        printf("[QUERY_MANAGER_FREE] Freeing QueryCacheEntry array at %p\n",
-               (void *)manager->cached_queries[i]);
-        fflush(stdout);
         safe_free(manager->cached_queries[i]);
         manager->cached_queries[i] = NULL;
       }
     }
-
-    printf("[QUERY_MANAGER_FREE] Freeing cached_queries array at %p\n",
-           (void *)manager->cached_queries);
-    fflush(stdout);
     safe_free(manager->cached_queries);
     manager->cached_queries = NULL;
   }
 
   // Free languages array
   if (manager->languages) {
-    printf("[QUERY_MANAGER_FREE] Freeing languages array at %p\n", (void *)manager->languages);
-    fflush(stdout);
     safe_free(manager->languages);
     manager->languages = NULL;
   }
 
   // Free language_types array
   if (manager->language_types) {
-    printf("[QUERY_MANAGER_FREE] Freeing language_types array at %p\n",
-           (void *)manager->language_types);
-    fflush(stdout);
     safe_free(manager->language_types);
     manager->language_types = NULL;
   }
 
   // Free query_counts array
   if (manager->query_counts) {
-    printf("[QUERY_MANAGER_FREE] Freeing query_counts array at %p\n",
-           (void *)manager->query_counts);
-    fflush(stdout);
     safe_free(manager->query_counts);
     manager->query_counts = NULL;
   }
 
   // Free the manager struct itself
-  printf("[QUERY_MANAGER_FREE] Freeing manager struct at %p\n", (void *)manager);
-  fflush(stdout);
   safe_free(manager);
-
-  printf("[QUERY_MANAGER_FREE] EXIT: Query manager cleanup complete\n");
-  fflush(stdout);
 }
 
 /**

@@ -273,7 +273,7 @@ static void ensure_schema_compliance(ASTNode *node, ParserContext *ctx) {
 
     if (lang_compliance) {
       // Call the language-specific compliance function for this node with error handling
-      if (!lang_compliance(node, ctx)) {
+      if (lang_compliance(node, ctx) != 0) {
         log_warning(
             "Language-specific schema compliance callback for language %d failed on node %s", lang,
             node->name ? node->name : "(unnamed)");

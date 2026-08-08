@@ -12,7 +12,6 @@
 #include "../../core/include/scopemux/memory_debug.h"
 #include "../../core/include/scopemux/memory_management.h"
 #include "parser_internal.h"
-#include <execinfo.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -102,15 +101,7 @@ const char *ast_node_type_to_string(ASTNodeType type) {
  * This is different from ast_node_free which also frees children
  */
 void ast_node_free_internal(ASTNode *node) {
-  fprintf(stderr, "[TEST] ast_node_free_internal reached for node at %p\n", (void *)node);
-
-  log_debug("[TEST] ast_node_free_internal reached for node at %p", (void *)node);
-
-  log_debug("[ast_node_free_internal] Freeing ASTNode at %p (magic=0x%X owned_fields=0x%X)",
-            (void *)node, node ? node->magic : 0, node ? node->owned_fields : 0);
-
   if (!node) {
-    log_debug("Skipping free for NULL ASTNode");
     return;
   }
 
@@ -152,8 +143,6 @@ void ast_node_free_internal(ASTNode *node) {
     node->docstring = NULL;
   }
   if (node->raw_content && (node->owned_fields & FIELD_RAW_CONTENT)) {
-    log_debug("Freeing raw_content for ASTNode at %p (owned_fields=0x%X)", (void *)node,
-              node->owned_fields);
     safe_free(node->raw_content);
     node->raw_content = NULL;
     node->owned_fields &= ~FIELD_RAW_CONTENT;
@@ -241,19 +230,7 @@ ASTNode *ast_node_new(ASTNodeType type, char *name, ASTStringSource name_source)
  * Frees an AST node and all its resources recursively.
  */
 void ast_node_free(ASTNode *node) {
-  fprintf(stderr, "[TEST] ast_node_free reached for node at %p\n", (void *)node);
-  void *callstack[16];
-  int frames = backtrace(callstack, 16);
-  char **symbols = backtrace_symbols(callstack, frames);
-  fprintf(stderr, "[TRACE] ast_node_free stack trace for node %p:\n", (void *)node);
-  for (int i = 0; i < frames; i++) {
-    fprintf(stderr, "  %s\n", symbols[i]);
-  }
-  free(symbols);
-  log_debug("[ast_node_free] Called for node at %p (magic=0x%X)", (void *)node,
-            node ? node->magic : 0);
   if (!node) {
-    log_debug("Skipping free for NULL ASTNode");
     return;
   }
   if (!memory_debug_check_canary(node, sizeof(ASTNode))) {
@@ -262,12 +239,9 @@ void ast_node_free(ASTNode *node) {
   if (node->magic != ASTNODE_MAGIC) {
     if (node->magic == 0) {
       log_error("Double-free detected: attempt to free already freed ASTNode at %p", (void *)node);
-      fprintf(stderr, "[ERROR] Double-free detected for ASTNode at %p\n", (void *)node);
     } else {
       log_error("Invalid magic number in ASTNode at %p: expected 0x%X, found 0x%X", (void *)node,
                 ASTNODE_MAGIC, node->magic);
-      fprintf(stderr, "[ERROR] Invalid magic number in ASTNode at %p: expected 0x%X, found 0x%X\n",
-              (void *)node, ASTNODE_MAGIC, node->magic);
     }
     return;
   }
@@ -287,7 +261,6 @@ void ast_node_free(ASTNode *node) {
     node->references = NULL;
   }
   memory_debug_free(node, __FILE__, __LINE__);
-  fprintf(stderr, "[TEST] ast_node_free completed for node at %p\n", (void *)node);
 }
 
 /**

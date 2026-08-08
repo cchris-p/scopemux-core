@@ -135,8 +135,6 @@ char *build_queries_dir_impl(Language language) {
  */
 // Ensure this is properly exported for linking
 bool ts_init_parser_impl(ParserContext *ctx, Language language) {
-  fprintf(stderr, "[DIAGNOSTIC-ENTRY] Entered ts_init_parser_impl: ctx=%p, language=%d\n",
-          (void *)ctx, language);
   log_debug("ts_init_parser_impl called with language: %d, ctx: %p", language, (void *)ctx);
   if (!ctx) {
     log_error("NULL context passed to ts_init_parser");
@@ -159,70 +157,12 @@ bool ts_init_parser_impl(ParserContext *ctx, Language language) {
   // Store language type in context for later reference
   ctx->language = language;
 
-  fprintf(stderr, "\n***** PARSER INITIALIZATION DIAGNOSTIC *****\n");
-  fprintf(stderr, "Test executable pid: %d\n", (int)getpid());
-
 // We have static declarations for the Tree-sitter language functions
 // Instead of trying to load shared libraries that don't exist, use the statically linked functions
 #if defined(__GNUC__)
-  // Log that we're using statically linked Tree-sitter libraries
-  fprintf(stderr, "Using statically linked Tree-sitter libraries\n");
-
-  // Get function pointers to the statically linked functions
-  void *c_sym = (void *)&tree_sitter_c;
-  void *cpp_sym = (void *)&tree_sitter_cpp;
-  void *python_sym = (void *)&tree_sitter_python;
-  void *js_sym = (void *)&tree_sitter_javascript;
-  void *ts_sym = (void *)&tree_sitter_typescript;
-
-  fprintf(stderr, "SYMBOL RESOLUTION CHECK:\n");
-  fprintf(stderr, "  dlsym(tree_sitter_c): %p\n", c_sym);
-  fprintf(stderr, "  dlsym(tree_sitter_cpp): %p\n", cpp_sym);
-  fprintf(stderr, "  dlsym(tree_sitter_python): %p\n", python_sym);
-  fprintf(stderr, "  dlsym(tree_sitter_javascript): %p\n", js_sym);
-  fprintf(stderr, "  dlsym(tree_sitter_typescript): %p\n", ts_sym);
 #endif
 
-  // DIAGNOSTIC: Print language enum and adapter lookup
-  fprintf(stderr, "[DIAGNOSTIC] ts_init_parser_impl: language enum: %d\n", language);
-  const char *lang_name = NULL;
-  switch (language) {
-  case LANG_C:
-    lang_name = "C";
-    break;
-  case LANG_CPP:
-    lang_name = "C++";
-    break;
-  case LANG_PYTHON:
-    lang_name = "Python";
-    break;
-  case LANG_JAVASCRIPT:
-    lang_name = "JavaScript";
-    break;
-  case LANG_TYPESCRIPT:
-    lang_name = "TypeScript";
-    break;
-  default:
-    lang_name = "UNKNOWN";
-    break;
-  }
-  fprintf(stderr, "[DIAGNOSTIC] Language name: %s\n", lang_name);
-
   LanguageAdapter *adapter = get_adapter_by_language(language);
-  fprintf(stderr, "[DIAGNOSTIC] Adapter lookup result: %p\n", (void *)adapter);
-  if (adapter) {
-    fprintf(stderr, "[DIAGNOSTIC] Adapter language_name: %s\n", adapter->language_name);
-    fprintf(stderr, "[DIAGNOSTIC] Adapter get_ts_language pointer: %p\n",
-            (void *)adapter->get_ts_language);
-    if (adapter->get_ts_language) {
-      const TSLanguage *ts_lang_ptr = adapter->get_ts_language();
-      fprintf(stderr, "[DIAGNOSTIC] Result of get_ts_language(): %p\n", (void *)ts_lang_ptr);
-    } else {
-      fprintf(stderr, "[DIAGNOSTIC] Adapter get_ts_language is NULL!\n");
-    }
-  } else {
-    fprintf(stderr, "[DIAGNOSTIC] Adapter is NULL!\n");
-  }
 
   // Set language
   if (!adapter || !adapter->get_ts_language) {

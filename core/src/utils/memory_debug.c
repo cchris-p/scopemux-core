@@ -82,21 +82,27 @@ void memory_debug_cleanup(void) {
   if (leak_detection_enabled) {
     size_t leaks = 0;
     size_t leak_bytes = 0;
+    size_t leak_samples_logged = 0;
+    const size_t max_leak_samples = 10;
 
     for (size_t i = 0; i < allocation_count; i++) {
       if (!allocations[i].freed) {
         leaks++;
         leak_bytes += allocations[i].size;
-        if (MEMORY_DEBUG_LOGGING) {
+        if (MEMORY_DEBUG_LOGGING && leak_samples_logged < max_leak_samples) {
           log_error("MEMORY LEAK: %zu bytes at %p allocated in %s:%d [%s]", allocations[i].size,
                     allocations[i].ptr, SAFE_STR(allocations[i].file), allocations[i].line,
                     SAFE_STR(allocations[i].tag));
+          leak_samples_logged++;
         }
       }
     }
 
     if (leaks > 0) {
       if (MEMORY_DEBUG_LOGGING) {
+        if (leaks > max_leak_samples) {
+          log_error("MEMORY LEAK: showing %zu of %zu leaked allocations", max_leak_samples, leaks);
+        }
         log_error("Memory leak summary: %zu leaks, %zu bytes total", leaks, leak_bytes);
       }
     } else {
@@ -256,16 +262,26 @@ void memory_debug_dump_allocations(void) {
 
   pthread_mutex_lock(&memory_debug_mutex);
 
+  size_t active_allocations = 0;
+  size_t sampled_allocations = 0;
+  const size_t max_samples = 10;
+
   if (MEMORY_DEBUG_LOGGING) {
     log_info("Current active allocations:");
   }
   for (size_t i = 0; i < allocation_count; i++) {
     if (!allocations[i].freed) {
-      if (MEMORY_DEBUG_LOGGING) {
+      active_allocations++;
+      if (MEMORY_DEBUG_LOGGING && sampled_allocations < max_samples) {
         log_info("  %p: %zu bytes [%s] at %s:%d", allocations[i].ptr, allocations[i].size,
                  SAFE_STR(allocations[i].tag), SAFE_STR(allocations[i].file), allocations[i].line);
+        sampled_allocations++;
       }
     }
+  }
+
+  if (MEMORY_DEBUG_LOGGING && active_allocations > max_samples) {
+    log_info("  showing %zu of %zu active allocations", max_samples, active_allocations);
   }
 
   pthread_mutex_unlock(&memory_debug_mutex);

@@ -143,9 +143,6 @@ void cst_node_free(CSTNode *node) {
     fprintf(stderr, "[CST_FREE] Entered for node=%p type=%s content=%p is_freed=%d\n", (void *)node,
             SAFE_STR(node->type), (void *)node->content, node->is_freed);
   }
-  log_debug("[CSTNode FREE] node=%p type=%s content=%p is_freed=%d", (void *)node,
-            SAFE_STR(node->type), (void *)node->content, node->is_freed);
-
   // DEBUG: Assert not already freed
   if (node->is_freed) {
     log_error("[CSTNode DOUBLE FREE DETECTED] node=%p type=%s", (void *)node, SAFE_STR(node->type));
