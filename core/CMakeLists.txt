@@ -61,6 +61,7 @@ add_library(parser_core_obj OBJECT
     src/parser/project_context/project_utils.c
     src/parser/project_context/project_symbol_extraction.c
     src/parser/project_context/tiered_context.c
+    src/parser/project_context/plan_store.c
     # Reference resolver components
     src/parser/reference_resolvers/language_resolvers.c
     src/parser/reference_resolvers/reference_resolver_core.c

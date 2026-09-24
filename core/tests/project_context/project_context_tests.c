@@ -865,3 +865,123 @@ Test(project_context_delegation, plan_node_projection_and_reconciliation, .init 
 
   project_plan_node_reconciliation_result_free(&reconcile);
 }
+
+Test(project_context_delegation, durable_plan_store_roundtrip, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *caller_ctx = parser_init();
+  ParserContext *callee_ctx = parser_init();
+  ASTNode *caller_fn;
+  ASTNode *callee_fn;
+  char caller_path[512], callee_path[512];
+  char caller_file_id[600];
+  char store_path[600];
+  char *json;
+  ProjectPlanNode *add_node;
+  ProjectPlanNode *obs_node;
+  ProjectPlanNode *loaded;
+
+  cr_assert(caller_ctx != NULL && callee_ctx != NULL, "Parser contexts should be created");
+
+  join_test_project_path("main.c", caller_path, sizeof(caller_path));
+  join_test_project_path("helper.c", callee_path, sizeof(callee_path));
+  join_test_project_path("plan-store.json", store_path, sizeof(store_path));
+
+  caller_ctx->filename = strdup(caller_path);
+  caller_ctx->language = LANG_C;
+  callee_ctx->filename = strdup(callee_path);
+  callee_ctx->language = LANG_C;
+
+  caller_fn = make_named_node(NODE_FUNCTION, "caller", "caller", caller_path);
+  callee_fn = make_named_node(NODE_FUNCTION, "helper", "helper", callee_path);
+  cr_assert(parser_add_ast_node(caller_ctx, caller_fn), "Caller function should be tracked");
+  cr_assert(parser_add_ast_node(callee_ctx, callee_fn), "Helper function should be tracked");
+
+  project->file_contexts[0] = caller_ctx;
+  project->file_contexts[1] = callee_ctx;
+  project->num_files = 2;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "caller", caller_fn, caller_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Caller symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "helper", callee_fn, callee_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Helper symbol should be registered");
+  cr_assert(project_context_rebuild_ir(project), "Project IR snapshot should rebuild");
+
+  snprintf(caller_file_id, sizeof(caller_file_id), "file:%s", caller_path);
+
+  add_node = project_context_plan_node_create(project, "TASK-S", "add-store",
+                                              PROJECT_PLAN_NODE_NEW_SYMBOL);
+  cr_assert_not_null(add_node, "add node should be created");
+  cr_assert(project_context_plan_node_set_title(project, add_node, "Add durable store"),
+            "title setter should succeed");
+  cr_assert(project_context_plan_node_set_desired_shape(project, add_node, "int store_open(void)"),
+            "shape setter should succeed");
+  cr_assert(project_context_plan_node_set_rationale(project, add_node, "persist plan nodes"),
+            "rationale setter should succeed");
+  cr_assert(project_context_plan_node_set_provenance(project, add_node, "TASK-S:implementing"),
+            "provenance setter should succeed");
+  cr_assert(project_context_plan_node_set_confidence(project, add_node, 0.75f),
+            "confidence setter should succeed");
+  cr_assert(project_context_plan_node_add_anchor(project, add_node, caller_file_id),
+            "anchor should be added");
+
+  obs_node = project_context_plan_node_create(project, "TASK-S", "log-store",
+                                              PROJECT_PLAN_NODE_OBSERVABILITY_POINT);
+  cr_assert_not_null(obs_node, "observability node should be created");
+  cr_assert(project_context_plan_node_add_anchor(project, obs_node, "sym:helper"),
+            "observability anchor should be added");
+  cr_assert(project_context_plan_node_set_lifecycle(project, obs_node,
+                                                    PROJECT_INFO_BLOCK_LIFECYCLE_IN_PROGRESS),
+            "lifecycle setter should succeed");
+
+  // WI-031: serialize the durable store.
+  json = project_context_plan_nodes_to_json(project);
+  cr_assert_not_null(json, "plan store should serialize to JSON");
+  cr_assert(strstr(json, "\"plan_nodes\"") != NULL, "JSON should contain the plan_nodes array");
+  cr_assert(strstr(json, "plan:TASK-S:add-store") != NULL, "JSON should contain the plan id");
+  cr_assert(strstr(json, caller_file_id) != NULL, "JSON should contain the anchor id");
+
+  // Replacing load restores the full store.
+  project_context_clear_plan_nodes(project);
+  cr_assert_eq(project_context_get_plan_node_count(project), 0, "clear should empty the store");
+  cr_assert(project_context_plan_nodes_from_json(project, json, false),
+            "from_json should restore the store");
+  free(json);
+  cr_assert_eq(project_context_get_plan_node_count(project), 2, "store should round-trip two nodes");
+
+  loaded = project_context_find_plan_node(project, "plan:TASK-S:add-store");
+  cr_assert_not_null(loaded, "round-tripped add node should exist");
+  cr_assert_str_eq(loaded->title, "Add durable store", "title should round-trip");
+  cr_assert_str_eq(loaded->desired_shape, "int store_open(void)", "desired shape should round-trip");
+  cr_assert_str_eq(loaded->rationale, "persist plan nodes", "rationale should round-trip");
+  cr_assert_str_eq(loaded->provenance, "TASK-S:implementing", "provenance should round-trip");
+  cr_assert_float_eq(loaded->confidence, 0.75f, 0.0001f, "confidence should round-trip");
+  cr_assert_eq(loaded->anchor_count, 1, "anchor should round-trip");
+  cr_assert_str_eq(loaded->anchor_ids[0], caller_file_id, "anchor id should round-trip");
+  cr_assert_eq(loaded->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_PLANNED,
+               "default lifecycle should round-trip");
+
+  loaded = project_context_find_plan_node(project, "plan:TASK-S:log-store");
+  cr_assert_not_null(loaded, "round-tripped observability node should exist");
+  cr_assert_eq(loaded->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_IN_PROGRESS,
+               "in-progress lifecycle should round-trip");
+
+  // Re-index is derived-only and must not wipe the durable store.
+  cr_assert(project_context_rebuild_ir(project), "re-index should succeed");
+  cr_assert_eq(project_context_get_plan_node_count(project), 2,
+               "re-index must not lose durable plan nodes");
+
+  // File save/load round-trip.
+  cr_assert(project_context_plan_nodes_save(project, store_path), "save should succeed");
+  project_context_clear_plan_nodes(project);
+  cr_assert(project_context_plan_nodes_load(project, store_path, false), "load should succeed");
+  cr_assert_eq(project_context_get_plan_node_count(project), 2, "file load should restore nodes");
+
+  // Merging the same payload is idempotent.
+  cr_assert(project_context_plan_nodes_load(project, store_path, true), "merge load should succeed");
+  cr_assert_eq(project_context_get_plan_node_count(project), 2, "merge should not duplicate nodes");
+
+  remove(store_path);
+}
