@@ -13,6 +13,7 @@ extern const TSLanguage *tree_sitter_cpp(void);
 extern const TSLanguage *tree_sitter_python(void);
 extern const TSLanguage *tree_sitter_javascript(void);
 extern const TSLanguage *tree_sitter_typescript(void);
+extern const TSLanguage *tree_sitter_rust(void);
 
 /**
  * Extract a full signature including return type for C functions
@@ -239,10 +240,20 @@ LanguageAdapter typescript_adapter = {.language_type = LANG_TYPESCRIPT,
                                       .pre_process_query = stub_pre_process_query,
                                       .post_process_match = stub_post_process_match};
 
+LanguageAdapter rust_adapter = {.language_type = LANG_RUST,
+                                .language_name = "Rust",
+                                .get_ts_language = tree_sitter_rust,
+                                .extract_signature = stub_extract_signature,
+                                .generate_qualified_name = stub_generate_qualified_name,
+                                .process_special_cases = stub_process_special_cases,
+                                .pre_process_query = stub_pre_process_query,
+                                .post_process_match = stub_post_process_match};
+
 // NOTE: This array is the single source of truth (SSOT) for all supported languages in ScopeMux.
 // To add a new language, create a LanguageAdapter instance and add it to this array.
 LanguageAdapter *all_adapters[] = {&c_adapter,          &cpp_adapter,        &python_adapter,
-                                   &javascript_adapter, &typescript_adapter, NULL};
+                                   &javascript_adapter, &typescript_adapter, &rust_adapter,
+                                   NULL};
 
 LanguageAdapter *get_adapter_by_language(Language lang) {
   for (int i = 0; all_adapters[i]; ++i) {

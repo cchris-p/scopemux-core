@@ -263,6 +263,8 @@ bool project_parse_all_files_impl(ProjectContext *project) {
         lang = LANG_JAVASCRIPT;
       } else if (strcmp(dot, "ts") == 0) {
         lang = LANG_TYPESCRIPT;
+      } else if (strcmp(dot, "rs") == 0) {
+        lang = LANG_RUST;
       }
     }
 
@@ -379,6 +381,8 @@ bool project_add_dependency_impl(ProjectContext *project, const char *source_fil
         lang = LANG_JAVASCRIPT;
       else if (strcmp(dot, "ts") == 0)
         lang = LANG_TYPESCRIPT;
+      else if (strcmp(dot, "rs") == 0)
+        lang = LANG_RUST;
     }
 
     if (lang == LANG_UNKNOWN) {
@@ -422,6 +426,8 @@ bool project_add_dependency_impl(ProjectContext *project, const char *source_fil
         lang = LANG_JAVASCRIPT;
       else if (strcmp(dot, "ts") == 0)
         lang = LANG_TYPESCRIPT;
+      else if (strcmp(dot, "rs") == 0)
+        lang = LANG_RUST;
     }
 
     if (lang == LANG_UNKNOWN) {

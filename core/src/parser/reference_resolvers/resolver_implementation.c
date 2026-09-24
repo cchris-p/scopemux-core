@@ -514,6 +514,10 @@ bool reference_resolver_init_builtin_impl(ReferenceResolver *resolver) {
   success &= reference_resolver_register_impl(resolver, LANG_TYPESCRIPT,
                                               reference_resolver_typescript, NULL, NULL);
 
+  // Rust language resolver
+  success &=
+      reference_resolver_register_impl(resolver, LANG_RUST, reference_resolver_rust, NULL, NULL);
+
   return success;
 }
 

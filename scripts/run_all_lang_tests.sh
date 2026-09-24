@@ -40,6 +40,7 @@ declare -A TEST_SUITES=(
     ["python"]="Python Language Tests"
     ["js"]="JavaScript Language Tests"
     ["ts"]="TypeScript Language Tests"
+    ["rust"]="Rust Language Tests"
 )
 
 # Test script paths
@@ -49,6 +50,7 @@ declare -A TEST_SCRIPTS=(
     ["python"]="run_python_tests.sh"
     ["js"]="run_js_tests.sh"
     ["ts"]="run_ts_tests.sh"
+    ["rust"]="run_rust_tests.sh"
 )
 
 # Global variables

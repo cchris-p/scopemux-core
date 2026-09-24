@@ -26,6 +26,7 @@ typedef enum {
   LANG_PYTHON = 3,
   LANG_JAVASCRIPT = 4,
   LANG_TYPESCRIPT = 5,
+  LANG_RUST = 6,
   /* Add more languages as needed */
   LANG_MAX
 } Language;

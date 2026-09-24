@@ -63,6 +63,9 @@ char *build_queries_dir_impl(Language language) {
   case LANG_TYPESCRIPT:
     subdir = "typescript";
     break;
+  case LANG_RUST:
+    subdir = "rust";
+    break;
   default:
     break;
   }

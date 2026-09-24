@@ -67,7 +67,7 @@ struct QueryManager {
   size_t max_queries_per_language;  // Maximum number of languages supported
 };
 
-#define MAX_LANGUAGES 6 // UNKNOWN, C, CPP, PYTHON, JAVASCRIPT, TYPESCRIPT
+#define MAX_LANGUAGES 7 // UNKNOWN, C, CPP, PYTHON, JAVASCRIPT, TYPESCRIPT, RUST
 
 /**
  * @brief Initializes the query manager.
@@ -141,6 +141,7 @@ QueryManager *query_manager_init(const char *queries_dir) {
   manager->language_types[3] = LANG_PYTHON;
   manager->language_types[4] = LANG_JAVASCRIPT;
   manager->language_types[5] = LANG_TYPESCRIPT;
+  manager->language_types[6] = LANG_RUST;
 
   // Initialize language objects
   bool has_valid_language = false;
@@ -434,6 +435,8 @@ static const char *get_language_name(Language language) {
     return "javascript";
   case LANG_TYPESCRIPT:
     return "typescript";
+  case LANG_RUST:
+    return "rust";
   default:
     return NULL;
   }

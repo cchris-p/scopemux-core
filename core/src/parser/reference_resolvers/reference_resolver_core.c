@@ -107,6 +107,7 @@ bool reference_resolver_init() {
   reference_resolver_register(LANG_PYTHON, reference_resolver_python, NULL, NULL);
   reference_resolver_register(LANG_JAVASCRIPT, reference_resolver_javascript, NULL, NULL);
   reference_resolver_register(LANG_TYPESCRIPT, reference_resolver_typescript, NULL, NULL);
+  reference_resolver_register(LANG_RUST, reference_resolver_rust, NULL, NULL);
 
   return true;
 }

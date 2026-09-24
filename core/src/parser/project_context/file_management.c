@@ -283,6 +283,8 @@ size_t project_add_directory_impl(ProjectContext *project, const char *dirpath,
             lang = LANG_JAVASCRIPT;
           } else if (strcasecmp(dot, "ts") == 0) {
             lang = LANG_TYPESCRIPT;
+          } else if (strcasecmp(dot, "rs") == 0) {
+            lang = LANG_RUST;
           }
         }
 
