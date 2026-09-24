@@ -1,0 +1,4 @@
+# The test image only needs its Dockerfile; source is copied into the container
+# by scripts/docker_test.sh, not through the build context.
+**
+!docker/Dockerfile.test

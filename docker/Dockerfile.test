@@ -1,0 +1,28 @@
+# Linux test environment for scopemux-core.
+#
+# The test harness targets Linux/GNU tooling (GNU ld --whole-archive, Criterion
+# via pkg-config), so it does not run on macOS directly. This image provides the
+# documented Debian/Ubuntu prerequisites from README.md.
+#
+# Build and run through scripts/docker_test.sh rather than invoking this
+# directly.
+
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        ninja-build \
+        python3-dev \
+        python3-pip \
+        python3-venv \
+        pkg-config \
+        libcriterion-dev \
+        ripgrep \
+        git \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /work

@@ -89,6 +89,19 @@ Common test entry points:
 
 These scripts create separate build directories for their own runs.
 
+### Linux container (for macOS hosts)
+
+The native test harness targets Linux/GNU tooling (GNU `ld --whole-archive`, Criterion
+via `pkg-config`), so it does not run on macOS directly. Run it through Docker instead:
+
+```bash
+./scripts/docker_test.sh
+./scripts/docker_test.sh scripts/run_c_tests.sh scripts/run_python_tests.sh
+```
+
+This builds `docker/Dockerfile.test` and copies the current working tree into the container,
+so the run reflects the source on disk and the host checkout is not modified.
+
 ## Python Usage
 
 Basic file parsing:
