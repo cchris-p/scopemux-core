@@ -12,6 +12,7 @@
 #include "../../include/scopemux/ast_compliance.h"
 #include "../../include/scopemux/lang_compliance.h"
 #include "ast_node.h"
+#include "config/node_type_mapping_loader.h"
 #include "cst_node.h"
 #include "memory_tracking.h"
 #include "parser_internal.h"
@@ -100,7 +101,9 @@ void parser_clear(ParserContext *ctx) {
 
   log_debug("[LIFECYCLE] Entering parser_clear for ctx=%p", (void *)ctx);
 
-  // Check for static assignment (simple heuristic: check if pointer is in static range)
+  // Check for static assignment (simple heuristic: check if pointer is in static range).
+  // The linker-provided section symbols used here are glibc/Linux-specific.
+#if defined(__linux__)
   extern char __data_start, _edata, __bss_start, _end;
   if (ctx->filename) {
     if ((ctx->filename >= (char *)&__data_start && ctx->filename < (char *)&_edata) ||
@@ -116,6 +119,7 @@ void parser_clear(ParserContext *ctx) {
                   (void *)ctx->source_code, ctx->source_code);
     }
   }
+#endif
 
   // Free the CST root as before
   if (ctx->cst_root) {
