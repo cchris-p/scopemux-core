@@ -2141,3 +2141,645 @@ void project_plan_node_reconciliation_result_free(ProjectPlanNodeReconciliationR
   free(result->entries);
   memset(result, 0, sizeof(*result));
 }
+
+/* ------------------------------------------------------------------------- */
+/* WI-036: delta view and agent map query API                                */
+/* ------------------------------------------------------------------------- */
+
+static ProjectDeltaKind delta_kind_for_plan_node(const ProjectPlanNode *node, bool realized) {
+  if (realized) {
+    return PROJECT_DELTA_REUSE;
+  }
+
+  switch (node->kind) {
+  case PROJECT_PLAN_NODE_NEW_SYMBOL:
+  case PROJECT_PLAN_NODE_NEW_FILE:
+  case PROJECT_PLAN_NODE_NEW_MODULE:
+  case PROJECT_PLAN_NODE_NEW_TEST:
+    return PROJECT_DELTA_ADD;
+  case PROJECT_PLAN_NODE_REMOVE:
+    return PROJECT_DELTA_REMOVE;
+  default:
+    return PROJECT_DELTA_CHANGE;
+  }
+}
+
+bool project_context_compute_delta(ProjectContext *project, const char *task_id, const char *stage,
+                                   ProjectDeltaResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  ProjectDeltaEntry *entries = NULL;
+  size_t count = 0;
+
+  if (!project || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry) {
+    return false;
+  }
+
+  if (project->plan_node_count > 0) {
+    entries = calloc(project->plan_node_count, sizeof(*entries));
+    if (!entries) {
+      return false;
+    }
+  }
+
+  for (size_t i = 0; i < project->plan_node_count; i++) {
+    const ProjectPlanNode *node = &project->plan_nodes[i];
+    const ProjectInfoBlock *block;
+    bool realized;
+    ProjectDeltaKind kind;
+
+    if (task_id && (!node->task_id || strcmp(node->task_id, task_id) != 0)) {
+      continue;
+    }
+
+    block = find_block_by_id_in_registry(registry, node->id);
+    realized = node->projected_symbol && find_parsed_symbol_block(registry, node->projected_symbol) != NULL;
+    kind = delta_kind_for_plan_node(node, realized);
+
+    entries[count].kind = kind;
+    entries[count].block = block;
+    entries[count].plan_node = node;
+    entries[count].anchors = block ? block->anchor_list : NULL;
+    entries[count].projected_shape = node->desired_shape;
+    entries[count].provenance = node->provenance ? node->provenance : node->task_id;
+    entries[count].confidence = node->confidence;
+    entries[count].lifecycle = node->lifecycle;
+    entries[count].estimated_tokens = block ? block->estimated_tokens : 0;
+    out_result->estimated_tokens += entries[count].estimated_tokens;
+    count++;
+
+    switch (kind) {
+    case PROJECT_DELTA_ADD:
+      out_result->add_count++;
+      break;
+    case PROJECT_DELTA_CHANGE:
+      out_result->change_count++;
+      break;
+    case PROJECT_DELTA_REMOVE:
+      out_result->remove_count++;
+      break;
+    case PROJECT_DELTA_REUSE:
+      out_result->reuse_count++;
+      break;
+    }
+  }
+
+  if (count == 0) {
+    free(entries);
+    entries = NULL;
+  }
+
+  out_result->task_id = task_id;
+  out_result->stage = stage;
+  out_result->entries = entries;
+  out_result->entry_count = count;
+  return true;
+}
+
+void project_delta_result_free(ProjectDeltaResult *result) {
+  if (!result) {
+    return;
+  }
+
+  free(result->entries);
+  memset(result, 0, sizeof(*result));
+}
+
+typedef struct {
+  ProjectMapResultItem *items;
+  size_t count;
+  size_t capacity;
+  size_t estimated_tokens;
+} MapQueryBuilder;
+
+static void map_query_builder_free(MapQueryBuilder *builder) {
+  if (!builder) {
+    return;
+  }
+  free(builder->items);
+  memset(builder, 0, sizeof(*builder));
+}
+
+static bool map_query_builder_add(MapQueryBuilder *builder, const ProjectInfoBlock *block,
+                                  ProjectMapQueryKind kind, const char *reason, size_t distance) {
+  ProjectMapResultItem *next;
+  size_t capacity;
+
+  if (!builder || !block) {
+    return true;
+  }
+
+  for (size_t i = 0; i < builder->count; i++) {
+    if (builder->items[i].block == block) {
+      return true;
+    }
+  }
+
+  if (builder->count == builder->capacity) {
+    capacity = builder->capacity == 0 ? 8 : builder->capacity * 2;
+    next = realloc(builder->items, capacity * sizeof(*next));
+    if (!next) {
+      return false;
+    }
+    builder->items = next;
+    builder->capacity = capacity;
+  }
+
+  builder->items[builder->count].block = block;
+  builder->items[builder->count].kind = kind;
+  builder->items[builder->count].reason = reason;
+  builder->items[builder->count].provenance = block->provenance;
+  builder->items[builder->count].confidence = block->confidence;
+  builder->items[builder->count].estimated_tokens = block->estimated_tokens;
+  builder->items[builder->count].distance = distance;
+  builder->count++;
+  builder->estimated_tokens += block->estimated_tokens;
+  return true;
+}
+
+static bool map_query_finalize(MapQueryBuilder *builder, ProjectMapQueryKind kind,
+                               ProjectMapQueryResult *out_result) {
+  if (!builder || !out_result) {
+    return false;
+  }
+
+  out_result->kind = kind;
+  out_result->items = builder->items;
+  out_result->item_count = builder->count;
+  out_result->estimated_tokens = builder->estimated_tokens;
+  builder->items = NULL;
+  builder->count = 0;
+  builder->capacity = 0;
+  builder->estimated_tokens = 0;
+  return true;
+}
+
+bool project_context_query_node(ProjectContext *project, const char *block_id,
+                                ProjectMapQueryResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  const ProjectInfoBlock *block;
+  MapQueryBuilder builder = {0};
+
+  if (!project || !block_id || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry) {
+    return false;
+  }
+
+  block = find_block_by_id_in_registry(registry, block_id);
+  if (block && !map_query_builder_add(&builder, block, PROJECT_MAP_QUERY_NODE, "resolved node", 0)) {
+    map_query_builder_free(&builder);
+    return false;
+  }
+
+  return map_query_finalize(&builder, PROJECT_MAP_QUERY_NODE, out_result);
+}
+
+bool project_context_query_resolve(ProjectContext *project, const char *task_id, const char *stage,
+                                   ProjectMapQueryResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  MapQueryBuilder builder = {0};
+
+  (void)stage;
+
+  if (!project || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry) {
+    return false;
+  }
+
+  for (size_t i = 0; i < project->plan_node_count; i++) {
+    const ProjectPlanNode *node = &project->plan_nodes[i];
+    const ProjectInfoBlock *block;
+
+    if (task_id && (!node->task_id || strcmp(node->task_id, task_id) != 0)) {
+      continue;
+    }
+
+    block = find_block_by_id_in_registry(registry, node->id);
+    if (block && !map_query_builder_add(&builder, block, PROJECT_MAP_QUERY_RESOLVE, "planned for task", 0)) {
+      map_query_builder_free(&builder);
+      return false;
+    }
+
+    for (size_t a = 0; a < node->anchor_count; a++) {
+      const ProjectInfoBlock *anchor = find_block_by_id_in_registry(registry, node->anchor_ids[a]);
+      if (anchor && !map_query_builder_add(&builder, anchor, PROJECT_MAP_QUERY_RESOLVE, "anchor", 1)) {
+        map_query_builder_free(&builder);
+        return false;
+      }
+    }
+  }
+
+  if (builder.count == 0) {
+    const ProjectInfoBlock *project_block = find_project_block(registry);
+    if (project_block && !map_query_builder_add(&builder, project_block, PROJECT_MAP_QUERY_RESOLVE,
+                                                "project seed", 0)) {
+      map_query_builder_free(&builder);
+      return false;
+    }
+  }
+
+  return map_query_finalize(&builder, PROJECT_MAP_QUERY_RESOLVE, out_result);
+}
+
+bool project_context_query_expand(ProjectContext *project, const char *block_id,
+                                  ProjectContextTier to_tier, ProjectMapQueryResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  const ProjectInfoBlock *base;
+  const struct ProjectSearchIndexEntry *entry;
+  MapQueryBuilder builder = {0};
+
+  if (!project || !block_id || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry || !project_context_build_search_index(project)) {
+    return false;
+  }
+
+  base = find_block_by_id_in_registry(registry, block_id);
+  if (!base) {
+    return map_query_finalize(&builder, PROJECT_MAP_QUERY_EXPAND, out_result);
+  }
+
+  if (!map_query_builder_add(&builder, base, PROJECT_MAP_QUERY_EXPAND, "seed node", 0)) {
+    map_query_builder_free(&builder);
+    return false;
+  }
+
+  entry = find_search_entry(project, base);
+  if (entry) {
+    for (size_t i = 0; i < entry->related_block_count; i++) {
+      const ProjectInfoBlock *related = entry->related_blocks[i];
+      if (related->tier >= base->tier && related->tier <= to_tier &&
+          !map_query_builder_add(&builder, related, PROJECT_MAP_QUERY_EXPAND, "expanded relation", 1)) {
+        map_query_builder_free(&builder);
+        return false;
+      }
+    }
+  }
+
+  return map_query_finalize(&builder, PROJECT_MAP_QUERY_EXPAND, out_result);
+}
+
+static bool block_array_contains(const ProjectInfoBlock **blocks, size_t count,
+                                 const ProjectInfoBlock *block) {
+  for (size_t i = 0; i < count; i++) {
+    if (blocks[i] == block) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool project_context_query_neighbors(ProjectContext *project, const char *block_id, size_t depth,
+                                     ProjectMapQueryResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  const ProjectInfoBlock *base;
+  MapQueryBuilder builder = {0};
+  const ProjectInfoBlock **visited = NULL;
+  size_t visited_count = 0;
+  size_t visited_capacity = 0;
+  const ProjectInfoBlock **frontier = NULL;
+  size_t frontier_count = 0;
+
+  if (!project || !block_id || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry || !project_context_build_search_index(project)) {
+    return false;
+  }
+
+  base = find_block_by_id_in_registry(registry, block_id);
+  if (!base) {
+    return map_query_finalize(&builder, PROJECT_MAP_QUERY_NEIGHBORS, out_result);
+  }
+
+  if (!map_query_builder_add(&builder, base, PROJECT_MAP_QUERY_NEIGHBORS, "seed node", 0)) {
+    map_query_builder_free(&builder);
+    return false;
+  }
+
+  frontier = calloc(1, sizeof(*frontier));
+  visited = calloc(1, sizeof(*visited));
+  if (!frontier || !visited) {
+    free(frontier);
+    free(visited);
+    map_query_builder_free(&builder);
+    return false;
+  }
+  frontier[0] = base;
+  frontier_count = 1;
+  visited[0] = base;
+  visited_count = 1;
+  visited_capacity = 1;
+
+  for (size_t d = 1; d <= depth; d++) {
+    const ProjectInfoBlock **next = NULL;
+    size_t next_count = 0;
+    size_t next_capacity = 0;
+
+    for (size_t f = 0; f < frontier_count; f++) {
+      const struct ProjectSearchIndexEntry *entry = find_search_entry(project, frontier[f]);
+      if (!entry) {
+        continue;
+      }
+      for (size_t r = 0; r < entry->related_block_count; r++) {
+        const ProjectInfoBlock *related = entry->related_blocks[r];
+        if (block_array_contains(visited, visited_count, related)) {
+          continue;
+        }
+
+        if (visited_count == visited_capacity) {
+          size_t next_capacity_visited = visited_capacity == 0 ? 8 : visited_capacity * 2;
+          const ProjectInfoBlock **grown =
+              realloc(visited, next_capacity_visited * sizeof(*grown));
+          if (!grown) {
+            free(next);
+            free(frontier);
+            free(visited);
+            map_query_builder_free(&builder);
+            return false;
+          }
+          visited = grown;
+          visited_capacity = next_capacity_visited;
+        }
+        visited[visited_count++] = related;
+
+        if (!map_query_builder_add(&builder, related, PROJECT_MAP_QUERY_NEIGHBORS, "neighbor", d)) {
+          free(next);
+          free(frontier);
+          free(visited);
+          map_query_builder_free(&builder);
+          return false;
+        }
+
+        if (next_count == next_capacity) {
+          size_t grown_capacity = next_capacity == 0 ? 8 : next_capacity * 2;
+          const ProjectInfoBlock **grown = realloc(next, grown_capacity * sizeof(*grown));
+          if (!grown) {
+            free(next);
+            free(frontier);
+            free(visited);
+            map_query_builder_free(&builder);
+            return false;
+          }
+          next = grown;
+          next_capacity = grown_capacity;
+        }
+        next[next_count++] = related;
+      }
+    }
+
+    free(frontier);
+    frontier = next;
+    frontier_count = next_count;
+    if (frontier_count == 0) {
+      break;
+    }
+  }
+
+  free(frontier);
+  free(visited);
+  return map_query_finalize(&builder, PROJECT_MAP_QUERY_NEIGHBORS, out_result);
+}
+
+static bool scope_matches(const ProjectInfoBlock *block, const char *scope) {
+  if (!scope || scope[0] == '\0') {
+    return true;
+  }
+  if (block->file_path && strstr(block->file_path, scope) != NULL) {
+    return true;
+  }
+  if (block->qualified_name && strstr(block->qualified_name, scope) != NULL) {
+    return true;
+  }
+  if (block->name && strstr(block->name, scope) != NULL) {
+    return true;
+  }
+  return false;
+}
+
+bool project_context_query_duplicates(ProjectContext *project, const char *scope,
+                                      ProjectMapQueryResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  MapQueryBuilder builder = {0};
+
+  if (!project || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry) {
+    return false;
+  }
+
+  for (size_t i = 0; i < registry->block_count; i++) {
+    const ProjectInfoBlock *block = &registry->blocks[i];
+    char *normalized_name;
+    bool duplicate = false;
+
+    if (block->origin != PROJECT_INFO_BLOCK_ORIGIN_PARSED ||
+        block->kind != PROJECT_INFO_BLOCK_SYMBOL || !scope_matches(block, scope)) {
+      continue;
+    }
+
+    normalized_name = normalize_text_dup(block->name ? block->name : "");
+    if (!normalized_name) {
+      map_query_builder_free(&builder);
+      return false;
+    }
+
+    for (size_t j = 0; j < i && !duplicate; j++) {
+      const ProjectInfoBlock *other = &registry->blocks[j];
+      if (other->origin != PROJECT_INFO_BLOCK_ORIGIN_PARSED ||
+          other->kind != PROJECT_INFO_BLOCK_SYMBOL || (other->id && block->id &&
+          strcmp(other->id, block->id) == 0)) {
+        continue;
+      }
+
+      if (normalized_name[0] != '\0') {
+        char *other_name = normalize_text_dup(other->name ? other->name : "");
+        if (!other_name) {
+          free(normalized_name);
+          map_query_builder_free(&builder);
+          return false;
+        }
+        if (strcmp(other_name, normalized_name) == 0) {
+          duplicate = true;
+        }
+        free(other_name);
+      }
+
+      if (!duplicate && block->node && other->node && block->node->signature && other->node->signature &&
+          strcmp(block->node->signature, other->node->signature) == 0) {
+        duplicate = true;
+      }
+    }
+
+    free(normalized_name);
+    if (duplicate &&
+        !map_query_builder_add(&builder, block, PROJECT_MAP_QUERY_DUPLICATES, "duplicate unit", 0)) {
+      map_query_builder_free(&builder);
+      return false;
+    }
+  }
+
+  return map_query_finalize(&builder, PROJECT_MAP_QUERY_DUPLICATES, out_result);
+}
+
+static bool plan_node_anchors_symbol(const ProjectPlanNode *node, const ProjectInfoBlock *symbol_block) {
+  if (!node || !symbol_block || !symbol_block->id) {
+    return false;
+  }
+  if (node->projected_symbol && strcmp(node->projected_symbol, symbol_block->name ? symbol_block->name : "") == 0) {
+    return true;
+  }
+  for (size_t i = 0; i < node->anchor_count; i++) {
+    if (node->anchor_ids[i] && strcmp(node->anchor_ids[i], symbol_block->id) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool project_context_query_observability(ProjectContext *project, const char *symbol,
+                                         ProjectMapQueryResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  const ProjectInfoBlock *symbol_block;
+  MapQueryBuilder builder = {0};
+
+  if (!project || !symbol || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry) {
+    return false;
+  }
+
+  symbol_block = find_symbol_block(registry, symbol);
+  for (size_t i = 0; i < project->plan_node_count; i++) {
+    const ProjectPlanNode *node = &project->plan_nodes[i];
+    const ProjectInfoBlock *block;
+
+    if (node->kind != PROJECT_PLAN_NODE_OBSERVABILITY_POINT ||
+        !plan_node_anchors_symbol(node, symbol_block)) {
+      continue;
+    }
+
+    block = find_block_by_id_in_registry(registry, node->id);
+    if (block && !map_query_builder_add(&builder, block, PROJECT_MAP_QUERY_OBSERVABILITY,
+                                        "observability for symbol", 0)) {
+      map_query_builder_free(&builder);
+      return false;
+    }
+  }
+
+  return map_query_finalize(&builder, PROJECT_MAP_QUERY_OBSERVABILITY, out_result);
+}
+
+bool project_context_query_change_impact(ProjectContext *project, const char *const *files,
+                                         size_t file_count, ProjectMapQueryResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  MapQueryBuilder builder = {0};
+
+  if (!project || !files || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry) {
+    return false;
+  }
+
+  for (size_t f = 0; f < file_count; f++) {
+    const char *file_path = files[f];
+    const ProjectInfoBlock *file_block;
+
+    if (!file_path) {
+      continue;
+    }
+
+    file_block = find_file_block(registry, file_path);
+    if (file_block && !map_query_builder_add(&builder, file_block, PROJECT_MAP_QUERY_CHANGE_IMPACT,
+                                             "changed file", 0)) {
+      map_query_builder_free(&builder);
+      return false;
+    }
+
+    for (size_t i = 0; i < registry->block_count; i++) {
+      const ProjectInfoBlock *block = &registry->blocks[i];
+      if (block == file_block || !block->file_path || strcmp(block->file_path, file_path) != 0) {
+        continue;
+      }
+      if (!map_query_builder_add(&builder, block, PROJECT_MAP_QUERY_CHANGE_IMPACT,
+                                 "symbol in changed file", 1)) {
+        map_query_builder_free(&builder);
+        return false;
+      }
+    }
+
+    for (size_t i = 0; i < project->plan_node_count; i++) {
+      const ProjectPlanNode *node = &project->plan_nodes[i];
+      const ProjectInfoBlock *planned;
+      bool anchored = false;
+
+      if (node->file_path && strcmp(node->file_path, file_path) == 0) {
+        anchored = true;
+      }
+      if (file_block && file_block->id) {
+        for (size_t a = 0; a < node->anchor_count; a++) {
+          if (node->anchor_ids[a] && strcmp(node->anchor_ids[a], file_block->id) == 0) {
+            anchored = true;
+            break;
+          }
+        }
+      }
+
+      if (!anchored) {
+        continue;
+      }
+
+      planned = find_block_by_id_in_registry(registry, node->id);
+      if (planned && !map_query_builder_add(&builder, planned, PROJECT_MAP_QUERY_CHANGE_IMPACT,
+                                            "plan anchored to changed file", 1)) {
+        map_query_builder_free(&builder);
+        return false;
+      }
+    }
+  }
+
+  return map_query_finalize(&builder, PROJECT_MAP_QUERY_CHANGE_IMPACT, out_result);
+}
+
+void project_map_query_result_free(ProjectMapQueryResult *result) {
+  if (!result) {
+    return;
+  }
+
+  free(result->items);
+  memset(result, 0, sizeof(*result));
+}
