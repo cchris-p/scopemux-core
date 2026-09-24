@@ -667,3 +667,201 @@ Test(project_context_delegation, searchable_index_and_prompt_assembly, .init = s
   project_prompt_assembly_result_free(&prompt_result);
   project_search_result_free(&search_result);
 }
+
+Test(project_context_delegation, plan_node_projection_and_reconciliation, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *caller_ctx = parser_init();
+  ParserContext *callee_ctx = parser_init();
+  ASTNode *caller_fn;
+  ASTNode *callee_fn;
+  char caller_path[512], callee_path[512];
+  char caller_file_id[600];
+  const ProjectInfoBlockRegistry *registry;
+  ProjectPlanNode *implemented_node;
+  ProjectPlanNode *planned_node;
+  ProjectPlanNode *stale_node;
+  ProjectPlanNode *conflict_node;
+  ProjectPlanNodeReconciliationResult reconcile = {0};
+  ProjectTieredContextRequest planned_request = {0};
+  ProjectTieredContextResult planned_result = {0};
+  ProjectSearchRequest search_request = {0};
+  ProjectSearchResult search_result = {0};
+  size_t planned_blocks = 0;
+  bool saw_plan_metadata = false;
+  bool saw_plan_hit = false;
+
+  cr_assert(caller_ctx != NULL && callee_ctx != NULL, "Parser contexts should be created");
+
+  join_test_project_path("main.c", caller_path, sizeof(caller_path));
+  join_test_project_path("helper.c", callee_path, sizeof(callee_path));
+
+  caller_ctx->filename = strdup(caller_path);
+  caller_ctx->language = LANG_C;
+  callee_ctx->filename = strdup(callee_path);
+  callee_ctx->language = LANG_C;
+
+  caller_fn = make_named_node(NODE_FUNCTION, "caller", "caller", caller_path);
+  callee_fn = make_named_node(NODE_FUNCTION, "helper", "helper", callee_path);
+  cr_assert(parser_add_ast_node(caller_ctx, caller_fn), "Caller function should be tracked");
+  cr_assert(parser_add_ast_node(callee_ctx, callee_fn), "Helper function should be tracked");
+
+  project->file_contexts[0] = caller_ctx;
+  project->file_contexts[1] = callee_ctx;
+  project->num_files = 2;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "caller", caller_fn, caller_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Caller symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "helper", callee_fn, callee_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Helper symbol should be registered");
+  cr_assert(project_context_rebuild_ir(project), "Project IR snapshot should rebuild");
+
+  snprintf(caller_file_id, sizeof(caller_file_id), "file:%s", caller_path);
+
+  // WI-032: create projected plan nodes. A projected symbol that already exists
+  // in parsed state reconciles to implemented; anchors drive stale/conflict.
+  implemented_node = project_context_plan_node_create(project, "TASK-9", "expose-api",
+                                                      PROJECT_PLAN_NODE_MODIFY_SYMBOL);
+  cr_assert_not_null(implemented_node, "Plan node create should succeed");
+  cr_assert(project_context_plan_node_set_title(project, implemented_node, "Expose helper API"),
+            "Title setter should succeed");
+  cr_assert(project_context_plan_node_set_projected_symbol(project, implemented_node, "helper"),
+            "Projected symbol setter should succeed");
+
+  planned_node = project_context_plan_node_create(project, "TASK-9", "add-parser",
+                                                  PROJECT_PLAN_NODE_NEW_SYMBOL);
+  cr_assert_not_null(planned_node, "Second plan node create should succeed");
+  cr_assert(project_context_plan_node_set_desired_shape(project, planned_node,
+                                                        "int parse(const char *input)"),
+            "Desired shape setter should succeed");
+  cr_assert(project_context_plan_node_set_rationale(project, planned_node,
+                                                    "required by completion criteria"),
+            "Rationale setter should succeed");
+  cr_assert(project_context_plan_node_set_provenance(project, planned_node, "TASK-9:implementing"),
+            "Provenance setter should succeed");
+  cr_assert(project_context_plan_node_set_confidence(project, planned_node, 0.6f),
+            "Confidence setter should succeed");
+  cr_assert(project_context_plan_node_add_anchor(project, planned_node, caller_file_id),
+            "Anchor add should succeed");
+  cr_assert(project_context_plan_node_add_anchor(project, planned_node, caller_file_id),
+            "Duplicate anchor add should be a no-op success");
+  cr_assert(planned_node->anchor_count == 1, "Duplicate anchors should not be stored twice");
+
+  stale_node = project_context_plan_node_create(project, "TASK-9", "remove-legacy",
+                                                PROJECT_PLAN_NODE_REMOVE);
+  cr_assert_not_null(stale_node, "Third plan node create should succeed");
+  cr_assert(project_context_plan_node_add_anchor(project, stale_node, "sym:ghost"),
+            "Stale node anchor should be added");
+
+  conflict_node = project_context_plan_node_create(project, "TASK-9", "consolidate-utils",
+                                                   PROJECT_PLAN_NODE_CONSOLIDATE);
+  cr_assert_not_null(conflict_node, "Fourth plan node create should succeed");
+  cr_assert(project_context_plan_node_add_anchor(project, conflict_node, caller_file_id),
+            "Conflict node first anchor should be added");
+  cr_assert(project_context_plan_node_add_anchor(project, conflict_node, "sym:ghost2"),
+            "Conflict node second anchor should be added");
+
+  // Duplicate ids must be rejected.
+  cr_assert_null(project_context_plan_node_create(project, "TASK-9", "add-parser",
+                                                  PROJECT_PLAN_NODE_NEW_SYMBOL),
+                 "Duplicate plan node id should be rejected");
+  cr_assert(project_context_get_plan_node_count(project) == 4, "Plan store should hold four nodes");
+  cr_assert_not_null(project_context_find_plan_node(project, "plan:TASK-9:add-parser"),
+                     "Plan node should be addressable by stable id");
+
+  registry = project_context_get_info_block_registry(project);
+  cr_assert_not_null(registry, "InfoBlock registry should rebuild with plan nodes");
+  for (size_t i = 0; i < registry->block_count; i++) {
+    const ProjectInfoBlock *block = &registry->blocks[i];
+    if (block->origin != PROJECT_INFO_BLOCK_ORIGIN_PLANNED) {
+      continue;
+    }
+    planned_blocks++;
+    cr_assert_eq(block->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_PLANNED,
+                 "new plan blocks should start planned (id=%s)", block->id ? block->id : "?");
+    if (block->id && strcmp(block->id, "plan:TASK-9:add-parser") == 0) {
+      cr_assert_str_eq(block->desired_shape, "int parse(const char *input)",
+                       "plan block should carry desired shape");
+      cr_assert_str_eq(block->rationale, "required by completion criteria",
+                       "plan block should carry rationale");
+      cr_assert_str_eq(block->anchor_list, caller_file_id,
+                       "plan block should carry joined anchors");
+      cr_assert_eq(block->plan_kind, PROJECT_PLAN_NODE_NEW_SYMBOL,
+                   "plan block should carry plan kind");
+      saw_plan_metadata = true;
+    }
+  }
+  cr_assert_eq(planned_blocks, 4, "Registry should project all four plan nodes (saw %zu)",
+               planned_blocks);
+  cr_assert(saw_plan_metadata, "Planned block should expose plan metadata");
+
+  // WI-032: origin filtering covers planned nodes in tiered context and search.
+  planned_request.origin_mask = 1u << PROJECT_INFO_BLOCK_ORIGIN_PLANNED;
+  planned_request.min_tier = PROJECT_CONTEXT_TIER_0;
+  planned_request.max_tier = PROJECT_CONTEXT_TIER_4;
+  planned_request.max_blocks = 16;
+  cr_assert(project_context_build_tiered_context(project, &planned_request, &planned_result),
+            "Tiered context should succeed for planned-only requests");
+  cr_assert_eq(planned_result.selection_count, 4,
+               "planned-only tiered context should select the four plan nodes");
+  for (size_t i = 0; i < planned_result.selection_count; i++) {
+    cr_assert_eq(planned_result.selections[i].block->origin, PROJECT_INFO_BLOCK_ORIGIN_PLANNED,
+                 "planned-only selection must contain only planned blocks");
+  }
+  project_tiered_context_result_free(&planned_result);
+
+  search_request.query_text = "parse";
+  search_request.min_tier = PROJECT_CONTEXT_TIER_0;
+  search_request.max_tier = PROJECT_CONTEXT_TIER_4;
+  search_request.max_hits = 10;
+  search_request.origin_mask = 1u << PROJECT_INFO_BLOCK_ORIGIN_PLANNED;
+  cr_assert(project_context_search_info_blocks(project, &search_request, &search_result),
+            "Indexed search should succeed over planned blocks");
+  for (size_t i = 0; i < search_result.hit_count; i++) {
+    cr_assert_eq(search_result.hits[i].block->origin, PROJECT_INFO_BLOCK_ORIGIN_PLANNED,
+                 "planned-only search must return only planned blocks");
+    if (search_result.hits[i].block->id &&
+        strcmp(search_result.hits[i].block->id, "plan:TASK-9:add-parser") == 0) {
+      saw_plan_hit = true;
+    }
+  }
+  cr_assert(saw_plan_hit, "Search should find the projected parser plan node by desired shape");
+  project_search_result_free(&search_result);
+
+  // WI-032: reconcile against parsed state.
+  cr_assert(project_context_reconcile_plan_nodes(project, &reconcile),
+            "Plan-node reconciliation should succeed");
+  cr_assert(reconcile.implemented_count >= 1, "An existing projected symbol should reconcile implemented");
+  cr_assert(reconcile.stale_count >= 1, "A fully vanished anchor set should reconcile stale");
+  cr_assert(reconcile.conflict_count >= 1, "A partial anchor divergence should reconcile conflict");
+  cr_assert_eq(implemented_node->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_IMPLEMENTED,
+               "projected symbol present in parsed state should mark the node implemented");
+  cr_assert_eq(planned_node->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_PLANNED,
+               "valid anchored plan with no projected symbol should stay planned");
+  cr_assert_eq(stale_node->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_STALE,
+               "vanished anchors should mark the node stale");
+  cr_assert_eq(conflict_node->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_CONFLICT,
+               "partial anchor divergence should mark the node conflict");
+
+  // Reconciliation does not delete nodes and the updated lifecycle is re-projected.
+  cr_assert(project_context_get_plan_node_count(project) == 4,
+            "reconciliation must never delete plan nodes");
+  registry = project_context_get_info_block_registry(project);
+  cr_assert_not_null(registry, "Registry should re-project after reconciliation");
+  {
+    const ProjectInfoBlock *implemented_block =
+        project_context_find_info_block(project, "plan:TASK-9:expose-api");
+    const ProjectInfoBlock *stale_block =
+        project_context_find_info_block(project, "plan:TASK-9:remove-legacy");
+    cr_assert_not_null(implemented_block, "implemented plan block should be findable");
+    cr_assert_eq(implemented_block->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_IMPLEMENTED,
+                 "re-projected implemented block should carry the new lifecycle");
+    cr_assert_not_null(stale_block, "stale plan block should be findable");
+    cr_assert_eq(stale_block->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_STALE,
+                 "re-projected stale block should carry the new lifecycle");
+  }
+
+  project_plan_node_reconciliation_result_free(&reconcile);
+}
