@@ -930,6 +930,52 @@ bool project_context_reconcile_plan_nodes(ProjectContext *project,
 void project_plan_node_reconciliation_result_free(ProjectPlanNodeReconciliationResult *result);
 
 /**
+ * @brief Serialize the durable plan-node store to a JSON string (`WI-031`).
+ *
+ * The durable store holds plan nodes, their lifecycle, provenance, anchors, and
+ * confidence; it is separate from the disposable derived store (parse, IR,
+ * InfoBlocks, graph, search index). The returned string is heap-allocated and
+ * owned by the caller.
+ *
+ * @param project Project context
+ * @return char* JSON text or NULL on allocation failure
+ */
+char *project_context_plan_nodes_to_json(const ProjectContext *project);
+
+/**
+ * @brief Load durable plan nodes from a JSON string (`WI-031`).
+ *
+ * When @p merge is false the existing plan-node store is replaced; when true,
+ * loaded nodes are added or updated by id and other nodes are preserved. The
+ * derived registry is invalidated so the next access re-projects.
+ *
+ * @param project Project context
+ * @param json JSON text previously emitted by project_context_plan_nodes_to_json()
+ * @param merge true to merge into existing nodes, false to replace
+ * @return bool True on success, false on parse or allocation failure
+ */
+bool project_context_plan_nodes_from_json(ProjectContext *project, const char *json, bool merge);
+
+/**
+ * @brief Save the durable plan-node store to a file as JSON (`WI-031`).
+ *
+ * @param project Project context
+ * @param path Destination file path
+ * @return bool True on success, false on serialization or I/O failure
+ */
+bool project_context_plan_nodes_save(const ProjectContext *project, const char *path);
+
+/**
+ * @brief Load durable plan nodes from a JSON file (`WI-031`).
+ *
+ * @param project Project context
+ * @param path Source file path
+ * @param merge true to merge into existing nodes, false to replace
+ * @return bool True on success, false on I/O, parse, or allocation failure
+ */
+bool project_context_plan_nodes_load(ProjectContext *project, const char *path, bool merge);
+
+/**
  * @brief Delta entry kinds: `current (+) target = { add, change, remove, reuse }` (`WI-036`).
  */
 typedef enum {
