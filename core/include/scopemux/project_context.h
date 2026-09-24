@@ -186,6 +186,24 @@ typedef enum {
 } ProjectInfoBlockLifecycle;
 
 /**
+ * @brief Kinds of projected (target-state) plan nodes (`WI-032`).
+ *
+ * Plan nodes are projection-only: they describe intended code and never
+ * override the external task record or a task's stage.
+ */
+typedef enum {
+  PROJECT_PLAN_NODE_NEW_SYMBOL = 0,        ///< A symbol to add
+  PROJECT_PLAN_NODE_NEW_FILE,              ///< A file to add
+  PROJECT_PLAN_NODE_NEW_MODULE,            ///< A module/package to add
+  PROJECT_PLAN_NODE_NEW_TEST,              ///< A test to add
+  PROJECT_PLAN_NODE_MODIFY_SYMBOL,         ///< A change to an existing symbol
+  PROJECT_PLAN_NODE_REMOVE,                ///< A removal
+  PROJECT_PLAN_NODE_CONSOLIDATE,           ///< Consolidation of duplicate units
+  PROJECT_PLAN_NODE_REFACTOR_OPPORTUNITY,  ///< A refactor to resolve
+  PROJECT_PLAN_NODE_OBSERVABILITY_POINT,   ///< An observability point to add
+} ProjectPlanNodeKind;
+
+/**
  * @brief Standardized tier scale for machine-readable context selection.
  */
 typedef enum {
@@ -221,6 +239,11 @@ typedef struct {
   ProjectInfoBlockLifecycle lifecycle;  ///< parsed uses NONE (`WI-033`)
   char *provenance;                     ///< source range/file, or task record (`WI-033`)
   float confidence;                     ///< 1.0 for exact parsed facts (`WI-033`)
+  /// Plan-node projection fields; meaningful only when `origin` is `PLANNED`.
+  ProjectPlanNodeKind plan_kind;        ///< plan-node kind (`WI-032`)
+  char *desired_shape;                  ///< projected signature/structure (`WI-032`)
+  char *rationale;                      ///< why the node exists (`WI-032`)
+  char *anchor_list;                    ///< `;`-joined anchor block ids (`WI-032`)
 } ProjectInfoBlock;
 
 /**
@@ -231,6 +254,60 @@ typedef struct {
   size_t block_count;
   size_t tier_counts[5];
 } ProjectInfoBlockRegistry;
+
+/**
+ * @brief A projected target-state (plan) node (`WI-032`).
+ *
+ * Plan nodes are the durable, projection-only representation of intended code.
+ * They are materialized into the canonical InfoBlock registry with
+ * `origin == PROJECT_INFO_BLOCK_ORIGIN_PLANNED`. The external task record stays
+ * authoritative; a plan node never advances a task stage or declares
+ * completion.
+ *
+ * All strings are owned by the plan-node store and remain valid until the node
+ * is cleared or the project is freed.
+ */
+typedef struct ProjectPlanNode {
+  char *id;               ///< stable id: `plan:<task_id>:<slug>`
+  char *task_id;          ///< external task-record id (provenance)
+  char *slug;             ///< stable, human-readable slug
+  char *title;            ///< human-readable title
+  char *desired_shape;    ///< projected signature/structure/expected symbols
+  char *rationale;        ///< why the node exists, tied to completion criteria
+  char *provenance;       ///< task record/stage provenance
+  char *projected_symbol; ///< expected symbol name once implemented (optional)
+  char *file_path;        ///< projected file path (optional)
+  ProjectPlanNodeKind kind;
+  ProjectInfoBlockLifecycle lifecycle;
+  float confidence;
+  char **anchor_ids; ///< anchor block ids in the current-state registry
+  size_t anchor_count;
+  size_t anchor_capacity;
+} ProjectPlanNode;
+
+/**
+ * @brief One plan-node lifecycle transition observed during reconciliation.
+ */
+typedef struct {
+  const ProjectPlanNode *node;                     ///< node that transitioned
+  ProjectInfoBlockLifecycle previous_lifecycle;    ///< lifecycle before reconcile
+  ProjectInfoBlockLifecycle new_lifecycle;         ///< lifecycle after reconcile
+} ProjectPlanNodeReconciliationEntry;
+
+/**
+ * @brief Machine-readable result of reconciling plan nodes against parsed state.
+ *
+ * Entries record every lifecycle transition. The `stale_count`, `conflict_count`,
+ * and `implemented_count` counters summarize transitions into those states.
+ * Reconciliation never deletes a plan node and never advances task state.
+ */
+typedef struct {
+  ProjectPlanNodeReconciliationEntry *entries;
+  size_t entry_count;
+  size_t stale_count;
+  size_t conflict_count;
+  size_t implemented_count;
+} ProjectPlanNodeReconciliationResult;
 
 /**
  * @brief Rendering disposition for a selected InfoBlock in a tiered context.
@@ -384,6 +461,11 @@ typedef struct ProjectContext {
   // Canonical InfoBlock registry derived from project IR
   ProjectInfoBlockRegistry info_block_registry;
   bool info_block_registry_ready;
+
+  // Durable plan-node store projected into the registry; survives re-index (WI-032)
+  ProjectPlanNode *plan_nodes;
+  size_t plan_node_count;
+  size_t plan_node_capacity;
 
   // Internal searchable index derived from the canonical InfoBlock registry
   ProjectSearchIndexEntry *search_index_entries;
@@ -704,4 +786,146 @@ void project_search_result_free(ProjectSearchResult *result);
  * @param result Result to clear
  */
 void project_prompt_assembly_result_free(ProjectPromptAssemblyResult *result);
+
+/**
+ * @brief Create a projected plan node and add it to the durable plan store (`WI-032`).
+ *
+ * The node id is `plan:<task_id>:<slug>`. Plan nodes are projection-only; the
+ * external task record referenced by `task_id` stays authoritative. Creating a
+ * node invalidates the derived InfoBlock registry so the next registry access
+ * re-projects it.
+ *
+ * @param project Project context
+ * @param task_id External task-record id
+ * @param slug Stable, human-readable slug
+ * @param kind Plan-node kind
+ * @return ProjectPlanNode* New node, or NULL on invalid input, duplicate id, or
+ * allocation failure
+ */
+ProjectPlanNode *project_context_plan_node_create(ProjectContext *project, const char *task_id,
+                                                  const char *slug, ProjectPlanNodeKind kind);
+
+/**
+ * @brief Set a plan node's human-readable title.
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_title(ProjectContext *project, ProjectPlanNode *node,
+                                         const char *title);
+
+/**
+ * @brief Set a plan node's desired shape (projected signature/structure).
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_desired_shape(ProjectContext *project, ProjectPlanNode *node,
+                                                 const char *desired_shape);
+
+/**
+ * @brief Set a plan node's rationale, tied to the task's completion criteria.
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_rationale(ProjectContext *project, ProjectPlanNode *node,
+                                             const char *rationale);
+
+/**
+ * @brief Set a plan node's provenance (task record/stage).
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_provenance(ProjectContext *project, ProjectPlanNode *node,
+                                              const char *provenance);
+
+/**
+ * @brief Set the symbol expected to exist once the plan node is implemented.
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_projected_symbol(ProjectContext *project, ProjectPlanNode *node,
+                                                    const char *symbol_name);
+
+/**
+ * @brief Set a plan node's projected file path.
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_file_path(ProjectContext *project, ProjectPlanNode *node,
+                                             const char *file_path);
+
+/**
+ * @brief Set a plan node's lifecycle state.
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_lifecycle(ProjectContext *project, ProjectPlanNode *node,
+                                             ProjectInfoBlockLifecycle lifecycle);
+
+/**
+ * @brief Set a plan node's confidence (projected/heuristic nodes are < 1.0).
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_confidence(ProjectContext *project, ProjectPlanNode *node,
+                                              float confidence);
+
+/**
+ * @brief Add an anchor block id from the current-state registry to a plan node.
+ *
+ * Adding an already-present anchor is a no-op.
+ *
+ * @return bool True on success
+ */
+bool project_context_plan_node_add_anchor(ProjectContext *project, ProjectPlanNode *node,
+                                          const char *anchor_block_id);
+
+/**
+ * @brief Find a plan node by its stable id.
+ *
+ * @param project Project context
+ * @param plan_node_id Stable id such as `plan:TASK-1:add-parser`
+ * @return ProjectPlanNode* Matching node or NULL if not found
+ */
+ProjectPlanNode *project_context_find_plan_node(ProjectContext *project, const char *plan_node_id);
+
+/**
+ * @brief Get the number of durable plan nodes.
+ * @return size_t Plan-node count
+ */
+size_t project_context_get_plan_node_count(const ProjectContext *project);
+
+/**
+ * @brief Get a plan node by index.
+ *
+ * @param project Project context
+ * @param index Plan-node index
+ * @return const ProjectPlanNode* Node or NULL when out of range
+ */
+const ProjectPlanNode *project_context_get_plan_node_by_index(const ProjectContext *project,
+                                                              size_t index);
+
+/**
+ * @brief Remove every durable plan node.
+ *
+ * This does not affect parsed state or the external task record.
+ *
+ * @param project Project context
+ */
+void project_context_clear_plan_nodes(ProjectContext *project);
+
+/**
+ * @brief Reconcile plan nodes against current parsed state (`WI-032`).
+ *
+ * Anchors that all vanish mark a node `STALE`; a partial anchor divergence marks
+ * it `CONFLICT`; a projected symbol that now appears in parsed state marks the
+ * node `IMPLEMENTED`. Nodes are never deleted and task state is never advanced.
+ *
+ * @param project Project context
+ * @param out_result Output result; caller must free with
+ * project_plan_node_reconciliation_result_free()
+ * @return bool True on success, false on allocation or state failure
+ */
+bool project_context_reconcile_plan_nodes(ProjectContext *project,
+                                          ProjectPlanNodeReconciliationResult *out_result);
+
+/**
+ * @brief Free heap storage owned by a plan-node reconciliation result.
+ *
+ * This frees only the result's entries; plan nodes are owned by the project.
+ *
+ * @param result Result to clear
+ */
+void project_plan_node_reconciliation_result_free(ProjectPlanNodeReconciliationResult *result);
 #endif /* SCOPEMUX_PROJECT_CONTEXT_H */

@@ -168,6 +168,96 @@ static const char *kind_label(ProjectInfoBlockKind kind) {
   }
 }
 
+static const char *plan_kind_label(ProjectPlanNodeKind kind) {
+  switch (kind) {
+  case PROJECT_PLAN_NODE_NEW_SYMBOL:
+    return "new_symbol";
+  case PROJECT_PLAN_NODE_NEW_FILE:
+    return "new_file";
+  case PROJECT_PLAN_NODE_NEW_MODULE:
+    return "new_module";
+  case PROJECT_PLAN_NODE_NEW_TEST:
+    return "new_test";
+  case PROJECT_PLAN_NODE_MODIFY_SYMBOL:
+    return "modify_symbol";
+  case PROJECT_PLAN_NODE_REMOVE:
+    return "remove";
+  case PROJECT_PLAN_NODE_CONSOLIDATE:
+    return "consolidate";
+  case PROJECT_PLAN_NODE_REFACTOR_OPPORTUNITY:
+    return "refactor_opportunity";
+  case PROJECT_PLAN_NODE_OBSERVABILITY_POINT:
+    return "observability_point";
+  default:
+    return "unknown";
+  }
+}
+
+static ProjectInfoBlockKind plan_block_kind(ProjectPlanNodeKind kind) {
+  switch (kind) {
+  case PROJECT_PLAN_NODE_NEW_FILE:
+    return PROJECT_INFO_BLOCK_FILE;
+  case PROJECT_PLAN_NODE_NEW_MODULE:
+    return PROJECT_INFO_BLOCK_DIRECTORY;
+  default:
+    return PROJECT_INFO_BLOCK_SYMBOL;
+  }
+}
+
+static ProjectContextTier plan_block_tier(ProjectPlanNodeKind kind) {
+  switch (kind) {
+  case PROJECT_PLAN_NODE_NEW_FILE:
+    return PROJECT_CONTEXT_TIER_2;
+  case PROJECT_PLAN_NODE_NEW_MODULE:
+    return PROJECT_CONTEXT_TIER_3;
+  default:
+    return PROJECT_CONTEXT_TIER_1;
+  }
+}
+
+static ASTNodeType plan_block_node_type(ProjectPlanNodeKind kind) {
+  switch (kind) {
+  case PROJECT_PLAN_NODE_NEW_FILE:
+  case PROJECT_PLAN_NODE_NEW_MODULE:
+    return NODE_MODULE;
+  default:
+    return NODE_FUNCTION;
+  }
+}
+
+static char *join_string_list(char **values, size_t count, char separator) {
+  size_t total = 0;
+  size_t offset = 0;
+  char *joined;
+
+  if (!values || count == 0) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < count; i++) {
+    total += values[i] ? strlen(values[i]) : 0;
+  }
+  total += count - 1;
+
+  joined = malloc(total + 1);
+  if (!joined) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < count; i++) {
+    size_t len = values[i] ? strlen(values[i]) : 0;
+    if (values[i]) {
+      memcpy(joined + offset, values[i], len);
+      offset += len;
+    }
+    if (i + 1 < count) {
+      joined[offset++] = separator;
+    }
+  }
+  joined[offset] = '\0';
+  return joined;
+}
+
 static const char *disposition_label(ProjectTieredContextDisposition disposition) {
   switch (disposition) {
   case PROJECT_CONTEXT_BLOCK_PINNED:
@@ -312,6 +402,20 @@ static bool build_search_text_for_block(const ProjectInfoBlock *block, char **ou
                           block->node->docstring ? block->node->docstring : "") ||
         !append_text_part(buffer, size, &offset, "content:",
                           block->node->raw_content ? block->node->raw_content : "")) {
+      free(buffer);
+      return false;
+    }
+  }
+
+  // WI-032: projected plan-node attributes are searchable alongside parsed ones.
+  if (block && block->origin == PROJECT_INFO_BLOCK_ORIGIN_PLANNED) {
+    if (!append_text_part(buffer, size, &offset, "plan_kind:", plan_kind_label(block->plan_kind)) ||
+        !append_text_part(buffer, size, &offset, "desired:",
+                          block->desired_shape ? block->desired_shape : "") ||
+        !append_text_part(buffer, size, &offset, "rationale:",
+                          block->rationale ? block->rationale : "") ||
+        !append_text_part(buffer, size, &offset, "anchors:",
+                          block->anchor_list ? block->anchor_list : "")) {
       free(buffer);
       return false;
     }
@@ -770,6 +874,9 @@ void project_context_clear_info_blocks(ProjectContext *project) {
     free(project->info_block_registry.blocks[i].qualified_name);
     free(project->info_block_registry.blocks[i].file_path);
     free(project->info_block_registry.blocks[i].provenance);
+    free(project->info_block_registry.blocks[i].desired_shape);
+    free(project->info_block_registry.blocks[i].rationale);
+    free(project->info_block_registry.blocks[i].anchor_list);
   }
 
   free(project->info_block_registry.blocks);
@@ -853,7 +960,7 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
   }
 
   total_blocks = snapshot->symbol_count + snapshot->resolved_reference_count + file_block_count +
-                 directory_count + 1;
+                 directory_count + 1 + project->plan_node_count;
   if (total_blocks > 0) {
     project->info_block_registry.blocks = calloc(total_blocks, sizeof(ProjectInfoBlock));
     if (!project->info_block_registry.blocks) {
@@ -985,6 +1092,37 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
     block->provenance =
         strdup(project->root_directory ? project->root_directory : ".");
     block->confidence = 1.0f;
+  }
+
+  // WI-032: project durable plan nodes into the same registry as parsed blocks.
+  for (i = 0; i < project->plan_node_count; i++) {
+    const ProjectPlanNode *node = &project->plan_nodes[i];
+    ProjectInfoBlock *block = &project->info_block_registry.blocks[block_index++];
+    const char *qualified = node->projected_symbol ? node->projected_symbol : node->id;
+    char *anchor_join = join_string_list(node->anchor_ids, node->anchor_count, ';');
+    size_t tokens = estimate_tokens_for_text(node->desired_shape) +
+                    estimate_tokens_for_text(node->rationale) + estimate_tokens_for_text(node->title);
+
+    block->id = node->id ? strdup(node->id) : NULL;
+    block->name = strdup(node->title ? node->title : (node->slug ? node->slug : "plan"));
+    block->qualified_name = qualified ? strdup(qualified) : NULL;
+    block->file_path = node->file_path ? strdup(node->file_path) : NULL;
+    block->node = NULL;
+    block->node_type = plan_block_node_type(node->kind);
+    block->language = LANG_UNKNOWN;
+    block->kind = plan_block_kind(node->kind);
+    block->tier = plan_block_tier(node->kind);
+    block->estimated_tokens = tokens > 0 ? tokens : 1;
+    block->related_symbol_count = node->anchor_count;
+    block->origin = PROJECT_INFO_BLOCK_ORIGIN_PLANNED;
+    block->lifecycle = node->lifecycle;
+    block->provenance =
+        strdup(node->provenance ? node->provenance : (node->task_id ? node->task_id : "plan"));
+    block->confidence = node->confidence;
+    block->plan_kind = node->kind;
+    block->desired_shape = node->desired_shape ? strdup(node->desired_shape) : NULL;
+    block->rationale = node->rationale ? strdup(node->rationale) : NULL;
+    block->anchor_list = anchor_join;
   }
 
   project->info_block_registry.block_count = block_index;
@@ -1597,5 +1735,409 @@ void project_prompt_assembly_result_free(ProjectPromptAssemblyResult *result) {
 
   free(result->prompt_text);
   project_tiered_context_result_free(&result->context_result);
+  memset(result, 0, sizeof(*result));
+}
+
+/* ------------------------------------------------------------------------- */
+/* WI-032: durable plan-node store and reconciliation                        */
+/* ------------------------------------------------------------------------- */
+
+static bool plan_node_set_string(char **field, const char *value) {
+  char *copy = NULL;
+
+  if (!field) {
+    return false;
+  }
+
+  if (value) {
+    copy = strdup(value);
+    if (!copy) {
+      return false;
+    }
+  }
+
+  free(*field);
+  *field = copy;
+  return true;
+}
+
+static void plan_node_free(ProjectPlanNode *node) {
+  if (!node) {
+    return;
+  }
+
+  free(node->id);
+  free(node->task_id);
+  free(node->slug);
+  free(node->title);
+  free(node->desired_shape);
+  free(node->rationale);
+  free(node->provenance);
+  free(node->projected_symbol);
+  free(node->file_path);
+  for (size_t i = 0; i < node->anchor_count; i++) {
+    free(node->anchor_ids[i]);
+  }
+  free(node->anchor_ids);
+  memset(node, 0, sizeof(*node));
+}
+
+static bool plan_store_reserve(ProjectContext *project, size_t min_capacity) {
+  ProjectPlanNode *next;
+  size_t capacity;
+
+  if (!project) {
+    return false;
+  }
+  if (project->plan_node_capacity >= min_capacity) {
+    return true;
+  }
+
+  capacity = project->plan_node_capacity == 0 ? 8 : project->plan_node_capacity * 2;
+  while (capacity < min_capacity) {
+    capacity *= 2;
+  }
+
+  next = realloc(project->plan_nodes, capacity * sizeof(*next));
+  if (!next) {
+    return false;
+  }
+
+  memset(next + project->plan_node_capacity, 0,
+         (capacity - project->plan_node_capacity) * sizeof(*next));
+  project->plan_nodes = next;
+  project->plan_node_capacity = capacity;
+  return true;
+}
+
+void project_context_clear_plan_nodes(ProjectContext *project) {
+  if (!project) {
+    return;
+  }
+
+  for (size_t i = 0; i < project->plan_node_count; i++) {
+    plan_node_free(&project->plan_nodes[i]);
+  }
+  free(project->plan_nodes);
+  project->plan_nodes = NULL;
+  project->plan_node_count = 0;
+  project->plan_node_capacity = 0;
+
+  project_context_clear_info_blocks(project);
+}
+
+ProjectPlanNode *project_context_plan_node_create(ProjectContext *project, const char *task_id,
+                                                  const char *slug, ProjectPlanNodeKind kind) {
+  ProjectPlanNode *node;
+  char *id;
+  int needed;
+
+  if (!project || !task_id || !slug) {
+    return NULL;
+  }
+
+  needed = snprintf(NULL, 0, "plan:%s:%s", task_id, slug);
+  if (needed < 0) {
+    return NULL;
+  }
+  id = malloc((size_t)needed + 1);
+  if (!id) {
+    return NULL;
+  }
+  snprintf(id, (size_t)needed + 1, "plan:%s:%s", task_id, slug);
+
+  if (project_context_find_plan_node(project, id)) {
+    free(id);
+    return NULL;
+  }
+
+  if (!plan_store_reserve(project, project->plan_node_count + 1)) {
+    free(id);
+    return NULL;
+  }
+
+  node = &project->plan_nodes[project->plan_node_count];
+  memset(node, 0, sizeof(*node));
+  node->id = id;
+  node->task_id = strdup(task_id);
+  node->slug = strdup(slug);
+  node->kind = kind;
+  node->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_PLANNED;
+  node->confidence = 0.5f;
+
+  if (!node->task_id || !node->slug) {
+    plan_node_free(node);
+    return NULL;
+  }
+
+  project->plan_node_count++;
+  project_context_clear_info_blocks(project);
+  return node;
+}
+
+bool project_context_plan_node_set_title(ProjectContext *project, ProjectPlanNode *node,
+                                         const char *title) {
+  if (!project || !node || !plan_node_set_string(&node->title, title)) {
+    return false;
+  }
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+bool project_context_plan_node_set_desired_shape(ProjectContext *project, ProjectPlanNode *node,
+                                                 const char *desired_shape) {
+  if (!project || !node || !plan_node_set_string(&node->desired_shape, desired_shape)) {
+    return false;
+  }
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+bool project_context_plan_node_set_rationale(ProjectContext *project, ProjectPlanNode *node,
+                                             const char *rationale) {
+  if (!project || !node || !plan_node_set_string(&node->rationale, rationale)) {
+    return false;
+  }
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+bool project_context_plan_node_set_provenance(ProjectContext *project, ProjectPlanNode *node,
+                                              const char *provenance) {
+  if (!project || !node || !plan_node_set_string(&node->provenance, provenance)) {
+    return false;
+  }
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+bool project_context_plan_node_set_projected_symbol(ProjectContext *project, ProjectPlanNode *node,
+                                                    const char *symbol_name) {
+  if (!project || !node || !plan_node_set_string(&node->projected_symbol, symbol_name)) {
+    return false;
+  }
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+bool project_context_plan_node_set_file_path(ProjectContext *project, ProjectPlanNode *node,
+                                             const char *file_path) {
+  if (!project || !node || !plan_node_set_string(&node->file_path, file_path)) {
+    return false;
+  }
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+bool project_context_plan_node_set_lifecycle(ProjectContext *project, ProjectPlanNode *node,
+                                             ProjectInfoBlockLifecycle lifecycle) {
+  if (!project || !node) {
+    return false;
+  }
+  node->lifecycle = lifecycle;
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+bool project_context_plan_node_set_confidence(ProjectContext *project, ProjectPlanNode *node,
+                                              float confidence) {
+  if (!project || !node) {
+    return false;
+  }
+  node->confidence = confidence;
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+bool project_context_plan_node_add_anchor(ProjectContext *project, ProjectPlanNode *node,
+                                          const char *anchor_block_id) {
+  char **next_anchors;
+  size_t next_capacity;
+  char *copy;
+
+  if (!project || !node || !anchor_block_id || anchor_block_id[0] == '\0') {
+    return false;
+  }
+
+  for (size_t i = 0; i < node->anchor_count; i++) {
+    if (node->anchor_ids[i] && strcmp(node->anchor_ids[i], anchor_block_id) == 0) {
+      return true;
+    }
+  }
+
+  copy = strdup(anchor_block_id);
+  if (!copy) {
+    return false;
+  }
+
+  if (node->anchor_count == node->anchor_capacity) {
+    next_capacity = node->anchor_capacity == 0 ? 4 : node->anchor_capacity * 2;
+    next_anchors = realloc(node->anchor_ids, next_capacity * sizeof(*next_anchors));
+    if (!next_anchors) {
+      free(copy);
+      return false;
+    }
+    node->anchor_ids = next_anchors;
+    node->anchor_capacity = next_capacity;
+  }
+
+  node->anchor_ids[node->anchor_count++] = copy;
+  project_context_clear_info_blocks(project);
+  return true;
+}
+
+ProjectPlanNode *project_context_find_plan_node(ProjectContext *project, const char *plan_node_id) {
+  if (!project || !plan_node_id) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < project->plan_node_count; i++) {
+    if (project->plan_nodes[i].id && strcmp(project->plan_nodes[i].id, plan_node_id) == 0) {
+      return &project->plan_nodes[i];
+    }
+  }
+
+  return NULL;
+}
+
+size_t project_context_get_plan_node_count(const ProjectContext *project) {
+  return project ? project->plan_node_count : 0;
+}
+
+const ProjectPlanNode *project_context_get_plan_node_by_index(const ProjectContext *project,
+                                                              size_t index) {
+  if (!project || index >= project->plan_node_count) {
+    return NULL;
+  }
+  return &project->plan_nodes[index];
+}
+
+static bool plan_anchor_exists_in_parsed_state(const ProjectInfoBlockRegistry *registry,
+                                               const char *anchor_id) {
+  if (!registry || !anchor_id) {
+    return false;
+  }
+
+  for (size_t i = 0; i < registry->block_count; i++) {
+    const ProjectInfoBlock *block = &registry->blocks[i];
+    if (block->origin == PROJECT_INFO_BLOCK_ORIGIN_PARSED && block->id &&
+        strcmp(block->id, anchor_id) == 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+static const ProjectInfoBlock *find_parsed_symbol_block(const ProjectInfoBlockRegistry *registry,
+                                                        const char *symbol_name) {
+  if (!registry || !symbol_name) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < registry->block_count; i++) {
+    const ProjectInfoBlock *block = &registry->blocks[i];
+    if (block->origin != PROJECT_INFO_BLOCK_ORIGIN_PARSED ||
+        block->kind != PROJECT_INFO_BLOCK_SYMBOL) {
+      continue;
+    }
+    if (block->qualified_name && strcmp(block->qualified_name, symbol_name) == 0) {
+      return block;
+    }
+    if (block->name && strcmp(block->name, symbol_name) == 0) {
+      return block;
+    }
+  }
+
+  return NULL;
+}
+
+bool project_context_reconcile_plan_nodes(ProjectContext *project,
+                                          ProjectPlanNodeReconciliationResult *out_result) {
+  const ProjectInfoBlockRegistry *registry;
+  ProjectPlanNodeReconciliationEntry *entries = NULL;
+  size_t entry_count = 0;
+
+  if (!project || !out_result) {
+    return false;
+  }
+
+  memset(out_result, 0, sizeof(*out_result));
+  registry = project_context_get_info_block_registry(project);
+  if (!registry) {
+    return false;
+  }
+
+  if (project->plan_node_count > 0) {
+    entries = calloc(project->plan_node_count, sizeof(*entries));
+    if (!entries) {
+      return false;
+    }
+  }
+
+  for (size_t i = 0; i < project->plan_node_count; i++) {
+    ProjectPlanNode *node = &project->plan_nodes[i];
+    ProjectInfoBlockLifecycle previous = node->lifecycle;
+    ProjectInfoBlockLifecycle next = previous;
+    size_t missing_anchors = 0;
+    bool realized = false;
+
+    for (size_t a = 0; a < node->anchor_count; a++) {
+      if (!plan_anchor_exists_in_parsed_state(registry, node->anchor_ids[a])) {
+        missing_anchors++;
+      }
+    }
+
+    if (node->projected_symbol && find_parsed_symbol_block(registry, node->projected_symbol)) {
+      realized = true;
+    }
+
+    if (realized) {
+      if (previous != PROJECT_INFO_BLOCK_LIFECYCLE_IMPLEMENTED &&
+          previous != PROJECT_INFO_BLOCK_LIFECYCLE_VERIFIED &&
+          previous != PROJECT_INFO_BLOCK_LIFECYCLE_DOCUMENTED) {
+        next = PROJECT_INFO_BLOCK_LIFECYCLE_IMPLEMENTED;
+      }
+    } else if (node->anchor_count > 0 && missing_anchors == node->anchor_count) {
+      next = PROJECT_INFO_BLOCK_LIFECYCLE_STALE;
+    } else if (missing_anchors > 0) {
+      next = PROJECT_INFO_BLOCK_LIFECYCLE_CONFLICT;
+    }
+
+    if (next != previous) {
+      node->lifecycle = next;
+      entries[entry_count].node = node;
+      entries[entry_count].previous_lifecycle = previous;
+      entries[entry_count].new_lifecycle = next;
+      entry_count++;
+      if (next == PROJECT_INFO_BLOCK_LIFECYCLE_IMPLEMENTED) {
+        out_result->implemented_count++;
+      } else if (next == PROJECT_INFO_BLOCK_LIFECYCLE_STALE) {
+        out_result->stale_count++;
+      } else if (next == PROJECT_INFO_BLOCK_LIFECYCLE_CONFLICT) {
+        out_result->conflict_count++;
+      }
+    }
+  }
+
+  if (entry_count == 0) {
+    free(entries);
+    entries = NULL;
+  } else {
+    // Lifecycle changed: refresh the derived registry projection on next access.
+    project_context_clear_info_blocks(project);
+  }
+
+  out_result->entries = entries;
+  out_result->entry_count = entry_count;
+  return true;
+}
+
+void project_plan_node_reconciliation_result_free(ProjectPlanNodeReconciliationResult *result) {
+  if (!result) {
+    return;
+  }
+
+  free(result->entries);
   memset(result, 0, sizeof(*result));
 }

@@ -124,6 +124,9 @@ void project_context_free_impl(ProjectContext *project) {
 
   project_context_clear_ir(project);
 
+  // Plan nodes are durable across re-index, so clear them only on destruction (WI-032)
+  project_context_clear_plan_nodes(project);
+
   // Free each parser context
   for (size_t i = 0; i < project->num_files; i++) {
     if (project->file_contexts[i]) {
