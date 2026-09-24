@@ -865,3 +865,158 @@ Test(project_context_delegation, plan_node_projection_and_reconciliation, .init 
 
   project_plan_node_reconciliation_result_free(&reconcile);
 }
+
+Test(project_context_delegation, delta_and_map_query_api, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *caller_ctx = parser_init();
+  ParserContext *callee_ctx = parser_init();
+  ASTNode *caller_fn;
+  ASTNode *callee_fn;
+  char caller_path[512], callee_path[512];
+  char caller_file_id[600];
+  ProjectPlanNode *add_node;
+  ProjectPlanNode *change_node;
+  ProjectPlanNode *remove_node;
+  ProjectPlanNode *reuse_node;
+  ProjectDeltaResult delta = {0};
+  ProjectMapQueryResult query = {0};
+  const char *changed_files[1];
+  bool saw_shape = false;
+  bool saw_provenance = false;
+
+  cr_assert(caller_ctx != NULL && callee_ctx != NULL, "Parser contexts should be created");
+
+  join_test_project_path("main.c", caller_path, sizeof(caller_path));
+  join_test_project_path("helper.c", callee_path, sizeof(callee_path));
+
+  caller_ctx->filename = strdup(caller_path);
+  caller_ctx->language = LANG_C;
+  callee_ctx->filename = strdup(callee_path);
+  callee_ctx->language = LANG_C;
+
+  caller_fn = make_named_node(NODE_FUNCTION, "caller", "caller", caller_path);
+  callee_fn = make_named_node(NODE_FUNCTION, "helper", "helper", callee_path);
+  cr_assert(parser_add_ast_node(caller_ctx, caller_fn), "Caller function should be tracked");
+  cr_assert(parser_add_ast_node(callee_ctx, callee_fn), "Helper function should be tracked");
+
+  project->file_contexts[0] = caller_ctx;
+  project->file_contexts[1] = callee_ctx;
+  project->num_files = 2;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "caller", caller_fn, caller_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Caller symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "helper", callee_fn, callee_path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Helper symbol should be registered");
+  cr_assert(project_context_rebuild_ir(project), "Project IR snapshot should rebuild");
+
+  snprintf(caller_file_id, sizeof(caller_file_id), "file:%s", caller_path);
+
+  add_node = project_context_plan_node_create(project, "TASK-D", "add-parser",
+                                              PROJECT_PLAN_NODE_NEW_SYMBOL);
+  cr_assert_not_null(add_node, "add node should be created");
+  cr_assert(project_context_plan_node_set_desired_shape(project, add_node, "int parse(void)"),
+            "shape setter should succeed");
+  cr_assert(project_context_plan_node_set_provenance(project, add_node, "TASK-D:implementing"),
+            "provenance setter should succeed");
+  cr_assert(project_context_plan_node_add_anchor(project, add_node, caller_file_id),
+            "add node anchor should be set");
+
+  change_node = project_context_plan_node_create(project, "TASK-D", "log-helper",
+                                                 PROJECT_PLAN_NODE_OBSERVABILITY_POINT);
+  cr_assert_not_null(change_node, "change node should be created");
+  cr_assert(project_context_plan_node_add_anchor(project, change_node, "sym:helper"),
+            "change node anchor should be set");
+
+  remove_node = project_context_plan_node_create(project, "TASK-D", "remove-legacy",
+                                                 PROJECT_PLAN_NODE_REMOVE);
+  cr_assert_not_null(remove_node, "remove node should be created");
+  cr_assert(project_context_plan_node_add_anchor(project, remove_node, caller_file_id),
+            "remove node anchor should be set");
+
+  reuse_node = project_context_plan_node_create(project, "TASK-D", "reuse-helper",
+                                                PROJECT_PLAN_NODE_MODIFY_SYMBOL);
+  cr_assert_not_null(reuse_node, "reuse node should be created");
+  cr_assert(project_context_plan_node_set_projected_symbol(project, reuse_node, "helper"),
+            "reuse node projected symbol should be set");
+
+  // WI-036: delta reports add/change/remove/reuse with trust and cost metadata.
+  cr_assert(project_context_compute_delta(project, "TASK-D", "implementing", &delta),
+            "delta computation should succeed");
+  cr_assert_eq(delta.entry_count, 4, "delta should report all four plan nodes");
+  cr_assert_eq(delta.add_count, 1, "delta should report one add");
+  cr_assert_eq(delta.change_count, 1, "delta should report one change");
+  cr_assert_eq(delta.remove_count, 1, "delta should report one remove");
+  cr_assert_eq(delta.reuse_count, 1, "delta should report one reuse");
+  cr_assert(delta.estimated_tokens > 0, "delta should estimate token cost");
+  for (size_t i = 0; i < delta.entry_count; i++) {
+    cr_assert_not_null(delta.entries[i].block, "delta entries should reference a block");
+    cr_assert_not_null(delta.entries[i].provenance, "delta entries should carry provenance");
+    if (delta.entries[i].projected_shape &&
+        strcmp(delta.entries[i].projected_shape, "int parse(void)") == 0) {
+      saw_shape = true;
+    }
+    if (delta.entries[i].provenance &&
+        strcmp(delta.entries[i].provenance, "TASK-D:implementing") == 0) {
+      saw_provenance = true;
+    }
+  }
+  cr_assert(saw_shape, "delta should carry projected shape");
+  cr_assert(saw_provenance, "delta should carry plan provenance");
+  {
+    ProjectDeltaResult other = {0};
+    cr_assert(project_context_compute_delta(project, "TASK-OTHER", "implementing", &other),
+              "delta computation for other task should succeed");
+    cr_assert_eq(other.entry_count, 0, "delta should filter by task id");
+    project_delta_result_free(&other);
+  }
+  project_delta_result_free(&delta);
+
+  // query(node)
+  cr_assert(project_context_query_node(project, "sym:helper", &query), "node query should succeed");
+  cr_assert(query.item_count >= 1, "node query should resolve the helper block");
+  cr_assert(query.estimated_tokens > 0, "query results should estimate tokens");
+  cr_assert_not_null(query.items[0].provenance, "query results should carry provenance");
+  cr_assert(query.items[0].confidence > 0.0f, "query results should carry confidence");
+  project_map_query_result_free(&query);
+
+  // query(resolve)
+  cr_assert(project_context_query_resolve(project, "TASK-D", "implementing", &query),
+            "resolve query should succeed");
+  cr_assert(query.item_count >= 4, "resolve should return plan nodes and anchors");
+  project_map_query_result_free(&query);
+
+  // query(expand)
+  cr_assert(project_context_query_expand(project, "sym:caller", PROJECT_CONTEXT_TIER_3, &query),
+            "expand query should succeed");
+  cr_assert(query.item_count >= 2, "expand should include the seed and related blocks");
+  project_map_query_result_free(&query);
+
+  // query(neighbors)
+  cr_assert(project_context_query_neighbors(project, "sym:caller", 1, &query),
+            "neighbors query should succeed");
+  cr_assert(query.item_count >= 2, "neighbors should include the seed and at least one neighbor");
+  project_map_query_result_free(&query);
+
+  // query(observability)
+  cr_assert(project_context_query_observability(project, "helper", &query),
+            "observability query should succeed");
+  cr_assert_eq(query.item_count, 1, "observability should find the helper observability plan");
+  cr_assert_str_eq(query.items[0].block->id, "plan:TASK-D:log-helper",
+                   "observability should return the planned observability node");
+  project_map_query_result_free(&query);
+
+  // query(change_impact)
+  changed_files[0] = caller_path;
+  cr_assert(project_context_query_change_impact(project, changed_files, 1, &query),
+            "change impact query should succeed");
+  cr_assert(query.item_count >= 2, "change impact should include the file, its symbols, and plans");
+  project_map_query_result_free(&query);
+
+  // query(duplicates)
+  cr_assert(project_context_query_duplicates(project, NULL, &query),
+            "duplicates query should succeed");
+  project_map_query_result_free(&query);
+}

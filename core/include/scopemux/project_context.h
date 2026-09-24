@@ -928,4 +928,171 @@ bool project_context_reconcile_plan_nodes(ProjectContext *project,
  * @param result Result to clear
  */
 void project_plan_node_reconciliation_result_free(ProjectPlanNodeReconciliationResult *result);
+
+/**
+ * @brief Delta entry kinds: `current (+) target = { add, change, remove, reuse }` (`WI-036`).
+ */
+typedef enum {
+  PROJECT_DELTA_ADD = 0, ///< target node absent from current state
+  PROJECT_DELTA_CHANGE,  ///< target modifies an existing unit
+  PROJECT_DELTA_REMOVE,  ///< target removes a current unit
+  PROJECT_DELTA_REUSE,   ///< target can reuse an existing (already realized) unit
+} ProjectDeltaKind;
+
+/**
+ * @brief One machine-readable delta entry (`WI-036`).
+ *
+ * Pointer fields are borrowed from the project (registry/plan store) and stay
+ * valid until the next registry rebuild or project destruction.
+ */
+typedef struct {
+  ProjectDeltaKind kind;
+  const ProjectInfoBlock *block;     ///< target block, or current block for reuse
+  const ProjectPlanNode *plan_node;  ///< owning plan node when applicable
+  const char *anchors;               ///< `;`-joined anchor ids (borrowed)
+  const char *projected_shape;       ///< desired shape (borrowed)
+  const char *provenance;            ///< provenance (borrowed)
+  float confidence;
+  ProjectInfoBlockLifecycle lifecycle;
+  size_t estimated_tokens;
+} ProjectDeltaEntry;
+
+/**
+ * @brief Machine-readable delta result (`WI-036`).
+ */
+typedef struct {
+  const char *task_id; ///< borrowed task id filter (may be NULL)
+  const char *stage;   ///< borrowed runtime stage (may be NULL)
+  ProjectDeltaEntry *entries;
+  size_t entry_count;
+  size_t add_count;
+  size_t change_count;
+  size_t remove_count;
+  size_t reuse_count;
+  size_t estimated_tokens;
+} ProjectDeltaResult;
+
+/**
+ * @brief Map query operations (`WI-036`).
+ */
+typedef enum {
+  PROJECT_MAP_QUERY_NODE = 0,       ///< resolve one node by id
+  PROJECT_MAP_QUERY_RESOLVE,        ///< seed nodes for a task/stage
+  PROJECT_MAP_QUERY_EXPAND,         ///< expand a node toward a tier
+  PROJECT_MAP_QUERY_NEIGHBORS,      ///< graph neighbors to a depth
+  PROJECT_MAP_QUERY_DUPLICATES,     ///< duplicate/near-duplicate units
+  PROJECT_MAP_QUERY_OBSERVABILITY,  ///< observability points for a symbol
+  PROJECT_MAP_QUERY_CHANGE_IMPACT,  ///< impact of changed files
+} ProjectMapQueryKind;
+
+/**
+ * @brief One machine-readable map query result item (`WI-036`).
+ */
+typedef struct {
+  const ProjectInfoBlock *block; ///< matched block (borrowed)
+  ProjectMapQueryKind kind;
+  const char *reason;   ///< static reason label for reconstructing selection
+  const char *provenance; ///< borrowed provenance
+  float confidence;
+  size_t estimated_tokens;
+  size_t distance; ///< graph distance for neighbors/expand (0 = seed)
+} ProjectMapResultItem;
+
+/**
+ * @brief Machine-readable map query result (`WI-036`).
+ */
+typedef struct {
+  ProjectMapQueryKind kind;
+  ProjectMapResultItem *items;
+  size_t item_count;
+  size_t estimated_tokens;
+} ProjectMapQueryResult;
+
+/**
+ * @brief Compute the delta between current (parsed) and target (planned) state.
+ *
+ * Each plan node yields one entry: `ADD` for new units, `CHANGE` for
+ * modifications/observability/refactor nodes, `REMOVE` for removals, and
+ * `REUSE` when the projected symbol already exists in parsed state. Entries
+ * carry anchors, projected shape, provenance, confidence, and token cost.
+ * Passing a non-NULL @p task_id restricts the delta to that task.
+ *
+ * @param project Project context
+ * @param task_id Task-record id filter, or NULL for all tasks
+ * @param stage Runtime stage label (recorded, not interpreted), or NULL
+ * @param out_result Output result; free with project_delta_result_free()
+ * @return bool True on success, false on allocation or state failure
+ */
+bool project_context_compute_delta(ProjectContext *project, const char *task_id, const char *stage,
+                                   ProjectDeltaResult *out_result);
+
+/**
+ * @brief Resolve a single canonical node by id.
+ * @return bool True on success (even when no node matches)
+ */
+bool project_context_query_node(ProjectContext *project, const char *block_id,
+                                ProjectMapQueryResult *out_result);
+
+/**
+ * @brief Resolve seed nodes for a task and stage.
+ *
+ * Returns the task's plan nodes and their anchors, falling back to the project
+ * block when the task has no plan nodes.
+ *
+ * @return bool True on success
+ */
+bool project_context_query_resolve(ProjectContext *project, const char *task_id, const char *stage,
+                                   ProjectMapQueryResult *out_result);
+
+/**
+ * @brief Expand a node toward a target tier across related blocks.
+ * @return bool True on success
+ */
+bool project_context_query_expand(ProjectContext *project, const char *block_id,
+                                  ProjectContextTier to_tier, ProjectMapQueryResult *out_result);
+
+/**
+ * @brief Walk graph neighbors from a node to a bounded depth.
+ * @return bool True on success
+ */
+bool project_context_query_neighbors(ProjectContext *project, const char *block_id, size_t depth,
+                                     ProjectMapQueryResult *out_result);
+
+/**
+ * @brief Detect duplicate units, optionally scoped by a path/name substring.
+ *
+ * @param scope Optional substring filter, or NULL for whole project
+ * @return bool True on success
+ */
+bool project_context_query_duplicates(ProjectContext *project, const char *scope,
+                                      ProjectMapQueryResult *out_result);
+
+/**
+ * @brief List observability plan nodes attached to a symbol.
+ * @return bool True on success
+ */
+bool project_context_query_observability(ProjectContext *project, const char *symbol,
+                                         ProjectMapQueryResult *out_result);
+
+/**
+ * @brief Report the impact of changed files: their blocks plus anchored plans.
+ *
+ * @param files Array of changed file paths
+ * @param file_count Number of entries in @p files
+ * @return bool True on success
+ */
+bool project_context_query_change_impact(ProjectContext *project, const char *const *files,
+                                         size_t file_count, ProjectMapQueryResult *out_result);
+
+/**
+ * @brief Free heap storage owned by a map query result.
+ * @param result Result to clear
+ */
+void project_map_query_result_free(ProjectMapQueryResult *result);
+
+/**
+ * @brief Free heap storage owned by a delta result.
+ * @param result Result to clear
+ */
+void project_delta_result_free(ProjectDeltaResult *result);
 #endif /* SCOPEMUX_PROJECT_CONTEXT_H */
