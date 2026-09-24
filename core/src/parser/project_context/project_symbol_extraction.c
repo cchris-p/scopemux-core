@@ -136,10 +136,32 @@ static void extract_symbols_from_ast(ASTNode *node, void *symbols) {
     }
     break;
 
+  case NODE_TYPEDEF:
+  case NODE_UNION:
+    // Add type-alias / union symbols
+    if (node->name) {
+      symbol_collection_add(symbols, node->name, SYMBOL_TYPE, node);
+    }
+    break;
+
+  case NODE_MODULE:
+    // Add module symbol
+    if (node->name) {
+      symbol_collection_add(symbols, node->name, SYMBOL_MODULE, node);
+    }
+    break;
+
   case NODE_NAMESPACE:
     // Add namespace symbol
     if (node->name) {
       symbol_collection_add(symbols, node->name, SYMBOL_NAMESPACE, node);
+    }
+    break;
+
+  case NODE_MACRO:
+    // Add macro symbol
+    if (node->name) {
+      symbol_collection_add(symbols, node->name, SYMBOL_FUNCTION, node);
     }
     break;
 

@@ -27,6 +27,19 @@ static const char *RUST_SAMPLE =
     "    Busy,\n"
     "}\n"
     "\n"
+    "pub union Raw {\n"
+    "    pub as_int: u32,\n"
+    "    pub as_float: f32,\n"
+    "}\n"
+    "\n"
+    "pub type Handle = usize;\n"
+    "\n"
+    "pub mod inner;\n"
+    "\n"
+    "macro_rules! make_worker {\n"
+    "    () => { Worker { name: String::new(), count: 0 } };\n"
+    "}\n"
+    "\n"
     "pub trait Runnable {\n"
     "    fn run(&self);\n"
     "}\n"
@@ -90,4 +103,33 @@ Test(rust_ast, detects_language_from_extension) {
                ".rs should be detected as Rust");
   cr_assert_str_eq(language_to_string(LANG_RUST), "rust");
   cr_assert_eq(language_from_string("rust"), LANG_RUST);
+}
+
+Test(rust_ast, parses_enums_traits_and_other_kinds) {
+  ParserContext *ctx = parse_rust_sample();
+  const ASTNode *nodes[16];
+
+  cr_assert_gt(parser_get_ast_nodes_by_type(ctx, NODE_ENUM, nodes, 16), 0,
+               "Should extract a Rust enum");
+  cr_assert_gt(parser_get_ast_nodes_by_type(ctx, NODE_INTERFACE, nodes, 16), 0,
+               "Should extract a Rust trait as an interface");
+  cr_assert_gt(parser_get_ast_nodes_by_type(ctx, NODE_TYPEDEF, nodes, 16), 0,
+               "Should extract a Rust type alias as a typedef");
+  cr_assert_gt(parser_get_ast_nodes_by_type(ctx, NODE_MODULE, nodes, 16), 0,
+               "Should extract a Rust module");
+  cr_assert_gt(parser_get_ast_nodes_by_type(ctx, NODE_UNION, nodes, 16), 0,
+               "Should extract a Rust union");
+  cr_assert_gt(parser_get_ast_nodes_by_type(ctx, NODE_MACRO, nodes, 16), 0,
+               "Should extract a Rust macro definition");
+
+  size_t enum_count = parser_get_ast_nodes_by_type(ctx, NODE_ENUM, nodes, 16);
+  bool saw_state = false;
+  for (size_t i = 0; i < enum_count; i++) {
+    if (nodes[i]->name && strcmp(nodes[i]->name, "State") == 0) {
+      saw_state = true;
+    }
+  }
+  cr_assert(saw_state, "Extracted enum node should be named `State`");
+
+  parser_free(ctx);
 }

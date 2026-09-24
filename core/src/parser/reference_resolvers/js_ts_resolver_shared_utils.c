@@ -18,6 +18,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
   if (ref_type == REF_IMPORT) {
     SymbolEntry *import = symbol_table_lookup(symbol_table, name);
     if (import && import->node) {
+      ast_node_add_reference(node, import->node);
       js_ts_stats.num_import_resolved++;
       js_ts_stats.num_resolved++;
       return RESOLUTION_SUCCESS;
@@ -29,6 +30,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
   if (ref_type == REF_USE) {
     SymbolEntry *module = symbol_table_lookup(symbol_table, name);
     if (module && module->node) {
+      ast_node_add_reference(node, module->node);
       js_ts_stats.num_module_resolved++;
       js_ts_stats.num_resolved++;
       return RESOLUTION_SUCCESS;
@@ -40,6 +42,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
   if (ref_type == REF_TYPE) {
     SymbolEntry *class_entry = symbol_table_lookup(symbol_table, name);
     if (class_entry && class_entry->node) {
+      ast_node_add_reference(node, class_entry->node);
       js_ts_stats.num_class_resolved++;
       js_ts_stats.num_resolved++;
       return RESOLUTION_SUCCESS;
@@ -52,6 +55,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
     if (ref_type == REF_TYPE) {
       SymbolEntry *type_entry = symbol_table_lookup(symbol_table, name);
       if (type_entry && type_entry->node) {
+        ast_node_add_reference(node, type_entry->node);
         js_ts_stats.num_type_resolved++;
         js_ts_stats.num_resolved++;
         return RESOLUTION_SUCCESS;
@@ -62,6 +66,7 @@ ResolutionStatus reference_resolver_js_ts_resolve(ASTNode *node, ReferenceType r
     if (ref_type == REF_INTERFACE) {
       SymbolEntry *interface_entry = symbol_table_lookup(symbol_table, name);
       if (interface_entry && interface_entry->node) {
+        ast_node_add_reference(node, interface_entry->node);
         js_ts_stats.num_interface_resolved++;
         js_ts_stats.num_resolved++;
         return RESOLUTION_SUCCESS;

@@ -73,6 +73,6 @@ Add a new language:
 
 ## Repository Conventions
 
-- Supported languages: C, C++, Python, JavaScript, TypeScript.
+- Supported languages: C, C++, Python, JavaScript, TypeScript, Rust.
 - Canonical behavior rules are documented in `$HOME/apps/scopemux-notes/invariants/`.
 - Planning, boards, and work items live in `$HOME/apps/scopemux-notes`.

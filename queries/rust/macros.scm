@@ -1,6 +1,3 @@
-;; Rust macro definitions and attribute invocations
+;; Rust macro definitions
 (macro_definition
-  name: (identifier) @name) @macro
-(attribute_item
-  (attribute
-    (identifier) @name)) @macro
+  name: (identifier) @name) @node

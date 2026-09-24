@@ -179,6 +179,8 @@ size_t symbol_table_register_from_ast_impl(GlobalSymbolTable *table, ASTNode *no
   case NODE_ENUM:
   case NODE_STRUCT:
   case NODE_TYPEDEF:
+  case NODE_UNION:
+  case NODE_MACRO:
     register_this_node = true;
     scope = SCOPE_FILE;
     break;
@@ -220,7 +222,7 @@ size_t symbol_table_register_from_ast_impl(GlobalSymbolTable *table, ASTNode *no
     if (current_scope && strlen(current_scope) > 0) {
       // Use the appropriate separator based on language
       char separator[3] = ".";
-      if (language == LANG_C || language == LANG_CPP) {
+      if (language == LANG_C || language == LANG_CPP || language == LANG_RUST) {
         strcpy(separator, "::");
       }
 
