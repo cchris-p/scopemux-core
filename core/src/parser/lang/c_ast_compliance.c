@@ -6,6 +6,7 @@
  * specifically for the C programming language.
  */
 
+#include "../ast_node.h"
 #include "scopemux/ast.h"
 #include "scopemux/ast_compliance.h"
 #include "scopemux/language.h"
@@ -23,9 +24,9 @@
  * @param ctx The parser context
  * @return true if successful, false otherwise
  */
-static bool c_schema_compliance_callback(ASTNode *node, ParserContext *ctx) {
+static int c_schema_compliance_callback(ASTNode *node, ParserContext *ctx) {
   if (!node)
-    return false;
+    return 0;
 
   // Handle unknown node types based on name
   if (node->type == NODE_UNKNOWN && node->name) {
