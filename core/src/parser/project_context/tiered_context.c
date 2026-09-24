@@ -395,6 +395,11 @@ static bool block_in_requested_tier(const ProjectInfoBlock *block,
     return false;
   }
 
+  if (request->lifecycle_mask != 0 &&
+      (request->lifecycle_mask & (1u << (unsigned)block->lifecycle)) == 0) {
+    return false;
+  }
+
   return block->tier >= request->min_tier && block->tier <= request->max_tier;
 }
 
@@ -1277,6 +1282,11 @@ bool project_context_search_info_blocks(ProjectContext *project,
 
     if (request->origin_mask != 0 &&
         (request->origin_mask & (1u << (unsigned)block->origin)) == 0) {
+      continue;
+    }
+
+    if (request->lifecycle_mask != 0 &&
+        (request->lifecycle_mask & (1u << (unsigned)block->lifecycle)) == 0) {
       continue;
     }
 
