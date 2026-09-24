@@ -222,6 +222,9 @@ ASTNode *resolve_symbol_reference(const char *name, const ASTNode *current_node,
 ResolutionStatus reference_resolver_c(ASTNode *node, ReferenceType ref_type, const char *name,
                                       GlobalSymbolTable *symbol_table, void *resolver_data);
 
+ResolutionStatus reference_resolver_cpp(ASTNode *node, ReferenceType ref_type, const char *name,
+                                        GlobalSymbolTable *symbol_table, void *resolver_data);
+
 ResolutionStatus reference_resolver_python(ASTNode *node, ReferenceType ref_type, const char *name,
                                            GlobalSymbolTable *symbol_table, void *resolver_data);
 

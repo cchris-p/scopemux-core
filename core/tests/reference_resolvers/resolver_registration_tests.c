@@ -72,10 +72,13 @@ Test(resolver_registration, find_language_resolver, .init = setup_registration,
 Test(resolver_registration, init_builtin, .init = setup_registration,
      .fini = teardown_registration) {
   cr_assert(reference_resolver_init_builtin(resolver));
-  cr_assert_not_null(find_language_resolver_impl(resolver, LANG_C));
-  cr_assert_not_null(find_language_resolver_impl(resolver, LANG_PYTHON));
-  cr_assert_not_null(find_language_resolver_impl(resolver, LANG_JAVASCRIPT));
-  cr_assert_not_null(find_language_resolver_impl(resolver, LANG_TYPESCRIPT));
+
+  // Every supported language must have a registered resolver. This fails if a
+  // language is added to the enum without a matching builtin registration.
+  for (Language lang = LANG_C; lang < LANG_MAX; lang++) {
+    cr_assert_not_null(find_language_resolver_impl(resolver, lang),
+                       "No builtin resolver registered for language %d", (int)lang);
+  }
 }
 
 Test(resolver_registration, resolver_priority, .init = setup_registration,

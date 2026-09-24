@@ -499,6 +499,9 @@ bool reference_resolver_init_builtin_impl(ReferenceResolver *resolver) {
   // C language resolver
   success &= reference_resolver_register_impl(resolver, LANG_C, reference_resolver_c, NULL, NULL);
 
+  // C++ language resolver
+  success &= reference_resolver_register_impl(resolver, LANG_CPP, reference_resolver_cpp, NULL, NULL);
+
   // Python language resolver
   success &=
       reference_resolver_register_impl(resolver, LANG_PYTHON, reference_resolver_python, NULL, NULL);
