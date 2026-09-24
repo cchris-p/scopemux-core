@@ -89,6 +89,19 @@ Common test entry points:
 
 These scripts create separate build directories for their own runs.
 
+### Linux container (for macOS hosts)
+
+The native test harness targets Linux/GNU tooling (GNU `ld --whole-archive`, Criterion
+via `pkg-config`), so it does not run on macOS directly. Run it through Docker instead:
+
+```bash
+./scripts/docker_test.sh
+./scripts/docker_test.sh scripts/run_c_tests.sh scripts/run_python_tests.sh
+```
+
+This builds `docker/Dockerfile.test` and copies the current working tree into the container,
+so the run reflects the source on disk and the host checkout is not modified.
+
 ## Python Usage
 
 Basic file parsing:
@@ -136,9 +149,26 @@ print(engine.get_context())
 
 ## Exposed Python API
 
-Main types currently exposed by the extension:
+The `scopemux_core` extension is a bounded surface over the C API. It currently exposes:
+
+Types:
 - `ParserContext`
+- `ASTNode`
+- `CSTNode`
 - `ContextEngine`
+- `InfoBlock` (the compression engine's block type; distinct from the registry's `ProjectInfoBlock` in the C API)
+
+Module-level functions:
+- `detect_language(filename, content=None)`
+- `parse_c_file_to_cst(...)`
+
+Constants:
+- language constants `LANG_*`
+- node-type constants `NODE_*`
+- compression constants `COMPRESSION_*` and `DEFAULT_TOKEN_BUDGET`
+- `TEST_PROCESSOR_VERSION` (test-processor marker)
+
+Project-level capabilities are **C-only and not exposed to Python**: `ProjectContext`, tiered context selection, the search index, and prompt assembly. Any integration that needs the project IR must use the C API (FFI or a compiled helper), not the Python module. The exposed surface is evolving and is not yet stable.
 
 Common `ParserContext` methods:
 - `parse_file(filename, language=None)`

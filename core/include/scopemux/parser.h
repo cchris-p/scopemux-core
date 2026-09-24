@@ -252,13 +252,6 @@ bool parser_context_add_dependency(ParserContext *source, ParserContext *target)
 void parser_set_mode(ParserContext *ctx, ParseMode mode);
 
 /**
- * @brief Clean up and free the parser context
- *
- * @param ctx Parser context to free
- */
-void parser_free(ParserContext *ctx);
-
-/**
  * @brief Clears the results of the last parse (AST, source code, errors)
  * from the context, preparing it for a new parsing operation.
  *

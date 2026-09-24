@@ -171,8 +171,11 @@ typedef enum {
 /**
  * @brief Stable registry entry for a semantic unit or synthetic aggregate block.
  *
- * String pointers and AST node pointers are owned by the ProjectContext and stay
- * valid until the next IR or InfoBlock rebuild, or project destruction.
+ * This is the canonical project registry block. It is a different type from the
+ * @c ContextEngine @c InfoBlock in @c context_engine.h, which is the compression
+ * engine's linked-list unit. String pointers and AST node pointers are owned by
+ * the ProjectContext and stay valid until the next IR or InfoBlock rebuild, or
+ * project destruction.
  */
 typedef struct {
   char *id;

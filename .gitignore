@@ -238,6 +238,7 @@ hello_scopemux.so
 !core/src/**
 !core/include/**
 *.cmake
+!core/tests/cmake/TestUtils.cmake
 *.ts
 *.make
 *.c.o*
