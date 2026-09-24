@@ -90,12 +90,43 @@ static bool c_schema_compliance_callback(ASTNode *node, ParserContext *ctx) {
     }
   }
 
-  // Convert include directives to comments
-  if (strcmp(node->name, "preproc_include") == 0) {
+  // Convert include directives to comments so they are dropped from the final
+  // AST. Schema compliance has already mapped preproc_include nodes to
+  // NODE_INCLUDE (renaming the node to the include target), so match the mapped
+  // type as well as the raw tree-sitter name.
+  if (node->type == NODE_INCLUDE || (node->name && strcmp(node->name, "preproc_include") == 0)) {
     node->type = NODE_COMMENT;
   }
 
   return true;
+}
+
+/**
+ * @brief Drop include and comment children from an AST subtree
+ *
+ * Includes are mapped to NODE_INCLUDE by schema compliance and converted to
+ * NODE_COMMENT here; comment nodes are also dropped. Nodes are detached from
+ * the child array only - the parser context owns their memory.
+ *
+ * @param node The subtree root to prune
+ */
+static void remove_include_and_comment_children(ASTNode *node) {
+  if (!node || !node->children)
+    return;
+
+  size_t write = 0;
+  for (size_t i = 0; i < node->num_children; i++) {
+    ASTNode *child = node->children[i];
+    if (child && (child->type == NODE_INCLUDE || child->type == NODE_COMMENT)) {
+      continue;
+    }
+    node->children[write++] = child;
+  }
+  node->num_children = write;
+
+  for (size_t i = 0; i < node->num_children; i++) {
+    remove_include_and_comment_children(node->children[i]);
+  }
 }
 
 /**
@@ -111,6 +142,11 @@ static bool c_schema_compliance_callback(ASTNode *node, ParserContext *ctx) {
 static ASTNode *c_post_process_callback(ASTNode *ast_root, ParserContext *ctx) {
   if (!ast_root || !ctx)
     return ast_root;
+
+  // Include directives are not represented as AST children; remove them (and
+  // any leftover comment nodes). This runs after the generic post-processor,
+  // which cannot see includes that schema compliance renamed to NODE_INCLUDE.
+  remove_include_and_comment_children(ast_root);
 
   // Handle specific file types for C tests
   if (ctx->filename) {
