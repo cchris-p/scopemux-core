@@ -174,7 +174,7 @@ set(TS_JS_INCLUDE_DIR ${TS_JS_DIR}/src CACHE FILEPATH "Tree-sitter JavaScript in
 set(TS_TS_INCLUDE_DIR ${TS_TS_DIR}/src CACHE FILEPATH "Tree-sitter TypeScript include directory")
 
 # Find Python packages needed for the project
-find_package(Python 3.10...3.11 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.10...<3.12 REQUIRED COMPONENTS Interpreter Development)
 
 # Fetch pybind11 first, before we use any of its variables
 include(FetchContent)
@@ -185,8 +185,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(pybind11)
 
 # Finally add the main project subdirectories
+# Note: core/CMakeLists.txt adds core/tests itself behind SCOPEMUX_BUILD_TESTS.
+# Adding it here as well caused a duplicate-binary-directory configure error and
+# defeated SCOPEMUX_BUILD_TESTS=OFF (used by the Python bindings build).
 add_subdirectory(core)
-add_subdirectory(core/tests)
 
 # Print configuration summary
 message(STATUS "Configuration summary:")
