@@ -440,6 +440,30 @@ Test(project_context_delegation, info_block_registry_and_tiered_context, .init =
   cr_assert(project_context_find_info_block(project, "file:") == NULL,
             "Partial IDs should not match registry entries");
 
+  // WI-033: parsed blocks carry origin, lifecycle, provenance, and confidence.
+  for (size_t i = 0; i < registry->block_count; i++) {
+    const ProjectInfoBlock *block = &registry->blocks[i];
+    cr_assert_eq(block->origin, PROJECT_INFO_BLOCK_ORIGIN_PARSED,
+                 "parsed blocks should be marked parsed (id=%s)", block->id ? block->id : "?");
+    cr_assert_eq(block->lifecycle, PROJECT_INFO_BLOCK_LIFECYCLE_NONE,
+                 "parsed blocks should have no lifecycle (id=%s)", block->id ? block->id : "?");
+    cr_assert_float_eq(block->confidence, 1.0f, 0.0001f,
+                       "parsed blocks should be exact (id=%s)", block->id ? block->id : "?");
+    cr_assert_not_null(block->provenance, "parsed blocks should carry provenance (id=%s)",
+                       block->id ? block->id : "?");
+  }
+
+  // WI-033: origin filters restrict selection.
+  request.origin_mask = 1u << PROJECT_INFO_BLOCK_ORIGIN_PLANNED;
+  {
+    ProjectTieredContextResult planned_only = {0};
+    project_context_build_tiered_context(project, &request, &planned_only);
+    cr_assert_eq(planned_only.selection_count, 0,
+                 "filtering for planned blocks should return none while only parsed blocks exist");
+    project_tiered_context_result_free(&planned_only);
+  }
+  request.origin_mask = 1u << PROJECT_INFO_BLOCK_ORIGIN_PARSED;
+
   for (size_t i = 0; i < registry->block_count; i++) {
     switch (registry->blocks[i].tier) {
     case PROJECT_CONTEXT_TIER_0:

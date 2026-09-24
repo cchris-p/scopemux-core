@@ -158,6 +158,34 @@ typedef enum {
 } ProjectInfoBlockKind;
 
 /**
+ * @brief Whether a canonical InfoBlock was parsed from source or is a
+ * projected (planned) node. Plan nodes are projection-only; see `WI-032`.
+ */
+typedef enum {
+  PROJECT_INFO_BLOCK_ORIGIN_PARSED = 0,
+  PROJECT_INFO_BLOCK_ORIGIN_PLANNED,
+} ProjectInfoBlockOrigin;
+
+/**
+ * @brief Lifecycle for a canonical InfoBlock.
+ *
+ * Parsed blocks use `NONE`. Planned blocks move through delivery states and
+ * may become `STALE`, `CONFLICT`, or `ABANDONED`; they are never silently
+ * dropped.
+ */
+typedef enum {
+  PROJECT_INFO_BLOCK_LIFECYCLE_NONE = 0,
+  PROJECT_INFO_BLOCK_LIFECYCLE_PLANNED,
+  PROJECT_INFO_BLOCK_LIFECYCLE_IN_PROGRESS,
+  PROJECT_INFO_BLOCK_LIFECYCLE_IMPLEMENTED,
+  PROJECT_INFO_BLOCK_LIFECYCLE_VERIFIED,
+  PROJECT_INFO_BLOCK_LIFECYCLE_DOCUMENTED,
+  PROJECT_INFO_BLOCK_LIFECYCLE_STALE,
+  PROJECT_INFO_BLOCK_LIFECYCLE_CONFLICT,
+  PROJECT_INFO_BLOCK_LIFECYCLE_ABANDONED,
+} ProjectInfoBlockLifecycle;
+
+/**
  * @brief Standardized tier scale for machine-readable context selection.
  */
 typedef enum {
@@ -189,6 +217,10 @@ typedef struct {
   ProjectContextTier tier;
   size_t estimated_tokens;
   size_t related_symbol_count;
+  ProjectInfoBlockOrigin origin;        ///< parsed vs planned (`WI-033`)
+  ProjectInfoBlockLifecycle lifecycle;  ///< parsed uses NONE (`WI-033`)
+  char *provenance;                     ///< source range/file, or task record (`WI-033`)
+  float confidence;                     ///< 1.0 for exact parsed facts (`WI-033`)
 } ProjectInfoBlock;
 
 /**
@@ -227,6 +259,8 @@ typedef struct {
   bool include_dependencies;
   size_t max_blocks;
   size_t max_tokens;
+  /// Bitmask of ProjectInfoBlockOrigin to include; 0 means all origins.
+  unsigned int origin_mask;
 } ProjectTieredContextRequest;
 
 /**
@@ -263,6 +297,8 @@ typedef struct {
   bool include_related;
   bool include_dependencies;
   size_t max_hits;
+  /// Bitmask of ProjectInfoBlockOrigin to include; 0 means all origins.
+  unsigned int origin_mask;
 } ProjectSearchRequest;
 
 /**

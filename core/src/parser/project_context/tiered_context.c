@@ -390,6 +390,11 @@ static bool block_in_requested_tier(const ProjectInfoBlock *block,
     return false;
   }
 
+  if (request->origin_mask != 0 &&
+      (request->origin_mask & (1u << (unsigned)block->origin)) == 0) {
+    return false;
+  }
+
   return block->tier >= request->min_tier && block->tier <= request->max_tier;
 }
 
@@ -759,6 +764,7 @@ void project_context_clear_info_blocks(ProjectContext *project) {
     free(project->info_block_registry.blocks[i].name);
     free(project->info_block_registry.blocks[i].qualified_name);
     free(project->info_block_registry.blocks[i].file_path);
+    free(project->info_block_registry.blocks[i].provenance);
   }
 
   free(project->info_block_registry.blocks);
@@ -870,6 +876,10 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
     block->tier = tier_for_symbol_node_type(symbol->type);
     block->estimated_tokens = estimate_tokens_for_node(symbol->node);
     block->related_symbol_count = symbol->resolved_reference_count;
+    block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
+    block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
+    block->provenance = block->file_path ? strdup(block->file_path) : NULL;
+    block->confidence = 1.0f;
   }
 
   for (i = 0; i < snapshot->resolved_reference_count; i++) {
@@ -900,6 +910,10 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
       block->estimated_tokens = 1;
     }
     block->related_symbol_count = ref->target_symbol ? 1 : 0;
+    block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
+    block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
+    block->provenance = block->file_path ? strdup(block->file_path) : NULL;
+    block->confidence = 1.0f;
   }
 
   for (i = 0; i < project->num_files; i++) {
@@ -922,6 +936,10 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
     block->tier = PROJECT_CONTEXT_TIER_2;
     block->estimated_tokens = 8;
     block->related_symbol_count = ctx->num_ast_nodes;
+    block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
+    block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
+    block->provenance = strdup(ctx->filename);
+    block->confidence = 1.0f;
   }
 
   for (i = 0; i < directory_count; i++) {
@@ -937,6 +955,10 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
     block->tier = PROJECT_CONTEXT_TIER_3;
     block->estimated_tokens = 16;
     block->related_symbol_count = 0;
+    block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
+    block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
+    block->provenance = strdup(directories[i]);
+    block->confidence = 1.0f;
   }
 
   {
@@ -953,6 +975,11 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
     block->tier = PROJECT_CONTEXT_TIER_4;
     block->estimated_tokens = 32;
     block->related_symbol_count = snapshot->symbol_count;
+    block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
+    block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
+    block->provenance =
+        strdup(project->root_directory ? project->root_directory : ".");
+    block->confidence = 1.0f;
   }
 
   project->info_block_registry.block_count = block_index;
@@ -1245,6 +1272,11 @@ bool project_context_search_info_blocks(ProjectContext *project,
     bool text_match = false;
 
     if (!block || block->tier < request->min_tier || block->tier > request->max_tier) {
+      continue;
+    }
+
+    if (request->origin_mask != 0 &&
+        (request->origin_mask & (1u << (unsigned)block->origin)) == 0) {
       continue;
     }
 
