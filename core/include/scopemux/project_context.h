@@ -261,6 +261,8 @@ typedef struct {
   size_t max_tokens;
   /// Bitmask of ProjectInfoBlockOrigin to include; 0 means all origins.
   unsigned int origin_mask;
+  /// Bitmask of ProjectInfoBlockLifecycle to include; 0 means all lifecycles.
+  unsigned int lifecycle_mask;
 } ProjectTieredContextRequest;
 
 /**
@@ -299,6 +301,8 @@ typedef struct {
   size_t max_hits;
   /// Bitmask of ProjectInfoBlockOrigin to include; 0 means all origins.
   unsigned int origin_mask;
+  /// Bitmask of ProjectInfoBlockLifecycle to include; 0 means all lifecycles.
+  unsigned int lifecycle_mask;
 } ProjectSearchRequest;
 
 /**
