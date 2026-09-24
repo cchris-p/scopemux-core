@@ -43,6 +43,11 @@ typedef struct {
 
 /**
  * @brief Information Block representing a unit of code or documentation
+ *
+ * This is the @c ContextEngine @c InfoBlock: the compression engine's linked-list
+ * unit carrying compressed content, token counts, and relevance metrics. It is a
+ * different type from @c ProjectInfoBlock in @c project_context.h, which is the
+ * canonical project registry entry (id, kind, tier, estimated tokens).
  */
 struct InfoBlock {
   struct ASTNode *ast_node;   // Reference to the AST node
