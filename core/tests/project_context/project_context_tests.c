@@ -425,6 +425,65 @@ Test(project_context_delegation, project_ir_snapshot_rust_calls, .init = setup_p
   cr_assert(found_call_edge, "Rust caller -> helper call graph edge should be present");
 }
 
+Test(project_context_delegation, rust_method_call_resolves_by_type, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *ctx = parser_init();
+  ASTNode *caller_fn;
+  ASTNode *point_origin;
+  ASTNode *vector_origin;
+  ASTNode *call_ref;
+  char file_path[512];
+
+  cr_assert(ctx != NULL, "Parser context should be created");
+  join_test_project_path("scoping.rs", file_path, sizeof(file_path));
+  ctx->filename = strdup(file_path);
+  ctx->language = LANG_RUST;
+
+  caller_fn = make_named_node(NODE_FUNCTION, "caller", "caller", file_path);
+  caller_fn->range.start.line = 0;
+  caller_fn->range.end.line = 8;
+
+  // Two methods share the simple name `origin` but live under different impls.
+  point_origin = make_named_node(NODE_METHOD, "origin", "point.rs.Point.origin", file_path);
+  vector_origin = make_named_node(NODE_METHOD, "origin", "vector.rs.Vector.origin", file_path);
+
+  // A `Vector::origin` call site must resolve to the Vector method, not Point's.
+  call_ref = make_named_node(NODE_IDENTIFIER, "Vector::origin", "Vector::origin", file_path);
+  call_ref->range.start.line = 3;
+  call_ref->range.end.line = 3;
+  cr_assert(ast_node_add_child(caller_fn, call_ref), "Call site should attach to caller");
+
+  cr_assert(parser_add_ast_node(ctx, caller_fn), "Caller function should be tracked");
+  cr_assert(parser_add_ast_node(ctx, point_origin), "Point method should be tracked");
+  cr_assert(parser_add_ast_node(ctx, vector_origin), "Vector method should be tracked");
+
+  project->file_contexts[0] = ctx;
+  project->num_files = 1;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "point.rs.Point.origin", point_origin,
+                                  file_path, SCOPE_FILE, LANG_RUST) != NULL,
+            "Point method symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "vector.rs.Vector.origin", vector_origin,
+                                  file_path, SCOPE_FILE, LANG_RUST) != NULL,
+            "Vector method symbol should be registered");
+
+  cr_assert(project_resolve_references(project), "Rust references should resolve");
+
+  bool references_vector = false;
+  bool references_point = false;
+  for (size_t i = 0; i < call_ref->num_references; i++) {
+    if (call_ref->references[i] == vector_origin) {
+      references_vector = true;
+    }
+    if (call_ref->references[i] == point_origin) {
+      references_point = true;
+    }
+  }
+  cr_assert(references_vector, "Vector::origin should resolve to the Vector method");
+  cr_assert_not(references_point, "Vector::origin should not resolve to Point::origin");
+}
+
 Test(project_context_delegation, info_block_registry_and_tiered_context, .init = setup_project,
      .fini = teardown_project) {
   ParserContext *caller_ctx = parser_init();
