@@ -727,42 +727,61 @@ static bool process_query(const char *query_type, TSNode root_node, ParserContex
         }
       }
 
-      // For variables and control flow structures, try to find the containing function.
+      // For variables, control flow structures, and Rust call sites, attach the
+      // node to its containing callable so references and call-graph edges are
+      // owned by the right function or method.
+      bool is_call_site = (actual_node_type == NODE_IDENTIFIER);
       if (actual_node_type == NODE_VARIABLE || actual_node_type == NODE_FOR_STATEMENT ||
           actual_node_type == NODE_WHILE_STATEMENT || actual_node_type == NODE_DO_WHILE_STATEMENT ||
-          actual_node_type == NODE_IF_STATEMENT || actual_node_type == NODE_SWITCH_STATEMENT) {
-        // Get all function nodes created so far in the parser context
-        const ASTNode *function_nodes[32]; // Support up to 32 functions
-        size_t function_count =
-            parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, function_nodes, 32);
+          actual_node_type == NODE_IF_STATEMENT || actual_node_type == NODE_SWITCH_STATEMENT ||
+          is_call_site) {
+        // Get callable nodes created so far in the parser context. Unless this is
+        // a call site, only free functions are considered, preserving existing
+        // behavior for other languages.
+        const ASTNode *callable_nodes[64];
+        size_t callable_count =
+            parser_get_ast_nodes_by_type(ctx, NODE_FUNCTION, callable_nodes, 64);
+        if (callable_count > 64) {
+          callable_count = 64;
+        }
+        if (is_call_site) {
+          size_t remaining = 64 - callable_count;
+          if (remaining > 0) {
+            size_t method_count = parser_get_ast_nodes_by_type(
+                ctx, NODE_METHOD, callable_nodes + callable_count, remaining);
+            if (method_count > remaining) {
+              method_count = remaining;
+            }
+            callable_count += method_count;
+          }
+        }
 
-        log_info("[HIERARCHY_DEBUG] Searching for parent function for %s '%s' at line %u, found "
-                 "%zu functions",
+        log_info("[HIERARCHY_DEBUG] Searching for parent callable for %s '%s' at line %u, found "
+                 "%zu callables",
                  ast_node_type_to_string(actual_node_type), ast_node->name,
-                 ast_node->range.start.line, function_count);
+                 ast_node->range.start.line, callable_count);
 
-        // Find the function that contains this variable/control flow structure based on source
-        // position
-        for (size_t i = 0; i < function_count; i++) {
-          const ASTNode *potential_parent = function_nodes[i];
+        // Find the callable that contains this node based on source position.
+        for (size_t i = 0; i < callable_count; i++) {
+          const ASTNode *potential_parent = callable_nodes[i];
           if (potential_parent) {
-            log_info("[HIERARCHY_DEBUG] Checking function '%s' range [%u-%u] vs node range [%u-%u]",
+            log_info("[HIERARCHY_DEBUG] Checking callable '%s' range [%u-%u] vs node range [%u-%u]",
                      potential_parent->name, potential_parent->range.start.line,
                      potential_parent->range.end.line, ast_node->range.start.line,
                      ast_node->range.end.line);
-            // Check if this node is within the function's source range
+            // Check if this node is within the callable's source range
             if (ast_node->range.start.line >= potential_parent->range.start.line &&
                 ast_node->range.end.line <= potential_parent->range.end.line) {
               proper_parent = (ASTNode *)potential_parent; // Cast away const for assignment
-              log_info("[HIERARCHY_DEBUG] Found containing function '%s' for %s '%s'",
+              log_info("[HIERARCHY_DEBUG] Found containing callable '%s' for %s '%s'",
                        potential_parent->name, ast_node_type_to_string(actual_node_type),
                        ast_node->name);
-              break; // Use the first matching function (should be the most specific one)
+              break; // Use the first matching callable (should be the most specific one)
             }
           }
         }
         if (proper_parent == ast_root) {
-          log_info("[HIERARCHY_DEBUG] No containing function found, using root as parent");
+          log_info("[HIERARCHY_DEBUG] No containing callable found, using root as parent");
         }
       }
 
@@ -1288,7 +1307,8 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
       "typedefs",   // Type aliases / typedefs
       "modules",    // Modules
       "interfaces", // Traits / interfaces
-      "macros"      // Macro definitions
+      "macros",     // Macro definitions
+      "calls"       // Call sites and macro invocations (references, not symbols)
   };
   static const size_t num_extension_query_types =
       sizeof(extension_query_types) / sizeof(extension_query_types[0]);

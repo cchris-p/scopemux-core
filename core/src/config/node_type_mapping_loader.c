@@ -46,6 +46,8 @@ static ASTNodeType parse_node_type(const char *enum_str) {
     return NODE_CLASS;
   if (strcmp(enum_str, "NODE_METHOD") == 0)
     return NODE_METHOD;
+  if (strcmp(enum_str, "NODE_IDENTIFIER") == 0)
+    return NODE_IDENTIFIER;
   if (strcmp(enum_str, "NODE_VARIABLE") == 0)
     return NODE_VARIABLE;
   if (strcmp(enum_str, "NODE_MODULE") == 0)
@@ -104,6 +106,8 @@ void load_node_type_mapping(void) {
       {"class", "NODE_CLASS"},
       {"methods", "NODE_METHOD"},
       {"method", "NODE_METHOD"},
+      {"calls", "NODE_IDENTIFIER"},
+      {"call", "NODE_IDENTIFIER"},
       {"variables", "NODE_VARIABLE"},
       {"variable", "NODE_VARIABLE"},
       {"modules", "NODE_MODULE"},

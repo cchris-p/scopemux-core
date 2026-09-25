@@ -361,6 +361,70 @@ Test(project_context_delegation, project_ir_snapshot, .init = setup_project,
   cr_assert(found_dependency_edge, "Resolved include dependency edge should be present");
 }
 
+Test(project_context_delegation, project_ir_snapshot_rust_calls, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *caller_ctx = parser_init();
+  ParserContext *callee_ctx = parser_init();
+  ASTNode *caller_fn;
+  ASTNode *callee_fn;
+  ASTNode *call_ref;
+  char caller_path[512], callee_path[512];
+  const ProjectIRSnapshot *snapshot;
+  bool found_call_edge = false;
+
+  cr_assert(caller_ctx != NULL && callee_ctx != NULL, "Parser contexts should be created");
+
+  join_test_project_path("main.rs", caller_path, sizeof(caller_path));
+  join_test_project_path("helper.rs", callee_path, sizeof(callee_path));
+
+  caller_ctx->filename = strdup(caller_path);
+  caller_ctx->language = LANG_RUST;
+  callee_ctx->filename = strdup(callee_path);
+  callee_ctx->language = LANG_RUST;
+
+  caller_fn = make_named_node(NODE_FUNCTION, "caller", "caller", caller_path);
+  callee_fn = make_named_node(NODE_FUNCTION, "helper", "helper", callee_path);
+  caller_fn->range.start.line = 0;
+  caller_fn->range.end.line = 5;
+
+  // A Rust call site is extracted as a NODE_IDENTIFIER child. No reference is
+  // added by hand: project_resolve_references must resolve it via the Rust
+  // resolver so the call graph edge is produced end-to-end.
+  call_ref = make_named_node(NODE_IDENTIFIER, "helper", "helper", caller_path);
+  call_ref->range.start.line = 2;
+  call_ref->range.end.line = 2;
+  cr_assert(ast_node_add_child(caller_fn, call_ref), "Call site should attach to caller");
+
+  cr_assert(parser_add_ast_node(caller_ctx, caller_fn), "Caller function should be tracked");
+  cr_assert(parser_add_ast_node(callee_ctx, callee_fn), "Callee function should be tracked");
+
+  project->file_contexts[0] = caller_ctx;
+  project->file_contexts[1] = callee_ctx;
+  project->num_files = 2;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "caller", caller_fn, caller_path,
+                                  SCOPE_GLOBAL, LANG_RUST) != NULL,
+            "Caller symbol should be registered");
+  cr_assert(symbol_table_register(project->symbol_table, "helper", callee_fn, callee_path,
+                                  SCOPE_GLOBAL, LANG_RUST) != NULL,
+            "Helper symbol should be registered");
+
+  cr_assert(project_resolve_references(project), "Rust references should resolve");
+  snapshot = project_context_get_ir(project);
+  cr_assert(snapshot != NULL, "Project IR snapshot should be available");
+  cr_assert_eq(snapshot->call_graph_edge_count, 1, "Expected one Rust call graph edge");
+
+  for (size_t i = 0; i < snapshot->call_graph_edge_count; i++) {
+    const ProjectCallGraphEdgeIR *edge = &snapshot->call_graph_edges[i];
+    if (edge->caller_symbol && edge->callee_symbol && strcmp(edge->caller_symbol, "caller") == 0 &&
+        strcmp(edge->callee_symbol, "helper") == 0) {
+      found_call_edge = true;
+    }
+  }
+  cr_assert(found_call_edge, "Rust caller -> helper call graph edge should be present");
+}
+
 Test(project_context_delegation, info_block_registry_and_tiered_context, .init = setup_project,
      .fini = teardown_project) {
   ParserContext *caller_ctx = parser_init();
