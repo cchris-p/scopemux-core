@@ -1,3 +1,3 @@
 ;; Rust enum definitions
 (enum_item
-  name: (type_identifier) @name) @enum
+  name: (type_identifier) @name) @node

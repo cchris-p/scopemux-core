@@ -49,6 +49,7 @@ static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node
     case NODE_CLASS:
     case NODE_STRUCT:
     case NODE_ENUM:
+    case NODE_UNION:
     case NODE_VARIABLE:
     case NODE_TYPEDEF:
     case NODE_NAMESPACE:
@@ -194,9 +195,12 @@ size_t project_get_symbols_by_type_impl(const ProjectContext *project, ASTNodeTy
  *
  * @param project The ProjectContext
  * @param node The ASTNode to resolve references for
+ * @param resolver The reference resolver holding the registered language resolvers
+ * @param language Language of the file owning the node, used to select the
+ *                 language-specific resolver
  */
 static void resolve_node_references(ProjectContext *project, ASTNode *node,
-                                    ReferenceResolver *resolver) {
+                                    ReferenceResolver *resolver, Language language) {
   if (!project || !node) {
     return;
   }
@@ -205,33 +209,36 @@ static void resolve_node_references(ProjectContext *project, ASTNode *node,
   switch (node->type) {
   case NODE_FUNCTION:
     if (node->name) {
-      reference_resolver_resolve_node(resolver, node, REF_CALL, node->name,
-                                      LANG_UNKNOWN); // TODO: Thread language from context
+      reference_resolver_resolve_node(resolver, node, REF_CALL, node->name, language);
     }
     break;
   case NODE_VARIABLE:
     if (node->name) {
-      reference_resolver_resolve_node(resolver, node, REF_USE, node->name,
-                                      LANG_UNKNOWN); // TODO: Thread language from context
+      reference_resolver_resolve_node(resolver, node, REF_USE, node->name, language);
     }
     break;
   case NODE_CLASS:
   case NODE_STRUCT:
   case NODE_ENUM:
+  case NODE_UNION:
+  case NODE_TYPEDEF:
   case NODE_INTERFACE:
     if (node->name) {
-      reference_resolver_resolve_node(resolver, node, REF_TYPE, node->name,
-                                      LANG_UNKNOWN); // TODO: Thread language from context
+      reference_resolver_resolve_node(resolver, node, REF_TYPE, node->name, language);
     }
     break;
   case NODE_IMPORT:
     if (node->name) {
-      reference_resolver_resolve_node(resolver, node, REF_IMPORT, node->name,
-                                      LANG_UNKNOWN); // TODO: Thread language from context
+      reference_resolver_resolve_node(resolver, node, REF_IMPORT, node->name, language);
     }
     break;
   case NODE_INCLUDE:
-    if (node->raw_content) {
+    if (language == LANG_RUST) {
+      // Rust `use` paths are plain `a::b::Item` strings with no quote delimiters.
+      if (node->name) {
+        reference_resolver_resolve_node(resolver, node, REF_IMPORT, node->name, language);
+      }
+    } else if (node->raw_content) {
       char *include_path = NULL;
       char *start = strchr(node->raw_content, '"');
       if (start) {
@@ -247,8 +254,7 @@ static void resolve_node_references(ProjectContext *project, ASTNode *node,
         }
       }
       if (include_path) {
-        reference_resolver_resolve_node(resolver, node, REF_INCLUDE, include_path,
-                                        LANG_UNKNOWN); // TODO: Thread language from context
+        reference_resolver_resolve_node(resolver, node, REF_INCLUDE, include_path, language);
         free(include_path);
       }
     }
@@ -260,7 +266,7 @@ static void resolve_node_references(ProjectContext *project, ASTNode *node,
 
   // Recursively resolve references for children
   for (size_t i = 0; i < node->num_children; i++) {
-    resolve_node_references(project, node->children[i], resolver);
+    resolve_node_references(project, node->children[i], resolver, language);
   }
 }
 
@@ -301,7 +307,7 @@ bool project_resolve_references_impl(ProjectContext *project) {
 
     // Start with the root nodes
     for (size_t j = 0; j < ctx->num_ast_nodes; j++) {
-      resolve_node_references(project, ctx->all_ast_nodes[j], resolver);
+      resolve_node_references(project, ctx->all_ast_nodes[j], resolver, ctx->language);
     }
   }
 

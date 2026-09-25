@@ -506,11 +506,17 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
         const char *singular_forms[] = {"function",      "struct",       "class",
                                         "variable",      "method",       "docstring",
                                         "include",       "for_loop",     "while_loop",
-                                        "do_while_loop", "if_condition", "switch_condition"};
+                                        "do_while_loop", "if_condition", "switch_condition",
+                                        "enum",          "union",        "typedef",
+                                        "module",        "interface",    "macro",
+                                        "import"};
         const char *plural_forms[] = {"functions",    "structs",      "classes",
                                       "variables",    "methods",      "docstrings",
                                       "imports",      "control_flow", "control_flow",
-                                      "control_flow", "control_flow", "control_flow"};
+                                      "control_flow", "control_flow", "control_flow",
+                                      "enums",        "unions",       "typedefs",
+                                      "modules",      "interfaces",   "macros",
+                                      "imports"};
         for (size_t j = 0; j < sizeof(singular_forms) / sizeof(singular_forms[0]); j++) {
           // Check if clean_capture_name contains the singular form (for @function in a functions
           // query)
@@ -1269,6 +1275,23 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
   };
   static const size_t num_query_types = sizeof(query_types) / sizeof(query_types[0]);
 
+  // Extension query types covering symbol kinds the base pipeline did not run.
+  // Query files for these kinds already exist for several languages, but running
+  // them for every language would change those languages' AST goldens. They are
+  // gated to Rust (the grammar this pass adds) until the others are migrated
+  // deliberately. See WI-030.
+  static const char *extension_query_types[] = {
+      "enums",      // Enums
+      "unions",     // Unions
+      "typedefs",   // Type aliases / typedefs
+      "modules",    // Modules
+      "interfaces", // Traits / interfaces
+      "macros"      // Macro definitions
+  };
+  static const size_t num_extension_query_types =
+      sizeof(extension_query_types) / sizeof(extension_query_types[0]);
+  const bool run_extension_queries = (ctx->language == LANG_RUST);
+
   // Count successful queries for diagnostics
   int successful_queries = 0;
   int failed_queries = 0;
@@ -1331,6 +1354,29 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
       failed_queries++;
       // ENHANCED LOGGING: Log failed query with more detail
       log_info("[QUERY_DEBUG] Query '%s' FAILED: No nodes added", SAFE_STR(query_types[i]));
+    }
+  }
+
+  // Extension pass (currently Rust only): enums, unions, typedefs, modules,
+  // traits, and macro definitions. These run after the base list so struct and
+  // function containers already exist when symbol registration walks the tree.
+  if (run_extension_queries) {
+    for (size_t i = 0; i < num_extension_query_types; i++) {
+      log_info("[QUERY_DEBUG] Processing extension query type: %s (%zu of %zu)",
+               SAFE_STR(extension_query_types[i]), i + 1, num_extension_query_types);
+
+      size_t prev_child_count = ast_root->num_children;
+      process_query(extension_query_types[i], root_node, ctx, ast_root, node_map);
+
+      if (ast_root->num_children > prev_child_count) {
+        successful_queries++;
+        log_info("[QUERY_DEBUG] Query '%s' SUCCEEDED: Added %zu node(s)",
+                 SAFE_STR(extension_query_types[i]), ast_root->num_children - prev_child_count);
+      } else {
+        failed_queries++;
+        log_info("[QUERY_DEBUG] Query '%s' FAILED: No nodes added",
+                 SAFE_STR(extension_query_types[i]));
+      }
     }
   }
 

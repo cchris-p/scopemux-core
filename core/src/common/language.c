@@ -78,6 +78,8 @@ bool language_supports_interfile_references(Language lang) {
         case LANG_JAVASCRIPT:
         case LANG_TYPESCRIPT:
             return true;
+        case LANG_RUST:
+            return true;
         case LANG_UNKNOWN:
         default:
             return false;
