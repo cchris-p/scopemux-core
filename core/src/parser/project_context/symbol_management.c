@@ -12,6 +12,7 @@
 #include "scopemux/project_context.h"
 // #include "scopemux/re"
 #include "scopemux/reference_resolver.h"
+#include "scopemux/rust_import.h"
 #include "scopemux/symbol_table.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -236,7 +237,12 @@ static void resolve_node_references(ProjectContext *project, ASTNode *node,
     if (language == LANG_RUST) {
       // Rust `use` paths are plain `a::b::Item` strings with no quote delimiters.
       if (node->name) {
-        reference_resolver_resolve_node(resolver, node, REF_IMPORT, node->name, language);
+        char normalized[512];
+        const char *lookup_name = node->name;
+        if (rust_import_normalize(node->name, normalized, sizeof(normalized))) {
+          lookup_name = normalized;
+        }
+        reference_resolver_resolve_node(resolver, node, REF_IMPORT, lookup_name, language);
       }
     } else if (node->raw_content) {
       char *include_path = NULL;

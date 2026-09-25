@@ -18,6 +18,7 @@ TEST_FAILURES=0
 # Rust Language Test Toggles
 RUN_RUST_BASIC_AST_TESTS=true
 RUN_RUST_EXAMPLE_AST_TESTS=true
+RUN_RUST_IMPORT_TESTS=true
 
 # Set parallel jobs for test execution
 PARALLEL_JOBS=1
@@ -25,6 +26,7 @@ PARALLEL_JOBS=1
 # Rust language test executables
 RUST_BASIC_AST_EXECUTABLE_RELPATH="core/tests/rust_basic_ast_tests"
 RUST_EXAMPLE_AST_EXECUTABLE_RELPATH="core/tests/rust_example_ast_tests"
+RUST_IMPORT_EXECUTABLE_RELPATH="core/tests/rust_import_tests"
 
 # Command-line flag parsing for advanced options
 CLEAN_BUILD=true
@@ -67,6 +69,11 @@ if [ "${RUN_RUST_EXAMPLE_AST_TESTS}" = true ]; then
     else
         process_language_tests rust RUST_TEST_CATEGORIES "$CMAKE_BUILD_DIR/core/tests/rust_example_ast_tests" "$PARALLEL_JOBS" ".rs"
     fi
+fi
+
+# Run Rust import/module resolution tests if enabled
+if [ "${RUN_RUST_IMPORT_TESTS}" = true ]; then
+    build_and_run_test_target "run_rust_tests.sh" "$CMAKE_BUILD_DIR" "rust_import_tests" "Rust Import Tests" "$RUST_IMPORT_EXECUTABLE_RELPATH"
 fi
 
 # Let the shared library handle the final test summary and exit code
