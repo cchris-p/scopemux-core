@@ -101,6 +101,7 @@ add_library(parser_core_obj OBJECT
     src/parser/lang/typescript_ast_compliance.c
     src/parser/lang/c_ast_compliance.c
     src/parser/lang/rust_ast_compliance.c
+    src/parser/lang/rust_import.c
     # Common files
     src/common/memory_management.c
     src/common/error_handling.c

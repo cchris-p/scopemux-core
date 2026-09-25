@@ -12,6 +12,7 @@
 #include "scopemux/logging.h"
 #include "scopemux/parser.h"
 #include "scopemux/project_context.h"
+#include "scopemux/rust_import.h"
 #include "scopemux/symbol_registration.h" // for register_file_symbols, project_context_extract_symbols_impl
 #include <stdio.h>
 #include <stdlib.h>
@@ -156,6 +157,24 @@ static void process_node_for_includes(ProjectContext *project, ASTNode *node, co
                 }
               }
             }
+          }
+        }
+      }
+      break;
+
+    case LANG_RUST:
+      // Rust `use` declarations resolve through the module tree rather than
+      // file paths in the text. Follow the local module files referenced by the
+      // path, skipping external crates and paths that do not exist on disk.
+      if ((node->type == NODE_INCLUDE || node->type == NODE_IMPORT) && node->name) {
+        char normalized[512];
+        if (rust_import_normalize(node->name, normalized, sizeof(normalized))) {
+          char module_paths[4 * RUST_IMPORT_MAX_PATH];
+          size_t found = rust_import_find_module_files(normalized, filepath,
+                                                       project->root_directory, module_paths,
+                                                       RUST_IMPORT_MAX_PATH, 4);
+          for (size_t i = 0; i < found; i++) {
+            project_add_file_impl(project, module_paths + i * RUST_IMPORT_MAX_PATH, LANG_RUST);
           }
         }
       }

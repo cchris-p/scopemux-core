@@ -192,6 +192,11 @@ add_scopemux_test(rust_example_ast_tests
     src/rust/rust_example_ast_tests.c
 )
 
+# Add rust_import_tests target
+add_scopemux_test(rust_import_tests
+    src/rust/rust_import_tests.c
+)
+
 # Add python_basic_ast_tests target
 add_scopemux_test(python_basic_ast_tests
     src/python/python_basic_ast_tests.c
