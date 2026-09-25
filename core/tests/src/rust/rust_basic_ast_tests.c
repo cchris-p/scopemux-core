@@ -105,6 +105,49 @@ Test(rust_ast, detects_language_from_extension) {
   cr_assert_eq(language_from_string("rust"), LANG_RUST);
 }
 
+Test(rust_ast, extracts_call_sites_and_macro_invocations) {
+  static const char *RUST_CALLS_SAMPLE =
+      "fn helper(value: usize) -> usize {\n"
+      "    value + 1\n"
+      "}\n"
+      "\n"
+      "fn caller() {\n"
+      "    let _ = helper(1);\n"
+      "    println!(\"done\");\n"
+      "}\n";
+
+  ParserContext *ctx = parser_init();
+  cr_assert_not_null(ctx, "Parser context should be created");
+  parser_parse_string(ctx, RUST_CALLS_SAMPLE, strlen(RUST_CALLS_SAMPLE), "calls.rs", LANG_RUST);
+  const char *error_message = parser_get_last_error(ctx);
+  cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");
+
+  const ASTNode *nodes[32];
+  size_t count = parser_get_ast_nodes_by_type(ctx, NODE_IDENTIFIER, nodes, 32);
+  bool saw_helper_call = false;
+  bool saw_macro_call = false;
+
+  for (size_t i = 0; i < count; i++) {
+    if (!nodes[i]->name) {
+      continue;
+    }
+    if (strcmp(nodes[i]->name, "helper") == 0) {
+      saw_helper_call = true;
+      cr_assert_not_null(nodes[i]->parent, "Call site should have a parent");
+      cr_assert_eq(nodes[i]->parent->type, NODE_FUNCTION,
+                   "Call site should be owned by the containing function");
+    }
+    if (strcmp(nodes[i]->name, "println") == 0) {
+      saw_macro_call = true;
+    }
+  }
+
+  cr_assert(saw_helper_call, "Should extract the `helper(...)` call site");
+  cr_assert(saw_macro_call, "Should extract the `println!` macro invocation");
+
+  parser_free(ctx);
+}
+
 Test(rust_ast, parses_enums_traits_and_other_kinds) {
   ParserContext *ctx = parse_rust_sample();
   const ASTNode *nodes[16];

@@ -233,6 +233,13 @@ static void resolve_node_references(ProjectContext *project, ASTNode *node,
       reference_resolver_resolve_node(resolver, node, REF_IMPORT, node->name, language);
     }
     break;
+  case NODE_IDENTIFIER:
+    // Rust call sites and macro invocations are extracted as identifier nodes
+    // and resolved as calls against the symbol table (WI-030).
+    if (language == LANG_RUST && node->name) {
+      reference_resolver_resolve_node(resolver, node, REF_CALL, node->name, language);
+    }
+    break;
   case NODE_INCLUDE:
     if (language == LANG_RUST) {
       // Rust `use` paths are plain `a::b::Item` strings with no quote delimiters.
