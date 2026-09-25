@@ -236,6 +236,9 @@ ResolutionStatus reference_resolver_typescript(ASTNode *node, ReferenceType ref_
                                                const char *name, GlobalSymbolTable *symbol_table,
                                                void *resolver_data);
 
+ResolutionStatus reference_resolver_rust(ASTNode *node, ReferenceType ref_type, const char *name,
+                                         GlobalSymbolTable *symbol_table, void *resolver_data);
+
 /**
  * @brief Create a reference resolver for a given node
  *

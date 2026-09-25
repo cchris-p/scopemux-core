@@ -29,6 +29,7 @@ set(TS_CPP_DIR ${VENDOR_DIR}/tree-sitter-cpp)
 set(TS_PYTHON_DIR ${VENDOR_DIR}/tree-sitter-python)
 set(TS_JS_DIR ${VENDOR_DIR}/tree-sitter-javascript)
 set(TS_TS_DIR ${VENDOR_DIR}/tree-sitter-typescript/typescript)
+set(TS_RUST_DIR ${VENDOR_DIR}/tree-sitter-rust)
 set(TS_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/tree-sitter-libs)
 
 # Create directory for Tree-sitter libraries
@@ -42,6 +43,7 @@ set(TS_CPP_LIB ${TS_LIB_DIR}/libtree-sitter-cpp.a)
 set(TS_PYTHON_LIB ${TS_LIB_DIR}/libtree-sitter-python.a)
 set(TS_JS_LIB ${TS_LIB_DIR}/libtree-sitter-javascript.a)
 set(TS_TS_LIB ${TS_LIB_DIR}/libtree-sitter-typescript.a)
+set(TS_RUST_LIB ${TS_LIB_DIR}/libtree-sitter-rust.a)
 
 # Shared libraries
 set(TS_CORE_SO ${TS_LIB_DIR}/libtree-sitter.so)
@@ -50,6 +52,7 @@ set(TS_CPP_SO ${TS_LIB_DIR}/libtree-sitter-cpp.so)
 set(TS_PYTHON_SO ${TS_LIB_DIR}/libtree-sitter-python.so)
 set(TS_JS_SO ${TS_LIB_DIR}/libtree-sitter-javascript.so)
 set(TS_TS_SO ${TS_LIB_DIR}/libtree-sitter-typescript.so)
+set(TS_RUST_SO ${TS_LIB_DIR}/libtree-sitter-rust.so)
 
 # Build the main Tree-sitter library
 ExternalProject_Add(tree_sitter_core
@@ -128,6 +131,19 @@ ExternalProject_Add(tree_sitter_typescript
     DEPENDS tree_sitter_core
 )
 
+# Build the Tree-sitter Rust grammar
+ExternalProject_Add(tree_sitter_rust
+    SOURCE_DIR ${TS_RUST_DIR}
+    CONFIGURE_COMMAND "" # No configure step required
+    BUILD_COMMAND make -C ${TS_RUST_DIR} CFLAGS="-fPIC"
+    BUILD_IN_SOURCE 1
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
+    ${TS_RUST_DIR}/libtree-sitter-rust.a
+    ${TS_RUST_LIB}
+    BUILD_BYPRODUCTS ${TS_RUST_LIB}
+    DEPENDS tree_sitter_core
+)
+
 # Create imported library targets for Tree-sitter libraries
 add_library(ts_core STATIC IMPORTED)
 set_target_properties(ts_core PROPERTIES
@@ -165,6 +181,12 @@ set_target_properties(ts_typescript PROPERTIES
 )
 add_dependencies(ts_typescript tree_sitter_typescript)
 
+add_library(ts_rust STATIC IMPORTED)
+set_target_properties(ts_rust PROPERTIES
+    IMPORTED_LOCATION ${TS_RUST_LIB}
+)
+add_dependencies(ts_rust tree_sitter_rust)
+
 # Export variables for use by subdirectories
 set(TS_CORE_INCLUDE_DIR ${TS_DIR}/lib/include CACHE FILEPATH "Tree-sitter core include directory")
 set(TS_C_INCLUDE_DIR ${TS_C_DIR}/src CACHE FILEPATH "Tree-sitter C include directory")
@@ -172,6 +194,7 @@ set(TS_CPP_INCLUDE_DIR ${TS_CPP_DIR}/src CACHE FILEPATH "Tree-sitter C++ include
 set(TS_PYTHON_INCLUDE_DIR ${TS_PYTHON_DIR}/src CACHE FILEPATH "Tree-sitter Python include directory")
 set(TS_JS_INCLUDE_DIR ${TS_JS_DIR}/src CACHE FILEPATH "Tree-sitter JavaScript include directory")
 set(TS_TS_INCLUDE_DIR ${TS_TS_DIR}/src CACHE FILEPATH "Tree-sitter TypeScript include directory")
+set(TS_RUST_INCLUDE_DIR ${TS_RUST_DIR}/src CACHE FILEPATH "Tree-sitter Rust include directory")
 
 # Find Python packages needed for the project
 find_package(Python 3.10...<3.12 REQUIRED COMPONENTS Interpreter Development)

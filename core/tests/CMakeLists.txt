@@ -77,6 +77,7 @@ target_link_libraries(test_utilities PRIVATE
     ts_python
     ts_javascript
     ts_typescript
+    ts_rust
 )
 
 function(add_scopemux_test target)
@@ -93,6 +94,7 @@ function(add_scopemux_test target)
         ts_python
         ts_javascript
         ts_typescript
+        ts_rust
     )
 endfunction()
 
@@ -179,6 +181,11 @@ add_scopemux_test(ts_example_ast_tests
 )
 # include directories already set above; removed problematic macro call
 # set_common_test_includes(ts_example_ast_tests)
+
+# Add rust_basic_ast_tests target
+add_scopemux_test(rust_basic_ast_tests
+    src/rust/rust_basic_ast_tests.c
+)
 
 # Add python_basic_ast_tests target
 add_scopemux_test(python_basic_ast_tests

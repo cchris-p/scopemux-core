@@ -14,6 +14,7 @@ const char *language_to_string(Language lang) {
         case LANG_PYTHON: return "python";
         case LANG_JAVASCRIPT: return "javascript";
         case LANG_TYPESCRIPT: return "typescript";
+        case LANG_RUST: return "rust";
         case LANG_UNKNOWN:
         default: return "unknown";
     }
@@ -27,6 +28,7 @@ Language language_from_string(const char *lang_str) {
     if (strcasecmp(lang_str, "python") == 0 || strcasecmp(lang_str, "py") == 0) return LANG_PYTHON;
     if (strcasecmp(lang_str, "javascript") == 0 || strcasecmp(lang_str, "js") == 0) return LANG_JAVASCRIPT;
     if (strcasecmp(lang_str, "typescript") == 0 || strcasecmp(lang_str, "ts") == 0) return LANG_TYPESCRIPT;
+    if (strcasecmp(lang_str, "rust") == 0 || strcasecmp(lang_str, "rs") == 0) return LANG_RUST;
     
     return LANG_UNKNOWN;
 }
@@ -49,6 +51,7 @@ Language language_detect_from_extension(const char *file_path) {
     if (strcmp(ext, "py") == 0) return LANG_PYTHON;
     if (strcmp(ext, "js") == 0) return LANG_JAVASCRIPT;
     if (strcmp(ext, "ts") == 0) return LANG_TYPESCRIPT;
+    if (strcmp(ext, "rs") == 0) return LANG_RUST;
     
     return LANG_UNKNOWN;
 }
@@ -60,6 +63,7 @@ const char *language_get_extension(Language lang) {
         case LANG_PYTHON: return "py";
         case LANG_JAVASCRIPT: return "js";
         case LANG_TYPESCRIPT: return "ts";
+        case LANG_RUST: return "rs";
         case LANG_UNKNOWN:
         default: return NULL;
     }

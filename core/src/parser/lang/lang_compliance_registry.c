@@ -33,6 +33,12 @@ extern void register_javascript_ast_compliance(void);
 extern void register_typescript_ast_compliance(void);
 
 /**
+ * Register Rust language-specific compliance callbacks
+ * @note Implemented in rust_ast_compliance.c
+ */
+extern void register_rust_ast_compliance(void);
+
+/**
  * Register all language-specific compliance callbacks
  *
  * This function registers all available language-specific schema compliance
@@ -48,4 +54,5 @@ void register_all_language_compliance(void) {
   register_python_ast_compliance();
   register_javascript_ast_compliance();
   register_typescript_ast_compliance();
+  register_rust_ast_compliance();
 }

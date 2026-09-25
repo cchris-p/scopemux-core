@@ -28,6 +28,7 @@ target_include_directories(scopemux_core_includes INTERFACE
     ${TS_PYTHON_INCLUDE_DIR}
     ${TS_JS_INCLUDE_DIR}
     ${TS_TS_INCLUDE_DIR}
+    ${TS_RUST_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
@@ -89,6 +90,7 @@ add_library(parser_core_obj OBJECT
     src/parser/reference_resolvers/python_resolver.c
     src/parser/reference_resolvers/javascript_resolver.c
     src/parser/reference_resolvers/js_ts_resolver_shared_utils.c
+    src/parser/reference_resolvers/rust_resolver.c
     src/parser/reference_resolver.c
     # Language compliance system (add all .c files)
     src/ast_compliance.c
@@ -98,6 +100,7 @@ add_library(parser_core_obj OBJECT
     src/parser/lang/javascript_ast_compliance.c
     src/parser/lang/typescript_ast_compliance.c
     src/parser/lang/c_ast_compliance.c
+    src/parser/lang/rust_ast_compliance.c
     # Common files
     src/common/memory_management.c
     src/common/error_handling.c
@@ -173,6 +176,7 @@ target_link_libraries(parser_core PRIVATE
     ts_python
     ts_javascript
     ts_typescript
+    ts_rust
 )
 
 # Python bindings module with test_processor bindings and implementation
@@ -223,6 +227,7 @@ target_link_libraries(scopemux_core PRIVATE
     ts_python
     ts_javascript
     ts_typescript
+    ts_rust
 )
 
 # Set compiler flags to export all symbols
@@ -231,7 +236,7 @@ set_target_properties(scopemux_core PROPERTIES ENABLE_EXPORTS ON)
 set_target_properties(scopemux_core PROPERTIES LINK_FLAGS "-Wl,--export-dynamic")
 
 # Add target_link_options block for scopemux_core to force --whole-archive inclusion of all Tree-sitter static libraries (ts_c, ts_cpp, ts_python, ts_javascript, ts_typescript)
-if(TARGET ts_c AND TARGET ts_cpp AND TARGET ts_python AND TARGET ts_javascript AND TARGET ts_typescript)
+if(TARGET ts_c AND TARGET ts_cpp AND TARGET ts_python AND TARGET ts_javascript AND TARGET ts_typescript AND TARGET ts_rust)
   target_link_options(scopemux_core PRIVATE
     -Wl,--whole-archive
     -Wl,$<TARGET_FILE:ts_c>
@@ -239,6 +244,7 @@ if(TARGET ts_c AND TARGET ts_cpp AND TARGET ts_python AND TARGET ts_javascript A
     -Wl,$<TARGET_FILE:ts_python>
     -Wl,$<TARGET_FILE:ts_javascript>
     -Wl,$<TARGET_FILE:ts_typescript>
+    -Wl,$<TARGET_FILE:ts_rust>
     -Wl,--no-whole-archive
   )
 endif()

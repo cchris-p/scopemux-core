@@ -18,6 +18,7 @@ Supported language coverage in the repository today includes:
 - Python
 - JavaScript
 - TypeScript
+- Rust
 
 ## Repository Layout
 

@@ -83,7 +83,8 @@ SymbolEntry *symbol_table_scope_lookup_impl(const GlobalSymbolTable *table, cons
     switch (language) {
     case LANG_C:
     case LANG_CPP:
-      // Use :: as separator for C/C++ scope
+    case LANG_RUST:
+      // Use :: as separator for C/C++/Rust scope
       snprintf(qualified_name, sizeof(qualified_name), "%s::%s", current_scope, name);
       break;
 
@@ -113,7 +114,8 @@ SymbolEntry *symbol_table_scope_lookup_impl(const GlobalSymbolTable *table, cons
     switch (language) {
     case LANG_C:
     case LANG_CPP:
-      // Use :: as separator for C/C++ scope
+    case LANG_RUST:
+      // Use :: as separator for C/C++/Rust scope
       snprintf(qualified_name, sizeof(qualified_name), "%s::%s", scope, name);
       break;
 
