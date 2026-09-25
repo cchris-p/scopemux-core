@@ -732,6 +732,54 @@ Test(project_context_delegation, searchable_index_and_prompt_assembly, .init = s
   project_search_result_free(&search_result);
 }
 
+Test(project_context_delegation, search_index_grows_for_long_block_text, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *ctx = parser_init();
+  ASTNode *fn;
+  char path[512];
+  char long_content[512];
+  ProjectSearchRequest search_request = {0};
+  ProjectSearchResult search_result = {0};
+
+  cr_assert(ctx != NULL, "Parser context should be created");
+
+  /* A long path plus long block content exceeds the old fixed search-text
+   * buffer; the index builder must grow instead of failing. */
+  join_test_project_path(
+      "an_extremely_long_file_name_used_to_exceed_the_old_search_buffer.c", path, sizeof(path));
+
+  ctx->filename = strdup(path);
+  ctx->language = LANG_C;
+
+  fn = make_named_node(NODE_FUNCTION, "long_function", "long_function", path);
+  memset(long_content, 'x', sizeof(long_content) - 1);
+  long_content[sizeof(long_content) - 1] = '\0';
+  fn->raw_content = strdup(long_content);
+  fn->owned_fields |= FIELD_RAW_CONTENT;
+
+  cr_assert(parser_add_ast_node(ctx, fn), "Function node should be tracked");
+
+  project->file_contexts[0] = ctx;
+  project->num_files = 1;
+  parser = NULL;
+
+  cr_assert(symbol_table_register(project->symbol_table, "long_function", fn, path, SCOPE_GLOBAL,
+                                  LANG_C) != NULL,
+            "Function symbol should be registered");
+  cr_assert(project_context_rebuild_ir(project), "Project IR snapshot should rebuild");
+
+  search_request.query_text = "long_function";
+  search_request.min_tier = PROJECT_CONTEXT_TIER_0;
+  search_request.max_tier = PROJECT_CONTEXT_TIER_3;
+  search_request.max_hits = 4;
+
+  cr_assert(project_context_search_info_blocks(project, &search_request, &search_result),
+            "Search index must grow for long paths and block content");
+  cr_assert(search_result.hit_count > 0, "Long-content block should still be searchable");
+
+  project_search_result_free(&search_result);
+}
+
 Test(project_context_delegation, plan_node_projection_and_reconciliation, .init = setup_project,
      .fini = teardown_project) {
   ParserContext *caller_ctx = parser_init();

@@ -287,16 +287,38 @@ static size_t summarized_block_tokens(const ProjectInfoBlock *block) {
   return reduced;
 }
 
-static bool append_text_part(char *buffer, size_t buffer_size, size_t *offset, const char *label,
+static bool append_text_part(char **buffer, size_t *buffer_size, size_t *offset, const char *label,
                              const char *value) {
+  size_t needed;
+  size_t available;
   int written;
 
-  if (!buffer || !offset || !label || !value || value[0] == '\0') {
+  if (!buffer || !buffer_size || !offset || !label || !value || value[0] == '\0') {
     return true;
   }
+  if (*buffer == NULL) {
+    return false;
+  }
 
-  written = snprintf(buffer + *offset, buffer_size - *offset, "%s%s\n", label, value);
-  if (written < 0 || (size_t)written >= buffer_size - *offset) {
+  /* label + value + trailing newline + terminator */
+  needed = strlen(label) + strlen(value) + 2;
+  available = *offset < *buffer_size ? *buffer_size - *offset : 0;
+
+  /* Grow instead of failing: block text includes absolute file paths and node
+   * content, which routinely exceed the initial buffer. */
+  if (needed > available) {
+    size_t new_size = *buffer_size + needed + 64;
+    char *grown = realloc(*buffer, new_size);
+    if (!grown) {
+      return false;
+    }
+    *buffer = grown;
+    *buffer_size = new_size;
+    available = new_size - *offset;
+  }
+
+  written = snprintf(*buffer + *offset, available, "%s%s\n", label, value);
+  if (written < 0 || (size_t)written >= available) {
     return false;
   }
 
@@ -384,23 +406,23 @@ static bool build_search_text_for_block(const ProjectInfoBlock *block, char **ou
     return false;
   }
 
-  if (!append_text_part(buffer, size, &offset, "id:", block && block->id ? block->id : "") ||
-      !append_text_part(buffer, size, &offset, "name:", block && block->name ? block->name : "") ||
-      !append_text_part(buffer, size, &offset, "qualified:",
+  if (!append_text_part(&buffer, &size, &offset, "id:", block && block->id ? block->id : "") ||
+      !append_text_part(&buffer, &size, &offset, "name:", block && block->name ? block->name : "") ||
+      !append_text_part(&buffer, &size, &offset, "qualified:",
                         block && block->qualified_name ? block->qualified_name : "") ||
-      !append_text_part(buffer, size, &offset, "file:",
+      !append_text_part(&buffer, &size, &offset, "file:",
                         block && block->file_path ? block->file_path : "") ||
-      !append_text_part(buffer, size, &offset, "kind:", kind_label(block ? block->kind : 0))) {
+      !append_text_part(&buffer, &size, &offset, "kind:", kind_label(block ? block->kind : 0))) {
     free(buffer);
     return false;
   }
 
   if (block && block->node) {
-    if (!append_text_part(buffer, size, &offset, "signature:",
+    if (!append_text_part(&buffer, &size, &offset, "signature:",
                           block->node->signature ? block->node->signature : "") ||
-        !append_text_part(buffer, size, &offset, "doc:",
+        !append_text_part(&buffer, &size, &offset, "doc:",
                           block->node->docstring ? block->node->docstring : "") ||
-        !append_text_part(buffer, size, &offset, "content:",
+        !append_text_part(&buffer, &size, &offset, "content:",
                           block->node->raw_content ? block->node->raw_content : "")) {
       free(buffer);
       return false;
@@ -409,12 +431,12 @@ static bool build_search_text_for_block(const ProjectInfoBlock *block, char **ou
 
   // WI-032: projected plan-node attributes are searchable alongside parsed ones.
   if (block && block->origin == PROJECT_INFO_BLOCK_ORIGIN_PLANNED) {
-    if (!append_text_part(buffer, size, &offset, "plan_kind:", plan_kind_label(block->plan_kind)) ||
-        !append_text_part(buffer, size, &offset, "desired:",
+    if (!append_text_part(&buffer, &size, &offset, "plan_kind:", plan_kind_label(block->plan_kind)) ||
+        !append_text_part(&buffer, &size, &offset, "desired:",
                           block->desired_shape ? block->desired_shape : "") ||
-        !append_text_part(buffer, size, &offset, "rationale:",
+        !append_text_part(&buffer, &size, &offset, "rationale:",
                           block->rationale ? block->rationale : "") ||
-        !append_text_part(buffer, size, &offset, "anchors:",
+        !append_text_part(&buffer, &size, &offset, "anchors:",
                           block->anchor_list ? block->anchor_list : "")) {
       free(buffer);
       return false;
@@ -1616,21 +1638,21 @@ bool project_context_assemble_prompt(ProjectContext *project,
   }
 
   if (request->system_preamble &&
-      !append_text_part(buffer, buffer_size, &offset, "System: ", request->system_preamble)) {
+      !append_text_part(&buffer, &buffer_size, &offset, "System: ", request->system_preamble)) {
     free(buffer);
     project_search_result_free(&search_result);
     project_tiered_context_result_free(&context);
     return false;
   }
   if (request->response_format &&
-      !append_text_part(buffer, buffer_size, &offset, "Response format: ", request->response_format)) {
+      !append_text_part(&buffer, &buffer_size, &offset, "Response format: ", request->response_format)) {
     free(buffer);
     project_search_result_free(&search_result);
     project_tiered_context_result_free(&context);
     return false;
   }
   if (request->user_query &&
-      !append_text_part(buffer, buffer_size, &offset, "User query: ", request->user_query)) {
+      !append_text_part(&buffer, &buffer_size, &offset, "User query: ", request->user_query)) {
     free(buffer);
     project_search_result_free(&search_result);
     project_tiered_context_result_free(&context);
@@ -1665,11 +1687,11 @@ bool project_context_assemble_prompt(ProjectContext *project,
     offset += (size_t)written;
 
     if (request->include_block_metadata) {
-      if (!append_text_part(buffer, buffer_size, &offset, "kind: ", kind_label(block->kind)) ||
-          !append_text_part(buffer, buffer_size, &offset, "name: ", block->name ? block->name : "") ||
-          !append_text_part(buffer, buffer_size, &offset, "qualified: ",
+      if (!append_text_part(&buffer, &buffer_size, &offset, "kind: ", kind_label(block->kind)) ||
+          !append_text_part(&buffer, &buffer_size, &offset, "name: ", block->name ? block->name : "") ||
+          !append_text_part(&buffer, &buffer_size, &offset, "qualified: ",
                             block->qualified_name ? block->qualified_name : "") ||
-          !append_text_part(buffer, buffer_size, &offset, "file: ",
+          !append_text_part(&buffer, &buffer_size, &offset, "file: ",
                             block->file_path ? block->file_path : "")) {
         free(buffer);
         project_search_result_free(&search_result);
@@ -1683,15 +1705,15 @@ bool project_context_assemble_prompt(ProjectContext *project,
       const char *summary = block->node->docstring ? block->node->docstring
                           : block->node->signature ? block->node->signature
                           : block->name ? block->name : "";
-      if (!append_text_part(buffer, buffer_size, &offset, "signature: ",
+      if (!append_text_part(&buffer, &buffer_size, &offset, "signature: ",
                             block->node->signature ? block->node->signature : "") ||
-          !append_text_part(buffer, buffer_size, &offset, "doc: ",
+          !append_text_part(&buffer, &buffer_size, &offset, "doc: ",
                             block->node->docstring ? block->node->docstring : "") ||
-          !append_text_part(buffer, buffer_size, &offset,
+          !append_text_part(&buffer, &buffer_size, &offset,
                             selection->disposition == PROJECT_CONTEXT_BLOCK_SUMMARIZED ? "summary: "
                                                                                        : "content: ",
                             selection->disposition == PROJECT_CONTEXT_BLOCK_SUMMARIZED ? summary : body) ||
-          !append_text_part(buffer, buffer_size, &offset, "", "")) {
+          !append_text_part(&buffer, &buffer_size, &offset, "", "")) {
         free(buffer);
         project_search_result_free(&search_result);
         project_tiered_context_result_free(&context);
