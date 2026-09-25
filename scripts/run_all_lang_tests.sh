@@ -23,7 +23,7 @@ set -euo pipefail
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-PARALLEL_JOBS=${PARALLEL_JOBS:-4} # Default to 4 parallel jobs
+PARALLEL_JOBS=${PARALLEL_JOBS:-2} # Default to 2 parallel jobs: concurrent clean builds are memory-heavy
 CLEAN_BUILD=${CLEAN_BUILD:-true}  # Default to clean builds
 
 # Color codes for output
@@ -135,6 +135,12 @@ run_test_suite() {
     read -u 3
 
     {
+        # Return the semaphore token on any exit path. Without this, a failure
+        # under `set -e` (for example the old `((PASSED_TESTS++))` returning
+        # non-zero at zero) would exit before releasing the token and block
+        # every remaining suite on `read -u 3` forever.
+        trap 'echo >&3' EXIT
+
         echo -e "${BLUE}[$lang]${NC} Starting ${TEST_SUITES[$lang]}..."
         echo -e "${BLUE}[$lang]${NC} Log file: $log_file"
 
@@ -143,22 +149,16 @@ run_test_suite() {
         export PARALLEL_JOBS=1 # Individual scripts run single-threaded
         export CLEAN_BUILD
 
-        # Run the test script with output redirected to log file
+        # Run the test script with output redirected to log file. Exit status
+        # carries the result back to the parent, which owns the result counters
+        # (a subshell's variable updates would not be visible to the parent).
         if bash "$script_path" >"$log_file" 2>&1; then
             echo -e "${GREEN}[$lang]${NC} ${TEST_SUITES[$lang]} completed successfully"
-            TEST_RESULTS["$lang"]="PASS"
-            ((PASSED_TESTS++))
+            exit 0
         else
             echo -e "${RED}[$lang]${NC} ${TEST_SUITES[$lang]} failed"
-            TEST_RESULTS["$lang"]="FAIL"
-            ((FAILED_TESTS++))
+            exit 1
         fi
-
-        ((COMPLETED_TESTS++))
-        print_progress "$COMPLETED_TESTS" "$TOTAL_TESTS"
-
-        # Release semaphore slot
-        echo >&3
     } &
 
     # Store the PID and log file
@@ -268,11 +268,22 @@ main() {
         run_test_suite "$lang"
     done
 
-    # Wait for all background processes to complete
+    # Wait for all background processes and aggregate their exit statuses in the
+    # parent shell, which owns the result counters.
     echo -e "\n${BLUE}[Parallel Test Runner]${NC} Waiting for all tests to complete..."
-    for pid in "${TEST_PIDS[@]}"; do
-        wait "$pid" 2>/dev/null || true
+    for lang in "${!TEST_SUITES[@]}"; do
+        local pid="${TEST_PIDS[$lang]}"
+        if wait "$pid" 2>/dev/null; then
+            TEST_RESULTS["$lang"]="PASS"
+            PASSED_TESTS=$((PASSED_TESTS + 1))
+        else
+            TEST_RESULTS["$lang"]="FAIL"
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+        fi
+        COMPLETED_TESTS=$((COMPLETED_TESTS + 1))
+        print_progress "$COMPLETED_TESTS" "$TOTAL_TESTS"
     done
+    echo ""
 
     # Print final results
     print_results
@@ -292,7 +303,7 @@ while [[ $# -gt 0 ]]; do
     --help | -h)
         echo "Usage: $0 [options]"
         echo "Options:"
-        echo "  --jobs, -j <number>    Number of parallel jobs (default: 4)"
+        echo "  --jobs, -j <number>    Number of parallel jobs (default: 2)"
         echo "  --no-clean             Skip clean builds"
         echo "  --help, -h            Show this help message"
         exit 0
