@@ -347,17 +347,17 @@ static char *extract_raw_content(TSNode node, const char *source_code) {
  * @param ast_root AST root node
  * @param node_map Node mapping for parent relationships
  */
-void process_query(const char *query_type, TSNode root_node, ParserContext *ctx, ASTNode *ast_root,
-                   ASTNode **node_map) {
+static bool process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
+                          ASTNode *ast_root, ASTNode **node_map) {
   if (!query_type || !ctx || !ast_root || !node_map) {
     log_error("[QUERY_PROCESSOR] Invalid parameters to process_query");
-    return;
+    return false;
   }
 
   // Defensive check for NULL root_node
   if (ts_node_is_null(root_node)) {
     log_error("[QUERY_PROCESSOR] Cannot process query with NULL root node");
-    return;
+    return false;
   }
 
   log_info("[QUERY_DEBUG] Processing query type: %s", query_type);
@@ -365,8 +365,9 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
   // Get the query for this language and query type
   const TSQuery *query = query_manager_get_query(ctx->q_manager, ctx->language, query_type);
   if (!query) {
-    log_error("[QUERY_PROCESSOR] Failed to get query for %s", query_type);
-    return;
+    // Query types are defined per language; a missing type is not a failure.
+    log_debug("[QUERY_PROCESSOR] Query '%s' not defined for this language", query_type);
+    return false;
   }
 
   // DEBUG: Log query details
@@ -383,7 +384,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
   TSQueryCursor *cursor = ts_query_cursor_new();
   if (!cursor) {
     log_error("[QUERY_PROCESSOR] Failed to create query cursor");
-    return;
+    return false;
   }
 
   // Set the query cursor to use the root node
@@ -1148,6 +1149,7 @@ void process_query(const char *query_type, TSNode root_node, ParserContext *ctx,
 
   // Free the query cursor
   ts_query_cursor_delete(cursor);
+  return true;
 }
 
 /**
@@ -1342,7 +1344,12 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
     size_t prev_child_count = ast_root->num_children;
 
     // Process the query
-    process_query(query_types[i], root_node, ctx, ast_root, node_map);
+    if (!process_query(query_types[i], root_node, ctx, ast_root, node_map)) {
+      // Query type not defined for this language; not a failure.
+      log_debug("[QUERY_DEBUG] Query '%s' skipped: not defined for this language",
+                SAFE_STR(query_types[i]));
+      continue;
+    }
 
     // Check if new nodes were added
     if (ast_root->num_children > prev_child_count) {
@@ -1366,7 +1373,11 @@ bool process_all_ast_queries(TSNode root_node, ParserContext *ctx, ASTNode *ast_
                SAFE_STR(extension_query_types[i]), i + 1, num_extension_query_types);
 
       size_t prev_child_count = ast_root->num_children;
-      process_query(extension_query_types[i], root_node, ctx, ast_root, node_map);
+      if (!process_query(extension_query_types[i], root_node, ctx, ast_root, node_map)) {
+        log_debug("[QUERY_DEBUG] Query '%s' skipped: not defined for this language",
+                  SAFE_STR(extension_query_types[i]));
+        continue;
+      }
 
       if (ast_root->num_children > prev_child_count) {
         successful_queries++;

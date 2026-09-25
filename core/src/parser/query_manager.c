@@ -655,7 +655,10 @@ const TSQuery *query_manager_get_query(QueryManager *q_manager, Language languag
   }
 
   if (!query_path) {
-    fprintf(stderr, "Failed to construct query path for %s/%s\n", lang_name, query_name);
+    // No query file for this language/type. Optional query types are defined
+    // per language, so absence is expected and not an error (WI-029).
+    log_debug("No query file for %s/%s (query type not defined for this language)", lang_name,
+              query_name);
     return NULL;
   }
 
