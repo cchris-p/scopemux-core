@@ -98,6 +98,51 @@ Test(rust_ast, parses_structs_methods_and_variables) {
   parser_free(ctx);
 }
 
+Test(rust_ast, scopes_methods_by_impl_type) {
+  static const char *RUST_SCOPING_SAMPLE =
+      "struct Point { x: i32 }\n"
+      "struct Vector { x: i32 }\n"
+      "\n"
+      "impl Point {\n"
+      "    fn origin() -> Point { Point { x: 0 } }\n"
+      "}\n"
+      "\n"
+      "impl Vector {\n"
+      "    fn origin() -> Vector { Vector { x: 0 } }\n"
+      "}\n";
+
+  ParserContext *ctx = parser_init();
+  cr_assert_not_null(ctx, "Parser context should be created");
+  parser_parse_string(ctx, RUST_SCOPING_SAMPLE, strlen(RUST_SCOPING_SAMPLE), "scoping.rs",
+                      LANG_RUST);
+  const char *error_message = parser_get_last_error(ctx);
+  cr_assert_null(error_message, "Parser error: %s", error_message ? error_message : "");
+
+  const ASTNode *classes[8];
+  size_t class_count = parser_get_ast_nodes_by_type(ctx, NODE_CLASS, classes, 8);
+  cr_assert_geq(class_count, 2, "Both impl blocks should be extracted as class containers");
+
+  const ASTNode *methods[8];
+  size_t method_count = parser_get_ast_nodes_by_type(ctx, NODE_METHOD, methods, 8);
+  cr_assert_eq(method_count, 2, "Both impl methods should be extracted");
+
+  bool saw_point_origin = false;
+  bool saw_vector_origin = false;
+  for (size_t i = 0; i < method_count; i++) {
+    cr_assert_not_null(methods[i]->qualified_name, "Method should have a qualified name");
+    if (strstr(methods[i]->qualified_name, "Point.origin") != NULL) {
+      saw_point_origin = true;
+    }
+    if (strstr(methods[i]->qualified_name, "Vector.origin") != NULL) {
+      saw_vector_origin = true;
+    }
+  }
+  cr_assert(saw_point_origin, "Point::origin should be scoped under Point, not colliding");
+  cr_assert(saw_vector_origin, "Vector::origin should be scoped under Vector, not colliding");
+
+  parser_free(ctx);
+}
+
 Test(rust_ast, detects_language_from_extension) {
   cr_assert_eq(language_detect_from_extension("lib.rs"), LANG_RUST,
                ".rs should be detected as Rust");

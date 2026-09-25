@@ -47,6 +47,7 @@ static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node
     switch (node->type) {
     // Register all significant, top-level symbol types
     case NODE_FUNCTION:
+    case NODE_METHOD:
     case NODE_CLASS:
     case NODE_STRUCT:
     case NODE_ENUM:

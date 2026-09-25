@@ -708,22 +708,47 @@ static bool process_query(const char *query_type, TSNode root_node, ParserContex
       // Determine the proper parent based on node type and scope
       ASTNode *proper_parent = ast_root; // Default to root
 
-      // For methods, attach them to the containing class.
+      // For methods, attach them to the containing class-like container: an
+      // impl block (NODE_CLASS) or a trait (NODE_INTERFACE). This scopes the
+      // method's qualified name by its implementing type or trait instead of
+      // leaving it at the root, which is what collides same-named methods.
       if (actual_node_type == NODE_METHOD) {
-        const ASTNode *class_nodes[32];
-        size_t class_count = parser_get_ast_nodes_by_type(ctx, NODE_CLASS, class_nodes, 32);
+        const ASTNode *container_nodes[32];
+        size_t container_count =
+            parser_get_ast_nodes_by_type(ctx, NODE_CLASS, container_nodes, 32);
+        if (container_count > 32) {
+          container_count = 32;
+        }
+        if (container_count < 32) {
+          size_t remaining = 32 - container_count;
+          size_t interface_count = parser_get_ast_nodes_by_type(
+              ctx, NODE_INTERFACE, container_nodes + container_count, remaining);
+          if (interface_count > remaining) {
+            interface_count = remaining;
+          }
+          container_count += interface_count;
+        }
 
-        for (size_t i = 0; i < class_count; i++) {
-          const ASTNode *potential_parent = class_nodes[i];
+        const ASTNode *best_parent = NULL;
+        for (size_t i = 0; i < container_count; i++) {
+          const ASTNode *potential_parent = container_nodes[i];
           if (!potential_parent) {
             continue;
           }
 
           if (ast_node->range.start.line >= potential_parent->range.start.line &&
               ast_node->range.end.line <= potential_parent->range.end.line) {
-            proper_parent = (ASTNode *)potential_parent;
+            // First containing container wins, preserving the ordering classes
+            // then interfaces. Keeping first-match (rather than innermost) is
+            // deliberate: decorated definitions can produce overlapping
+            // containers for one method.
+            best_parent = potential_parent;
             break;
           }
+        }
+
+        if (best_parent) {
+          proper_parent = (ASTNode *)best_parent;
         }
       }
 
