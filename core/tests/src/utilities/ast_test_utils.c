@@ -28,6 +28,9 @@ static const char *get_language_extension_for_id(const char *lang) {
   if (strcmp(lang, "python") == 0) {
     return ".py";
   }
+  if (strcmp(lang, "rust") == 0) {
+    return ".rs";
+  }
 
   return NULL;
 }
@@ -703,6 +706,8 @@ const char *get_language_name(Language lang) {
     return "TypeScript";
   case LANG_PYTHON:
     return "Python";
+  case LANG_RUST:
+    return "Rust";
   default:
     return "Unknown";
   }
@@ -720,6 +725,8 @@ const char *get_language_extension(Language lang) {
     return ".ts";
   case LANG_PYTHON:
     return ".py";
+  case LANG_RUST:
+    return ".rs";
   default:
     return "";
   }
