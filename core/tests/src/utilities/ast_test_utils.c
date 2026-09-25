@@ -213,12 +213,19 @@ static void print_ast_node_json(const ASTNode *node, int level) {
   if (node->name) {
     for (int i = 0; i < level + 1; ++i)
       fprintf(stderr, "  ");
-    fprintf(stderr, "\"name\": \"%s\",\n", node->name);
+    char *escaped_name = escape_json_string(node->name);
+    fprintf(stderr, "\"name\": \"%s\",\n", escaped_name ? escaped_name : "");
+    if (escaped_name)
+      free(escaped_name);
   }
   if (node->qualified_name) {
     for (int i = 0; i < level + 1; ++i)
       fprintf(stderr, "  ");
-    fprintf(stderr, "\"qualified_name\": \"%s\",\n", node->qualified_name);
+    char *escaped_qualified_name = escape_json_string(node->qualified_name);
+    fprintf(stderr, "\"qualified_name\": \"%s\",\n",
+            escaped_qualified_name ? escaped_qualified_name : "");
+    if (escaped_qualified_name)
+      free(escaped_qualified_name);
   }
   if (node->signature) {
     for (int i = 0; i < level + 1; ++i)
