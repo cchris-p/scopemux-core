@@ -2102,3 +2102,32 @@ Test(project_context_delegation, observability_info_blocks, .init = setup_projec
   free(json);
   project_context_free(reloaded);
 }
+
+// WI-028: registering the same AST node twice must not track it twice; cleanup
+// must free each node once (no double-free / invalid magic number).
+Test(project_context_delegation, ast_registration_is_deduplicated, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *ctx = parser_init();
+  ASTNode *root;
+  ASTNode *child;
+  SourceRange range = {{0, 0, 0}, {0, 0, 0}};
+
+  cr_assert_not_null(ctx, "Parser context should be created");
+
+  root = ast_node_create(NODE_ROOT, strdup("root"), AST_SOURCE_DEBUG_ALLOC, strdup("root"),
+                         AST_SOURCE_DEBUG_ALLOC, range);
+  child = ast_node_create(NODE_FUNCTION, strdup("helper"), AST_SOURCE_DEBUG_ALLOC,
+                          strdup("helper"), AST_SOURCE_DEBUG_ALLOC, range);
+  cr_assert_not_null(root, "Root node should be created");
+  cr_assert_not_null(child, "Child node should be created");
+  cr_assert(ast_node_add_child(root, child), "Child should attach to root");
+
+  cr_assert(parser_add_ast_node(ctx, root), "Root should register");
+  cr_assert(parser_add_ast_node(ctx, child), "Child should register");
+  cr_assert(parser_add_ast_node(ctx, root),
+            "Re-registering an already tracked node should be accepted");
+  cr_assert_eq(ctx->num_ast_nodes, 2, "Duplicate registration must not be tracked twice");
+
+  // Cleanup must free the root once and recurse to the child exactly once.
+  parser_free(ctx);
+}

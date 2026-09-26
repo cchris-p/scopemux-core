@@ -306,6 +306,18 @@ bool parser_add_ast_node(ParserContext *ctx, ASTNode *node) {
     return false;
   }
 
+  // Reject duplicate registrations. The same node pointer can be registered more
+  // than once (for example a root that AST generation also returns). Tracking it
+  // twice makes cleanup free it twice, which corrupts the AST and reports an
+  // invalid magic number (0xDEADBEEF) during teardown.
+  for (size_t i = 0; i < ctx->num_ast_nodes; i++) {
+    if (ctx->all_ast_nodes[i] == node) {
+      log_debug("[AST_REGISTER] Node at %p already tracked; skipping duplicate registration",
+                (void *)node);
+      return true;
+    }
+  }
+
   // Check if we need to allocate or resize the tracking array
   if (!ctx->all_ast_nodes) {
     // Initial allocation
