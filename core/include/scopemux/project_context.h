@@ -280,6 +280,11 @@ typedef struct {
   char *desired_shape;                  ///< projected signature/structure (`WI-032`)
   char *rationale;                      ///< why the node exists (`WI-032`)
   char *anchor_list;                    ///< `;`-joined anchor block ids (`WI-032`)
+
+  /// Duplicate/refactor detection (`WI-035`). Computed lazily and cached on the
+  /// block; `structural_hash_ready` guards the cached value.
+  uint64_t structural_hash;      ///< Normalized AST-structure fingerprint
+  bool structural_hash_ready;    ///< Whether `structural_hash` has been computed
 } ProjectInfoBlock;
 
 /**
