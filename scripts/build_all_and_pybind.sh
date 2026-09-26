@@ -12,7 +12,7 @@ cd "${PROJECT_ROOT_DIR}"
 echo "[build_all_and_pybind.sh] Cleaning build directory to avoid stale CMake cache..."
 rm -rf "${PROJECT_ROOT_DIR}/build"
 
-echo "[build_all_and_pybind.sh] Installing scopemux_core in editable mode..."
+echo "[build_all_and_pybind.sh] Installing scopemux in editable mode..."
 python3 -m pip install -e ./core
 
 echo "[build_all_and_pybind.sh] Build and Python binding complete."
