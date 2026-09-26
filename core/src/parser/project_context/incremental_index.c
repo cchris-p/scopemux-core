@@ -148,27 +148,41 @@ bool project_update_file_from_string(ProjectContext *project, const char *filepa
     return false;
   }
 
-  // Changed content: drop the old symbols and parser context before reparsing.
+  // Changed content: drop the old symbols, detach the old context from the
+  // array, and reparse into a replacement. Dependents are repointed at the
+  // replacement before the old context is freed so no dangling edges remain.
   if (old_ctx) {
     if (project->symbol_table) {
       symbol_table_remove_by_file(project->symbol_table, normalized);
     }
-    parser_context_free(old_ctx);
     project->file_contexts[index] = NULL;
   }
 
   ctx = parser_init();
   if (!ctx) {
+    if (old_ctx) {
+      project_context_scrub_dependency_target(project, old_ctx);
+      parser_context_free(old_ctx);
+    }
     project_set_error(project, PROJECT_ERROR_MEMORY, "Failed to allocate parser context");
     return false;
   }
 
   if (!parser_parse_string(ctx, content, content_length, normalized, language)) {
     parser_free(ctx);
+    if (old_ctx) {
+      project_context_scrub_dependency_target(project, old_ctx);
+      parser_context_free(old_ctx);
+    }
     project_set_error(project, PROJECT_ERROR_IO, "Failed to parse file");
     return false;
   }
   ctx->content_hash = new_hash;
+
+  if (old_ctx) {
+    project_context_repoint_dependency_target(project, old_ctx, ctx);
+    parser_context_free(old_ctx);
+  }
 
   if (index >= 0) {
     project->file_contexts[index] = ctx;

@@ -561,3 +561,64 @@ size_t project_get_dependencies_impl(const ProjectContext *project, const char *
   *out_dependencies = deps;
   return num_deps;
 }
+
+/**
+ * Repoint dependency edges that reference a replaced parser context.
+ *
+ * Incremental re-index parses a changed file into a new context and frees the
+ * old one. Any file that depended on the old context must be updated to the
+ * replacement so the dependency edge survives the update instead of dangling.
+ *
+ * @param project The ProjectContext
+ * @param old_ctx The context being replaced
+ * @param new_ctx The replacement context
+ */
+void project_context_repoint_dependency_target(ProjectContext *project, ParserContext *old_ctx,
+                                               ParserContext *new_ctx) {
+  if (!project || !old_ctx || old_ctx == new_ctx) {
+    return;
+  }
+
+  for (size_t i = 0; i < project->num_files; i++) {
+    ParserContext *ctx = project->file_contexts[i];
+    if (!ctx || ctx == old_ctx || !ctx->dependencies) {
+      continue;
+    }
+    for (size_t j = 0; j < ctx->num_dependencies; j++) {
+      if (ctx->dependencies[j] == old_ctx) {
+        ctx->dependencies[j] = new_ctx;
+      }
+    }
+  }
+}
+
+/**
+ * Drop dependency edges that reference a removed parser context.
+ *
+ * A removed file no longer exists in the project, so no surviving file may keep
+ * a pointer to its freed context. This compacts the dependency array in place,
+ * preserving the relative order of the remaining edges.
+ *
+ * @param project The ProjectContext
+ * @param target The context that is about to be freed
+ */
+void project_context_scrub_dependency_target(ProjectContext *project, ParserContext *target) {
+  if (!project || !target) {
+    return;
+  }
+
+  for (size_t i = 0; i < project->num_files; i++) {
+    ParserContext *ctx = project->file_contexts[i];
+    size_t write_index = 0;
+
+    if (!ctx || ctx == target || !ctx->dependencies) {
+      continue;
+    }
+    for (size_t j = 0; j < ctx->num_dependencies; j++) {
+      if (ctx->dependencies[j] != target) {
+        ctx->dependencies[write_index++] = ctx->dependencies[j];
+      }
+    }
+    ctx->num_dependencies = write_index;
+  }
+}

@@ -178,6 +178,145 @@ Test(project_context_delegation, file_management, .init = setup_project, .fini =
   cr_assert(not_found_ctx == NULL, "Removed file should not be found");
 }
 
+// --- WI-018: derived-state equivalence helpers ---
+//
+// Incremental updates must leave the derived store (IR + InfoBlocks) equal to a
+// full rebuild over the same final file set. These helpers collect a sorted,
+// content-based signature so two projects can be compared without depending on
+// file insertion order or positional (index-based) block ids.
+
+typedef struct {
+  char **items;
+  size_t count;
+  size_t capacity;
+} DerivedKeyList;
+
+static void derived_keylist_add(DerivedKeyList *list, const char *key) {
+  if (!list || !key) {
+    return;
+  }
+  if (list->count >= list->capacity) {
+    size_t new_capacity = list->capacity > 0 ? list->capacity * 2 : 16;
+    char **grown = (char **)realloc(list->items, new_capacity * sizeof(char *));
+    cr_assert(grown != NULL, "Failed to grow derived key list");
+    list->items = grown;
+    list->capacity = new_capacity;
+  }
+  list->items[list->count] = strdup(key);
+  cr_assert(list->items[list->count] != NULL, "Failed to copy derived key");
+  list->count++;
+}
+
+static int derived_key_compare(const void *a, const void *b) {
+  return strcmp(*(const char *const *)a, *(const char *const *)b);
+}
+
+static void derived_keylist_sort(DerivedKeyList *list) {
+  if (list && list->count > 1) {
+    qsort(list->items, list->count, sizeof(char *), derived_key_compare);
+  }
+}
+
+static void derived_keylist_free(DerivedKeyList *list) {
+  if (!list) {
+    return;
+  }
+  for (size_t i = 0; i < list->count; i++) {
+    free(list->items[i]);
+  }
+  free(list->items);
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static void derived_collect_ir(const ProjectIRSnapshot *snapshot, DerivedKeyList *keys) {
+  char line[2048];
+
+  for (size_t i = 0; i < snapshot->symbol_count; i++) {
+    const ProjectSymbolIR *symbol = &snapshot->symbols[i];
+    snprintf(line, sizeof(line), "sym|%s|%s|%d|%d", symbol->file_path ? symbol->file_path : "",
+             symbol->qualified_name ? symbol->qualified_name : "", (int)symbol->type,
+             (int)symbol->visibility);
+    derived_keylist_add(keys, line);
+  }
+
+  for (size_t i = 0; i < snapshot->resolved_reference_count; i++) {
+    const ProjectResolvedReferenceIR *ref = &snapshot->resolved_references[i];
+    snprintf(line, sizeof(line), "ref|%s|%s|%s", ref->owner_symbol ? ref->owner_symbol : "",
+             ref->target_symbol ? ref->target_symbol : "",
+             ref->target_file_path ? ref->target_file_path : "");
+    derived_keylist_add(keys, line);
+  }
+
+  for (size_t i = 0; i < snapshot->call_graph_edge_count; i++) {
+    const ProjectCallGraphEdgeIR *edge = &snapshot->call_graph_edges[i];
+    snprintf(line, sizeof(line), "call|%s|%s|%s|%s", edge->caller_symbol ? edge->caller_symbol : "",
+             edge->callee_symbol ? edge->callee_symbol : "",
+             edge->caller_file_path ? edge->caller_file_path : "",
+             edge->callee_file_path ? edge->callee_file_path : "");
+    derived_keylist_add(keys, line);
+  }
+
+  for (size_t i = 0; i < snapshot->dependency_count; i++) {
+    const ProjectDependencyIR *edge = &snapshot->dependencies[i];
+    snprintf(line, sizeof(line), "dep|%s|%s|%s|%d",
+             edge->source_file_path ? edge->source_file_path : "",
+             edge->target_file_path ? edge->target_file_path : "",
+             edge->specifier ? edge->specifier : "", (int)edge->kind);
+    derived_keylist_add(keys, line);
+  }
+}
+
+static void derived_collect_info_blocks(const ProjectInfoBlockRegistry *registry,
+                                        DerivedKeyList *keys) {
+  char line[2048];
+
+  for (size_t i = 0; i < registry->block_count; i++) {
+    const ProjectInfoBlock *block = &registry->blocks[i];
+    if (block->kind == PROJECT_INFO_BLOCK_REFERENCE) {
+      // Reference block ids embed a positional index, so compare their content.
+      snprintf(line, sizeof(line), "ib|ref|%s", block->name ? block->name : "");
+    } else {
+      snprintf(line, sizeof(line), "ib|%s", block->id ? block->id : "?");
+    }
+    derived_keylist_add(keys, line);
+  }
+}
+
+static void derived_snapshot(ProjectContext *project, DerivedKeyList *keys) {
+  const ProjectIRSnapshot *ir;
+  const ProjectInfoBlockRegistry *registry;
+
+  cr_assert(project_context_rebuild_ir(project), "Derived IR should rebuild");
+  ir = project_context_get_ir(project);
+  cr_assert_not_null(ir, "Derived IR should be available");
+  derived_collect_ir(ir, keys);
+
+  registry = project_context_get_info_block_registry(project);
+  cr_assert_not_null(registry, "Derived InfoBlock registry should be available");
+  derived_collect_info_blocks(registry, keys);
+
+  derived_keylist_sort(keys);
+}
+
+static char *derived_keys_join(const DerivedKeyList *list) {
+  size_t total = 1;
+  char *joined;
+
+  for (size_t i = 0; i < list->count; i++) {
+    total += strlen(list->items[i]) + 1;
+  }
+  joined = (char *)malloc(total);
+  cr_assert(joined != NULL, "Failed to join derived keys");
+  joined[0] = '\0';
+  for (size_t i = 0; i < list->count; i++) {
+    strcat(joined, list->items[i]);
+    strcat(joined, "\n");
+  }
+  return joined;
+}
+
 // WI-018: incremental update skips unchanged content and re-parses changed content.
 Test(project_context_delegation, incremental_update_noop_and_change, .init = setup_project,
      .fini = teardown_project) {
@@ -257,6 +396,165 @@ Test(project_context_delegation, incremental_update_preserves_durable_plan_nodes
   cr_assert_eq(project_context_get_plan_node_count(project), 1,
                "Removal must not wipe durable plan nodes");
   cr_assert_not(project->ir_ready, "Removal must invalidate derived IR");
+}
+
+// WI-018: updating a file in place must leave the derived store equal to a full
+// rebuild, and must repoint dependents instead of leaving a dangling edge.
+Test(project_context_delegation, incremental_equivalence_after_modify, .init = setup_project,
+     .fini = teardown_project) {
+  const char *a_v1 = "int alpha(void) { return 0; }\n";
+  const char *b_v1 = "int beta(void) { return 1; }\n";
+  const char *b_v2 = "int gamma(void) { return 2; }\n";
+  char a_path[512];
+  char b_path[512];
+  ProjectContext *full;
+  DerivedKeyList inc_keys = {0};
+  DerivedKeyList full_keys = {0};
+  char *inc_sig;
+  char *full_sig;
+  bool changed = false;
+
+  join_test_project_path("eq_mod_a.c", a_path, sizeof(a_path));
+  join_test_project_path("eq_mod_b.c", b_path, sizeof(b_path));
+
+  full = project_context_create(test_project_abspath);
+  cr_assert_not_null(full, "Full-rebuild project should be created");
+
+  // Incremental path: create both files, link a -> b, then replace b in place.
+  cr_assert(project_update_file_from_string(project, a_path, a_v1, strlen(a_v1), LANG_C, &changed),
+            "Creating a.c incrementally should succeed");
+  cr_assert(project_update_file_from_string(project, b_path, b_v1, strlen(b_v1), LANG_C, &changed),
+            "Creating b.c incrementally should succeed");
+  cr_assert(project_context_add_dependency(project, a_path, b_path),
+            "Dependency a -> b should be added");
+  cr_assert(project_update_file_from_string(project, b_path, b_v2, strlen(b_v2), LANG_C, &changed),
+            "Replacing b.c should succeed");
+  cr_assert(changed, "Replacing b.c should report a change");
+
+  {
+    ParserContext *a_ctx = project_get_file_context(project, a_path);
+    ParserContext *b_ctx = project_get_file_context(project, b_path);
+    cr_assert_not_null(a_ctx, "a.c context should still exist");
+    cr_assert_not_null(b_ctx, "b.c replacement context should exist");
+    cr_assert_eq(a_ctx->num_dependencies, 1, "a.c should still depend on b.c after replacement");
+    cr_assert(a_ctx->dependencies[0] == b_ctx,
+              "Dependency a -> b must be repointed at the replacement b.c context");
+  }
+
+  // Full path: the same final files and edges, built from scratch.
+  cr_assert(project_update_file_from_string(full, a_path, a_v1, strlen(a_v1), LANG_C, &changed),
+            "Full rebuild should parse a.c");
+  cr_assert(project_update_file_from_string(full, b_path, b_v2, strlen(b_v2), LANG_C, &changed),
+            "Full rebuild should parse b.c");
+  cr_assert(project_context_add_dependency(full, a_path, b_path),
+            "Full rebuild should add dependency a -> b");
+
+  derived_snapshot(project, &inc_keys);
+  derived_snapshot(full, &full_keys);
+  inc_sig = derived_keys_join(&inc_keys);
+  full_sig = derived_keys_join(&full_keys);
+
+  cr_assert(strcmp(inc_sig, full_sig) == 0,
+            "Incremental modify must equal a full rebuild:\n--- incremental ---\n%s--- full ---\n%s",
+            inc_sig, full_sig);
+
+  free(inc_sig);
+  free(full_sig);
+  derived_keylist_free(&inc_keys);
+  derived_keylist_free(&full_keys);
+  project_context_free(full);
+}
+
+// WI-018: deleting a file must remove its derived nodes and edges and drop
+// reverse edges from surviving files, matching a full rebuild; it must not wipe
+// durable plan state or lose it when the derived cache is cleared.
+Test(project_context_delegation, incremental_equivalence_after_delete, .init = setup_project,
+     .fini = teardown_project) {
+  const char *a_v = "int alpha(void) { return 0; }\n";
+  const char *b_v = "int beta(void) { return 1; }\n";
+  const char *c_v = "int gamma(void) { return 2; }\n";
+  char a_path[512];
+  char b_path[512];
+  char c_path[512];
+  ProjectContext *full;
+  DerivedKeyList inc_keys = {0};
+  DerivedKeyList full_keys = {0};
+  DerivedKeyList rebuilt_keys = {0};
+  char *inc_sig;
+  char *full_sig;
+  char *rebuilt_sig;
+  bool changed = false;
+
+  join_test_project_path("eq_del_a.c", a_path, sizeof(a_path));
+  join_test_project_path("eq_del_b.c", b_path, sizeof(b_path));
+  join_test_project_path("eq_del_c.c", c_path, sizeof(c_path));
+
+  full = project_context_create(test_project_abspath);
+  cr_assert_not_null(full, "Full-rebuild project should be created");
+
+  // Incremental path: create a, b, c; link a -> b and a -> c; delete b.
+  cr_assert(project_update_file_from_string(project, a_path, a_v, strlen(a_v), LANG_C, &changed),
+            "Creating a.c incrementally should succeed");
+  cr_assert(project_update_file_from_string(project, b_path, b_v, strlen(b_v), LANG_C, &changed),
+            "Creating b.c incrementally should succeed");
+  cr_assert(project_update_file_from_string(project, c_path, c_v, strlen(c_v), LANG_C, &changed),
+            "Creating c.c incrementally should succeed");
+  cr_assert(project_context_add_dependency(project, a_path, b_path),
+            "Dependency a -> b should be added");
+  cr_assert(project_context_add_dependency(project, a_path, c_path),
+            "Dependency a -> c should be added");
+  cr_assert_not_null(project_context_plan_node_create(project, "TASK-EQ", "keep-me",
+                                                      PROJECT_PLAN_NODE_NEW_SYMBOL),
+                     "Plan node should be created");
+  cr_assert(project_context_remove_file(project, b_path), "Deleting b.c should succeed");
+  cr_assert_eq(project_context_get_plan_node_count(project), 1,
+               "Deleting a file must not wipe durable plan nodes");
+
+  {
+    ParserContext *a_ctx = project_get_file_context(project, a_path);
+    ParserContext *c_ctx = project_get_file_context(project, c_path);
+    cr_assert_not_null(a_ctx, "a.c context should survive b.c deletion");
+    cr_assert_not_null(c_ctx, "c.c context should survive b.c deletion");
+    cr_assert_eq(a_ctx->num_dependencies, 1, "Deleting b.c must drop the a -> b dependency");
+    cr_assert(a_ctx->dependencies[0] == c_ctx, "The a -> c dependency must survive b.c deletion");
+  }
+
+  // Full path: the surviving files and edges only.
+  cr_assert(project_update_file_from_string(full, a_path, a_v, strlen(a_v), LANG_C, &changed),
+            "Full rebuild should parse a.c");
+  cr_assert(project_update_file_from_string(full, c_path, c_v, strlen(c_v), LANG_C, &changed),
+            "Full rebuild should parse c.c");
+  cr_assert(project_context_add_dependency(full, a_path, c_path),
+            "Full rebuild should add dependency a -> c");
+  cr_assert_not_null(project_context_plan_node_create(full, "TASK-EQ", "keep-me",
+                                                      PROJECT_PLAN_NODE_NEW_SYMBOL),
+                     "Full rebuild should hold the same plan node");
+
+  derived_snapshot(project, &inc_keys);
+  derived_snapshot(full, &full_keys);
+  inc_sig = derived_keys_join(&inc_keys);
+  full_sig = derived_keys_join(&full_keys);
+
+  cr_assert(strcmp(inc_sig, full_sig) == 0,
+            "Incremental delete must equal a full rebuild:\n--- incremental ---\n%s--- full ---\n%s",
+            inc_sig, full_sig);
+
+  // Deleting the derived cache must not change the derived result or map state.
+  project_context_clear_ir(project);
+  derived_snapshot(project, &rebuilt_keys);
+  rebuilt_sig = derived_keys_join(&rebuilt_keys);
+  cr_assert(strcmp(rebuilt_sig, inc_sig) == 0,
+            "Rebuilding a cleared derived cache must reproduce the same derived state");
+  cr_assert_eq(project_context_get_plan_node_count(project), 1,
+               "Clearing the derived cache must not lose plan state");
+
+  free(inc_sig);
+  free(full_sig);
+  free(rebuilt_sig);
+  derived_keylist_free(&inc_keys);
+  derived_keylist_free(&full_keys);
+  derived_keylist_free(&rebuilt_keys);
+  project_context_free(full);
 }
 
 // Test dependency tracking
