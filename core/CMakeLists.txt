@@ -74,6 +74,7 @@ add_library(parser_core_obj OBJECT
     src/parser/project_context/symbol_collection.c
     src/parser/project_context/file_management.c
     src/parser/project_context/dependency_management.c
+    src/parser/project_context/incremental_index.c
     src/parser/project_context.c
     # Tree-sitter integration
     src/parser/ts_init.c

@@ -395,5 +395,10 @@ bool project_remove_file_impl(ProjectContext *project, const char *filepath) {
   }
 
   log_debug("Removed file from project: %s", SAFE_STR(normalized_path));
+
+  // Derived IR / InfoBlock / search caches no longer reflect the project.
+  // Durable plan nodes are intentionally left in place (WI-018 / WI-031).
+  project_context_clear_ir(project);
+
   return true;
 }

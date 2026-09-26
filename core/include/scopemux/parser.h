@@ -172,6 +172,15 @@ typedef struct ParserContext {
    * Set to LOG_ERROR, LOG_DEBUG, etc. to control output.
    */
   LogLevel log_level;
+
+  /**
+   * @brief Hash of the parsed source content (0 when never computed).
+   *
+   * Used by incremental indexing to skip re-parsing a file whose content has
+   * not changed. Set by the parser after a successful parse and by
+   * project_update_file* when content is supplied directly.
+   */
+  uint64_t content_hash;
 } ParserContext;
 
 /**

@@ -178,6 +178,87 @@ Test(project_context_delegation, file_management, .init = setup_project, .fini =
   cr_assert(not_found_ctx == NULL, "Removed file should not be found");
 }
 
+// WI-018: incremental update skips unchanged content and re-parses changed content.
+Test(project_context_delegation, incremental_update_noop_and_change, .init = setup_project,
+     .fini = teardown_project) {
+  const char *v1 = "int alpha;\n";
+  const char *v2 = "int beta;\n";
+  char path[512];
+  bool changed = false;
+  ParserContext *first_ctx;
+  ParserContext *second_ctx;
+
+  join_test_project_path("inc_a.c", path, sizeof(path));
+
+  cr_assert(project_update_file_from_string(project, path, v1, strlen(v1), LANG_C, &changed),
+            "Initial incremental parse should succeed");
+  cr_assert(changed, "First update should report a change");
+  cr_assert_eq(project->num_files, 1, "Project should hold one file");
+
+  cr_assert(project_file_is_unchanged(project, path, v1, strlen(v1)),
+            "Identical content should be detected as unchanged");
+  cr_assert_not(project_file_is_unchanged(project, path, v2, strlen(v2)),
+                "Different content should be detected as changed");
+
+  first_ctx = project_get_file_context(project, path);
+  cr_assert_not_null(first_ctx, "File context should be retrievable");
+
+  // No-op: same content must not replace the context or invalidate derived state.
+  cr_assert(project_context_rebuild_ir(project), "IR should rebuild before the no-op");
+  cr_assert(project->ir_ready, "IR should be ready before the no-op");
+
+  changed = true;
+  cr_assert(project_update_file_from_string(project, path, v1, strlen(v1), LANG_C, &changed),
+            "No-op update should succeed");
+  cr_assert_not(changed, "Unchanged content must not report a change");
+  cr_assert_eq(project->num_files, 1, "No-op update must not add a file");
+  cr_assert(project_get_file_context(project, path) == first_ctx,
+            "No-op update must not replace the parser context");
+  cr_assert(project->ir_ready, "No-op update must not invalidate derived IR");
+
+  // Change: new content re-parses in place and invalidates derived state.
+  changed = false;
+  cr_assert(project_update_file_from_string(project, path, v2, strlen(v2), LANG_C, &changed),
+            "Changed update should succeed");
+  cr_assert(changed, "Changed content should report a change");
+  cr_assert_eq(project->num_files, 1, "Changed update must replace in place");
+  cr_assert_not(project->ir_ready, "Changed update must invalidate derived IR");
+
+  second_ctx = project_get_file_context(project, path);
+  cr_assert_not_null(second_ctx, "Updated file context should be retrievable");
+  cr_assert(second_ctx != first_ctx, "Changed update should replace the parser context");
+  cr_assert_not_null(second_ctx->source_code, "Updated context should hold source");
+  cr_assert(strstr(second_ctx->source_code, "beta") != NULL, "Updated source should be parsed");
+}
+
+// WI-018: incremental re-index reconciles durable state instead of wiping it.
+Test(project_context_delegation, incremental_update_preserves_durable_plan_nodes,
+     .init = setup_project, .fini = teardown_project) {
+  const char *v1 = "int alpha;\n";
+  const char *v2 = "int beta;\n";
+  char path[512];
+  bool changed = false;
+
+  join_test_project_path("inc_b.c", path, sizeof(path));
+
+  cr_assert(project_update_file_from_string(project, path, v1, strlen(v1), LANG_C, &changed),
+            "Initial incremental parse should succeed");
+  cr_assert_not_null(project_context_plan_node_create(project, "TASK-I", "add-store",
+                                                      PROJECT_PLAN_NODE_NEW_SYMBOL),
+                     "Plan node should be created");
+  cr_assert_eq(project_context_get_plan_node_count(project), 1, "Plan store should hold one node");
+
+  cr_assert(project_update_file_from_string(project, path, v2, strlen(v2), LANG_C, &changed),
+            "Changed update should succeed");
+  cr_assert_eq(project_context_get_plan_node_count(project), 1,
+               "Incremental re-index must not wipe durable plan nodes");
+
+  cr_assert(project_context_remove_file(project, path), "File removal should succeed");
+  cr_assert_eq(project_context_get_plan_node_count(project), 1,
+               "Removal must not wipe durable plan nodes");
+  cr_assert_not(project->ir_ready, "Removal must invalidate derived IR");
+}
+
 // Test dependency tracking
 Test(project_context_delegation, dependency_management, .init = setup_project,
      .fini = teardown_project) {
