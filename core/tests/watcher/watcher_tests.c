@@ -246,3 +246,147 @@ Test(watcher, apply_batch_updates_project, .init = setup_watch, .fini = teardown
   project_context_free(project);
   project_watcher_free(watcher);
 }
+
+#if defined(__linux__)
+
+static long long native_test_now_ms(void) {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (long long)ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+}
+
+// Poll the native watcher until an event of the requested kind arrives or the
+// timeout elapses. Optionally copies the matching path into out_path.
+static bool native_poll_for(ProjectNativeWatcher *watcher, ProjectWatchEventKind kind,
+                            char *out_path, size_t out_size, int timeout_ms) {
+  long long start = native_test_now_ms();
+
+  while (native_test_now_ms() - start < timeout_ms) {
+    ProjectWatchBatch batch = {0};
+    bool matched = false;
+
+    if (!project_native_watcher_poll(watcher, 100, &batch)) {
+      project_watch_batch_free(&batch);
+      return false;
+    }
+    for (size_t i = 0; i < batch.event_count; i++) {
+      if (batch.events[i].kind == kind && batch.events[i].file_path) {
+        if (out_path && out_size > 0) {
+          snprintf(out_path, out_size, "%s", batch.events[i].file_path);
+        }
+        matched = true;
+        break;
+      }
+    }
+    project_watch_batch_free(&batch);
+    if (matched) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// WI-018: the Linux inotify backend detects create, modify, and delete.
+Test(watcher, native_inotify_detects_create_modify_delete, .init = setup_watch,
+     .fini = teardown_watch) {
+  const char *extensions[] = {"c", NULL};
+  ProjectWatcherConfig config = {0};
+  ProjectNativeWatcher *watcher;
+  char event_path[600] = {0};
+
+  config.extensions = extensions;
+  config.recursive = true;
+  config.debounce_ms = 0;
+
+  write_file("a.c", "int a;\n", 100);
+  watcher = project_native_watcher_create(test_root, &config);
+  cr_assert_not_null(watcher, "inotify backend should be available on Linux");
+  cr_assert_eq(project_native_watcher_backend(watcher), PROJECT_NATIVE_WATCHER_INOTIFY,
+               "backend should be inotify");
+
+  write_file("b.c", "int b;\n", 200);
+  cr_assert(native_poll_for(watcher, PROJECT_WATCH_EVENT_CREATED, event_path, sizeof(event_path),
+                            3000),
+            "inotify should detect a created file");
+  cr_assert(strstr(event_path, "b.c") != NULL, "created path should be b.c");
+
+  write_file("a.c", "int a2;\n", 300);
+  cr_assert(native_poll_for(watcher, PROJECT_WATCH_EVENT_MODIFIED, event_path, sizeof(event_path),
+                            3000),
+            "inotify should detect a modified file");
+  cr_assert(strstr(event_path, "a.c") != NULL, "modified path should be a.c");
+
+  remove_file("b.c");
+  cr_assert(native_poll_for(watcher, PROJECT_WATCH_EVENT_DELETED, event_path, sizeof(event_path),
+                            3000),
+            "inotify should detect a deleted file");
+  cr_assert(strstr(event_path, "b.c") != NULL, "deleted path should be b.c");
+
+  project_native_watcher_free(watcher);
+}
+
+// WI-018: the native backend reuses the same no-op gating as the polling scan.
+Test(watcher, native_inotify_suppresses_noop_write, .init = setup_watch, .fini = teardown_watch) {
+  const char *extensions[] = {"c", NULL};
+  ProjectWatcherConfig config = {0};
+  ProjectNativeWatcher *watcher;
+
+  config.extensions = extensions;
+  config.recursive = true;
+  config.debounce_ms = 0;
+
+  write_file("a.c", "int a;\n", 100);
+  watcher = project_native_watcher_create(test_root, &config);
+  cr_assert_not_null(watcher, "inotify backend should be available on Linux");
+
+  write_file("a.c", "int a;\n", 400);
+  cr_assert_not(native_poll_for(watcher, PROJECT_WATCH_EVENT_MODIFIED, NULL, 0, 800),
+                "a write with identical content must not be reported");
+
+  project_native_watcher_free(watcher);
+}
+
+// WI-018: a native batch applies to a project like a polling batch.
+Test(watcher, native_inotify_apply_updates_project, .init = setup_watch, .fini = teardown_watch) {
+  const char *extensions[] = {"c", NULL};
+  ProjectWatcherConfig config = {0};
+  ProjectNativeWatcher *watcher;
+  ProjectWatchBatch batch = {0};
+  ProjectContext *project;
+  char a_path[600];
+  bool changed = false;
+  size_t applied = 0;
+
+  config.extensions = extensions;
+  config.recursive = true;
+  config.debounce_ms = 0;
+
+  write_file("a.c", "int alpha(void) { return 0; }\n", 100);
+  join_path("a.c", a_path, sizeof(a_path));
+
+  project = project_context_create(test_root);
+  cr_assert_not_null(project, "Project should be created");
+  cr_assert(project_update_file(project, a_path, LANG_C, &changed), "a.c should parse");
+
+  watcher = project_native_watcher_create(test_root, &config);
+  cr_assert_not_null(watcher, "inotify backend should be available on Linux");
+
+  write_file("b.c", "int beta(void) { return 1; }\n", 200);
+
+  {
+    long long start = native_test_now_ms();
+    while (batch.event_count == 0 && native_test_now_ms() - start < 3000) {
+      project_watch_batch_free(&batch);
+      cr_assert(project_native_watcher_poll(watcher, 100, &batch), "Poll should succeed");
+    }
+    cr_assert(batch.event_count >= 1, "A committed create event should be available");
+    cr_assert(project_watcher_apply_batch(project, &batch, &applied), "Batch should apply");
+    cr_assert_eq(project->num_files, 2, "Project should hold two files");
+    project_watch_batch_free(&batch);
+  }
+
+  project_context_free(project);
+  project_native_watcher_free(watcher);
+}
+
+#endif /* __linux__ */
