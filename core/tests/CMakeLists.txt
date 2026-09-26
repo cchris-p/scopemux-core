@@ -217,6 +217,11 @@ add_scopemux_test(project_context_tests
     project_context/project_context_tests.c
 )
 
+# Filesystem Watcher Tests
+add_scopemux_test(watcher_tests
+    watcher/watcher_tests.c
+)
+
 # Resolver Registration Tests
 add_scopemux_test(resolver_registration_tests reference_resolvers/resolver_registration_tests.c)
 
