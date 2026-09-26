@@ -135,6 +135,26 @@ typedef struct {
  * Array storage is owned by the ProjectContext. Entry fields borrow strings and
  * AST node pointers from parser contexts already stored in the project.
  */
+/**
+ * @brief Contiguous slice of `ProjectIRSnapshot` arrays owned by one file.
+ *
+ * Entries are stored grouped by file in file order, so a file owns a
+ * contiguous range in each array. Incremental rebuilds use these ranges to
+ * retain a clean file's entries without re-deriving them and without reading
+ * fields of entries owned by a recomputed (possibly freed) file.
+ */
+typedef struct {
+  char *file_path; ///< Owned copy of the file path for this range
+  size_t symbol_start;
+  size_t symbol_count;
+  size_t reference_start;
+  size_t reference_count;
+  size_t call_edge_start;
+  size_t call_edge_count;
+  size_t dependency_start;
+  size_t dependency_count;
+} ProjectFileIRRange;
+
 typedef struct {
   ProjectSymbolIR *symbols;
   size_t symbol_count;
@@ -144,7 +164,22 @@ typedef struct {
   size_t call_graph_edge_count;
   ProjectDependencyIR *dependencies;
   size_t dependency_count;
+  ProjectFileIRRange *file_ranges; ///< Per-file array slices (`WI-018`)
+  size_t file_range_count;
 } ProjectIRSnapshot;
+
+/**
+ * @brief Reverse dependency edge used by incremental indexing (`WI-018`).
+ *
+ * Records that @c source_file references or depends on @c target_file. The
+ * index is rebuilt from the current IR snapshot and drives the dirty-set
+ * closure when a file changes or is removed, so dependents and referrers are
+ * recomputed instead of being retained with dangling pointers.
+ */
+typedef struct {
+  char *source_file; ///< File that owns the reference or dependency edge
+  char *target_file; ///< File the edge points at
+} ProjectReverseEdge;
 
 /**
  * @brief Canonical InfoBlock kinds derived from project IR.
@@ -471,6 +506,21 @@ typedef struct ProjectContext {
   ProjectSearchIndexEntry *search_index_entries;
   size_t search_index_entry_count;
   bool search_index_ready;
+
+  // Incremental indexing state (WI-018). Reverse edges drive the dirty-set
+  // closure; the pending dirty set is expanded when a file is marked dirty and
+  // consumed by the next incremental IR rebuild. The IR arrays are retained
+  // across a dirty mark so clean files are not recomputed.
+  ProjectReverseEdge *reverse_edges; ///< Reverse reference/dependency edges
+  size_t reverse_edge_count;
+  size_t reverse_edge_capacity;
+  char **dirty_files; ///< Pending dirty file set (absolute/normalized paths)
+  size_t dirty_count;
+  size_t dirty_capacity;
+  bool ir_snapshot_retained; ///< IR arrays hold a complete previous snapshot
+  size_t last_recomputed_file_count; ///< Files recomputed by the last IR rebuild
+  size_t last_rebuild_file_count;    ///< Files present during the last IR rebuild
+  bool last_rebuild_incremental;     ///< Whether the last IR rebuild was incremental
 } ProjectContext;
 
 /**
@@ -761,6 +811,34 @@ bool project_context_rebuild_ir(ProjectContext *project);
  * @return const ProjectIRSnapshot* Snapshot or NULL when unavailable
  */
 const ProjectIRSnapshot *project_context_get_ir(const ProjectContext *project);
+
+/**
+ * @brief Number of files recomputed by the most recent IR rebuild (`WI-018`).
+ *
+ * A full rebuild recomputes every file; an incremental rebuild recomputes only
+ * the dirty set (the changed or removed file plus its transitive dependents and
+ * referrers). Useful for asserting selective recomputation.
+ *
+ * @param project Project context
+ * @return size_t Recomputed file count
+ */
+size_t project_context_last_recomputed_file_count(const ProjectContext *project);
+
+/**
+ * @brief Number of files present during the most recent IR rebuild (`WI-018`).
+ *
+ * @param project Project context
+ * @return size_t File count
+ */
+size_t project_context_last_rebuild_file_count(const ProjectContext *project);
+
+/**
+ * @brief Whether the most recent IR rebuild was incremental (`WI-018`).
+ *
+ * @param project Project context
+ * @return bool True when the rebuild reused retained clean-file entries
+ */
+bool project_context_last_rebuild_was_incremental(const ProjectContext *project);
 
 /**
  * @brief Rebuild the canonical InfoBlock registry from current project IR.

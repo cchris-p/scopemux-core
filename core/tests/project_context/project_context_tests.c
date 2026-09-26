@@ -477,9 +477,11 @@ Test(project_context_delegation, incremental_equivalence_after_delete, .init = s
   char b_path[512];
   char c_path[512];
   ProjectContext *full;
+  DerivedKeyList base_keys = {0};
   DerivedKeyList inc_keys = {0};
   DerivedKeyList full_keys = {0};
   DerivedKeyList rebuilt_keys = {0};
+  char *base_sig;
   char *inc_sig;
   char *full_sig;
   char *rebuilt_sig;
@@ -506,6 +508,13 @@ Test(project_context_delegation, incremental_equivalence_after_delete, .init = s
   cr_assert_not_null(project_context_plan_node_create(project, "TASK-EQ", "keep-me",
                                                       PROJECT_PLAN_NODE_NEW_SYMBOL),
                      "Plan node should be created");
+
+  // Establish a retained snapshot so the delete rebuilds incrementally.
+  derived_snapshot(project, &base_keys);
+  base_sig = derived_keys_join(&base_keys);
+  cr_assert_not(project_context_last_rebuild_was_incremental(project),
+                "The baseline rebuild should be a full rebuild");
+
   cr_assert(project_context_remove_file(project, b_path), "Deleting b.c should succeed");
   cr_assert_eq(project_context_get_plan_node_count(project), 1,
                "Deleting a file must not wipe durable plan nodes");
@@ -535,6 +544,13 @@ Test(project_context_delegation, incremental_equivalence_after_delete, .init = s
   inc_sig = derived_keys_join(&inc_keys);
   full_sig = derived_keys_join(&full_keys);
 
+  cr_assert(project_context_last_rebuild_was_incremental(project),
+            "The rebuild after a tracked delete should be incremental");
+  cr_assert_eq(project_context_last_rebuild_file_count(project), 2,
+               "Two files should survive the delete");
+  cr_assert_eq(project_context_last_recomputed_file_count(project), 1,
+               "Only a (dependent of the deleted b) should be recomputed");
+  cr_assert(strcmp(base_sig, inc_sig) != 0, "Deleting b should change the derived signature");
   cr_assert(strcmp(inc_sig, full_sig) == 0,
             "Incremental delete must equal a full rebuild:\n--- incremental ---\n%s--- full ---\n%s",
             inc_sig, full_sig);
@@ -548,13 +564,190 @@ Test(project_context_delegation, incremental_equivalence_after_delete, .init = s
   cr_assert_eq(project_context_get_plan_node_count(project), 1,
                "Clearing the derived cache must not lose plan state");
 
+  free(base_sig);
   free(inc_sig);
   free(full_sig);
   free(rebuilt_sig);
+  derived_keylist_free(&base_keys);
   derived_keylist_free(&inc_keys);
   derived_keylist_free(&full_keys);
   derived_keylist_free(&rebuilt_keys);
   project_context_free(full);
+}
+
+// WI-018: an incremental rebuild must recompute only the dirty files (the
+// changed file plus its dependents/referrers) and reproduce a full rebuild.
+Test(project_context_delegation, incremental_rebuild_reuses_clean_files, .init = setup_project,
+     .fini = teardown_project) {
+  const char *a_v = "int alpha(void) { return 0; }\n";
+  const char *b_v = "int beta(void) { return 1; }\n";
+  const char *c_v1 = "int gamma(void) { return 2; }\n";
+  const char *c_v2 = "int delta(void) { return 3; }\n";
+  char a_path[512];
+  char b_path[512];
+  char c_path[512];
+  ProjectContext *full;
+  DerivedKeyList before_keys = {0};
+  DerivedKeyList inc_keys = {0};
+  DerivedKeyList full_keys = {0};
+  char *before_sig;
+  char *inc_sig;
+  char *full_sig;
+  bool changed = false;
+
+  join_test_project_path("inc_reuse_a.c", a_path, sizeof(a_path));
+  join_test_project_path("inc_reuse_b.c", b_path, sizeof(b_path));
+  join_test_project_path("inc_reuse_c.c", c_path, sizeof(c_path));
+
+  // Baseline: a, b, c with a depending on b and c.
+  cr_assert(project_update_file_from_string(project, a_path, a_v, strlen(a_v), LANG_C, &changed),
+            "Creating a.c should succeed");
+  cr_assert(project_update_file_from_string(project, b_path, b_v, strlen(b_v), LANG_C, &changed),
+            "Creating b.c should succeed");
+  cr_assert(project_update_file_from_string(project, c_path, c_v1, strlen(c_v1), LANG_C, &changed),
+            "Creating c.c should succeed");
+  cr_assert(project_context_add_dependency(project, a_path, b_path),
+            "Dependency a -> b should be added");
+  cr_assert(project_context_add_dependency(project, a_path, c_path),
+            "Dependency a -> c should be added");
+
+  derived_snapshot(project, &before_keys);
+  before_sig = derived_keys_join(&before_keys);
+  cr_assert_not(project_context_last_rebuild_was_incremental(project),
+                "The baseline rebuild should be a full rebuild");
+
+  // Change c: a depends on c, so a and c are dirty; b is unrelated and clean.
+  cr_assert(project_update_file_from_string(project, c_path, c_v2, strlen(c_v2), LANG_C, &changed),
+            "Changing c.c should succeed");
+  cr_assert(changed, "Changing c.c should report a change");
+  cr_assert_not(project->ir_ready, "A change must invalidate the derived IR");
+
+  derived_snapshot(project, &inc_keys);
+  inc_sig = derived_keys_join(&inc_keys);
+  cr_assert(project_context_last_rebuild_was_incremental(project),
+            "A rebuild after a tracked change should be incremental");
+  cr_assert_eq(project_context_last_rebuild_file_count(project), 3, "Three files should be present");
+  cr_assert_eq(project_context_last_recomputed_file_count(project), 2,
+               "Only a (dependent) and c (changed) should be recomputed; b must be retained");
+  cr_assert(strcmp(before_sig, inc_sig) != 0, "Changing c should change the derived signature");
+
+  // A from-scratch rebuild over the final file set must match the incremental one.
+  full = project_context_create(test_project_abspath);
+  cr_assert_not_null(full, "Full-rebuild project should be created");
+  cr_assert(project_update_file_from_string(full, a_path, a_v, strlen(a_v), LANG_C, &changed),
+            "Full rebuild should parse a.c");
+  cr_assert(project_update_file_from_string(full, b_path, b_v, strlen(b_v), LANG_C, &changed),
+            "Full rebuild should parse b.c");
+  cr_assert(project_update_file_from_string(full, c_path, c_v2, strlen(c_v2), LANG_C, &changed),
+            "Full rebuild should parse c.c");
+  cr_assert(project_context_add_dependency(full, a_path, b_path),
+            "Full rebuild should add a -> b");
+  cr_assert(project_context_add_dependency(full, a_path, c_path),
+            "Full rebuild should add a -> c");
+
+  derived_snapshot(full, &full_keys);
+  full_sig = derived_keys_join(&full_keys);
+  cr_assert(strcmp(inc_sig, full_sig) == 0,
+            "Incremental rebuild must equal a full rebuild:\n--- incremental ---\n%s--- full ---\n%s",
+            inc_sig, full_sig);
+
+  free(before_sig);
+  free(inc_sig);
+  free(full_sig);
+  derived_keylist_free(&before_keys);
+  derived_keylist_free(&inc_keys);
+  derived_keylist_free(&full_keys);
+  project_context_free(full);
+}
+
+// WI-018: the dirty closure must include files that reference the changed file
+// (not only importers), so retained reference targets never dangle.
+Test(project_context_delegation, reverse_edge_closure_includes_referrers, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *a_ctx = parser_init();
+  ParserContext *b_ctx = parser_init();
+  ParserContext *c_ctx = parser_init();
+  ASTNode *a_fn;
+  ASTNode *b_fn;
+  ASTNode *c_fn;
+  ASTNode *ref;
+  char a_path[512];
+  char b_path[512];
+  char c_path[512];
+  DerivedKeyList before_keys = {0};
+  DerivedKeyList after_keys = {0};
+  char *before_sig;
+  char *after_sig;
+  bool saw_a = false;
+  bool saw_b = false;
+  bool saw_c = false;
+
+  cr_assert(a_ctx != NULL && b_ctx != NULL && c_ctx != NULL, "Parser contexts should be created");
+
+  join_test_project_path("ref_a.c", a_path, sizeof(a_path));
+  join_test_project_path("ref_b.c", b_path, sizeof(b_path));
+  join_test_project_path("ref_c.c", c_path, sizeof(c_path));
+
+  a_ctx->filename = strdup(a_path);
+  a_ctx->language = LANG_C;
+  b_ctx->filename = strdup(b_path);
+  b_ctx->language = LANG_C;
+  c_ctx->filename = strdup(c_path);
+  c_ctx->language = LANG_C;
+
+  a_fn = make_named_node(NODE_FUNCTION, "caller", "caller", a_path);
+  b_fn = make_named_node(NODE_FUNCTION, "helper", "helper", b_path);
+  c_fn = make_named_node(NODE_FUNCTION, "other", "other", c_path);
+  ref = make_named_node(NODE_IDENTIFIER, "helper", "helper", a_path);
+  cr_assert(ast_node_add_child(a_fn, ref), "Call reference should be attached");
+  cr_assert(ast_node_add_reference(ref, b_fn), "Call reference should resolve to helper");
+  cr_assert(parser_add_ast_node(a_ctx, a_fn), "a.c function should be tracked");
+  cr_assert(parser_add_ast_node(b_ctx, b_fn), "b.c function should be tracked");
+  cr_assert(parser_add_ast_node(c_ctx, c_fn), "c.c function should be tracked");
+
+  project->file_contexts[0] = a_ctx;
+  project->file_contexts[1] = b_ctx;
+  project->file_contexts[2] = c_ctx;
+  project->num_files = 3;
+  parser = NULL;
+
+  derived_snapshot(project, &before_keys);
+  before_sig = derived_keys_join(&before_keys);
+  cr_assert_not(project_context_last_rebuild_was_incremental(project),
+                "The baseline rebuild should be a full rebuild");
+
+  // b's symbol changed; a references b, so a must be dirty too.
+  project_context_mark_file_dirty(project, b_path);
+  cr_assert_not(project->ir_ready, "Marking a file dirty must invalidate the derived IR");
+
+  for (size_t i = 0; i < project->dirty_count; i++) {
+    if (project->dirty_files[i] && strcmp(project->dirty_files[i], a_path) == 0) {
+      saw_a = true;
+    }
+    if (project->dirty_files[i] && strcmp(project->dirty_files[i], b_path) == 0) {
+      saw_b = true;
+    }
+    if (project->dirty_files[i] && strcmp(project->dirty_files[i], c_path) == 0) {
+      saw_c = true;
+    }
+  }
+  cr_assert(saw_b, "The changed file must be dirty");
+  cr_assert(saw_a, "A file that references the changed file must be dirty");
+  cr_assert_not(saw_c, "An unrelated file must not be dirty");
+
+  derived_snapshot(project, &after_keys);
+  after_sig = derived_keys_join(&after_keys);
+  cr_assert(project_context_last_rebuild_was_incremental(project),
+            "The rebuild should reuse the clean file and be incremental");
+  cr_assert_eq(project_context_last_recomputed_file_count(project), 2,
+               "The changed file and its referrer should be recomputed");
+  cr_assert(strcmp(before_sig, after_sig) == 0,
+            "No content changed, so the incremental rebuild must reproduce the snapshot");
+
+  free(before_sig);
+  free(after_sig);
+  derived_keylist_free(&before_keys);
+  derived_keylist_free(&after_keys);
 }
 
 // Test dependency tracking

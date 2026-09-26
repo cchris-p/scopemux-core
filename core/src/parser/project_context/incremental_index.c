@@ -206,8 +206,9 @@ bool project_update_file_from_string(ProjectContext *project, const char *filepa
   extract_and_process_includes(project, ctx, normalized);
   register_file_symbols(project, ctx, normalized);
 
-  // Derived state is now stale; durable plan nodes are untouched.
-  project_context_clear_ir(project);
+  // Derived state is now stale; expand the dirty set through reverse edges so
+  // dependents/referrers are recomputed, while durable plan nodes are untouched.
+  project_context_mark_file_dirty(project, normalized);
 
   if (out_changed) {
     *out_changed = true;
