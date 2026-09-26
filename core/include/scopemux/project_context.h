@@ -191,7 +191,23 @@ typedef enum {
   PROJECT_INFO_BLOCK_FILE,
   PROJECT_INFO_BLOCK_DIRECTORY,
   PROJECT_INFO_BLOCK_PROJECT,
+  PROJECT_INFO_BLOCK_OBSERVABILITY, ///< Observability point (`WI-034`)
 } ProjectInfoBlockKind;
+
+/**
+ * @brief Subtypes of an observability InfoBlock (`WI-034`).
+ *
+ * Reuses the error-annotation, invariant, and coverage concerns cataloged in
+ * `wiki/supported-ir-structures.md` rather than a parallel model.
+ */
+typedef enum {
+  PROJECT_OBSERVABILITY_LOG_POINT = 0,   ///< A log/emit point
+  PROJECT_OBSERVABILITY_METRIC,          ///< A metric or counter
+  PROJECT_OBSERVABILITY_ASSERTION,       ///< An assertion / check
+  PROJECT_OBSERVABILITY_INVARIANT,       ///< An invariant contract
+  PROJECT_OBSERVABILITY_EXPECTED_FAILURE, ///< An expected failure mode
+  PROJECT_OBSERVABILITY_ERROR_ANNOTATION, ///< An error annotation
+} ProjectObservabilityKind;
 
 /**
  * @brief Whether a canonical InfoBlock was parsed from source or is a
@@ -268,6 +284,7 @@ typedef struct {
   ASTNodeType node_type;
   Language language;
   ProjectInfoBlockKind kind;
+  ProjectObservabilityKind observability_kind; ///< Meaningful when kind is OBSERVABILITY
   ProjectContextTier tier;
   size_t estimated_tokens;
   size_t related_symbol_count;
@@ -337,6 +354,7 @@ typedef struct ProjectPlanNode {
   char *projected_symbol; ///< expected symbol name once implemented (optional)
   char *file_path;        ///< projected file path (optional)
   ProjectPlanNodeKind kind;
+  ProjectObservabilityKind observability_kind; ///< Subtype for observability points (`WI-034`)
   ProjectInfoBlockLifecycle lifecycle;
   float confidence;
   char **anchor_ids; ///< anchor block ids in the current-state registry
@@ -1023,6 +1041,17 @@ bool project_context_plan_node_set_provenance(ProjectContext *project, ProjectPl
  */
 bool project_context_plan_node_set_projected_symbol(ProjectContext *project, ProjectPlanNode *node,
                                                     const char *symbol_name);
+
+/**
+ * @brief Set the observability subtype of an observability plan node (`WI-034`).
+ *
+ * @param project Project context
+ * @param node Plan node
+ * @param kind Observability subtype
+ * @return bool True on success
+ */
+bool project_context_plan_node_set_observability_kind(ProjectContext *project, ProjectPlanNode *node,
+                                                      ProjectObservabilityKind kind);
 
 /**
  * @brief Set a plan node's projected file path.
