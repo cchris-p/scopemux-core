@@ -2736,9 +2736,71 @@ static bool scope_matches(const ProjectInfoBlock *block, const char *scope) {
   return false;
 }
 
+/**
+ * @brief Normalized AST-structure fingerprint (`WI-035`).
+ *
+ * Hashes node types and arity recursively, ignoring identifiers, literals, and
+ * source ranges, so two functions with the same shape but different names share
+ * a fingerprint. Used as the primary duplicate signal and cached on the block.
+ */
+static uint64_t structural_hash_node(const ASTNode *node) {
+  uint64_t hash = 1469598103934665603ULL;
+
+  if (!node) {
+    return 0;
+  }
+
+  hash ^= (uint64_t)node->type + 1;
+  hash *= 1099511628211ULL;
+  hash ^= (uint64_t)node->num_children;
+  hash *= 1099511628211ULL;
+
+  for (size_t i = 0; i < node->num_children; i++) {
+    hash ^= structural_hash_node(node->children[i]);
+    hash *= 1099511628211ULL;
+  }
+
+  return hash;
+}
+
+static uint64_t block_structural_hash(const ProjectInfoBlock *block) {
+  ProjectInfoBlock *mutable_block = (ProjectInfoBlock *)block;
+
+  if (!block || !block->node) {
+    return 0;
+  }
+  if (!block->structural_hash_ready) {
+    mutable_block->structural_hash = structural_hash_node(block->node);
+    mutable_block->structural_hash_ready = true;
+  }
+  return block->structural_hash;
+}
+
+/**
+ * @brief Add a map result item with an explicit heuristic confidence.
+ */
+static bool map_query_builder_add_scored(MapQueryBuilder *builder, const ProjectInfoBlock *block,
+                                         ProjectMapQueryKind kind, const char *reason, size_t distance,
+                                         float confidence) {
+  if (!map_query_builder_add(builder, block, kind, reason, distance)) {
+    return false;
+  }
+  for (size_t i = 0; i < builder->count; i++) {
+    if (builder->items[i].block == block) {
+      builder->items[i].confidence = confidence;
+    }
+  }
+  return true;
+}
+
 bool project_context_query_duplicates(ProjectContext *project, const char *scope,
                                       ProjectMapQueryResult *out_result) {
   const ProjectInfoBlockRegistry *registry;
+  const ProjectInfoBlock **symbols = NULL;
+  uint64_t *hashes = NULL;
+  uint8_t *marked = NULL;
+  float *confidences = NULL;
+  size_t symbol_count = 0;
   MapQueryBuilder builder = {0};
 
   if (!project || !out_result) {
@@ -2753,50 +2815,115 @@ bool project_context_query_duplicates(ProjectContext *project, const char *scope
 
   for (size_t i = 0; i < registry->block_count; i++) {
     const ProjectInfoBlock *block = &registry->blocks[i];
-    char *normalized_name;
-    bool duplicate = false;
-
-    if (block->origin != PROJECT_INFO_BLOCK_ORIGIN_PARSED ||
-        block->kind != PROJECT_INFO_BLOCK_SYMBOL || !scope_matches(block, scope)) {
-      continue;
+    if (block->origin == PROJECT_INFO_BLOCK_ORIGIN_PARSED &&
+        block->kind == PROJECT_INFO_BLOCK_SYMBOL && scope_matches(block, scope)) {
+      symbol_count++;
     }
+  }
 
-    normalized_name = normalize_text_dup(block->name ? block->name : "");
-    if (!normalized_name) {
-      map_query_builder_free(&builder);
+  if (symbol_count > 0) {
+    symbols = calloc(symbol_count, sizeof(*symbols));
+    hashes = calloc(symbol_count, sizeof(*hashes));
+    marked = calloc(symbol_count, sizeof(*marked));
+    confidences = calloc(symbol_count, sizeof(*confidences));
+    if (!symbols || !hashes || !marked || !confidences) {
+      free(symbols);
+      free(hashes);
+      free(marked);
+      free(confidences);
       return false;
     }
+  }
 
-    for (size_t j = 0; j < i && !duplicate; j++) {
-      const ProjectInfoBlock *other = &registry->blocks[j];
-      if (other->origin != PROJECT_INFO_BLOCK_ORIGIN_PARSED ||
-          other->kind != PROJECT_INFO_BLOCK_SYMBOL || (other->id && block->id &&
-          strcmp(other->id, block->id) == 0)) {
+  {
+    size_t index = 0;
+    for (size_t i = 0; i < registry->block_count; i++) {
+      const ProjectInfoBlock *block = &registry->blocks[i];
+      if (block->origin == PROJECT_INFO_BLOCK_ORIGIN_PARSED &&
+          block->kind == PROJECT_INFO_BLOCK_SYMBOL && scope_matches(block, scope)) {
+        symbols[index] = block;
+        hashes[index] = block_structural_hash(block);
+        index++;
+      }
+    }
+  }
+
+  // Cluster by identical non-zero structural fingerprint. Signature equality
+  // raises confidence from structural to near-certain.
+  for (size_t a = 0; a < symbol_count; a++) {
+    for (size_t b = a + 1; b < symbol_count; b++) {
+      const ASTNode *node_a = symbols[a]->node;
+      const ASTNode *node_b = symbols[b]->node;
+      bool structural_match = hashes[a] != 0 && hashes[a] == hashes[b];
+      bool name_match = symbols[a]->name && symbols[b]->name && symbols[a]->name[0] &&
+                        strcmp(symbols[a]->name, symbols[b]->name) == 0;
+      bool signature_match;
+      float confidence;
+
+      if (!structural_match && !name_match) {
+        continue;
+      }
+      if (symbols[a]->id && symbols[b]->id && strcmp(symbols[a]->id, symbols[b]->id) == 0) {
         continue;
       }
 
-      if (normalized_name[0] != '\0') {
-        char *other_name = normalize_text_dup(other->name ? other->name : "");
-        if (!other_name) {
-          free(normalized_name);
-          map_query_builder_free(&builder);
-          return false;
-        }
-        if (strcmp(other_name, normalized_name) == 0) {
-          duplicate = true;
-        }
-        free(other_name);
+      signature_match = node_a && node_b && node_a->signature && node_b->signature &&
+                        strcmp(node_a->signature, node_b->signature) == 0;
+      if (signature_match) {
+        confidence = 0.95f;
+      } else if (structural_match && name_match) {
+        confidence = 0.85f;
+      } else {
+        confidence = structural_match ? 0.7f : 0.8f;
       }
-
-      if (!duplicate && block->node && other->node && block->node->signature && other->node->signature &&
-          strcmp(block->node->signature, other->node->signature) == 0) {
-        duplicate = true;
+      marked[a] = 1;
+      marked[b] = 1;
+      if (confidence > confidences[a]) {
+        confidences[a] = confidence;
+      }
+      if (confidence > confidences[b]) {
+        confidences[b] = confidence;
       }
     }
+  }
 
-    free(normalized_name);
-    if (duplicate &&
-        !map_query_builder_add(&builder, block, PROJECT_MAP_QUERY_DUPLICATES, "duplicate unit", 0)) {
+  for (size_t i = 0; i < symbol_count; i++) {
+    if (marked[i] &&
+        !map_query_builder_add_scored(&builder, symbols[i], PROJECT_MAP_QUERY_DUPLICATES,
+                                      "structural duplicate cluster", 0, confidences[i])) {
+      free(symbols);
+      free(hashes);
+      free(marked);
+      free(confidences);
+      map_query_builder_free(&builder);
+      return false;
+    }
+  }
+
+  free(symbols);
+  free(hashes);
+  free(marked);
+  free(confidences);
+
+  // Planned nodes that would reintroduce a symbol that already exists.
+  for (size_t i = 0; i < project->plan_node_count; i++) {
+    const ProjectPlanNode *node = &project->plan_nodes[i];
+    const ProjectInfoBlock *plan_block;
+    const ProjectInfoBlock *existing;
+
+    if (!node->projected_symbol) {
+      continue;
+    }
+    plan_block = find_block_by_id_in_registry(registry, node->id);
+    if (!plan_block || !scope_matches(plan_block, scope)) {
+      continue;
+    }
+    existing = find_symbol_block(registry, node->projected_symbol);
+    if (!existing) {
+      continue;
+    }
+    if (!map_query_builder_add_scored(&builder, plan_block, PROJECT_MAP_QUERY_DUPLICATES,
+                                      "planned duplication of existing symbol", 0, 0.8f)) {
       map_query_builder_free(&builder);
       return false;
     }

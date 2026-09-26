@@ -1781,6 +1781,124 @@ Test(project_context_delegation, delta_and_map_query_api, .init = setup_project,
   project_map_query_result_free(&query);
 }
 
+// WI-035: structural duplicate clusters are detected with heuristic confidence,
+// scope filtering works, and a planned node that would reintroduce an existing
+// symbol is flagged.
+Test(project_context_delegation, duplicate_refactor_detection, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *pair_ctx = parser_init();
+  ParserContext *solo_ctx = parser_init();
+  ASTNode *alpha_fn;
+  ASTNode *beta_fn;
+  ASTNode *gamma_fn;
+  char pair_path[512];
+  char solo_path[512];
+  ProjectMapQueryResult query = {0};
+  ProjectPlanNode *plan_node;
+  bool saw_alpha = false;
+  bool saw_beta = false;
+  bool saw_gamma = false;
+  bool saw_planned = false;
+
+  cr_assert(pair_ctx != NULL && solo_ctx != NULL, "Parser contexts should be created");
+
+  join_test_project_path("dup_pair.c", pair_path, sizeof(pair_path));
+  join_test_project_path("dup_solo.c", solo_path, sizeof(solo_path));
+
+  pair_ctx->filename = strdup(pair_path);
+  pair_ctx->language = LANG_C;
+  solo_ctx->filename = strdup(solo_path);
+  solo_ctx->language = LANG_C;
+
+  // alpha and beta share structure (function with one identifier child); gamma
+  // differs (function with an if-statement child).
+  alpha_fn = make_named_node(NODE_FUNCTION, "alpha", "alpha", pair_path);
+  beta_fn = make_named_node(NODE_FUNCTION, "beta", "beta", pair_path);
+  gamma_fn = make_named_node(NODE_FUNCTION, "gamma", "gamma", solo_path);
+  cr_assert(ast_node_add_child(alpha_fn,
+                               make_named_node(NODE_IDENTIFIER, "x", "x", pair_path)),
+            "alpha child should attach");
+  cr_assert(ast_node_add_child(beta_fn,
+                               make_named_node(NODE_IDENTIFIER, "y", "y", pair_path)),
+            "beta child should attach");
+  cr_assert(ast_node_add_child(gamma_fn,
+                               make_named_node(NODE_IF_STATEMENT, "if", "if", solo_path)),
+            "gamma child should attach");
+  cr_assert(parser_add_ast_node(pair_ctx, alpha_fn), "alpha should be tracked");
+  cr_assert(parser_add_ast_node(pair_ctx, beta_fn), "beta should be tracked");
+  cr_assert(parser_add_ast_node(solo_ctx, gamma_fn), "gamma should be tracked");
+
+  project->file_contexts[0] = pair_ctx;
+  project->file_contexts[1] = solo_ctx;
+  project->num_files = 2;
+  parser = NULL;
+
+  // Full scope: alpha and beta are a cluster; gamma is unique.
+  cr_assert(project_context_query_duplicates(project, NULL, &query),
+            "duplicates query should succeed");
+  for (size_t i = 0; i < query.item_count; i++) {
+    const char *name = query.items[i].block ? query.items[i].block->name : NULL;
+    if (name && strcmp(name, "alpha") == 0) {
+      saw_alpha = true;
+      cr_assert(query.items[i].confidence > 0.0f && query.items[i].confidence < 1.0f,
+                "structural duplicates should carry heuristic confidence");
+    }
+    if (name && strcmp(name, "beta") == 0) {
+      saw_beta = true;
+    }
+    if (name && strcmp(name, "gamma") == 0) {
+      saw_gamma = true;
+    }
+  }
+  cr_assert(saw_alpha && saw_beta, "alpha and beta should be detected as duplicates");
+  cr_assert_not(saw_gamma, "gamma has a different structure and must not be flagged");
+  project_map_query_result_free(&query);
+
+  // Scoped to the pair file only.
+  saw_alpha = saw_beta = saw_gamma = false;
+  cr_assert(project_context_query_duplicates(project, "dup_pair.c", &query),
+            "scoped duplicates query should succeed");
+  for (size_t i = 0; i < query.item_count; i++) {
+    const char *name = query.items[i].block ? query.items[i].block->name : NULL;
+    if (name && strcmp(name, "alpha") == 0) {
+      saw_alpha = true;
+    }
+    if (name && strcmp(name, "beta") == 0) {
+      saw_beta = true;
+    }
+    if (name && strcmp(name, "gamma") == 0) {
+      saw_gamma = true;
+    }
+  }
+  cr_assert(saw_alpha && saw_beta && !saw_gamma, "scope should restrict detection to the pair file");
+  project_map_query_result_free(&query);
+
+  // Scoped to the solo file: no duplicates.
+  cr_assert(project_context_query_duplicates(project, "dup_solo.c", &query),
+            "scoped duplicates query should succeed");
+  cr_assert_eq(query.item_count, 0, "a single file with one structure has no duplicates");
+  project_map_query_result_free(&query);
+
+  // A planned node that projects an existing symbol is flagged.
+  plan_node = project_context_plan_node_create(project, "TASK-DUP", "reuse-alpha",
+                                               PROJECT_PLAN_NODE_REFACTOR_OPPORTUNITY);
+  cr_assert_not_null(plan_node, "plan node should be created");
+  cr_assert(project_context_plan_node_set_projected_symbol(project, plan_node, "alpha"),
+            "projected symbol should be set");
+
+  cr_assert(project_context_query_duplicates(project, NULL, &query),
+            "duplicates query should succeed after planning");
+  for (size_t i = 0; i < query.item_count; i++) {
+    const ProjectInfoBlock *block = query.items[i].block;
+    if (block && block->origin == PROJECT_INFO_BLOCK_ORIGIN_PLANNED && block->id &&
+        strcmp(block->id, "plan:TASK-DUP:reuse-alpha") == 0) {
+      saw_planned = true;
+    }
+  }
+  cr_assert(saw_planned, "a planned node duplicating an existing symbol must be flagged");
+  project_map_query_result_free(&query);
+}
+
 Test(project_context_delegation, durable_plan_store_roundtrip, .init = setup_project,
      .fini = teardown_project) {
   ParserContext *caller_ctx = parser_init();
