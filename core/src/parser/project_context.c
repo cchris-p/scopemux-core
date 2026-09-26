@@ -55,6 +55,24 @@ static bool is_function_like_node_type(ASTNodeType type) {
   return type == NODE_FUNCTION || type == NODE_METHOD;
 }
 
+/**
+ * @brief Stable content version for a parsed file (`WI-018`).
+ *
+ * Uses the recorded content hash when available, otherwise computes it from the
+ * retained source. Registry and IR retention compare this value to decide
+ * whether a file's derived data can be reused.
+ */
+static uint64_t file_content_version(ParserContext *ctx) {
+  if (!ctx) {
+    return 0;
+  }
+  if (ctx->content_hash == 0 && ctx->source_code) {
+    ctx->content_hash =
+        project_context_hash_content(ctx->source_code, ctx->source_code_length);
+  }
+  return ctx->content_hash;
+}
+
 static const char *get_node_property_value(const ASTNode *node, const char *name) {
   if (!node || !name) {
     return NULL;
@@ -551,7 +569,9 @@ void project_context_mark_file_dirty(ProjectContext *project, const char *filepa
   }
 
   project->ir_ready = false;
-  project_context_clear_info_blocks(project);
+  // Invalidate (do not free) the registry so the next rebuild can reuse the
+  // blocks of files whose content did not change (`WI-018`).
+  project_context_invalidate_info_blocks(project);
 }
 
 void project_context_clear_ir(ProjectContext *project) {
@@ -640,6 +660,7 @@ static bool project_context_rebuild_ir_full(ProjectContext *project) {
 
     range = &project->ir_snapshot.file_ranges[project->ir_snapshot.file_range_count];
     range->file_path = strdup(ctx->filename ? ctx->filename : "");
+    range->content_hash = file_content_version(ctx);
     range->symbol_start = state.symbol_index;
     range->reference_start = state.resolved_reference_index;
     range->call_edge_start = state.call_graph_edge_index;
@@ -810,6 +831,7 @@ static bool project_context_rebuild_ir_incremental(ProjectContext *project) {
 
     new_range = &next.file_ranges[next.file_range_count];
     new_range->file_path = strdup(ctx->filename);
+    new_range->content_hash = file_content_version(ctx);
     new_range->symbol_start = state.symbol_index;
     new_range->reference_start = state.resolved_reference_index;
     new_range->call_edge_start = state.call_graph_edge_index;
@@ -875,6 +897,14 @@ size_t project_context_last_rebuild_file_count(const ProjectContext *project) {
 
 bool project_context_last_rebuild_was_incremental(const ProjectContext *project) {
   return project ? project->last_rebuild_incremental : false;
+}
+
+size_t project_context_last_info_block_reused_file_count(const ProjectContext *project) {
+  return project ? project->last_info_block_reused_file_count : 0;
+}
+
+size_t project_context_last_info_block_recomputed_file_count(const ProjectContext *project) {
+  return project ? project->last_info_block_recomputed_file_count : 0;
 }
 
 const ProjectIRSnapshot *project_context_get_ir(const ProjectContext *project) {

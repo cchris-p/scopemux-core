@@ -48,6 +48,10 @@ void project_context_clear_ir(ProjectContext *project);
 bool project_context_rebuild_ir(ProjectContext *project);
 void project_context_clear_info_blocks(ProjectContext *project);
 
+// Mark the InfoBlock registry stale but keep its parsed blocks so the next
+// registry rebuild can reuse unchanged files' blocks (`WI-018`).
+void project_context_invalidate_info_blocks(ProjectContext *project);
+
 // Incremental indexing (WI-018): mark a file changed/removed, expanding the
 // dirty set through the retained reverse-edge index without recomputing yet.
 void project_context_mark_file_dirty(ProjectContext *project, const char *filepath);

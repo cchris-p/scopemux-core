@@ -334,6 +334,18 @@ static const struct ProjectSearchIndexEntry *find_search_entry(const ProjectCont
     return NULL;
   }
 
+  // Search entries mirror the registry block array one-to-one, so the common
+  // case is an O(1) index computation instead of a linear scan (`WI-018`).
+  {
+    const ProjectInfoBlock *base = project->info_block_registry.blocks;
+    if (base && block >= base && block < base + project->info_block_registry.block_count) {
+      size_t index = (size_t)(block - base);
+      if (project->search_index_entries[index].block == block) {
+        return &project->search_index_entries[index];
+      }
+    }
+  }
+
   for (i = 0; i < project->search_index_entry_count; i++) {
     if (project->search_index_entries[i].block == block) {
       return &project->search_index_entries[i];
@@ -883,46 +895,140 @@ static bool append_dependency_related(ProjectContext *project, const ProjectInfo
   return true;
 }
 
-void project_context_clear_info_blocks(ProjectContext *project) {
-  size_t i;
+static void info_block_release(ProjectInfoBlock *block) {
+  if (!block) {
+    return;
+  }
+  free(block->id);
+  free(block->name);
+  free(block->qualified_name);
+  free(block->file_path);
+  free(block->provenance);
+  free(block->desired_shape);
+  free(block->rationale);
+  free(block->anchor_list);
+  memset(block, 0, sizeof(*block));
+}
 
+static void registry_release_ranges(ProjectInfoBlockRegistry *registry) {
+  if (!registry) {
+    return;
+  }
+  for (size_t i = 0; i < registry->file_range_count; i++) {
+    free(registry->file_ranges[i].file_path);
+  }
+  free(registry->file_ranges);
+  registry->file_ranges = NULL;
+  registry->file_range_count = 0;
+}
+
+void project_context_clear_info_blocks(ProjectContext *project) {
   if (!project) {
     return;
   }
 
-  for (i = 0; i < project->info_block_registry.block_count; i++) {
-    free(project->info_block_registry.blocks[i].id);
-    free(project->info_block_registry.blocks[i].name);
-    free(project->info_block_registry.blocks[i].qualified_name);
-    free(project->info_block_registry.blocks[i].file_path);
-    free(project->info_block_registry.blocks[i].provenance);
-    free(project->info_block_registry.blocks[i].desired_shape);
-    free(project->info_block_registry.blocks[i].rationale);
-    free(project->info_block_registry.blocks[i].anchor_list);
+  for (size_t i = 0; i < project->info_block_registry.block_count; i++) {
+    info_block_release(&project->info_block_registry.blocks[i]);
   }
-
   free(project->info_block_registry.blocks);
+  registry_release_ranges(&project->info_block_registry);
   memset(&project->info_block_registry, 0, sizeof(project->info_block_registry));
   project->info_block_registry_ready = false;
 
-  for (i = 0; i < project->search_index_entry_count; i++) {
-    free(project->search_index_entries[i].normalized_text);
-    free(project->search_index_entries[i].related_blocks);
+  project_context_clear_search_index(project);
+}
+
+void project_context_invalidate_info_blocks(ProjectContext *project) {
+  if (!project) {
+    return;
   }
-  free(project->search_index_entries);
-  project->search_index_entries = NULL;
-  project->search_index_entry_count = 0;
-  project->search_index_ready = false;
+  // Keep parsed blocks so the next rebuild can reuse unchanged files' blocks,
+  // but drop the search index (its entries point into the block array).
+  project_context_clear_search_index(project);
+  project->info_block_registry_ready = false;
+}
+
+static void fill_symbol_block(ProjectInfoBlock *block, const ProjectSymbolIR *symbol) {
+  const char *symbol_name = symbol->qualified_name ? symbol->qualified_name : symbol->name;
+
+  block->id = dup_printf("sym:%s", symbol_name ? symbol_name : "anonymous");
+  block->name = strdup(symbol->name ? symbol->name : symbol_name ? symbol_name : "anonymous");
+  block->qualified_name = symbol_name ? strdup(symbol_name) : NULL;
+  block->file_path = symbol->file_path ? strdup(symbol->file_path) : NULL;
+  block->node = symbol->node;
+  block->node_type = symbol->type;
+  block->language = language_for_node(symbol->node);
+  block->kind = PROJECT_INFO_BLOCK_SYMBOL;
+  block->tier = tier_for_symbol_node_type(symbol->type);
+  block->estimated_tokens = estimate_tokens_for_node(symbol->node);
+  block->related_symbol_count = symbol->resolved_reference_count;
+  block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
+  block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
+  block->provenance = block->file_path ? strdup(block->file_path) : NULL;
+  block->confidence = 1.0f;
+}
+
+static void fill_reference_block(ProjectInfoBlock *block, const ProjectResolvedReferenceIR *ref,
+                                 size_t global_index) {
+  const char *owner_name = ref->owner_symbol ? ref->owner_symbol : "reference";
+  const char *target_name = ref->target_symbol ? ref->target_symbol : "unresolved";
+  int name_len = snprintf(NULL, 0, "%s -> %s", owner_name, target_name);
+
+  block->id = dup_printf_indexed("ref:%s:%zu", owner_name, global_index);
+  if (name_len >= 0) {
+    block->name = malloc((size_t)name_len + 1);
+    if (block->name) {
+      snprintf(block->name, (size_t)name_len + 1, "%s -> %s", owner_name, target_name);
+    }
+  }
+  block->qualified_name = block->name ? strdup(block->name) : NULL;
+  block->file_path = ref->reference_node && ref->reference_node->file_path
+                         ? strdup(ref->reference_node->file_path)
+                         : NULL;
+  block->node = ref->reference_node;
+  block->node_type = ref->reference_node ? ref->reference_node->type : NODE_IDENTIFIER;
+  block->language = language_for_node(ref->reference_node);
+  block->kind = PROJECT_INFO_BLOCK_REFERENCE;
+  block->tier = PROJECT_CONTEXT_TIER_0;
+  block->estimated_tokens = estimate_tokens_for_node(ref->reference_node);
+  if (block->estimated_tokens == 0) {
+    block->estimated_tokens = 1;
+  }
+  block->related_symbol_count = ref->target_symbol ? 1 : 0;
+  block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
+  block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
+  block->provenance = block->file_path ? strdup(block->file_path) : NULL;
+  block->confidence = 1.0f;
+}
+
+static const ProjectInfoBlockRange *find_registry_range(const ProjectInfoBlockRegistry *registry,
+                                                        const char *path) {
+  if (!registry || !path) {
+    return NULL;
+  }
+  for (size_t i = 0; i < registry->file_range_count; i++) {
+    const ProjectInfoBlockRange *range = &registry->file_ranges[i];
+    if (range->file_path && strcmp(range->file_path, path) == 0) {
+      return range;
+    }
+  }
+  return NULL;
 }
 
 bool project_context_rebuild_info_blocks(ProjectContext *project) {
   const ProjectIRSnapshot *snapshot;
+  ProjectInfoBlockRegistry old;
+  ProjectInfoBlock *new_blocks = NULL;
+  ProjectInfoBlockRange *new_ranges = NULL;
   size_t total_blocks;
   size_t i;
-  size_t file_block_count;
+  size_t file_block_count = 0;
   size_t directory_count = 0;
   char **directories = NULL;
   size_t block_index = 0;
+  size_t range_index = 0;
+  size_t reused_files = 0;
+  size_t recomputed_files = 0;
 
   if (!project) {
     return false;
@@ -937,13 +1043,21 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
     return false;
   }
 
-  project_context_clear_info_blocks(project);
+  // Keep the previous registry as the reuse baseline; do not free its blocks.
+  old = project->info_block_registry;
+  project_context_clear_search_index(project);
 
-  file_block_count = project->num_files;
+  file_block_count = 0;
+  for (i = 0; i < project->num_files; i++) {
+    ParserContext *ctx = project->file_contexts[i];
+    if (ctx && ctx->filename) {
+      file_block_count++;
+    }
+  }
   if (file_block_count > 0) {
     directories = calloc(file_block_count, sizeof(*directories));
     if (!directories) {
-      return false;
+      goto rebuild_fail;
     }
   }
 
@@ -959,11 +1073,7 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
 
     dir_path = path_dirname_dup(ctx->filename);
     if (!dir_path) {
-      for (j = 0; j < directory_count; j++) {
-        free(directories[j]);
-      }
-      free(directories);
-      return false;
+      goto rebuild_fail;
     }
 
     for (j = 0; j < directory_count; j++) {
@@ -984,70 +1094,65 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
   total_blocks = snapshot->symbol_count + snapshot->resolved_reference_count + file_block_count +
                  directory_count + 1 + project->plan_node_count;
   if (total_blocks > 0) {
-    project->info_block_registry.blocks = calloc(total_blocks, sizeof(ProjectInfoBlock));
-    if (!project->info_block_registry.blocks) {
-      for (i = 0; i < directory_count; i++) {
-        free(directories[i]);
-      }
-      free(directories);
-      return false;
+    new_blocks = calloc(total_blocks, sizeof(ProjectInfoBlock));
+    if (!new_blocks) {
+      goto rebuild_fail;
+    }
+  }
+  if (snapshot->file_range_count > 0) {
+    new_ranges = calloc(snapshot->file_range_count, sizeof(ProjectInfoBlockRange));
+    if (!new_ranges) {
+      goto rebuild_fail;
     }
   }
 
-  for (i = 0; i < snapshot->symbol_count; i++) {
-    const ProjectSymbolIR *symbol = &snapshot->symbols[i];
-    ProjectInfoBlock *block = &project->info_block_registry.blocks[block_index++];
-    const char *symbol_name = symbol->qualified_name ? symbol->qualified_name : symbol->name;
+  // Symbol and reference blocks, retaining files whose content is unchanged.
+  for (i = 0; i < snapshot->file_range_count; i++) {
+    const ProjectFileIRRange *ir = &snapshot->file_ranges[i];
+    const ProjectInfoBlockRange *old_range = find_registry_range(&old, ir->file_path);
+    ProjectInfoBlockRange *range = &new_ranges[range_index++];
+    bool reuse;
 
-    block->id = dup_printf("sym:%s", symbol_name ? symbol_name : "anonymous");
-    block->name = strdup(symbol->name ? symbol->name : symbol_name ? symbol_name : "anonymous");
-    block->qualified_name = symbol_name ? strdup(symbol_name) : NULL;
-    block->file_path = symbol->file_path ? strdup(symbol->file_path) : NULL;
-    block->node = symbol->node;
-    block->node_type = symbol->type;
-    block->language = language_for_node(symbol->node);
-    block->kind = PROJECT_INFO_BLOCK_SYMBOL;
-    block->tier = tier_for_symbol_node_type(symbol->type);
-    block->estimated_tokens = estimate_tokens_for_node(symbol->node);
-    block->related_symbol_count = symbol->resolved_reference_count;
-    block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
-    block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
-    block->provenance = block->file_path ? strdup(block->file_path) : NULL;
-    block->confidence = 1.0f;
-  }
+    range->file_path = strdup(ir->file_path ? ir->file_path : "");
+    range->content_hash = ir->content_hash;
+    reuse = old_range && old_range->content_hash == ir->content_hash &&
+            old_range->symbol_count == ir->symbol_count &&
+            old_range->reference_count == ir->reference_count;
 
-  for (i = 0; i < snapshot->resolved_reference_count; i++) {
-    const ProjectResolvedReferenceIR *ref = &snapshot->resolved_references[i];
-    ProjectInfoBlock *block = &project->info_block_registry.blocks[block_index++];
-    const char *owner_name = ref->owner_symbol ? ref->owner_symbol : "reference";
-    const char *target_name = ref->target_symbol ? ref->target_symbol : "unresolved";
-    int name_len = snprintf(NULL, 0, "%s -> %s", owner_name, target_name);
+    range->symbol_start = block_index;
+    if (reuse) {
+      for (size_t k = 0; k < ir->symbol_count; k++) {
+        ProjectInfoBlock *src = &old.blocks[old_range->symbol_start + k];
+        new_blocks[block_index++] = *src;
+        memset(src, 0, sizeof(*src));
+      }
+      reused_files++;
+    } else {
+      for (size_t k = 0; k < ir->symbol_count; k++) {
+        fill_symbol_block(&new_blocks[block_index++], &snapshot->symbols[ir->symbol_start + k]);
+      }
+      recomputed_files++;
+    }
+    range->symbol_count = block_index - range->symbol_start;
 
-    block->id = dup_printf_indexed("ref:%s:%zu", owner_name, i);
-    if (name_len >= 0) {
-      block->name = malloc((size_t)name_len + 1);
-      if (block->name) {
-        snprintf(block->name, (size_t)name_len + 1, "%s -> %s", owner_name, target_name);
+    range->reference_start = block_index;
+    for (size_t k = 0; k < ir->reference_count; k++) {
+      const ProjectResolvedReferenceIR *ref =
+          &snapshot->resolved_references[ir->reference_start + k];
+      if (reuse) {
+        ProjectInfoBlock *src = &old.blocks[old_range->reference_start + k];
+        new_blocks[block_index] = *src;
+        free(new_blocks[block_index].id);
+        new_blocks[block_index].id = dup_printf_indexed(
+            "ref:%s:%zu", ref->owner_symbol ? ref->owner_symbol : "reference",
+            ir->reference_start + k);
+        memset(src, 0, sizeof(*src));
+        block_index++;
+      } else {
+        fill_reference_block(&new_blocks[block_index++], ref, ir->reference_start + k);
       }
     }
-    block->qualified_name = block->name ? strdup(block->name) : NULL;
-    block->file_path = ref->reference_node && ref->reference_node->file_path
-                           ? strdup(ref->reference_node->file_path)
-                           : NULL;
-    block->node = ref->reference_node;
-    block->node_type = ref->reference_node ? ref->reference_node->type : NODE_IDENTIFIER;
-    block->language = language_for_node(ref->reference_node);
-    block->kind = PROJECT_INFO_BLOCK_REFERENCE;
-    block->tier = PROJECT_CONTEXT_TIER_0;
-    block->estimated_tokens = estimate_tokens_for_node(ref->reference_node);
-    if (block->estimated_tokens == 0) {
-      block->estimated_tokens = 1;
-    }
-    block->related_symbol_count = ref->target_symbol ? 1 : 0;
-    block->origin = PROJECT_INFO_BLOCK_ORIGIN_PARSED;
-    block->lifecycle = PROJECT_INFO_BLOCK_LIFECYCLE_NONE;
-    block->provenance = block->file_path ? strdup(block->file_path) : NULL;
-    block->confidence = 1.0f;
+    range->reference_count = block_index - range->reference_start;
   }
 
   for (i = 0; i < project->num_files; i++) {
@@ -1058,7 +1163,7 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
       continue;
     }
 
-    block = &project->info_block_registry.blocks[block_index++];
+    block = &new_blocks[block_index++];
     block->id = dup_printf("file:%s", ctx->filename);
     block->name = strdup(path_basename_ptr(ctx->filename));
     block->qualified_name = strdup(ctx->filename);
@@ -1077,7 +1182,7 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
   }
 
   for (i = 0; i < directory_count; i++) {
-    ProjectInfoBlock *block = &project->info_block_registry.blocks[block_index++];
+    ProjectInfoBlock *block = &new_blocks[block_index++];
     block->id = dup_printf("dir:%s", directories[i]);
     block->name = strdup(path_basename_ptr(directories[i]));
     block->qualified_name = strdup(directories[i]);
@@ -1096,7 +1201,7 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
   }
 
   {
-    ProjectInfoBlock *block = &project->info_block_registry.blocks[block_index++];
+    ProjectInfoBlock *block = &new_blocks[block_index++];
     block->id = dup_printf("project:%s", project->root_directory ? project->root_directory : ".");
     block->name = strdup(path_basename_ptr(project->root_directory ? project->root_directory : "."));
     block->qualified_name =
@@ -1119,7 +1224,7 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
   // WI-032: project durable plan nodes into the same registry as parsed blocks.
   for (i = 0; i < project->plan_node_count; i++) {
     const ProjectPlanNode *node = &project->plan_nodes[i];
-    ProjectInfoBlock *block = &project->info_block_registry.blocks[block_index++];
+    ProjectInfoBlock *block = &new_blocks[block_index++];
     const char *qualified = node->projected_symbol ? node->projected_symbol : node->id;
     char *anchor_join = join_string_list(node->anchor_ids, node->anchor_count, ';');
     size_t tokens = estimate_tokens_for_text(node->desired_shape) +
@@ -1147,12 +1252,25 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
     block->anchor_list = anchor_join;
   }
 
+  project->info_block_registry.blocks = new_blocks;
   project->info_block_registry.block_count = block_index;
+  project->info_block_registry.file_ranges = new_ranges;
+  project->info_block_registry.file_range_count = range_index;
   memset(project->info_block_registry.tier_counts, 0, sizeof(project->info_block_registry.tier_counts));
   for (i = 0; i < block_index; i++) {
-    project->info_block_registry.tier_counts[project->info_block_registry.blocks[i].tier]++;
+    project->info_block_registry.tier_counts[new_blocks[i].tier]++;
   }
   project->info_block_registry_ready = true;
+  project->last_info_block_reused_file_count = reused_files;
+  project->last_info_block_recomputed_file_count = recomputed_files;
+
+  // Release the previous registry. Reused entries were zeroed during transfer,
+  // so their strings are owned by the new array and are not freed here.
+  for (i = 0; i < old.block_count; i++) {
+    info_block_release(&old.blocks[i]);
+  }
+  free(old.blocks);
+  registry_release_ranges(&old);
 
   for (i = 0; i < directory_count; i++) {
     free(directories[i]);
@@ -1160,6 +1278,23 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
   free(directories);
 
   return true;
+
+rebuild_fail:
+  for (i = 0; i < block_index; i++) {
+    info_block_release(&new_blocks[i]);
+  }
+  free(new_blocks);
+  if (new_ranges) {
+    for (i = 0; i < range_index; i++) {
+      free(new_ranges[i].file_path);
+    }
+    free(new_ranges);
+  }
+  for (i = 0; i < directory_count; i++) {
+    free(directories[i]);
+  }
+  free(directories);
+  return false;
 }
 
 const ProjectInfoBlockRegistry *project_context_get_info_block_registry(ProjectContext *project) {

@@ -145,6 +145,7 @@ typedef struct {
  */
 typedef struct {
   char *file_path; ///< Owned copy of the file path for this range
+  uint64_t content_hash; ///< Content hash of the file at build time (`WI-018`)
   size_t symbol_start;
   size_t symbol_count;
   size_t reference_start;
@@ -282,12 +283,30 @@ typedef struct {
 } ProjectInfoBlock;
 
 /**
+ * @brief Per-file slice of the canonical InfoBlock registry (`WI-018`).
+ *
+ * Identifies the symbol and reference blocks owned by one file and records the
+ * file's content hash at build time. A registry rebuild reuses a file's blocks
+ * when its hash is unchanged, so clean files are not re-derived from IR/AST.
+ */
+typedef struct {
+  char *file_path;       ///< Owned copy of the file path for this range
+  uint64_t content_hash; ///< File content hash at the last registry build
+  size_t symbol_start;   ///< First symbol block index in the registry
+  size_t symbol_count;   ///< Number of symbol blocks for this file
+  size_t reference_start; ///< First reference block index in the registry
+  size_t reference_count; ///< Number of reference blocks for this file
+} ProjectInfoBlockRange;
+
+/**
  * @brief Dense registry of canonical InfoBlocks derived from project IR.
  */
 typedef struct {
   ProjectInfoBlock *blocks;
   size_t block_count;
   size_t tier_counts[5];
+  ProjectInfoBlockRange *file_ranges; ///< Per-file block slices (`WI-018`)
+  size_t file_range_count;
 } ProjectInfoBlockRegistry;
 
 /**
@@ -521,6 +540,11 @@ typedef struct ProjectContext {
   size_t last_recomputed_file_count; ///< Files recomputed by the last IR rebuild
   size_t last_rebuild_file_count;    ///< Files present during the last IR rebuild
   bool last_rebuild_incremental;     ///< Whether the last IR rebuild was incremental
+
+  // InfoBlock registry retention stats (`WI-018`): files whose blocks were
+  // reused versus re-derived during the last registry rebuild.
+  size_t last_info_block_reused_file_count;
+  size_t last_info_block_recomputed_file_count;
 } ProjectContext;
 
 /**
@@ -839,6 +863,22 @@ size_t project_context_last_rebuild_file_count(const ProjectContext *project);
  * @return bool True when the rebuild reused retained clean-file entries
  */
 bool project_context_last_rebuild_was_incremental(const ProjectContext *project);
+
+/**
+ * @brief Files whose InfoBlocks were reused by the last registry rebuild (`WI-018`).
+ *
+ * @param project Project context
+ * @return size_t Reused (unchanged) file count
+ */
+size_t project_context_last_info_block_reused_file_count(const ProjectContext *project);
+
+/**
+ * @brief Files whose InfoBlocks were re-derived by the last registry rebuild (`WI-018`).
+ *
+ * @param project Project context
+ * @return size_t Recomputed file count
+ */
+size_t project_context_last_info_block_recomputed_file_count(const ProjectContext *project);
 
 /**
  * @brief Rebuild the canonical InfoBlock registry from current project IR.
