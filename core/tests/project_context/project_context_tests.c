@@ -630,6 +630,10 @@ Test(project_context_delegation, incremental_rebuild_reuses_clean_files, .init =
   cr_assert_eq(project_context_last_recomputed_file_count(project), 2,
                "Only a (dependent) and c (changed) should be recomputed; b must be retained");
   cr_assert(strcmp(before_sig, inc_sig) != 0, "Changing c should change the derived signature");
+  cr_assert_eq(project_context_last_info_block_recomputed_file_count(project), 1,
+               "Only the changed file's InfoBlocks should be re-derived");
+  cr_assert_eq(project_context_last_info_block_reused_file_count(project), 2,
+               "Unchanged files' InfoBlocks should be reused from the previous registry");
 
   // A from-scratch rebuild over the final file set must match the incremental one.
   full = project_context_create(test_project_abspath);
@@ -650,6 +654,19 @@ Test(project_context_delegation, incremental_rebuild_reuses_clean_files, .init =
   cr_assert(strcmp(inc_sig, full_sig) == 0,
             "Incremental rebuild must equal a full rebuild:\n--- incremental ---\n%s--- full ---\n%s",
             inc_sig, full_sig);
+
+  {
+    ProjectSearchRequest search = {0};
+    ProjectSearchResult result = {0};
+    search.query_text = "beta";
+    search.min_tier = PROJECT_CONTEXT_TIER_0;
+    search.max_tier = PROJECT_CONTEXT_TIER_4;
+    search.max_hits = 100;
+    cr_assert(project_context_search_info_blocks(project, &search, &result),
+              "Search should build over the selectively updated registry");
+    cr_assert(result.hit_count >= 1, "Search should find the retained file's symbol");
+    project_search_result_free(&result);
+  }
 
   free(before_sig);
   free(inc_sig);
