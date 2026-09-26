@@ -78,6 +78,25 @@ typedef struct {
 typedef struct ProjectWatcher ProjectWatcher;
 
 /**
+ * @brief Available OS event-source backend for the native watcher.
+ */
+typedef enum {
+  PROJECT_NATIVE_WATCHER_UNAVAILABLE = 0, ///< No OS backend on this platform
+  PROJECT_NATIVE_WATCHER_INOTIFY,         ///< Linux inotify
+} ProjectNativeWatcherBackend;
+
+/**
+ * @brief Opaque OS-event-backed watcher.
+ *
+ * The native watcher blocks on OS filesystem events instead of periodically
+ * scanning, then applies the same debounce, mtime/size, and content-hash gating
+ * as the polling watcher. On platforms without a backend,
+ * `project_native_watcher_create` returns NULL and callers should use the
+ * polling API instead.
+ */
+typedef struct ProjectNativeWatcher ProjectNativeWatcher;
+
+/**
  * @brief Create a watcher rooted at a directory.
  *
  * @param root_directory Directory to scan (must be absolute or resolvable)
@@ -141,6 +160,50 @@ void project_watch_batch_free(ProjectWatchBatch *batch);
  */
 bool project_watcher_apply_batch(ProjectContext *project, const ProjectWatchBatch *batch,
                                  size_t *out_applied);
+
+/**
+ * @brief Create an OS-event-backed watcher, or NULL when unavailable.
+ *
+ * Baselines the current files, then subscribes to recursive OS filesystem
+ * events for the configured scope. Returns NULL on platforms without a backend
+ * (the caller should fall back to the polling API) or on setup failure.
+ *
+ * @param root_directory Directory to watch
+ * @param config Configuration, or NULL for defaults
+ * @return ProjectNativeWatcher* Watcher, or NULL when no backend is available
+ */
+ProjectNativeWatcher *project_native_watcher_create(const char *root_directory,
+                                                    const ProjectWatcherConfig *config);
+
+/**
+ * @brief Free an OS-event-backed watcher.
+ *
+ * @param watcher Watcher to free (NULL is a no-op)
+ */
+void project_native_watcher_free(ProjectNativeWatcher *watcher);
+
+/**
+ * @brief Report the OS backend in use.
+ *
+ * @param watcher Watcher, or NULL
+ * @return ProjectNativeWatcherBackend Backend kind
+ */
+ProjectNativeWatcherBackend project_native_watcher_backend(const ProjectNativeWatcher *watcher);
+
+/**
+ * @brief Block for OS events up to a timeout and emit gated change events.
+ *
+ * Drains filesystem events, applies debounce/mtime/size/content-hash gating,
+ * and returns a batch. A zero timeout returns immediately; a negative timeout
+ * blocks until an event arrives.
+ *
+ * @param watcher Watcher
+ * @param timeout_ms Milliseconds to wait for OS events
+ * @param out_batch Output batch; caller frees with `project_watch_batch_free`
+ * @return bool True on success, false on backend error or invalid input
+ */
+bool project_native_watcher_poll(ProjectNativeWatcher *watcher, int timeout_ms,
+                                 ProjectWatchBatch *out_batch);
 
 #ifdef __cplusplus
 }
