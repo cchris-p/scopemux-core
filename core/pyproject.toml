@@ -3,19 +3,22 @@ requires = ["scikit-build-core>=0.10", "pybind11>=2.11"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "scopemux_core"
+name = "scopemux"
 version = "0.1.0"
-description = "Python bindings for the ScopeMux native core"
+description = "Python package and native bindings for the ScopeMux core"
 readme = "../README.md"
 requires-python = ">=3.10,<3.12"
 authors = [
   { name = "ScopeMux" },
 ]
 
+[project.scripts]
+scopemux = "scopemux.cli:main"
+
 [tool.scikit-build]
 cmake.source-dir = ".."
 build-dir = "build/{wheel_tag}"
-wheel.packages = []
+wheel.packages = ["python/scopemux"]
 
 [tool.scikit-build.cmake.define]
 SCOPEMUX_BUILD_TESTS = "OFF"

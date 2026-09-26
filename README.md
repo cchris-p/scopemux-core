@@ -68,7 +68,7 @@ The simplest supported path is:
 ```
 
 This script:
-- installs `scopemux_core` as an editable dependency from `./core`
+- installs the `scopemux` package (which wraps the native extension) as an editable dependency from `./core`
 - drives the native build through `core/pyproject.toml`
 - builds the `scopemux_core` Python extension without manual `PYTHONPATH` setup
 
@@ -77,6 +77,22 @@ You can also run the editable install directly:
 ```bash
 python3 -m pip install -e ./core
 ```
+
+The install exposes two import paths:
+
+- `scopemux`: the supported public import surface and the `scopemux` CLI.
+- `scopemux_core`: the compiled extension. It is an implementation detail; import
+  from `scopemux` instead.
+
+The CLI writes structured JSON for CI and pipelines:
+
+```bash
+scopemux version
+scopemux detect example.py
+scopemux parse example.py --language python
+```
+
+`python3 -m scopemux ...` is equivalent to the `scopemux` command.
 
 ## Run Tests
 
@@ -108,7 +124,7 @@ so the run reflects the source on disk and the host checkout is not modified.
 Basic file parsing:
 
 ```python
-import scopemux_core as sm
+import scopemux as sm
 
 parser = sm.ParserContext()
 parser.parse_file("example.py")
@@ -120,7 +136,7 @@ print(ast_root)
 Parsing a string with explicit language selection:
 
 ```python
-import scopemux_core as sm
+import scopemux as sm
 
 parser = sm.ParserContext()
 parser.parse_string(
@@ -135,7 +151,7 @@ print(parser.get_ast_root())
 Building compressed context:
 
 ```python
-import scopemux_core as sm
+import scopemux as sm
 
 parser = sm.ParserContext()
 parser.parse_file("example.py")
@@ -150,7 +166,11 @@ print(engine.get_context())
 
 ## Exposed Python API
 
-The `scopemux_core` extension is a bounded surface over the C API. It currently exposes:
+The supported public surface is the `scopemux` package, which re-exports the
+bounded API of the compiled `scopemux_core` extension. Import from `scopemux`;
+treat `scopemux_core` as internal.
+
+The package and extension together currently expose:
 
 Types:
 - `ParserContext`
@@ -168,6 +188,10 @@ Constants:
 - node-type constants `NODE_*`
 - compression constants `COMPRESSION_*` and `DEFAULT_TOKEN_BUDGET`
 - `TEST_PROCESSOR_VERSION` (test-processor marker)
+
+Everything else on the extension (for example the `memory_debug_*` and
+`parser_*` C-level helpers used by internal debugging tools) is internal and not
+part of the supported surface.
 
 Project-level capabilities are **C-only and not exposed to Python**: `ProjectContext`, tiered context selection, the search index, and prompt assembly. Any integration that needs the project IR must use the C API (FFI or a compiled helper), not the Python module. The exposed surface is evolving and is not yet stable.
 
@@ -187,10 +211,26 @@ Common `ContextEngine` methods:
 - `update_focus(node_qualified_names, focus_value)`
 - `reset_compression()`
 
+### Command-line surface
+
+The `scopemux` console script is a secondary, in-scope surface for CI and
+pipelines. Each command prints one JSON object and a non-zero exit code signals
+failure:
+
+- `scopemux version` - core version.
+- `scopemux detect <path>` - detected language for a file.
+- `scopemux parse <path> [--language <lang>]` - AST root summary.
+
+### Downstream dependencies
+
+Downstream projects should depend on the `scopemux` distribution and import the
+`scopemux` package. The `scopemux_core` extension name is not a supported import
+path and may change; use the package exports instead.
+
 ## Limitations
 
 Current limitations to expect:
-- the build flow is development-oriented and not yet packaged as a standard `pip install` experience
+- the build flow is development-oriented and not yet published to an index; editable install from `./core` is the supported path
 - supported APIs are still evolving
 - some repository scripts and test utilities are intended for internal validation rather than end-user workflows
 
