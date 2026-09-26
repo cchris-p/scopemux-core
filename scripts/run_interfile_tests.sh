@@ -33,6 +33,7 @@ TOTAL_TESTS_RUN=0
 RUN_REFERENCE_RESOLVER_TESTS=false
 RUN_SYMBOL_TABLE_TESTS=true
 RUN_PROJECT_CONTEXT_TESTS=true
+RUN_WATCHER_TESTS=true
 RUN_RESOLVER_CORE_TESTS=true
 RUN_RESOLVER_REGISTRATION_TESTS=true
 RUN_RESOLVER_RESOLUTION_TESTS=true
@@ -48,6 +49,7 @@ CMAKE_PROJECT_BUILD_DIR="$CMAKE_BUILD_DIR"
 REFERENCE_RESOLVER_EXECUTABLE_RELPATH="core/tests/reference_resolver_tests"
 SYMBOL_TABLE_EXECUTABLE_RELPATH="core/tests/symbol_table_tests"
 PROJECT_CONTEXT_EXECUTABLE_RELPATH="core/tests/project_context_tests"
+WATCHER_EXECUTABLE_RELPATH="core/tests/watcher_tests"
 RESOLVER_CORE_EXECUTABLE_RELPATH="core/tests/resolver_core_tests"
 RESOLVER_REGISTRATION_EXECUTABLE_RELPATH="core/tests/resolver_registration_tests"
 RESOLVER_RESOLUTION_EXECUTABLE_RELPATH="core/tests/resolver_resolution_tests"
@@ -103,6 +105,12 @@ fi
 # Build and run Project Context Tests
 if [ "${RUN_PROJECT_CONTEXT_TESTS}" = true ]; then
     build_and_run_test_target "run_interfile_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "project_context_tests" "Project Context Tests" "$PROJECT_CONTEXT_EXECUTABLE_RELPATH"
+    TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
+fi
+
+# Build and run Watcher Tests
+if [ "${RUN_WATCHER_TESTS}" = true ]; then
+    build_and_run_test_target "run_interfile_tests.sh" "$CMAKE_PROJECT_BUILD_DIR" "watcher_tests" "Watcher Tests" "$WATCHER_EXECUTABLE_RELPATH"
     TOTAL_TESTS_RUN=$((TOTAL_TESTS_RUN + 1))
 fi
 
