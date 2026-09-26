@@ -842,11 +842,7 @@ static bool process_query(const char *query_type, TSNode root_node, ParserContex
           ast_node->qualified_name_source = AST_SOURCE_DEBUG_ALLOC;
         }
       }
-      fprintf(stderr, "[AST_CREATE] Created ASTNode at %p, type=%u\n", (void *)ast_node,
-              actual_node_type);
-      bool reg_result = parser_add_ast_node(ctx, ast_node);
-      fprintf(stderr, "[AST_REGISTER_CALL] parser_add_ast_node(ctx, %p) returned %d\n",
-              (void *)ast_node, reg_result);
+      parser_add_ast_node(ctx, ast_node);
       // If this is a function node, extract signature and raw content
       if (node_type == NODE_FUNCTION) {
         // Extract function signature
