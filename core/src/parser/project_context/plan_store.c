@@ -196,6 +196,11 @@ char *project_context_plan_nodes_to_json(const ProjectContext *project) {
       return NULL;
     }
     snprintf(number, sizeof(number), "%d", (int)node->kind);
+    if (!sb_puts(&buf, number) || !sb_member(&buf, &first, "observability_kind")) {
+      free(buf.data);
+      return NULL;
+    }
+    snprintf(number, sizeof(number), "%d", (int)node->observability_kind);
     if (!sb_puts(&buf, number) || !sb_member(&buf, &first, "lifecycle")) {
       free(buf.data);
       return NULL;
@@ -265,6 +270,7 @@ typedef struct {
   char *projected_symbol;
   char *file_path;
   int kind;
+  int observability_kind;
   int lifecycle;
   double confidence;
   char **anchors;
@@ -526,6 +532,10 @@ static bool jr_parse_plan_node(JsonReader *r, ParsedPlanNode *node) {
       double value = 0;
       ok = jr_parse_number(r, &value);
       node->kind = (int)value;
+    } else if (strcmp(key, "observability_kind") == 0) {
+      double value = 0;
+      ok = jr_parse_number(r, &value);
+      node->observability_kind = (int)value;
     } else if (strcmp(key, "lifecycle") == 0) {
       double value = 0;
       ok = jr_parse_number(r, &value);
@@ -709,6 +719,8 @@ static bool apply_parsed_node(ProjectContext *project, const ParsedPlanNode *par
       !project_context_plan_node_set_provenance(project, node, parsed->provenance) ||
       !project_context_plan_node_set_projected_symbol(project, node, parsed->projected_symbol) ||
       !project_context_plan_node_set_file_path(project, node, parsed->file_path) ||
+      !project_context_plan_node_set_observability_kind(
+          project, node, (ProjectObservabilityKind)parsed->observability_kind) ||
       !project_context_plan_node_set_confidence(project, node, (float)parsed->confidence)) {
     return false;
   }

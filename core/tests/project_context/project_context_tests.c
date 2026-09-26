@@ -2018,3 +2018,87 @@ Test(project_context_delegation, durable_plan_store_roundtrip, .init = setup_pro
 
   remove(store_path);
 }
+
+// WI-034: observability InfoBlocks are a distinct kind with a subtype, are
+// retrievable by symbol and by error/test text, and round-trip through the
+// durable plan store.
+Test(project_context_delegation, observability_info_blocks, .init = setup_project,
+     .fini = teardown_project) {
+  ParserContext *ctx = parser_init();
+  ASTNode *helper_fn;
+  char helper_path[512];
+  ProjectPlanNode *node;
+  ProjectPlanNode *loaded;
+  ProjectMapQueryResult query = {0};
+  ProjectContext *reloaded;
+  char *json;
+  bool saw_assertion = false;
+
+  cr_assert(ctx != NULL, "Parser context should be created");
+  join_test_project_path("obs.c", helper_path, sizeof(helper_path));
+  ctx->filename = strdup(helper_path);
+  ctx->language = LANG_C;
+
+  helper_fn = make_named_node(NODE_FUNCTION, "parse_helper", "parse_helper", helper_path);
+  cr_assert(parser_add_ast_node(ctx, helper_fn), "helper should be tracked");
+  project->file_contexts[0] = ctx;
+  project->num_files = 1;
+  parser = NULL;
+  cr_assert(symbol_table_register(project->symbol_table, "parse_helper", helper_fn, helper_path,
+                                  SCOPE_GLOBAL, LANG_C) != NULL,
+            "helper symbol should be registered");
+  cr_assert(project_context_rebuild_ir(project), "IR should rebuild");
+
+  node = project_context_plan_node_create(project, "TASK-OBS", "log-timeout",
+                                          PROJECT_PLAN_NODE_OBSERVABILITY_POINT);
+  cr_assert_not_null(node, "observability plan node should be created");
+  cr_assert(project_context_plan_node_set_title(project, node, "log timeout path"),
+            "title should be set");
+  cr_assert(project_context_plan_node_set_desired_shape(project, node,
+                                                        "assert timeout_ms < budget"),
+            "desired shape should be set");
+  cr_assert(project_context_plan_node_set_observability_kind(project, node,
+                                                             PROJECT_OBSERVABILITY_ASSERTION),
+            "observability subtype should be set");
+  cr_assert(project_context_plan_node_add_anchor(project, node, "sym:parse_helper"),
+            "observability node should anchor the helper symbol");
+
+  // Retrieval by symbol.
+  cr_assert(project_context_query_observability(project, "parse_helper", &query),
+            "observability query should succeed");
+  for (size_t i = 0; i < query.item_count; i++) {
+    const ProjectInfoBlock *block = query.items[i].block;
+    if (block && block->kind == PROJECT_INFO_BLOCK_OBSERVABILITY && block->id &&
+        strcmp(block->id, "plan:TASK-OBS:log-timeout") == 0) {
+      saw_assertion = true;
+      cr_assert_eq(block->observability_kind, PROJECT_OBSERVABILITY_ASSERTION,
+                   "observability block should carry its subtype");
+      cr_assert_not_null(block->provenance, "observability block should carry provenance");
+      cr_assert(block->confidence > 0.0f && block->confidence <= 1.0f,
+                "observability block should carry confidence");
+      cr_assert(block->estimated_tokens > 0, "observability block should be token-budgetable");
+    }
+  }
+  cr_assert(saw_assertion, "observability for the symbol should be retrievable by kind");
+  project_map_query_result_free(&query);
+
+  // Retrieval by error/test text (matches the desired shape).
+  cr_assert(project_context_query_observability(project, "timeout_ms", &query),
+            "observability text query should succeed");
+  cr_assert(query.item_count >= 1, "observability should be reachable by error/test text");
+  project_map_query_result_free(&query);
+
+  // Durable round-trip preserves the observability subtype.
+  json = project_context_plan_nodes_to_json(project);
+  cr_assert_not_null(json, "plan store should serialize");
+  reloaded = project_context_create(test_project_abspath);
+  cr_assert_not_null(reloaded, "reloaded project should be created");
+  cr_assert(project_context_plan_nodes_from_json(reloaded, json, false), "plan store should load");
+  loaded = project_context_find_plan_node(reloaded, "plan:TASK-OBS:log-timeout");
+  cr_assert_not_null(loaded, "observability node should reload");
+  cr_assert_eq(loaded->observability_kind, PROJECT_OBSERVABILITY_ASSERTION,
+               "observability subtype should survive the round trip");
+
+  free(json);
+  project_context_free(reloaded);
+}

@@ -163,6 +163,27 @@ static const char *kind_label(ProjectInfoBlockKind kind) {
     return "directory";
   case PROJECT_INFO_BLOCK_PROJECT:
     return "project";
+  case PROJECT_INFO_BLOCK_OBSERVABILITY:
+    return "observability";
+  default:
+    return "unknown";
+  }
+}
+
+static const char *observability_kind_label(ProjectObservabilityKind kind) {
+  switch (kind) {
+  case PROJECT_OBSERVABILITY_LOG_POINT:
+    return "log_point";
+  case PROJECT_OBSERVABILITY_METRIC:
+    return "metric";
+  case PROJECT_OBSERVABILITY_ASSERTION:
+    return "assertion";
+  case PROJECT_OBSERVABILITY_INVARIANT:
+    return "invariant";
+  case PROJECT_OBSERVABILITY_EXPECTED_FAILURE:
+    return "expected_failure";
+  case PROJECT_OBSERVABILITY_ERROR_ANNOTATION:
+    return "error_annotation";
   default:
     return "unknown";
   }
@@ -199,6 +220,8 @@ static ProjectInfoBlockKind plan_block_kind(ProjectPlanNodeKind kind) {
     return PROJECT_INFO_BLOCK_FILE;
   case PROJECT_PLAN_NODE_NEW_MODULE:
     return PROJECT_INFO_BLOCK_DIRECTORY;
+  case PROJECT_PLAN_NODE_OBSERVABILITY_POINT:
+    return PROJECT_INFO_BLOCK_OBSERVABILITY;
   default:
     return PROJECT_INFO_BLOCK_SYMBOL;
   }
@@ -220,6 +243,8 @@ static ASTNodeType plan_block_node_type(ProjectPlanNodeKind kind) {
   case PROJECT_PLAN_NODE_NEW_FILE:
   case PROJECT_PLAN_NODE_NEW_MODULE:
     return NODE_MODULE;
+  case PROJECT_PLAN_NODE_OBSERVABILITY_POINT:
+    return NODE_IDENTIFIER;
   default:
     return NODE_FUNCTION;
   }
@@ -427,6 +452,14 @@ static bool build_search_text_for_block(const ProjectInfoBlock *block, char **ou
       !append_text_part(&buffer, &size, &offset, "kind:", kind_label(block ? block->kind : 0))) {
     free(buffer);
     return false;
+  }
+
+  if (block && block->kind == PROJECT_INFO_BLOCK_OBSERVABILITY) {
+    if (!append_text_part(&buffer, &size, &offset, "observability:",
+                          observability_kind_label(block->observability_kind))) {
+      free(buffer);
+      return false;
+    }
   }
 
   if (block && block->node) {
@@ -1238,6 +1271,7 @@ bool project_context_rebuild_info_blocks(ProjectContext *project) {
     block->node_type = plan_block_node_type(node->kind);
     block->language = LANG_UNKNOWN;
     block->kind = plan_block_kind(node->kind);
+    block->observability_kind = node->observability_kind;
     block->tier = plan_block_tier(node->kind);
     block->estimated_tokens = tokens > 0 ? tokens : 1;
     block->related_symbol_count = node->anchor_count;
@@ -2106,6 +2140,16 @@ bool project_context_plan_node_set_confidence(ProjectContext *project, ProjectPl
   return true;
 }
 
+bool project_context_plan_node_set_observability_kind(ProjectContext *project, ProjectPlanNode *node,
+                                                      ProjectObservabilityKind kind) {
+  if (!project || !node) {
+    return false;
+  }
+  node->observability_kind = kind;
+  project_context_invalidate_info_blocks(project);
+  return true;
+}
+
 bool project_context_plan_node_add_anchor(ProjectContext *project, ProjectPlanNode *node,
                                           const char *anchor_block_id) {
   char **next_anchors;
@@ -2947,6 +2991,25 @@ static bool plan_node_anchors_symbol(const ProjectPlanNode *node, const ProjectI
   return false;
 }
 
+/**
+ * @brief Whether an observability block mentions a query string (`WI-034`).
+ *
+ * Matches a symbol name, an error message, or a failing-test name against the
+ * block's addressable and descriptive fields.
+ */
+static bool observability_block_matches(const ProjectInfoBlock *block, const char *needle) {
+  if (!block || !needle || needle[0] == '\0') {
+    return false;
+  }
+  return (block->id && strstr(block->id, needle) != NULL) ||
+         (block->name && strstr(block->name, needle) != NULL) ||
+         (block->qualified_name && strstr(block->qualified_name, needle) != NULL) ||
+         (block->provenance && strstr(block->provenance, needle) != NULL) ||
+         (block->desired_shape && strstr(block->desired_shape, needle) != NULL) ||
+         (block->rationale && strstr(block->rationale, needle) != NULL) ||
+         (block->anchor_list && strstr(block->anchor_list, needle) != NULL);
+}
+
 bool project_context_query_observability(ProjectContext *project, const char *symbol,
                                          ProjectMapQueryResult *out_result) {
   const ProjectInfoBlockRegistry *registry;
@@ -2963,6 +3026,7 @@ bool project_context_query_observability(ProjectContext *project, const char *sy
     return false;
   }
 
+  // Planned observability anchored to the resolved symbol, if any.
   symbol_block = find_symbol_block(registry, symbol);
   for (size_t i = 0; i < project->plan_node_count; i++) {
     const ProjectPlanNode *node = &project->plan_nodes[i];
@@ -2976,6 +3040,21 @@ bool project_context_query_observability(ProjectContext *project, const char *sy
     block = find_block_by_id_in_registry(registry, node->id);
     if (block && !map_query_builder_add(&builder, block, PROJECT_MAP_QUERY_OBSERVABILITY,
                                         "observability for symbol", 0)) {
+      map_query_builder_free(&builder);
+      return false;
+    }
+  }
+
+  // Observability blocks that mention the query text (symbol, error, or test).
+  for (size_t i = 0; i < registry->block_count; i++) {
+    const ProjectInfoBlock *block = &registry->blocks[i];
+
+    if (block->kind != PROJECT_INFO_BLOCK_OBSERVABILITY ||
+        !observability_block_matches(block, symbol)) {
+      continue;
+    }
+    if (!map_query_builder_add(&builder, block, PROJECT_MAP_QUERY_OBSERVABILITY,
+                               "observability match", 0)) {
       map_query_builder_free(&builder);
       return false;
     }
