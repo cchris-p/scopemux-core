@@ -36,6 +36,13 @@ bool project_parse_all_files_impl(ProjectContext *project);
 void extract_and_process_includes(ProjectContext *project, ParserContext *ctx,
                                   const char *filepath);
 
+// Reverse-edge maintenance for incremental indexing. File contexts are linked by
+// raw pointers, so a context that is replaced or removed must be repointed or
+// scrubbed from every other file's dependency array to avoid dangling edges.
+void project_context_repoint_dependency_target(ProjectContext *project, ParserContext *old_ctx,
+                                               ParserContext *new_ctx);
+void project_context_scrub_dependency_target(ProjectContext *project, ParserContext *target);
+
 // Project-level IR lifecycle helpers
 void project_context_clear_ir(ProjectContext *project);
 bool project_context_rebuild_ir(ProjectContext *project);

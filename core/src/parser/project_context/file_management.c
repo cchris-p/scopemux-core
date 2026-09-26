@@ -368,6 +368,9 @@ bool project_remove_file_impl(ProjectContext *project, const char *filepath) {
   if (project->symbol_table) {
     symbol_table_remove_by_file(project->symbol_table, normalized_path);
   }
+  // Drop reverse edges from surviving files before the context is freed so no
+  // dependency array retains a dangling pointer to it.
+  project_context_scrub_dependency_target(project, project->file_contexts[found_index]);
   // Free the parser context
   parser_context_free(project->file_contexts[found_index]);
   project->file_contexts[found_index] = NULL;
