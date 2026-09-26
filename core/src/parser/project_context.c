@@ -357,29 +357,224 @@ static size_t fill_symbol_ir_nodes(const ParserContext *ctx, const ASTNode *node
   return current_owner_symbol_index;
 }
 
+static void project_context_free_ir_arrays(ProjectContext *project) {
+  for (size_t i = 0; i < project->ir_snapshot.file_range_count; i++) {
+    free(project->ir_snapshot.file_ranges[i].file_path);
+  }
+  free(project->ir_snapshot.file_ranges);
+  free(project->ir_snapshot.symbols);
+  free(project->ir_snapshot.resolved_references);
+  free(project->ir_snapshot.call_graph_edges);
+  free(project->ir_snapshot.dependencies);
+  memset(&project->ir_snapshot, 0, sizeof(project->ir_snapshot));
+}
+
+/**
+ * @brief Find the retained array range owned by a clean file.
+ *
+ * Matching is by owned file path in the range table, never by reading fields of
+ * retained entries, because entries owned by a recomputed file may point at a
+ * freed parser context.
+ */
+static const ProjectFileIRRange *find_file_ir_range(const ProjectIRSnapshot *snapshot,
+                                                    const char *file_path) {
+  if (!snapshot || !file_path) {
+    return NULL;
+  }
+  for (size_t i = 0; i < snapshot->file_range_count; i++) {
+    const ProjectFileIRRange *range = &snapshot->file_ranges[i];
+    if (range->file_path && strcmp(range->file_path, file_path) == 0) {
+      return range;
+    }
+  }
+  return NULL;
+}
+
+static void project_context_free_reverse_edges(ProjectContext *project) {
+  for (size_t i = 0; i < project->reverse_edge_count; i++) {
+    free(project->reverse_edges[i].source_file);
+    free(project->reverse_edges[i].target_file);
+  }
+  free(project->reverse_edges);
+  project->reverse_edges = NULL;
+  project->reverse_edge_count = 0;
+  project->reverse_edge_capacity = 0;
+}
+
+static void project_context_clear_dirty_files(ProjectContext *project) {
+  for (size_t i = 0; i < project->dirty_count; i++) {
+    free(project->dirty_files[i]);
+  }
+  free(project->dirty_files);
+  project->dirty_files = NULL;
+  project->dirty_count = 0;
+  project->dirty_capacity = 0;
+}
+
+static bool dirty_files_contains(const ProjectContext *project, const char *path) {
+  if (!project || !path) {
+    return false;
+  }
+  for (size_t i = 0; i < project->dirty_count; i++) {
+    if (project->dirty_files[i] && strcmp(project->dirty_files[i], path) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool dirty_files_add(ProjectContext *project, const char *path) {
+  char *copy;
+
+  if (!project || !path || dirty_files_contains(project, path)) {
+    return project != NULL;
+  }
+
+  if (project->dirty_count >= project->dirty_capacity) {
+    size_t new_capacity = project->dirty_capacity > 0 ? project->dirty_capacity * 2 : 8;
+    char **grown = (char **)realloc(project->dirty_files, new_capacity * sizeof(char *));
+    if (!grown) {
+      project_set_error(project, PROJECT_ERROR_MEMORY, "Failed to grow dirty file set");
+      return false;
+    }
+    project->dirty_files = grown;
+    project->dirty_capacity = new_capacity;
+  }
+
+  copy = strdup(path);
+  if (!copy) {
+    project_set_error(project, PROJECT_ERROR_MEMORY, "Failed to record dirty file");
+    return false;
+  }
+  project->dirty_files[project->dirty_count++] = copy;
+  return true;
+}
+
+static void reverse_edge_add(ProjectContext *project, const char *source, const char *target) {
+  ProjectReverseEdge *edge;
+
+  if (!project || !source || !target) {
+    return;
+  }
+
+  if (project->reverse_edge_count >= project->reverse_edge_capacity) {
+    size_t new_capacity = project->reverse_edge_capacity > 0 ? project->reverse_edge_capacity * 2 : 16;
+    ProjectReverseEdge *grown =
+        (ProjectReverseEdge *)realloc(project->reverse_edges, new_capacity * sizeof(ProjectReverseEdge));
+    if (!grown) {
+      return;
+    }
+    project->reverse_edges = grown;
+    project->reverse_edge_capacity = new_capacity;
+  }
+
+  edge = &project->reverse_edges[project->reverse_edge_count];
+  edge->source_file = strdup(source);
+  edge->target_file = strdup(target);
+  if (!edge->source_file || !edge->target_file) {
+    free(edge->source_file);
+    free(edge->target_file);
+    return;
+  }
+  project->reverse_edge_count++;
+}
+
+/**
+ * Rebuild the reverse-edge index from the current IR snapshot.
+ *
+ * Each retained reference and dependency edge contributes a
+ * (target file -> source file) relation. The index is used by
+ * @ref project_context_mark_file_dirty to expand a changed file into the set of
+ * files that must be recomputed.
+ */
+static void project_context_rebuild_reverse_edges(ProjectContext *project) {
+  const ProjectIRSnapshot *snapshot;
+
+  if (!project) {
+    return;
+  }
+
+  project_context_free_reverse_edges(project);
+  snapshot = &project->ir_snapshot;
+
+  for (size_t i = 0; i < snapshot->resolved_reference_count; i++) {
+    const ProjectResolvedReferenceIR *ref = &snapshot->resolved_references[i];
+    const char *source = NULL;
+    if (ref->reference_node && ref->reference_node->file_path) {
+      source = ref->reference_node->file_path;
+    } else if (ref->owner_symbol_node && ref->owner_symbol_node->file_path) {
+      source = ref->owner_symbol_node->file_path;
+    }
+    reverse_edge_add(project, source, ref->target_file_path);
+  }
+
+  for (size_t i = 0; i < snapshot->dependency_count; i++) {
+    const ProjectDependencyIR *dep = &snapshot->dependencies[i];
+    reverse_edge_add(project, dep->source_file_path, dep->target_file_path);
+  }
+}
+
+void project_context_mark_file_dirty(ProjectContext *project, const char *filepath) {
+  char normalized[1024];
+  const char *path = filepath;
+  bool changed = true;
+
+  if (!project || !filepath) {
+    return;
+  }
+
+  if (normalize_file_path(project->root_directory, filepath, normalized, sizeof(normalized))) {
+    path = normalized;
+  }
+
+  if (!dirty_files_add(project, path)) {
+    return;
+  }
+
+  // Walk reverse edges to a fixpoint: anything depending on or referencing a
+  // dirty file is itself dirty.
+  while (changed) {
+    changed = false;
+    for (size_t i = 0; i < project->reverse_edge_count; i++) {
+      const ProjectReverseEdge *edge = &project->reverse_edges[i];
+      if (!edge->source_file || !edge->target_file) {
+        continue;
+      }
+      if (dirty_files_contains(project, edge->target_file) &&
+          !dirty_files_contains(project, edge->source_file)) {
+        if (!dirty_files_add(project, edge->source_file)) {
+          return;
+        }
+        changed = true;
+      }
+    }
+  }
+
+  project->ir_ready = false;
+  project_context_clear_info_blocks(project);
+}
+
 void project_context_clear_ir(ProjectContext *project) {
   if (!project) {
     return;
   }
 
   project_context_clear_info_blocks(project);
+  project_context_free_ir_arrays(project);
+  project_context_free_reverse_edges(project);
+  project_context_clear_dirty_files(project);
 
-  free(project->ir_snapshot.symbols);
-  free(project->ir_snapshot.resolved_references);
-  free(project->ir_snapshot.call_graph_edges);
-  free(project->ir_snapshot.dependencies);
-
-  memset(&project->ir_snapshot, 0, sizeof(project->ir_snapshot));
+  project->ir_snapshot_retained = false;
+  project->last_recomputed_file_count = 0;
+  project->last_rebuild_file_count = 0;
+  project->last_rebuild_incremental = false;
   project->ir_ready = false;
 }
 
-bool project_context_rebuild_ir(ProjectContext *project) {
+static bool project_context_rebuild_ir_full(ProjectContext *project) {
   ProjectIRCountState counts = {0};
   ProjectIRBuildState state;
-
-  if (!project) {
-    return false;
-  }
+  size_t file_count = 0;
 
   project_context_clear_ir(project);
 
@@ -389,6 +584,7 @@ bool project_context_rebuild_ir(ProjectContext *project) {
       continue;
     }
 
+    file_count++;
     counts.dependency_count += ctx->num_dependencies;
     for (size_t j = 0; j < ctx->num_ast_nodes; j++) {
       count_symbol_ir_nodes(ctx->all_ast_nodes[j], NULL, NULL, &counts);
@@ -419,6 +615,15 @@ bool project_context_rebuild_ir(ProjectContext *project) {
     return false;
   }
 
+  if (file_count > 0) {
+    project->ir_snapshot.file_ranges = calloc(file_count, sizeof(ProjectFileIRRange));
+    if (!project->ir_snapshot.file_ranges) {
+      project_context_clear_ir(project);
+      project_set_error(project, PROJECT_ERROR_MEMORY, "Failed to allocate project IR file ranges");
+      return false;
+    }
+  }
+
   state.snapshot = &project->ir_snapshot;
   state.symbol_index = 0;
   state.resolved_reference_index = 0;
@@ -427,15 +632,30 @@ bool project_context_rebuild_ir(ProjectContext *project) {
 
   for (size_t i = 0; i < project->num_files; i++) {
     ParserContext *ctx = project->file_contexts[i];
+    ProjectFileIRRange *range;
+
     if (!ctx) {
       continue;
     }
+
+    range = &project->ir_snapshot.file_ranges[project->ir_snapshot.file_range_count];
+    range->file_path = strdup(ctx->filename ? ctx->filename : "");
+    range->symbol_start = state.symbol_index;
+    range->reference_start = state.resolved_reference_index;
+    range->call_edge_start = state.call_graph_edge_index;
+    range->dependency_start = state.dependency_index;
 
     for (size_t j = 0; j < ctx->num_ast_nodes; j++) {
       fill_symbol_ir_nodes(ctx, ctx->all_ast_nodes[j], ctx->filename, NULL, (size_t)-1, NULL,
                            &state);
     }
     append_file_relationship_edges(ctx, &state);
+
+    range->symbol_count = state.symbol_index - range->symbol_start;
+    range->reference_count = state.resolved_reference_index - range->reference_start;
+    range->call_edge_count = state.call_graph_edge_index - range->call_edge_start;
+    range->dependency_count = state.dependency_index - range->dependency_start;
+    project->ir_snapshot.file_range_count++;
   }
 
   project->ir_snapshot.symbol_count = state.symbol_index;
@@ -446,8 +666,215 @@ bool project_context_rebuild_ir(ProjectContext *project) {
   project->total_references = state.resolved_reference_index;
   project->unresolved_references = 0;
   project->ir_ready = true;
+  project->ir_snapshot_retained = true;
+  project->last_recomputed_file_count = file_count;
+  project->last_rebuild_file_count = file_count;
+  project->last_rebuild_incremental = false;
 
+  project_context_rebuild_reverse_edges(project);
   return true;
+}
+
+/**
+ * Copy the retained IR entries owned by one clean file range into the next
+ * snapshot.
+ *
+ * A file is only clean if it is not in the dirty set, so none of its entries
+ * point at a recomputed file. Its symbols' reference ranges are re-based onto
+ * the next snapshot's reference array, preserving per-file contiguity. Only the
+ * file's own range is read, so no field of an entry owned by a recomputed
+ * (possibly freed) file is touched.
+ */
+static void copy_retained_file_range(const ProjectIRSnapshot *old, const ProjectFileIRRange *range,
+                                     ProjectIRSnapshot *next, ProjectIRBuildState *state) {
+  for (size_t k = 0; k < range->symbol_count; k++) {
+    const ProjectSymbolIR *symbol = &old->symbols[range->symbol_start + k];
+    ProjectSymbolIR copy = *symbol;
+    size_t old_reference_start = symbol->resolved_reference_start;
+
+    copy.resolved_reference_start = state->resolved_reference_index;
+    next->symbols[state->symbol_index++] = copy;
+
+    for (size_t r = 0; r < symbol->resolved_reference_count; r++) {
+      next->resolved_references[state->resolved_reference_index++] =
+          old->resolved_references[old_reference_start + r];
+    }
+  }
+
+  for (size_t k = 0; k < range->call_edge_count; k++) {
+    next->call_graph_edges[state->call_graph_edge_index++] =
+        old->call_graph_edges[range->call_edge_start + k];
+  }
+
+  for (size_t k = 0; k < range->dependency_count; k++) {
+    next->dependencies[state->dependency_index++] =
+        old->dependencies[range->dependency_start + k];
+  }
+}
+
+static bool project_context_rebuild_ir_incremental(ProjectContext *project) {
+  ProjectIRSnapshot old = project->ir_snapshot;
+  ProjectIRSnapshot next;
+  ProjectIRCountState counts = {0};
+  ProjectIRBuildState state;
+  size_t file_count = 0;
+  size_t recomputed = 0;
+
+  memset(&next, 0, sizeof(next));
+
+  // Count pass: recompute dirty files, retain counts for clean file ranges.
+  for (size_t i = 0; i < project->num_files; i++) {
+    ParserContext *ctx = project->file_contexts[i];
+    const ProjectFileIRRange *range;
+
+    if (!ctx || !ctx->filename) {
+      continue;
+    }
+
+    file_count++;
+    range = dirty_files_contains(project, ctx->filename)
+                ? NULL
+                : find_file_ir_range(&old, ctx->filename);
+    if (!range) {
+      recomputed++;
+      counts.dependency_count += ctx->num_dependencies;
+      for (size_t j = 0; j < ctx->num_ast_nodes; j++) {
+        count_symbol_ir_nodes(ctx->all_ast_nodes[j], NULL, NULL, &counts);
+      }
+    } else {
+      counts.symbol_count += range->symbol_count;
+      counts.resolved_reference_count += range->reference_count;
+      counts.call_graph_edge_count += range->call_edge_count;
+      counts.dependency_count += range->dependency_count;
+    }
+  }
+
+  if (counts.symbol_count > 0) {
+    next.symbols = calloc(counts.symbol_count, sizeof(ProjectSymbolIR));
+  }
+  if (counts.resolved_reference_count > 0) {
+    next.resolved_references =
+        calloc(counts.resolved_reference_count, sizeof(ProjectResolvedReferenceIR));
+  }
+  if (counts.call_graph_edge_count > 0) {
+    next.call_graph_edges = calloc(counts.call_graph_edge_count, sizeof(ProjectCallGraphEdgeIR));
+  }
+  if (counts.dependency_count > 0) {
+    next.dependencies = calloc(counts.dependency_count, sizeof(ProjectDependencyIR));
+  }
+
+  if ((counts.symbol_count > 0 && !next.symbols) ||
+      (counts.resolved_reference_count > 0 && !next.resolved_references) ||
+      (counts.call_graph_edge_count > 0 && !next.call_graph_edges) ||
+      (counts.dependency_count > 0 && !next.dependencies)) {
+    free(next.symbols);
+    free(next.resolved_references);
+    free(next.call_graph_edges);
+    free(next.dependencies);
+    project_set_error(project, PROJECT_ERROR_MEMORY, "Failed to allocate incremental IR snapshot");
+    return false;
+  }
+
+  if (file_count > 0) {
+    next.file_ranges = calloc(file_count, sizeof(ProjectFileIRRange));
+    if (!next.file_ranges) {
+      free(next.symbols);
+      free(next.resolved_references);
+      free(next.call_graph_edges);
+      free(next.dependencies);
+      project_set_error(project, PROJECT_ERROR_MEMORY,
+                        "Failed to allocate incremental IR file ranges");
+      return false;
+    }
+  }
+
+  state.snapshot = &next;
+  state.symbol_index = 0;
+  state.resolved_reference_index = 0;
+  state.call_graph_edge_index = 0;
+  state.dependency_index = 0;
+
+  // Fill pass, in file order, so the result matches a full rebuild's ordering.
+  for (size_t i = 0; i < project->num_files; i++) {
+    ParserContext *ctx = project->file_contexts[i];
+    const ProjectFileIRRange *range;
+    ProjectFileIRRange *new_range;
+
+    if (!ctx || !ctx->filename) {
+      continue;
+    }
+
+    range = dirty_files_contains(project, ctx->filename)
+                ? NULL
+                : find_file_ir_range(&old, ctx->filename);
+
+    new_range = &next.file_ranges[next.file_range_count];
+    new_range->file_path = strdup(ctx->filename);
+    new_range->symbol_start = state.symbol_index;
+    new_range->reference_start = state.resolved_reference_index;
+    new_range->call_edge_start = state.call_graph_edge_index;
+    new_range->dependency_start = state.dependency_index;
+
+    if (range) {
+      copy_retained_file_range(&old, range, &next, &state);
+    } else {
+      for (size_t j = 0; j < ctx->num_ast_nodes; j++) {
+        fill_symbol_ir_nodes(ctx, ctx->all_ast_nodes[j], ctx->filename, NULL, (size_t)-1, NULL,
+                             &state);
+      }
+      append_file_relationship_edges(ctx, &state);
+    }
+
+    new_range->symbol_count = state.symbol_index - new_range->symbol_start;
+    new_range->reference_count = state.resolved_reference_index - new_range->reference_start;
+    new_range->call_edge_count = state.call_graph_edge_index - new_range->call_edge_start;
+    new_range->dependency_count = state.dependency_index - new_range->dependency_start;
+    next.file_range_count++;
+  }
+
+  next.symbol_count = state.symbol_index;
+  next.resolved_reference_count = state.resolved_reference_index;
+  next.call_graph_edge_count = state.call_graph_edge_index;
+  next.dependency_count = state.dependency_index;
+
+  project_context_free_ir_arrays(project);
+  project->ir_snapshot = next;
+  project->total_symbols = state.symbol_index;
+  project->total_references = state.resolved_reference_index;
+  project->unresolved_references = 0;
+  project->ir_ready = true;
+  project->ir_snapshot_retained = true;
+  project->last_recomputed_file_count = recomputed;
+  project->last_rebuild_file_count = file_count;
+  project->last_rebuild_incremental = true;
+
+  project_context_clear_dirty_files(project);
+  project_context_rebuild_reverse_edges(project);
+  return true;
+}
+
+bool project_context_rebuild_ir(ProjectContext *project) {
+  if (!project) {
+    return false;
+  }
+
+  if (project->dirty_count > 0 && project->ir_snapshot_retained) {
+    return project_context_rebuild_ir_incremental(project);
+  }
+
+  return project_context_rebuild_ir_full(project);
+}
+
+size_t project_context_last_recomputed_file_count(const ProjectContext *project) {
+  return project ? project->last_recomputed_file_count : 0;
+}
+
+size_t project_context_last_rebuild_file_count(const ProjectContext *project) {
+  return project ? project->last_rebuild_file_count : 0;
+}
+
+bool project_context_last_rebuild_was_incremental(const ProjectContext *project) {
+  return project ? project->last_rebuild_incremental : false;
 }
 
 const ProjectIRSnapshot *project_context_get_ir(const ProjectContext *project) {
@@ -481,11 +908,9 @@ bool project_remove_file(ProjectContext *project, const char *filepath) {
  * @return true if file was removed successfully, false otherwise
  */
 bool project_context_remove_file(ProjectContext *project, const char *filepath) {
-  bool removed = project_remove_file(project, filepath);
-  if (removed) {
-    project_context_clear_ir(project);
-  }
-  return removed;
+  // project_remove_file_impl marks the removed file dirty so the next rebuild
+  // drops its retained nodes and recomputes its dependents and referrers.
+  return project_remove_file(project, filepath);
 }
 
 /**
@@ -517,7 +942,9 @@ bool project_context_add_dependency(ProjectContext *project, const char *source_
                                     const char *target_file) {
   bool added = project_add_dependency(project, source_file, target_file);
   if (added) {
-    project_context_clear_ir(project);
+    // The source file's dependency edges changed; mark it dirty so the next
+    // rebuild recomputes it (and its dependents) instead of the whole project.
+    project_context_mark_file_dirty(project, source_file);
   }
   return added;
 }
@@ -718,6 +1145,9 @@ size_t project_context_add_directory(ProjectContext *project, const char *dirpat
 bool project_parse_all_files(ProjectContext *project) {
   bool parsed = project_parse_all_files_impl(project);
   if (parsed) {
+    // Bulk parsing can introduce files that were never marked dirty; a full
+    // rebuild is required so none are skipped.
+    project_context_clear_ir(project);
     return project_context_rebuild_ir(project);
   }
   return false;
@@ -746,6 +1176,9 @@ bool project_context_parse_all_files(ProjectContext *project) {
 bool project_resolve_references(ProjectContext *project) {
   bool resolved = project_resolve_references_impl(project);
   if (resolved) {
+    // Reference resolution mutates AST references across all files, so every
+    // file's derived reference entries must be recomputed.
+    project_context_clear_ir(project);
     return project_context_rebuild_ir(project);
   }
   return false;

@@ -48,6 +48,10 @@ void project_context_clear_ir(ProjectContext *project);
 bool project_context_rebuild_ir(ProjectContext *project);
 void project_context_clear_info_blocks(ProjectContext *project);
 
+// Incremental indexing (WI-018): mark a file changed/removed, expanding the
+// dirty set through the retained reverse-edge index without recomputing yet.
+void project_context_mark_file_dirty(ProjectContext *project, const char *filepath);
+
 // Implementation functions for parser context
 void parser_context_free(ParserContext *ctx);
 bool parser_context_add_ast(ParserContext *ctx, ASTNode *node);
