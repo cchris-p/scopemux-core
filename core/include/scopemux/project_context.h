@@ -532,6 +532,67 @@ size_t project_add_directory(ProjectContext *project, const char *dirpath, const
 bool project_parse_all_files(ProjectContext *project);
 
 /**
+ * @brief Hash a content buffer for incremental change detection (WI-018)
+ *
+ * Deterministic, dependency-free FNV-1a 64-bit hash. Not cryptographic.
+ *
+ * @param data Buffer to hash (may be NULL only when length is 0)
+ * @param length Number of bytes to hash
+ * @return uint64_t Content hash
+ */
+uint64_t project_context_hash_content(const void *data, size_t length);
+
+/**
+ * @brief Whether a parsed file's content is unchanged (WI-018)
+ *
+ * Compares the incoming content against the hash recorded for the file. Returns
+ * false when the file is not currently parsed, so callers can treat it as new.
+ *
+ * @param project Project context
+ * @param filepath Absolute or project-relative filepath
+ * @param content Incoming content
+ * @param content_length Length of @p content
+ * @return bool True when the file is parsed and its content hash matches
+ */
+bool project_file_is_unchanged(ProjectContext *project, const char *filepath, const char *content,
+                               size_t content_length);
+
+/**
+ * @brief Incrementally parse or update a file from an in-memory buffer (WI-018)
+ *
+ * If the file is already parsed and its content hash matches @p content the
+ * call is a no-op and @p out_changed is set to false. Otherwise the file is
+ * (re)parsed, its symbols are re-registered, and the derived IR / InfoBlock /
+ * search caches are invalidated. Durable plan nodes are never touched.
+ *
+ * @param project Project context
+ * @param filepath Absolute or project-relative filepath
+ * @param content Source content
+ * @param content_length Length of @p content
+ * @param language Language hint (LANG_UNKNOWN to auto-detect from the extension)
+ * @param out_changed Optional; set to true when the file was (re)parsed
+ * @return bool True on success (including a no-op), false on error
+ */
+bool project_update_file_from_string(ProjectContext *project, const char *filepath,
+                                     const char *content, size_t content_length, Language language,
+                                     bool *out_changed);
+
+/**
+ * @brief Incrementally parse or update a file from disk (WI-018)
+ *
+ * Reads the file and delegates to project_update_file_from_string, so an
+ * unchanged file is not re-parsed.
+ *
+ * @param project Project context
+ * @param filepath Absolute or project-relative filepath
+ * @param language Language hint (LANG_UNKNOWN to auto-detect from the extension)
+ * @param out_changed Optional; set to true when the file was (re)parsed
+ * @return bool True on success (including a no-op), false on error
+ */
+bool project_update_file(ProjectContext *project, const char *filepath, Language language,
+                         bool *out_changed);
+
+/**
  * @brief Resolve references across all files in the project
  *
  * This should be called after all files have been parsed and
