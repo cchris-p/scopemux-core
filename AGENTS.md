@@ -2,6 +2,15 @@
 
 `scopemux-core` is the native ScopeMux engine: Tree-sitter parsing, AST/CST extraction, project IR, and context products.
 
+## Git Workflow
+
+- `development` is the integration branch; branch from it and open PRs against
+  it.
+- `main` is the release branch and the repository default; it advances only
+  through a deliberate release merge from `development`.
+- Keep changes small and path-scoped; commit and push so the remote reflects the
+  change before handing off or continuing.
+
 ## Most Important Notes
 
 - Do not write "you" or "your" in code comments. Use a standard documentation tone, and note useful information, caveats, and todo/action items. Update existing comments that do not follow this practice, and clarify vague messages.
