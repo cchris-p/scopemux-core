@@ -60,7 +60,7 @@ static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node
     case NODE_MACRO:
     case NODE_USING:
     case NODE_FRIEND:
-    case NODE_OPERATOR:
+    case NODE_OPERATOR: {
       // Add to symbol table with filepath for context
       SymbolEntry *entry =
           symbol_entry_create(node->qualified_name, node, filepath, SCOPE_FILE, node->lang);
@@ -68,6 +68,7 @@ static void register_node_symbols(GlobalSymbolTable *symbol_table, ASTNode *node
         symbol_table_add(symbol_table, entry);
       }
       break;
+    }
 
     default:
       // Other node types might not need to be in the global symbol table
